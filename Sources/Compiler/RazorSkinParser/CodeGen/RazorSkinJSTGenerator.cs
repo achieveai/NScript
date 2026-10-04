@@ -186,17 +186,6 @@ namespace NScript.RazorSkin.CodeGen
                 htmlContent = ReplaceCssClassNamesInHtml(htmlContent);
             }
 
-            // Build known function names from @functions blocks
-            var knownFunctionNames = new HashSet<string>();
-            if (_ir.Functions != null)
-            {
-                foreach (var func in _ir.Functions)
-                {
-                    if (func.FunctionName != "functions_block")
-                        knownFunctionNames.Add(func.FunctionName);
-                }
-            }
-
             var templateLocation = GetTemplateLocation();
 
             // 1. tmplStore = new Array(1)
@@ -213,7 +202,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // 2. Factory function
             var factoryStatements = BuildFactoryBody(
-                bindings, events, htmlContent, elementPaths, eventPaths, knownFunctionNames, topology);
+                bindings, events, htmlContent, elementPaths, eventPaths, topology);
 
             var factoryFunction = new FunctionExpression(
                 templateLocation,
@@ -254,7 +243,6 @@ namespace NScript.RazorSkin.CodeGen
             string htmlContent,
             List<List<int>> elementPaths,
             List<List<int>> eventPaths,
-            HashSet<string> knownFunctionNames,
             GraphTopology topology)
         {
             _eventPaths = eventPaths;
@@ -324,7 +312,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // tmplStore[dataIndex] = tmplStore[dataIndex] ? tmplStore[dataIndex] : graphDescriptor
             var graphEmitter = new GraphDescriptorJSTEmitter(
-                topology, _factoryScope, _scopeManager, _knownTypes, knownFunctionNames,
+                topology, _factoryScope, _scopeManager, _knownTypes,
                 _clrContext, _ir.ModelTypeName, _resolvedTypeIdentifiers,
                 cssManager: _cssManager,
                 usingNamespaces: _ir.UsingNamespaces,

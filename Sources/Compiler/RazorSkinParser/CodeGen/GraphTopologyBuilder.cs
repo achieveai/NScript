@@ -217,8 +217,7 @@ namespace NScript.RazorSkin.CodeGen
                     propIdx = ctx.GetOrCreatePropertyNode(expression, 0);
                 }
                 if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
-                if (TryGetControlProperty(expression, out var controlProperty))
-                    ctx.AddSubscription(controlProperty, propIdx, 1);
+                SubscribeUndetectedReads(ctx, expression, deps, propIdx);
 
                 int domIdx = ctx.AddDomTarget(binding, propIdx, gateIndex);
                 return;
@@ -252,6 +251,7 @@ namespace NScript.RazorSkin.CodeGen
                     ctx.AddEdge(0, computedIdx);
                     ctx.AddEdge(propIdx, computedIdx);
 
+                    SubscribeUndetectedReads(ctx, binding.Classification.CSharpExpression, deps, computedIdx);
                     int domIdx = ctx.AddDomTarget(binding, computedIdx, gateIndex);
                 }
                 else
@@ -282,11 +282,13 @@ namespace NScript.RazorSkin.CodeGen
                         if (gateIndex != -1) ctx.SetGateIndex(computedIdx, gateIndex);
                         ctx.AddEdge(0, computedIdx);
                         ctx.AddEdge(propIdx, computedIdx);
+                        SubscribeUndetectedReads(ctx, binding.Classification.CSharpExpression, deps, computedIdx);
                         ctx.AddDomTarget(binding, computedIdx, gateIndex);
                     }
                     else
                     {
                         // Simple single property — existing behavior
+                        SubscribeUndetectedReads(ctx, binding.Classification.CSharpExpression, deps, propIdx);
                         ctx.AddDomTarget(binding, propIdx, gateIndex);
                     }
                 }
@@ -327,6 +329,7 @@ namespace NScript.RazorSkin.CodeGen
                 }
 
                 // Create DomTarget consuming from computed
+                SubscribeUndetectedReads(ctx, binding.Classification.CSharpExpression, deps, computedIdx);
                 int domIdx = ctx.AddDomTarget(binding, computedIdx, gateIndex);
             }
         }
@@ -365,6 +368,32 @@ namespace NScript.RazorSkin.CodeGen
                     return itemVariablePrefix + dependency.PropertyName;
             }
             return dependency.PropertyName;
+        }
+
+        /// <summary>
+        /// Subscribes <paramref name="valueIdx"/> to reads the Roslyn analysis does not report as
+        /// dependencies: every <c>Control.P</c> (slot 1), and inside an item graph every parent
+        /// <c>Model.P</c> (slot 0). Reads already covered by <paramref name="deps"/> are skipped.
+        /// A source that does not raise PropertyChanged is ignored at runtime, so an extra
+        /// subscription is harmless while a missing one leaves the binding stale.
+        /// </summary>
+        private static void SubscribeUndetectedReads(BuildContext ctx, string expression,
+            List<ObservableDependency> deps, int valueIdx)
+        {
+            foreach (var path in BindingExpressionConverter.CollectMemberPaths(expression))
+            {
+                if (path.Count < 2) continue;
+                int slot;
+                if (path[0] == "Control") slot = 1;
+                else if (path[0] == "Model" && !string.IsNullOrEmpty(ctx.ItemVariablePrefix)) slot = 0;
+                else continue;
+
+                var propertyName = path[1];
+                if (deps.Any(dep => dep.PropertyName == propertyName
+                        && ctx.GetDependencySourceSlot(dep, expression) == slot))
+                    continue;
+                ctx.AddSubscription(propertyName, valueIdx, slot);
+            }
         }
 
         private static bool TryGetControlProperty(string expression, out string propertyName)
@@ -622,6 +651,8 @@ namespace NScript.RazorSkin.CodeGen
                         ctx.AddEdge(0, valueIdx);
                     }
                     if (gateIndex != -1) ctx.SetGateIndex(valueIdx, gateIndex);
+                    if (!propBinding.IsLiteral)
+                        SubscribeUndetectedReads(ctx, expression, deps, valueIdx);
 
                     subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {
@@ -653,6 +684,7 @@ namespace NScript.RazorSkin.CodeGen
                         ctx.AddEdge(0, valueIdx);
                         ctx.AddEdge(propIdx, valueIdx);
                     }
+                    SubscribeUndetectedReads(ctx, expression, deps, valueIdx);
 
                     subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {
@@ -688,6 +720,7 @@ namespace NScript.RazorSkin.CodeGen
                     ctx.AddEdge(0, computedIdx);
                     foreach (int propIdx in propIndices)
                         ctx.AddEdge(propIdx, computedIdx);
+                    SubscribeUndetectedReads(ctx, expression, deps, computedIdx);
 
                     subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {

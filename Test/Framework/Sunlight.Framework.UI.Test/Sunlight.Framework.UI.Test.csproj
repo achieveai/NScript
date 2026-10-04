@@ -93,6 +93,8 @@
     <EmbeddedResource Include="RazorTemplates\RazorSubControlTwoWay.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlDeactivation.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlIfInForeach.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorRawGetterControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorRawGetterAutoProps.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

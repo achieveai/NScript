@@ -1,0 +1,9 @@
+@model Sunlight.Framework.UI.Test.RazorModeVM
+@control Sunlight.Framework.UI.Test.RazorRawGetterControl
+
+<div data-test="1">
+<span data-case="L1" class="@(Control.Armed == true ? "on" : "off")">L1</span>
+<span data-case="L2" class="@("c-" + Control.Label)">L2</span>
+<span data-case="L3" class="@(Control.Armed && Model.Flag ? "on" : "off")">L3</span>
+<span data-case="L4" class="@(!Control.Armed ? "on" : "off")">L4</span>
+</div>

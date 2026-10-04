@@ -1,0 +1,27 @@
+@model Sunlight.Framework.UI.Test.RazorModeVM
+
+<div data-test="1">
+<span data-case="F" class="@(Model.Flag == true ? "on" : "off")">F</span>
+<span data-case="F2" class="@(Model.Flag && Model.Other ? "on" : "off")">F2</span>
+<span data-case="J0" class="@(!Model.Flag ? "on" : "off")">J0</span>
+<span data-case="K0" class="@(Model.Name == "styled-content" ? "match" : "nomatch")">K0</span>
+@foreach (var row in Model.Rows)
+{
+    <div data-row="1">
+        <span data-case="A" class="@(row.HasDescription ? "on" : "off")">A</span>
+        <span data-case="B" class="@(row.IsEditable == true ? "on" : "off")">B</span>
+        <span data-case="C" class="@(row.IsEditable && row.HasDescription ? "on" : "off")">C</span>
+        <span data-case="D" class="@(row.IsEditable || row.HasDescription ? "on" : "off")">D</span>
+        <span data-case="E" class="@("x-" + row.Name)">E</span>
+        <span data-case="G" class="@(row.IsEditable ? (row.HasDescription ? "both" : "edit") : "none")">G</span>
+        <span data-case="H" class="@(Model.Flag && row.IsEditable ? "on" : "off")">H</span>
+        <span data-case="H2" class="@("p-" + Model.Name)">H2</span>
+        <span data-case="J" class="@(!row.IsEditable ? "on" : "off")">J</span>
+        <span data-case="K" class="@(row.Name == "styled-content" ? "match" : "nomatch")">K</span>
+    </div>
+}
+@foreach (var s in Model.Names)
+{
+    <span data-name="1" title="@s">@s</span>
+}
+</div>

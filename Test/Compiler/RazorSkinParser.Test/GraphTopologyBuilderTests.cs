@@ -654,5 +654,46 @@ namespace RazorSkinParser.Test
             domTarget.AttributeName.Should().Be("value");
             domTarget.Target.Should().Be(ExpressionTarget.Attribute);
         }
+
+        // ------------------------------------------------------------------
+        // Issue #102: reads the Roslyn analysis misses still subscribe
+        // ------------------------------------------------------------------
+
+        private static int ValueNodeOf(GraphTopology topology, int domTargetIndex)
+            => topology.ParentIndices[topology.DomTargets[domTargetIndex].NodeIdx].Single();
+
+        [TestMethod]
+        public void CompoundExpression_SubscribesEveryControlPropertyRead()
+        {
+            // The analysis reports no Control.* dependency for these (control stub is not
+            // observable); before the fix only expressions *starting* with Control. subscribed.
+            var concat = MakeBinding("\"c-\" + Control.Label", BindingMode.OneTime,
+                ExpressionTarget.CssClass, "e0", "Label");
+            var mixed = MakeBinding("Control.Armed && Model.Flag ? \"on\" : \"off\"", BindingMode.OneWay,
+                ExpressionTarget.CssClass, "e1", "Flag");
+
+            var topology = GraphTopologyBuilder.Build(MakeTemplate(concat, mixed));
+
+            topology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Label" && s.SourceSlot == 1 && s.NodeIdx == ValueNodeOf(topology, 0));
+            topology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Armed" && s.SourceSlot == 1 && s.NodeIdx == ValueNodeOf(topology, 1));
+            topology.Subscriptions.Should().ContainSingle(s => s.PropertyName == "Flag" && s.SourceSlot == 0);
+        }
+
+        [TestMethod]
+        public void CompoundExpressionInsideForeach_SubscribesParentModelRead()
+        {
+            // Inside @foreach the analysis only scans the item prefix, so Model.Flag has no dependency.
+            var binding = MakeBinding("Model.Flag && row.IsEditable ? \"on\" : \"off\"", BindingMode.OneTime,
+                ExpressionTarget.CssClass, "e0", "Flag");
+
+            var itemTopology = GraphTopologyBuilder.Build(MakeTemplate(
+                MakeLoop("Model.Rows", "row", new List<IRNode> { binding })))
+                .Collections.Single().ItemTopology;
+
+            itemTopology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Flag" && s.SourceSlot == 0 && s.NodeIdx == ValueNodeOf(itemTopology, 0));
+        }
     }
 }

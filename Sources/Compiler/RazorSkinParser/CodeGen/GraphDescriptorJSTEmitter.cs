@@ -27,7 +27,6 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IdentifierScope _scope;
         private readonly RuntimeScopeManager _scopeManager;
         private readonly RazorKnownTypes _knownTypes;
-        private readonly ISet<string> _knownFunctionNames;
         private readonly ClrContext _clrContext;
         private readonly string _modelTypeName;
         private readonly string _parentModelTypeName;
@@ -47,11 +46,6 @@ namespace NScript.RazorSkin.CodeGen
         /// the pre-Phase-3b behavior.
         /// </summary>
         private readonly Location _fallbackLocation;
-
-        // Cached maps for ToJsGetterWithFieldAccess — identical across all invocations
-        // since _modelTypeName doesn't change.
-        private Dictionary<string, string> _cachedFieldMap;
-        private Dictionary<string, string> _cachedMethodMap;
 
         /// <summary>
         /// Whether this emitter generates for an item graph (inside a @foreach loop).
@@ -132,7 +126,6 @@ namespace NScript.RazorSkin.CodeGen
             IdentifierScope scope,
             RuntimeScopeManager scopeManager,
             RazorKnownTypes knownTypes,
-            ISet<string> knownFunctionNames,
             ClrContext clrContext,
             string modelTypeName,
             Dictionary<string, IList<IIdentifier>> resolvedTypeIdentifiers = null,
@@ -146,7 +139,6 @@ namespace NScript.RazorSkin.CodeGen
             _scope = scope;
             _scopeManager = scopeManager;
             _knownTypes = knownTypes;
-            _knownFunctionNames = knownFunctionNames;
             _clrContext = clrContext;
             _modelTypeName = modelTypeName;
             _parentModelTypeName = parentModelTypeName;
@@ -447,9 +439,9 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// getters: [null, function(dc) { return dc.get_name(); }, null, ...]
-        /// Uses ScriptLiteralExpression for getter bodies since getter
-        /// expressions reference virtual method accessors that are already correctly mangled.
+        /// getters: [null, function(dc, tp) { return dc.name; }, null, ...]
+        /// Getter bodies are JST built from scope-resolved identifiers; an expression that
+        /// cannot be resolved fails the build with a diagnostic.
         /// </summary>
         private Expression EmitGetters()
         {
@@ -482,36 +474,11 @@ namespace NScript.RazorSkin.CodeGen
                     if (string.IsNullOrEmpty(getterExpression))
                         return new NullLiteralExpression(_scope);
 
-                    // Try building a fully resolved JST getter via Cecil type lookup
-                    var resolved = TryBuildResolvedPropertyGetter(getterExpression);
-                    if (resolved != null)
-                        return resolved;
-
-                    var staticProperty = TryBuildStaticPropertyGetter(getterExpression);
-                    if (staticProperty != null)
-                        return staticProperty;
-
-                    // Fallback: known function names stay as-is, others get getter prefix.
-                    var fallbackExpr = getterExpression;
-                    bool fallbackIsModel = fallbackExpr.StartsWith("Model.");
-                    if (fallbackIsModel)
-                        fallbackExpr = fallbackExpr.Substring(6);
-                    if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
-                        && fallbackExpr.StartsWith(_topology.ItemVariablePrefix))
-                        fallbackExpr = fallbackExpr.Substring(_topology.ItemVariablePrefix.Length);
-
-                    // For item graphs: dc[2] for item props, dc[0] for Model props
-                    string dcRef = IsItemGraph ? (fallbackIsModel ? "dc[0]" : "dc[2]") : "dc";
-                    string body;
-                    if (_knownFunctionNames != null && _knownFunctionNames.Contains(fallbackExpr))
-                        body = "return " + dcRef + "." + fallbackExpr;
-                    else
-                    {
-                        var getterName = ExpressionJsEmitter.PropertyToGetterName(fallbackExpr);
-                        body = "return " + dcRef + "." + getterName + "()";
-                    }
-
-                    return CreateRawGetterFunction(body);
+                    // Property nodes may carry the topology's internal "X" / "!X" mini-format
+                    // (bare dependency name), which only TryBuildResolvedPropertyGetter knows.
+                    // Everything else (bare loop variable, literals, static Type.Member) is C#.
+                    return TryBuildResolvedPropertyGetter(getterExpression)
+                        ?? BuildBindingExpressionGetter(getterExpression);
                 }
 
                 case GraphNodeTypeConstants.Gate:
@@ -525,34 +492,7 @@ namespace NScript.RazorSkin.CodeGen
                     if (string.IsNullOrEmpty(getterExpression))
                         return new NullLiteralExpression(_scope);
 
-                    // For simple single-property expressions, try resolved field access first.
-                    // This handles inlined getters where get_X() doesn't exist at runtime.
-                    var resolved = TryBuildResolvedPropertyGetter(getterExpression);
-                    if (resolved != null)
-                        return resolved;
-
-                    var staticProperty = TryBuildStaticPropertyGetter(getterExpression);
-                    if (staticProperty != null)
-                        return staticProperty;
-
-                    // Try building a proper JST expression tree for arithmetic expressions.
-                    // This ensures field names are resolved through the scope system, avoiding
-                    // issues with raw body strings that can't access the final minified names.
-                    var jstExpr = TryBuildComputedJSTExpression(getterExpression);
-                    if (jstExpr != null)
-                        return jstExpr;
-
-                    // Try building a proper JST expression tree for ternary expressions.
-                    // Ternary expressions like "item.IsComplete ? \"done\" : \"pending\""
-                    // need resolved field identifiers to produce correct minified names.
-                    var ternaryExpr = TryBuildTernaryJSTExpression(getterExpression);
-                    if (ternaryExpr != null)
-                        return ternaryExpr;
-
-                    // Final fallback: use raw body with field-access replacement
-                    var jsExpr = ToJsGetterWithFieldAccess(
-                        getterExpression, "dc", "tp", _knownFunctionNames);
-                    return CreateRawGetterFunction("return " + jsExpr);
+                    return BuildBindingExpressionGetter(getterExpression);
                 }
 
                 default:
@@ -560,49 +500,173 @@ namespace NScript.RazorSkin.CodeGen
             }
         }
 
-        private Expression TryBuildStaticPropertyGetter(string expression)
+        /// <summary>
+        /// Builds <c>function(dc, tp) { return &lt;expr&gt;; }</c> for a C# binding expression.
+        /// Every name is resolved through <see cref="ResolveBindingPath"/>; unsupported
+        /// forms throw <see cref="RazorSubControlDiagnosticException"/> (build error).
+        /// </summary>
+        private Expression BuildBindingExpressionGetter(string csharpExpression)
         {
-            if (_clrContext == null || string.IsNullOrEmpty(expression)
-                || expression.StartsWith("Model.") || expression.StartsWith("Control."))
-                return null;
+            var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
+            var body = BindingExpressionConverter.Convert(
+                csharpExpression,
+                getterScope,
+                segments => ResolveBindingPath(segments, getterScope),
+                _fallbackLocation);
 
-            int dot = expression.LastIndexOf('.');
-            if (dot <= 0 || dot == expression.Length - 1) return null;
-            string typeName = expression.Substring(0, dot);
-            string propertyName = expression.Substring(dot + 1);
-            if (propertyName.IndexOfAny(new[] { '(', ')', ' ', '[', ']' }) >= 0)
-                return null;
-
-            var type = FindSubControlType(typeName);
-            if (type == null) return null;
-
-            if (type.IsEnum)
-            {
-                var enumField = type.Fields.FirstOrDefault(field => field.Name == propertyName
-                    && field.IsLiteral && field.HasConstant);
-                if (enumField != null)
-                {
-                    var enumScope = new IdentifierScope(_scope, new[] { "dc" }, false);
-                    var enumGetter = new FunctionExpression(_fallbackLocation, _scope, enumScope,
-                        enumScope.ParameterIdentifiers, null);
-                    enumGetter.AddStatement(new ReturnStatement(_fallbackLocation, enumScope,
-                        new NumberLiteralExpression(enumScope,
-                            Convert.ToInt64(enumField.Constant))));
-                    return enumGetter;
-                }
-            }
-
-            var property = FindProperty(type, propertyName);
-            if (property?.GetMethod == null || !property.GetMethod.IsStatic) return null;
-
-            var getterId = _scopeManager.ResolveStatic(property.GetMethod);
-            var getterScope = new IdentifierScope(_scope, new[] { "dc" }, false);
-            var call = new MethodCallExpression(null, getterScope,
-                new IdentifierExpression(getterId, getterScope), System.Array.Empty<Expression>());
             var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope,
                 getterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, call));
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, body));
             return fn;
+        }
+
+        /// <summary>
+        /// Resolves a dotted name path from a binding expression to a JST expression.
+        /// Supported shapes (anything else returns null, which the converter reports):
+        /// <list type="bullet">
+        /// <item>a bare root: <c>Model</c> (dc, or dc[0] in item graphs), <c>Control</c> (tp),
+        /// or the loop variable (dc[2]);</item>
+        /// <item><c>Root.Property</c>: one instance property read on a root;</item>
+        /// <item><c>Type.Member</c>: a const/enum field (emitted as a literal) or a static property.</item>
+        /// </list>
+        /// Deeper instance chains are rejected: receivers such as [Extended]/[ImportedType]
+        /// types are not read the way the main converter reads them.
+        /// </summary>
+        private Expression ResolveBindingPath(IReadOnlyList<string> segments, IdentifierScope scope)
+        {
+            if (_clrContext == null || segments.Count == 0)
+                return null;
+
+            var root = segments[0];
+            var itemVariable = IsItemGraph ? _topology.ItemVariablePrefix.TrimEnd('.') : null;
+
+            Expression receiver;
+            string receiverTypeName;
+            if (root == "Model")
+            {
+                receiver = CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 0);
+                receiverTypeName = IsItemGraph ? _parentModelTypeName : _modelTypeName;
+            }
+            else if (root == "Control")
+            {
+                receiver = new IdentifierExpression(scope.ParameterIdentifiers[1], scope);
+                receiverTypeName = _controlTypeName;
+            }
+            else if (itemVariable != null && root == itemVariable)
+            {
+                receiver = CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 2);
+                receiverTypeName = _modelTypeName;
+            }
+            else
+            {
+                return ResolveStaticMember(segments, scope);
+            }
+
+            if (segments.Count == 1)
+                return receiver;
+            if (segments.Count > 2)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: rejecting chained binding path {Path}",
+                    string.Join(".", segments));
+                return null;
+            }
+
+            var typeDefinition = FindTypeDefinition(receiverTypeName);
+            var property = typeDefinition != null ? FindProperty(typeDefinition, segments[1]) : null;
+            if (property?.GetMethod == null || property.GetMethod.IsStatic)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot find instance property {PropName} on {TypeName}",
+                    segments[1], receiverTypeName);
+                return null;
+            }
+
+            return BuildPropertyRead(receiver, typeDefinition, property, scope);
+        }
+
+        /// <summary>
+        /// Resolves <c>Type.Member</c> (type name may be dotted): a const field becomes a
+        /// literal (enum members and [CssClass] consts), a static property becomes a call
+        /// to its resolved static getter.
+        /// </summary>
+        private Expression ResolveStaticMember(IReadOnlyList<string> segments, IdentifierScope scope)
+        {
+            if (segments.Count < 2)
+                return null;
+
+            var typeName = string.Join(".", segments.Take(segments.Count - 1));
+            var memberName = segments[segments.Count - 1];
+            var type = FindSubControlType(typeName);
+            if (type == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve static type {TypeName}", typeName);
+                return null;
+            }
+
+            var constField = type.Fields.FirstOrDefault(field => field.Name == memberName
+                && field.IsLiteral && field.HasConstant);
+            if (constField != null)
+                return CreateConstantLiteral(constField.Constant, scope);
+
+            var property = FindProperty(type, memberName);
+            if (property?.GetMethod == null || !property.GetMethod.IsStatic)
+                return null;
+
+            return new MethodCallExpression(null, scope,
+                new IdentifierExpression(_scopeManager.ResolveStatic(property.GetMethod), scope),
+                System.Array.Empty<Expression>());
+        }
+
+        private static Expression CreateConstantLiteral(object value, IdentifierScope scope)
+        {
+            switch (value)
+            {
+                case null: return new NullLiteralExpression(scope);
+                case string s: return new StringLiteralExpression(scope, s);
+                case bool b: return new BooleanLiteralExpression(scope, b);
+                case double d: return new DoubleLiteralExpression(scope, d);
+                case float f: return new DoubleLiteralExpression(scope, f);
+                case sbyte _:
+                case byte _:
+                case short _:
+                case ushort _:
+                case int _:
+                case uint _:
+                case long _:
+                    return new NumberLiteralExpression(scope, System.Convert.ToInt64(value));
+                default:
+                    // char, ulong, decimal: no exact JS literal mapping here.
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Emits a read of <paramref name="property"/> on <paramref name="receiver"/>:
+        /// backing-field access when NScript inlines the getter, a static call when the
+        /// getter is devirtualized (ADR-0023), otherwise <c>receiver.get_X()</c>.
+        /// All identifiers come from the scope manager.
+        /// </summary>
+        private Expression BuildPropertyRead(
+            Expression receiver, TypeDefinition typeDefinition, PropertyDefinition property,
+            IdentifierScope scope)
+        {
+            // IMPORTANT: Find the backing field on the SAME TypeDefinition from _clrContext
+            // (not via IL resolution) to ensure the scope manager returns the correct identifier.
+            var backingField = TryFindBackingFieldOnType(typeDefinition, property);
+            if (backingField != null)
+            {
+                return new IndexExpression(null, scope, receiver,
+                    new IdentifierExpression(_scopeManager.Resolve(backingField), scope));
+            }
+
+            var method = property.GetMethod;
+            return IsMethodDevirtualized(method)
+                ? new MethodCallExpression(null, scope,
+                    new IdentifierExpression(_scopeManager.ResolveStatic(method), scope),
+                    new Expression[] { receiver })
+                : new MethodCallExpression(null, scope,
+                    new IndexExpression(null, scope, receiver,
+                        new IdentifierExpression(_scopeManager.Resolve(method), scope)),
+                    System.Array.Empty<Expression>());
         }
 
         /// <summary>
@@ -668,40 +732,12 @@ namespace NScript.RazorSkin.CodeGen
             var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
             var paramIdentifier = getterScope.ParameterIdentifiers[0];
 
-            // NScript inlines simple field-return getters — the getter method won't exist at
-            // runtime. Detect this and emit field access: dc.fieldName instead of dc.get_propName().
-            // IMPORTANT: Find the backing field on the SAME TypeDefinition from _clrContext
-            // (not via IL resolution) to ensure the scope manager returns the correct identifier.
-            var backingField = TryFindBackingFieldOnType(typeDefinition, property);
             // For item graphs, access the item element of the tuple: dc[2]
             var dcAccess = isControl
                 ? (Expression)new IdentifierExpression(getterScope.ParameterIdentifiers[1], getterScope)
                 : CreateTupleAccessExpression(paramIdentifier, getterScope,
                     isParentModel ? 0 : 2);
-            Expression currentExpr;
-            if (backingField != null)
-            {
-                // Simple getter inlined by NScript — use field access: dc.fieldName (or dc[2].fieldName)
-                var fieldId = _scopeManager.Resolve(backingField);
-                currentExpr = new IndexExpression(
-                    null,
-                    getterScope,
-                    dcAccess,
-                    new IdentifierExpression(fieldId, getterScope));
-            }
-            else
-            {
-                // Complex getter — use method call: dc.get_propName() (or dc[2].get_propName())
-                var method = property.GetMethod;
-                currentExpr = IsMethodDevirtualized(method)
-                    ? new MethodCallExpression(null, getterScope,
-                        new IdentifierExpression(_scopeManager.ResolveStatic(method), getterScope),
-                        new Expression[] { dcAccess })
-                    : new MethodCallExpression(null, getterScope,
-                        new IndexExpression(null, getterScope, dcAccess,
-                            new IdentifierExpression(_scopeManager.Resolve(method), getterScope)),
-                        System.Array.Empty<Expression>());
-            }
+            var currentExpr = BuildPropertyRead(dcAccess, typeDefinition, property, getterScope);
 
             // Apply negation for gate conditions like "!IsCollapsed"
             if (isNegated)
@@ -796,20 +832,6 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Fallback: creates a getter function with a raw JS body string.
-        /// Used for computed/gate/collection getters whose bodies contain operators
-        /// and complex expressions that can't be resolved through Cecil.
-        /// Uses enforceSuggestion=true so "dc" stays as-is since the raw body references it literally.
-        /// </summary>
-        private ScriptLiteralExpression CreateRawGetterFunction(string rawBody)
-        {
-            // Emit the entire function as a raw script literal to avoid the JST
-            // TransformerVisitor replacing it with an empty FunctionExpression.
-            // Parameter "dc" is the data-context array, referenced literally in rawBody.
-            return new ScriptLiteralExpression(null, _scope, $"function(dc,tp){{{rawBody};}}");
-        }
-
-        /// <summary>
         /// Creates a JST expression to access a DataContext element.
         /// For root graphs: returns the dc parameter directly.
         /// For item graphs: returns dc[tupleIndex] — tuple layout: [0]=parentDC, [1]=control, [2]=item.
@@ -824,138 +846,6 @@ namespace NScript.RazorSkin.CodeGen
                     new NumberLiteralExpression(scope, tupleIndex));
             }
             return dcExpr;
-        }
-
-        /// <summary>
-        /// Like ExpressionJsEmitter.ToJsGetter, but uses backing-field access instead of
-        /// getter method calls. This handles inlined getters where get_X() doesn't exist.
-        /// Falls back to ExpressionJsEmitter.ToJsGetter if field resolution fails.
-        /// </summary>
-        private string ToJsGetterWithFieldAccess(
-            string csharpExpression,
-            string dataContextParam,
-            string templateParentParam,
-            ISet<string> knownFunctionNames)
-        {
-            // Build property-to-field name map for the model type
-            var fieldMap = BuildPropertyFieldNameMap();
-
-            if (fieldMap == null || fieldMap.Count == 0)
-            {
-                return ExpressionJsEmitter.ToJsGetter(
-                    csharpExpression, dataContextParam, templateParentParam, knownFunctionNames);
-            }
-
-            // Replace "Model.", "Control.", and the item variable prefix (e.g. "folder.")
-            // with the appropriate function parameter names.
-            // For item graphs (tuple DataContext): Model. → dc[0]., itemVar. → dc[2].
-            // For root graphs: Model. → dc.
-            string modelRef = IsItemGraph ? dataContextParam + "[0]." : dataContextParam + ".";
-            string itemRef = IsItemGraph ? dataContextParam + "[2]." : dataContextParam + ".";
-            var expr = csharpExpression
-                .Replace("Model.", modelRef)
-                .Replace("Control.", templateParentParam + ".");
-
-            // For foreach item templates, the item variable prefix (e.g. "folder.") must
-            // be replaced with the appropriate dc reference.
-            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix))
-                expr = expr.Replace(_topology.ItemVariablePrefix, itemRef);
-
-            // Build method name map for resolving method calls
-            var methodMap = BuildMethodNameMap();
-
-            // Convert property accesses to field accesses using the map.
-            // Also handle method calls: .MethodName() should use resolved method name.
-            expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\.([A-Z])(\w*)(\(\))?",
-                match =>
-                {
-                    var propName = match.Groups[1].Value + match.Groups[2].Value;
-                    var hasParens = match.Groups[3].Success; // matched "()"
-
-                    if (knownFunctionNames != null && knownFunctionNames.Contains(propName))
-                        return "." + propName + (hasParens ? "()" : "");
-
-                    // If followed by (), it's a method call — use resolved method name
-                    if (hasParens && methodMap != null && methodMap.TryGetValue(propName, out var resolvedMethodName))
-                        return "." + resolvedMethodName + "()";
-
-                    if (fieldMap.TryGetValue(propName, out var fieldName))
-                        return "." + fieldName;
-
-                    // Fallback to getter call pattern for properties
-                    if (hasParens)
-                        return $".{match.Groups[1].Value.ToLower()}{match.Groups[2].Value}()";
-                    return $".get_{match.Groups[1].Value.ToLower()}{match.Groups[2].Value}()";
-                });
-
-            return expr;
-        }
-
-        /// <summary>
-        /// Builds a map of C# property name -> JS field name for the model type's
-        /// simple field-return properties. Uses enforceSuggestion=true identifiers
-        /// since these will be embedded in raw body strings.
-        /// </summary>
-        private Dictionary<string, string> BuildPropertyFieldNameMap()
-        {
-            if (_cachedFieldMap != null) return _cachedFieldMap;
-
-            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
-                return null;
-
-            var typeDefinition = FindTypeDefinition(_modelTypeName);
-            if (typeDefinition == null)
-                return null;
-
-            var map = new Dictionary<string, string>();
-            foreach (var prop in typeDefinition.Properties)
-            {
-                if (prop.GetMethod == null) continue;
-                var field = TryFindBackingFieldOnType(typeDefinition, prop);
-                if (field == null) continue;
-
-                // Get the minified field name. Since we're building raw body text,
-                // we need the actual text the identifier produces.
-                var fieldId = _scopeManager.Resolve(field);
-                if (fieldId is SimpleIdentifier simpleId)
-                    map[prop.Name] = simpleId.GetName();
-                else if (fieldId != null)
-                    map[prop.Name] = fieldId.SuggestedName;
-            }
-
-            _cachedFieldMap = map;
-            return _cachedFieldMap;
-        }
-
-        /// <summary>
-        /// Builds a map of C# method name -> JS method name for the model type's public methods.
-        /// Uses enforceSuggestion=true identifiers for raw body embedding.
-        /// </summary>
-        private Dictionary<string, string> BuildMethodNameMap()
-        {
-            if (_cachedMethodMap != null) return _cachedMethodMap;
-
-            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
-                return null;
-
-            var typeDefinition = FindTypeDefinition(_modelTypeName);
-            if (typeDefinition == null)
-                return null;
-
-            var map = new Dictionary<string, string>();
-            foreach (var method in typeDefinition.Methods)
-            {
-                if (!method.IsPublic || method.IsConstructor || method.IsGetter || method.IsSetter)
-                    continue;
-                var methodId = _scopeManager.Resolve(method);
-                if (methodId is SimpleIdentifier simpleId)
-                    map[method.Name] = simpleId.GetName();
-                else if (methodId != null)
-                    map[method.Name] = methodId.SuggestedName;
-            }
-
-            _cachedMethodMap = map;
-            return _cachedMethodMap;
         }
 
         private TypeDefinition FindTypeDefinition(string fullTypeName)
@@ -1197,217 +1087,6 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Tries to build a proper JST expression tree for a computed expression like
-        /// "Model.Price * Model.Quantity". Uses resolved field identifiers so the output
-        /// participates in NScript's minification system.
-        /// Returns function(dc) { return dc.price_I * dc.quantity_J; } with resolved identifiers.
-        /// Returns null if the expression cannot be parsed.
-        /// </summary>
-        private Expression TryBuildComputedJSTExpression(string expression)
-        {
-            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
-                return null;
-
-            // Tokenize the expression: split on arithmetic operators while preserving them
-            var tokens = System.Text.RegularExpressions.Regex.Split(
-                expression.Trim(), @"(\s*[+\-*/]\s*)");
-
-            if (tokens.Length < 3) return null; // Need at least operand operator operand
-
-            var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
-            var paramIdentifier = getterScope.ParameterIdentifiers[0];
-
-            Expression result = null;
-            BinaryOperator? pendingOp = null;
-
-            foreach (var token in tokens)
-            {
-                var t = token.Trim();
-                if (string.IsNullOrEmpty(t)) continue;
-
-                // Check if it's an operator
-                if (t == "*" || t == "/" || t == "+" || t == "-")
-                {
-                    pendingOp = t == "*" ? BinaryOperator.Mul
-                        : t == "/" ? BinaryOperator.Div
-                        : t == "+" ? BinaryOperator.Plus
-                        : BinaryOperator.Minus;
-                    continue;
-                }
-
-                // It's a property reference — resolve it
-                Expression operand = TryResolvePropertyToFieldAccess(t, getterScope, paramIdentifier);
-                if (operand == null) return null; // Can't resolve — bail
-
-                if (result == null)
-                {
-                    result = operand;
-                }
-                else if (pendingOp.HasValue)
-                {
-                    result = new BinaryExpression(null, getterScope, pendingOp.Value, result, operand);
-                    pendingOp = null;
-                }
-                else
-                {
-                    return null; // Unexpected token
-                }
-            }
-
-            if (result == null) return null;
-
-            // Wrap in: function(dc) { return <expr>; }
-            var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope, getterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, result));
-            return fn;
-        }
-
-        /// <summary>
-        /// Tries to build a proper JST expression tree for a ternary expression like
-        /// "Model.IsActive ? \"yes\" : \"no\"" or "item.IsComplete ? \"done\" : \"pending\"".
-        /// Uses resolved field identifiers so the output participates in NScript's minification system.
-        /// Returns function(dc) { return dc.isActive_I ? "yes" : "no"; } with resolved identifiers.
-        /// Returns null if the expression cannot be parsed as a ternary.
-        /// </summary>
-        private Expression TryBuildTernaryJSTExpression(string expression)
-        {
-            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
-                return null;
-
-            // Match pattern: <propertyExpr> ? <trueExpr> : <falseExpr>
-            // The condition must be a simple property access (possibly negated).
-            // True/false branches can be string literals or property accesses.
-            // NOTE: Nested ternaries (e.g., "A ? B ? c : d : e") are NOT supported —
-            // the non-greedy capture will mis-split them. They fall through to raw emission.
-            var match = System.Text.RegularExpressions.Regex.Match(
-                expression.Trim(),
-                @"^(!?\s*(?:Model\.|" +
-                System.Text.RegularExpressions.Regex.Escape(_topology?.ItemVariablePrefix ?? "NOMATCH") +
-                @"|Control\.)?\s*[A-Z]\w*)\s*\?\s*(.*?)\s*:\s*(.*?)\s*$");
-
-            if (!match.Success) return null;
-
-            var conditionPart = match.Groups[1].Value.Trim();
-            var truePart = match.Groups[2].Value.Trim();
-            var falsePart = match.Groups[3].Value.Trim();
-
-            var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
-            var paramIdentifier = getterScope.ParameterIdentifiers[0];
-
-            // Build condition expression (property field access, possibly negated)
-            bool isNegated = conditionPart.StartsWith("!");
-            if (isNegated)
-                conditionPart = conditionPart.Substring(1).Trim();
-
-            Expression conditionExpr = TryResolvePropertyToFieldAccess(conditionPart, getterScope, paramIdentifier);
-            if (conditionExpr == null) return null;
-
-            if (isNegated)
-                conditionExpr = new UnaryExpression(null, getterScope, UnaryOperator.LogicalNot, conditionExpr);
-
-            // Build true/false branch expressions
-            Expression trueExpr = TryParseLiteralOrProperty(truePart, getterScope, paramIdentifier);
-            if (trueExpr == null) return null;
-
-            Expression falseExpr = TryParseLiteralOrProperty(falsePart, getterScope, paramIdentifier);
-            if (falseExpr == null) return null;
-
-            // Build: condition ? trueExpr : falseExpr
-            var ternary = new ConditionalOperatorExpression(null, getterScope, conditionExpr, trueExpr, falseExpr);
-
-            // Wrap in: function(dc) { return <ternary>; }
-            var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope, getterScope.ParameterIdentifiers, null);
-            fn.AddStatement(new ReturnStatement(_fallbackLocation, getterScope, ternary));
-            return fn;
-        }
-
-        /// <summary>
-        /// Parses a ternary branch value as either a string literal or a property field access.
-        /// String literals are enclosed in double quotes: "someValue"
-        /// Property accesses are Model.Prop or item.Prop references.
-        /// </summary>
-        private Expression TryParseLiteralOrProperty(
-            string value, IdentifierScope scope, IIdentifier dcParam)
-        {
-            if (string.IsNullOrEmpty(value)) return null;
-
-            // String literal: "value"
-            if (value.StartsWith("\"") && value.EndsWith("\"") && value.Length >= 2)
-            {
-                var unquoted = value.Substring(1, value.Length - 2);
-                return new StringLiteralExpression(scope, unquoted);
-            }
-
-            // Boolean literals
-            if (value == "true")
-                return new BooleanLiteralExpression(scope, true);
-            if (value == "false")
-                return new BooleanLiteralExpression(scope, false);
-
-            // Numeric literals
-            if (int.TryParse(value, out var intVal))
-                return new NumberLiteralExpression(scope, intVal);
-
-            // null
-            if (value == "null")
-                return new NullLiteralExpression(scope);
-
-            // Property access
-            return TryResolvePropertyToFieldAccess(value, scope, dcParam);
-        }
-
-        /// <summary>
-        /// Resolves a property expression like "Model.Price" to a field access JST expression.
-        /// Returns: dc.price_I (using the resolved field identifier).
-        /// </summary>
-        private Expression TryResolvePropertyToFieldAccess(
-            string expression, IdentifierScope scope, IIdentifier dcParam)
-        {
-            var propName = expression;
-            bool isControl = propName.StartsWith("Control.");
-            bool isParentModel = IsItemGraph && propName.StartsWith("Model.");
-            if (isControl) propName = propName.Substring(8);
-            if (propName.StartsWith("Model.")) propName = propName.Substring(6);
-            if (!string.IsNullOrEmpty(_topology.ItemVariablePrefix)
-                && propName.StartsWith(_topology.ItemVariablePrefix))
-                propName = propName.Substring(_topology.ItemVariablePrefix.Length);
-            if (propName.Contains(".")) return null;
-
-            var typeDefinition = FindTypeDefinition(isControl ? _controlTypeName
-                : isParentModel ? _parentModelTypeName : _modelTypeName);
-            if (typeDefinition == null) return null;
-
-            var property = FindProperty(typeDefinition, propName);
-            if (property == null) return null;
-
-            var backingField = TryFindBackingFieldOnType(typeDefinition, property);
-            // For item graphs, access the item element of the tuple: dc[2]
-            var dcAccess = isControl
-                ? (Expression)new IdentifierExpression(scope.ParameterIdentifiers[1], scope)
-                : CreateTupleAccessExpression(dcParam, scope, isParentModel ? 0 : 2);
-            if (backingField != null)
-            {
-                var fieldId = _scopeManager.Resolve(backingField);
-                return new IndexExpression(null, scope,
-                    dcAccess,
-                    new IdentifierExpression(fieldId, scope));
-            }
-
-            // Try getter method
-            if (property.GetMethod != null)
-            {
-                var getterId = _scopeManager.Resolve(property.GetMethod);
-                return new MethodCallExpression(null, scope,
-                    new IndexExpression(null, scope,
-                        dcAccess,
-                        new IdentifierExpression(getterId, scope)),
-                    System.Array.Empty<Expression>());
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Emits a getter function for an EventBinding node.
         /// The handler expression is like "Model.IncrementClick" or a lambda "(e) => Model.IncrementClick()".
         /// For item graphs, uses tuple DataContext: dc[2] for item methods, dc[0] for Model methods.
@@ -1416,6 +1095,9 @@ namespace NScript.RazorSkin.CodeGen
         {
             if (string.IsNullOrEmpty(handlerExpression))
                 return new NullLiteralExpression(_scope);
+
+            var eventLocation = _topology.Events.FirstOrDefault(evt => evt.NodeIdx == nodeIndex)?.Location
+                ?? _fallbackLocation;
 
             // Track whether this is a Model-level method reference (for tuple index selection)
             bool isModelMethodRef = handlerExpression.StartsWith("Model.");
@@ -1436,8 +1118,7 @@ namespace NScript.RazorSkin.CodeGen
             {
                 if (isControlMethodRef)
                     RequirePublicControlHandler(FindTypeDefinition(_controlTypeName), expr,
-                        _topology.Events.FirstOrDefault(evt => evt.NodeIdx == nodeIndex)?.Location
-                            ?? _fallbackLocation);
+                        eventLocation);
                 // Resolve method — for Model methods in item graphs, look up on parent type
                 var resolveTypeName = isControlMethodRef ? _controlTypeName
                     : (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
@@ -1482,15 +1163,11 @@ namespace NScript.RazorSkin.CodeGen
                 }
 
                 if (isControlMethodRef)
-                    throw new RazorSubControlDiagnosticException(_fallbackLocation,
+                    throw new RazorSubControlDiagnosticException(eventLocation,
                         "Cannot resolve public control event handler '" + handlerExpression + "'.");
 
-                // Fallback: raw body (unresolved name — may not match minification)
-                var methodName = char.ToLower(expr[0]) + expr.Substring(1);
-                var rawPrefix = isControlMethodRef ? "tp"
-                    : IsItemGraph ? (isModelMethodRef ? "dc[0]" : "dc[2]") : "dc";
-                return CreateRawGetterFunction(
-                    "return function(e,ev){" + rawPrefix + "." + methodName + "()}");
+                throw new RazorSubControlDiagnosticException(eventLocation,
+                    "Cannot resolve event handler '" + handlerExpression + "'.");
             }
 
             // Parent-context method invocation inside a foreach item template:
@@ -1544,10 +1221,10 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
 
-            // Fallback: raw body with field access replacement (for complex expressions)
-            var jsExpr = ToJsGetterWithFieldAccess(
-                handlerExpression, "dc", "tp", _knownFunctionNames);
-            return CreateRawGetterFunction("return " + jsExpr);
+            throw new RazorSubControlDiagnosticException(eventLocation,
+                "Cannot resolve event handler '" + handlerExpression + "': supported forms are "
+                + "Model.M / Control.M / item.M, Model.M(item) inside @foreach, and "
+                + "(e) => Model.M().");
         }
 
         /// <summary>
@@ -1885,7 +1562,7 @@ namespace NScript.RazorSkin.CodeGen
                 string itemTypeName = ResolveCollectionItemTypeName(ct);
 
                 var nestedEmitter = new GraphDescriptorJSTEmitter(
-                    ct.ItemTopology, _scope, _scopeManager, _knownTypes, _knownFunctionNames,
+                    ct.ItemTopology, _scope, _scopeManager, _knownTypes,
                     _clrContext, itemTypeName ?? _modelTypeName,
                     _resolvedTypeIdentifiers,
                     parentModelTypeName: _modelTypeName,
