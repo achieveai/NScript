@@ -170,6 +170,30 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void InvocationExpression_CreatesComputedNodeNotBarePropertyRead()
+        {
+            // #104: an instance method call whose only detected dependency is its argument
+            // (e.g. @Model.Decorate(Model.Name) depends on Name) has no operators, so the
+            // complexity check used to miss it and route the DOM target straight to the
+            // argument's Property node — dropping the call and rendering the receiver value.
+            // The parentheses must mark it complex so the getter evaluates the whole call.
+            var template = MakeTemplate(
+                MakeBinding("Model.Decorate(Model.Name)", BindingMode.OneWay,
+                    ExpressionTarget.TextContent, "e0", "Name"));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // The node feeding the DOM target must be a Computed node carrying the full call,
+            // not a Property node that only reads Model.Name.
+            int valueNode = ValueNodeOf(topology, 0);
+            topology.NodeTypes[valueNode].Should().Be(GraphNodeTypeConstants.Computed);
+            topology.GetterExpressions[valueNode].Should().Be("Model.Decorate(Model.Name)");
+
+            // The argument's Property node still exists so the invocation re-evaluates on change.
+            topology.Subscriptions.Should().ContainSingle(s => s.PropertyName == "Name");
+        }
+
+        [TestMethod]
         public void EventBinding_CreatesEventTopology()
         {
             var template = MakeTemplate(MakeEvent("click", "Model.OnSubmit"));

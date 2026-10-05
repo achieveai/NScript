@@ -774,7 +774,9 @@ namespace NScript.RazorSkin.CodeGen
                 || expression.Contains("||")   // logical OR
                 || expression.Contains(">")    // comparison
                 || expression.Contains("<")    // comparison
-                || expression.Contains("!");   // negation (standalone, not part of !=)
+                || expression.Contains("!")    // negation (standalone, not part of !=)
+                || expression.Contains("(");   // method invocation / grouping — getter must
+                                               // evaluate the whole call, not the receiver path
         }
 
         // --- Internal build context ---
