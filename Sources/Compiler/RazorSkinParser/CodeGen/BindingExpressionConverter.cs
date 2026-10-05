@@ -10,19 +10,30 @@ namespace NScript.RazorSkin.CodeGen
 {
     /// <summary>
     /// Converts a Razor binding expression (C# source text) into a JST expression.
-    /// Only a small whitelist of syntax is accepted: literals, parentheses, conditionals,
-    /// <c>! -</c>, <c>&amp;&amp; || == != &lt; &lt;= &gt; &gt;= + - *</c>, and dotted name paths.
-    /// Every name path is handed to <c>resolvePath</c>, which must return a fully resolved
-    /// JST expression (scope-system identifiers only). Anything else throws a
-    /// <see cref="RazorSubControlDiagnosticException"/> so the build fails with the
+    /// Accepted syntax: literals, parentheses, conditionals, <c>! -</c>,
+    /// <c>&amp;&amp; || == != &lt; &lt;= &gt; &gt;= + - * / %</c>, null-coalescing (<c>??</c>),
+    /// dotted name paths of any depth, and instance method invocations (<c>recv.Method(args)</c>).
+    /// Every name path is handed to <c>resolvePath</c> and every invocation to
+    /// <c>resolveInvocation</c>; both must return a fully resolved JST expression (scope-system
+    /// identifiers only) or <c>null</c> when they cannot. Anything unsupported or unresolvable
+    /// throws a <see cref="RazorSubControlDiagnosticException"/> so the build fails with the
     /// expression text instead of emitting a getter that silently reads <c>undefined</c>.
     /// </summary>
     internal static class BindingExpressionConverter
     {
+        /// <summary>
+        /// Resolves an instance method invocation: given the receiver's dotted segments, the
+        /// method name, and the already-converted argument expressions, returns the resolved
+        /// JST call expression, or <c>null</c> when the method cannot be resolved.
+        /// </summary>
+        internal delegate Expression InvocationResolver(
+            IReadOnlyList<string> receiverSegments, string methodName, IReadOnlyList<Expression> arguments);
+
         internal static Expression Convert(
             string csharpExpression,
             IdentifierScope scope,
             Func<IReadOnlyList<string>, Expression> resolvePath,
+            InvocationResolver resolveInvocation,
             Location location)
         {
             if (resolvePath == null) throw new ArgumentNullException(nameof(resolvePath));
@@ -33,7 +44,7 @@ namespace NScript.RazorSkin.CodeGen
             if (syntax.ContainsDiagnostics)
                 throw Unsupported(csharpExpression, location, "it is not a valid C# expression");
 
-            return new Converter(csharpExpression, scope, resolvePath, location).Visit(syntax);
+            return new Converter(csharpExpression, scope, resolvePath, resolveInvocation, location).Visit(syntax);
         }
 
         /// <summary>
@@ -66,6 +77,55 @@ namespace NScript.RazorSkin.CodeGen
             return paths;
         }
 
+        /// <summary>
+        /// An instance method call found in a binding expression: the receiver's dotted segments,
+        /// the method name, and its argument count. Used to retain invoked methods for emission.
+        /// </summary>
+        internal readonly struct InvocationRef
+        {
+            internal InvocationRef(IReadOnlyList<string> receiverSegments, string methodName, int argumentCount)
+            {
+                ReceiverSegments = receiverSegments;
+                MethodName = methodName;
+                ArgumentCount = argumentCount;
+            }
+
+            internal IReadOnlyList<string> ReceiverSegments { get; }
+            internal string MethodName { get; }
+            internal int ArgumentCount { get; }
+        }
+
+        /// <summary>
+        /// Returns every instance method invocation <c>recv.Method(args)</c> whose receiver is a
+        /// dotted name path (e.g. <c>Model.Decorate(Model.Name)</c> yields receiver <c>[Model]</c>,
+        /// method <c>Decorate</c>, one argument). Returns an empty list when the text does not parse.
+        /// Lets the plugin retain invoked methods against dead-code elimination (ADR-0022).
+        /// </summary>
+        internal static List<InvocationRef> CollectInvocations(string csharpExpression)
+        {
+            var invocations = new List<InvocationRef>();
+            if (string.IsNullOrWhiteSpace(csharpExpression))
+                return invocations;
+
+            var syntax = SyntaxFactory.ParseExpression(csharpExpression);
+            if (syntax.ContainsDiagnostics)
+                return invocations;
+
+            foreach (var invocation in syntax.DescendantNodesAndSelf().OfType<InvocationExpressionSyntax>())
+            {
+                if (!(invocation.Expression is MemberAccessExpressionSyntax callee
+                        && callee.Kind() == SyntaxKind.SimpleMemberAccessExpression
+                        && callee.Name is IdentifierNameSyntax methodName))
+                    continue;
+
+                var segments = new List<string>();
+                if (Converter.TryFlatten(callee.Expression, segments))
+                    invocations.Add(new InvocationRef(
+                        segments, methodName.Identifier.ValueText, invocation.ArgumentList.Arguments.Count));
+            }
+            return invocations;
+        }
+
         private static RazorSubControlDiagnosticException Unsupported(
             string expression, Location location, string reason)
             => new RazorSubControlDiagnosticException(location,
@@ -77,14 +137,18 @@ namespace NScript.RazorSkin.CodeGen
             private readonly string _text;
             private readonly IdentifierScope _scope;
             private readonly Func<IReadOnlyList<string>, Expression> _resolvePath;
+            private readonly InvocationResolver _resolveInvocation;
             private readonly Location _location;
+            private int _coalesceTemp;
 
             internal Converter(string text, IdentifierScope scope,
-                Func<IReadOnlyList<string>, Expression> resolvePath, Location location)
+                Func<IReadOnlyList<string>, Expression> resolvePath,
+                InvocationResolver resolveInvocation, Location location)
             {
                 _text = text;
                 _scope = scope;
                 _resolvePath = resolvePath;
+                _resolveInvocation = resolveInvocation;
                 _location = location;
             }
 
@@ -99,8 +163,9 @@ namespace NScript.RazorSkin.CodeGen
                     case ConditionalExpressionSyntax conditional:
                         // ConditionalOperatorExpression.Write does not parenthesise a
                         // conditional in condition position, so `(a ? b : c) ? d : e`
-                        // would be written as `a ? b : c ? d : e`.
-                        if (Unwrap(conditional.Condition) is ConditionalExpressionSyntax)
+                        // would be written as `a ? b : c ? d : e`. `??` desugars to a
+                        // conditional, so it is barred from the condition position too.
+                        if (ProducesConditional(conditional.Condition))
                             throw Fail("a conditional expression used as the condition of another conditional is not supported");
                         return new ConditionalOperatorExpression(null, _scope,
                             Visit(conditional.Condition),
@@ -116,6 +181,9 @@ namespace NScript.RazorSkin.CodeGen
                     case LiteralExpressionSyntax literal:
                         return VisitLiteral(literal);
 
+                    case InvocationExpressionSyntax invocation:
+                        return VisitInvocation(invocation);
+
                     case IdentifierNameSyntax _:
                     case MemberAccessExpressionSyntax _:
                         return VisitPath(node);
@@ -127,6 +195,10 @@ namespace NScript.RazorSkin.CodeGen
 
             private Expression VisitBinary(BinaryExpressionSyntax binary)
             {
+                // `??` has no JST operator; desugar it to a conditional (handled separately).
+                if (binary.Kind() == SyntaxKind.CoalesceExpression)
+                    return VisitCoalesce(binary);
+
                 BinaryOperator op;
                 switch (binary.Kind())
                 {
@@ -143,16 +215,38 @@ namespace NScript.RazorSkin.CodeGen
                     case SyntaxKind.AddExpression: op = BinaryOperator.Plus; break;
                     case SyntaxKind.SubtractExpression: op = BinaryOperator.Minus; break;
                     case SyntaxKind.MultiplyExpression: op = BinaryOperator.Mul; break;
+                    case SyntaxKind.DivideExpression: op = BinaryOperator.Div; break;
+                    case SyntaxKind.ModuloExpression: op = BinaryOperator.Mod; break;
                     default:
                         throw Fail("operator '" + binary.OperatorToken.Text + "' is not supported");
                 }
 
                 // BinaryExpression.Write does not parenthesise a left operand of equal
-                // precedence, and `?:` shares precedence with `||`.
-                if (op == BinaryOperator.LogicalOr && Unwrap(binary.Left) is ConditionalExpressionSyntax)
+                // precedence, and `?:` (which `??` desugars to) shares precedence with `||`.
+                if (op == BinaryOperator.LogicalOr && ProducesConditional(binary.Left))
                     throw Fail("a conditional expression as the left operand of '||' is not supported");
 
                 return new BinaryExpression(null, _scope, op, Visit(binary.Left), Visit(binary.Right));
+            }
+
+            /// <summary>
+            /// Desugars <c>a ?? b</c> to <c>(t = a) != null ? t : b</c> with a fresh temp so the
+            /// left operand is evaluated once. <c>!= null</c> is loose, matching nullish semantics
+            /// (both null and undefined fall through to <c>b</c>). The temp is a scoped local that
+            /// the enclosing getter function declares as <c>var</c>.
+            /// </summary>
+            private Expression VisitCoalesce(BinaryExpressionSyntax binary)
+            {
+                var temp = SimpleIdentifier.CreateScopeIdentifier(_scope, "nc" + _coalesceTemp++, true);
+                var left = Visit(binary.Left);
+                var right = Visit(binary.Right);
+
+                var assign = new BinaryExpression(null, _scope, BinaryOperator.Assignment,
+                    new IdentifierExpression(temp, _scope), left);
+                var test = new BinaryExpression(null, _scope, BinaryOperator.NotEquals,
+                    assign, new NullLiteralExpression(_scope));
+                return new ConditionalOperatorExpression(null, _scope, test,
+                    new IdentifierExpression(temp, _scope), right);
             }
 
             private Expression VisitUnary(PrefixUnaryExpressionSyntax unary)
@@ -195,6 +289,42 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
 
+            /// <summary>
+            /// Resolves an instance method call <c>recv.Method(args)</c>. The receiver must be a
+            /// dotted member path; the method is resolved (with its arguments) through
+            /// <c>resolveInvocation</c>. Lambdas, named/ref arguments, generic methods and
+            /// receiver-less calls are rejected.
+            /// </summary>
+            private Expression VisitInvocation(InvocationExpressionSyntax invocation)
+            {
+                if (_resolveInvocation == null)
+                    throw Fail("method invocations are not supported here");
+
+                if (!(invocation.Expression is MemberAccessExpressionSyntax callee
+                        && callee.Kind() == SyntaxKind.SimpleMemberAccessExpression
+                        && callee.Name is IdentifierNameSyntax methodName))
+                    throw Fail(Describe(invocation) + " is not supported");
+
+                var receiverSegments = new List<string>();
+                if (!TryFlatten(callee.Expression, receiverSegments))
+                    throw Fail("the invocation target '" + callee.Expression + "' is not a simple member path");
+
+                var arguments = new List<Expression>();
+                foreach (var argument in invocation.ArgumentList.Arguments)
+                {
+                    if (argument.NameColon != null || argument.RefKindKeyword.Kind() != SyntaxKind.None)
+                        throw Fail("named or ref/out arguments are not supported");
+                    arguments.Add(Visit(argument.Expression));
+                }
+
+                var resolved = _resolveInvocation(
+                    receiverSegments, methodName.Identifier.ValueText, arguments);
+                if (resolved == null)
+                    throw Fail("'" + invocation + "' cannot be resolved to an instance method on "
+                        + "Model, Control or the loop variable");
+                return resolved;
+            }
+
             private Expression VisitPath(ExpressionSyntax node)
             {
                 var segments = new List<string>();
@@ -204,7 +334,7 @@ namespace NScript.RazorSkin.CodeGen
                 var resolved = _resolvePath(segments);
                 if (resolved == null)
                     throw Fail("'" + node + "' cannot be resolved (supported: Model, Control or the loop "
-                        + "variable alone, Root.Property, or a static Type.Member)");
+                        + "variable, an instance property path on any of them, Root.Property, or a static Type.Member)");
                 return resolved;
             }
 
@@ -231,6 +361,19 @@ namespace NScript.RazorSkin.CodeGen
                 while (node is ParenthesizedExpressionSyntax parenthesized)
                     node = parenthesized.Expression;
                 return node;
+            }
+
+            /// <summary>
+            /// True when <paramref name="node"/> emits a JST conditional the writer cannot
+            /// parenthesise in condition or left-of-<c>||</c> position: a C# conditional, or a
+            /// <c>??</c> (which desugars to one).
+            /// </summary>
+            private static bool ProducesConditional(ExpressionSyntax node)
+            {
+                node = Unwrap(node);
+                return node is ConditionalExpressionSyntax
+                    || (node is BinaryExpressionSyntax binary
+                        && binary.Kind() == SyntaxKind.CoalesceExpression);
             }
 
             private static string Describe(ExpressionSyntax node)

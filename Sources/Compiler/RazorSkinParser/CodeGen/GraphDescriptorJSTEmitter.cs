@@ -512,6 +512,7 @@ namespace NScript.RazorSkin.CodeGen
                 csharpExpression,
                 getterScope,
                 segments => ResolveBindingPath(segments, getterScope),
+                (receiver, method, arguments) => ResolveInvocation(receiver, method, arguments, getterScope),
                 _fallbackLocation);
 
             var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope,
@@ -526,61 +527,75 @@ namespace NScript.RazorSkin.CodeGen
         /// <list type="bullet">
         /// <item>a bare root: <c>Model</c> (dc, or dc[0] in item graphs), <c>Control</c> (tp),
         /// or the loop variable (dc[2]);</item>
-        /// <item><c>Root.Property</c>: one instance property read on a root;</item>
+        /// <item>an instance property path of any depth on a root: <c>Root.A.B.C</c>, each hop
+        /// resolved against the previous hop's declared type. A hop whose type or property cannot
+        /// be resolved — for example an [Extended]/[ImportedType] receiver read differently from
+        /// a compiled NScript property — fails the build rather than emitting a silent
+        /// <c>undefined</c> read;</item>
         /// <item><c>Type.Member</c>: a const/enum field (emitted as a literal) or a static property.</item>
         /// </list>
-        /// Deeper instance chains are rejected: receivers such as [Extended]/[ImportedType]
-        /// types are not read the way the main converter reads them.
         /// </summary>
         private Expression ResolveBindingPath(IReadOnlyList<string> segments, IdentifierScope scope)
+            => ResolveInstanceValue(segments, segments.Count, scope, out _)
+                ?? ResolveStaticMember(segments, scope);
+
+        /// <summary>
+        /// Resolves <c>segments[0..count)</c> as an instance value rooted at Model/Control/the loop
+        /// variable, walking each property hop against the previous hop's type. Returns the receiver
+        /// expression and its static type (<paramref name="finalType"/>), or null when the root is
+        /// not a known data root or any hop cannot be resolved. Shared by path reads and by
+        /// invocation receivers.
+        /// </summary>
+        private Expression ResolveInstanceValue(
+            IReadOnlyList<string> segments, int count, IdentifierScope scope, out TypeDefinition finalType)
         {
-            if (_clrContext == null || segments.Count == 0)
+            finalType = null;
+            if (_clrContext == null || count == 0)
                 return null;
 
-            var root = segments[0];
-            var itemVariable = IsItemGraph ? _topology.ItemVariablePrefix.TrimEnd('.') : null;
+            var (receiver, typeName) = ResolveRoot(segments[0], scope);
+            if (receiver == null)
+                return null;
 
-            Expression receiver;
-            string receiverTypeName;
+            var currentType = FindTypeDefinition(typeName);
+            for (int i = 1; i < count; i++)
+            {
+                var property = currentType != null ? FindProperty(currentType, segments[i]) : null;
+                if (property?.GetMethod == null || property.GetMethod.IsStatic)
+                {
+                    Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve instance property {PropName} on {TypeName}",
+                        segments[i], currentType?.FullName ?? typeName);
+                    return null;
+                }
+
+                receiver = BuildPropertyRead(receiver, currentType, property, scope);
+                // Advance to the property's declared type via the SAME ClrContext instance so the
+                // scope manager resolves the next hop's field/getter identifiers correctly.
+                currentType = FindTypeDefinition(property.PropertyType.FullName);
+            }
+
+            finalType = currentType;
+            return receiver;
+        }
+
+        /// <summary>
+        /// Maps a binding root name to its receiver expression and declared type name: <c>Model</c>
+        /// (the parent model inside an item graph), <c>Control</c>, or the loop variable. Returns
+        /// (null, null) for anything else, which the caller treats as a static member.
+        /// </summary>
+        private (Expression receiver, string typeName) ResolveRoot(string root, IdentifierScope scope)
+        {
             if (root == "Model")
-            {
-                receiver = CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 0);
-                receiverTypeName = IsItemGraph ? _parentModelTypeName : _modelTypeName;
-            }
-            else if (root == "Control")
-            {
-                receiver = new IdentifierExpression(scope.ParameterIdentifiers[1], scope);
-                receiverTypeName = _controlTypeName;
-            }
-            else if (itemVariable != null && root == itemVariable)
-            {
-                receiver = CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 2);
-                receiverTypeName = _modelTypeName;
-            }
-            else
-            {
-                return ResolveStaticMember(segments, scope);
-            }
+                return (CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 0),
+                    IsItemGraph ? _parentModelTypeName : _modelTypeName);
+            if (root == "Control")
+                return (new IdentifierExpression(scope.ParameterIdentifiers[1], scope), _controlTypeName);
 
-            if (segments.Count == 1)
-                return receiver;
-            if (segments.Count > 2)
-            {
-                Log.Debug("GraphDescriptorJSTEmitter: rejecting chained binding path {Path}",
-                    string.Join(".", segments));
-                return null;
-            }
+            var itemVariable = IsItemGraph ? _topology.ItemVariablePrefix.TrimEnd('.') : null;
+            if (itemVariable != null && root == itemVariable)
+                return (CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 2), _modelTypeName);
 
-            var typeDefinition = FindTypeDefinition(receiverTypeName);
-            var property = typeDefinition != null ? FindProperty(typeDefinition, segments[1]) : null;
-            if (property?.GetMethod == null || property.GetMethod.IsStatic)
-            {
-                Log.Debug("GraphDescriptorJSTEmitter: Cannot find instance property {PropName} on {TypeName}",
-                    segments[1], receiverTypeName);
-                return null;
-            }
-
-            return BuildPropertyRead(receiver, typeDefinition, property, scope);
+            return (null, null);
         }
 
         /// <summary>
@@ -614,6 +629,65 @@ namespace NScript.RazorSkin.CodeGen
             return new MethodCallExpression(null, scope,
                 new IdentifierExpression(_scopeManager.ResolveStatic(property.GetMethod), scope),
                 System.Array.Empty<Expression>());
+        }
+
+        /// <summary>
+        /// Resolves an instance method call <c>recv.Method(args)</c>: the receiver resolves to an
+        /// instance value, the method is looked up by name and argument count on the receiver's
+        /// type, and the call is emitted as a devirtualized static call (ADR-0023) or an instance
+        /// call, with all identifiers from the scope manager. Returns null when the receiver or a
+        /// matching method cannot be resolved (the converter reports it). Static-type method calls
+        /// are not resolved here.
+        /// </summary>
+        private Expression ResolveInvocation(
+            IReadOnlyList<string> receiverSegments, string methodName,
+            IReadOnlyList<Expression> arguments, IdentifierScope scope)
+        {
+            if (_clrContext == null || receiverSegments.Count == 0)
+                return null;
+
+            var receiver = ResolveInstanceValue(
+                receiverSegments, receiverSegments.Count, scope, out var receiverType);
+            if (receiver == null || receiverType == null)
+                return null;
+
+            var method = FindInvocableMethod(receiverType, methodName, arguments.Count);
+            if (method == null)
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: Cannot resolve method {Method}({ArgCount}) on {TypeName}",
+                    methodName, arguments.Count, receiverType.FullName);
+                return null;
+            }
+
+            if (IsMethodDevirtualized(method))
+            {
+                var callArgs = new List<Expression> { receiver };
+                callArgs.AddRange(arguments);
+                return new MethodCallExpression(null, scope,
+                    new IdentifierExpression(_scopeManager.ResolveStatic(method), scope), callArgs.ToArray());
+            }
+
+            return new MethodCallExpression(null, scope,
+                new IndexExpression(null, scope, receiver,
+                    new IdentifierExpression(_scopeManager.Resolve(method), scope)),
+                arguments.ToArray());
+        }
+
+        /// <summary>
+        /// Finds a public, non-constructor instance method named <paramref name="methodName"/>
+        /// taking <paramref name="argumentCount"/> parameters, walking the type hierarchy.
+        /// </summary>
+        private static MethodDefinition FindInvocableMethod(
+            TypeDefinition type, string methodName, int argumentCount)
+        {
+            for (var currentType = type; currentType != null; currentType = currentType.BaseType?.Resolve())
+            {
+                var method = currentType.Methods.FirstOrDefault(candidate =>
+                    candidate.Name == methodName && candidate.IsPublic && !candidate.IsConstructor
+                    && candidate.HasThis && candidate.Parameters.Count == argumentCount);
+                if (method != null) return method;
+            }
+            return null;
         }
 
         private static Expression CreateConstantLiteral(object value, IdentifierScope scope)

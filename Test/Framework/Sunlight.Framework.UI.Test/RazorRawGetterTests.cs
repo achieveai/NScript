@@ -47,6 +47,11 @@ namespace Sunlight.Framework.UI.Test
             vm.Flag = flag;
             vm.Other = other;
             vm.Name = name;
+            // #104 restored-expression cases, set so every render evaluates them safely:
+            // Count for / and %, Lead for the deep path Model.Lead.Name, Nick left null so the
+            // ?? case (Model.Nick ?? "none") takes the null branch by default.
+            vm.Count = 10;
+            vm.Lead = Row("lead", true, true);
             return vm;
         }
 
@@ -117,6 +122,24 @@ namespace Sunlight.Framework.UI.Test
             for (var i = 0; i < rowsAfter.Length; i++)
                 assert.Equal("p-changed", CaseClass(rowsAfter[i], "H2"),
                     "H2 updates after Model.Name change, row " + i);
+        }
+
+        [Test]
+        public static void TestRestoredExpressionFormsRenderResolvedValues(Assert assert)
+        {
+            // #104 "restore full expression support": division and remainder, a deep instance path,
+            // an instance method invocation, and null-coalescing all compile to resolved getters
+            // and render the correct values at the root level.
+            var host = Render(NewVm(true, false, "parent"));
+            assert.Equal("lead-lead", CaseClass(host, "M1"), "M1 deep path (\"lead-\" + Model.Lead.Name)");
+            assert.Equal("d-parent", CaseClass(host, "M2"), "M2 invocation (Model.Decorate(Model.Name))");
+            assert.Equal("yes", CaseClass(host, "M3"), "M3 (Model.Count / 2 % 4 == 1), Count=10");
+            assert.Equal("none", CaseClass(host, "M5"), "M5 (Model.Nick ?? \"none\"), Nick null");
+
+            var vm = NewVm(true, false, "x");
+            vm.Nick = "nick";
+            var host2 = Render(vm);
+            assert.Equal("nick", CaseClass(host2, "M5"), "M5 (Model.Nick ?? \"none\"), Nick set");
         }
 
         [Test]

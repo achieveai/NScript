@@ -90,9 +90,11 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
-        public void UnsupportedBindingPaths_FailAtTemplateLocation()
+        public void UnresolvableBindingPaths_FailAtTemplateLocation()
         {
-            foreach (var expression in new[] { "Model.Inner.Inner", "Nope.Thing == 1" })
+            // A property missing from the model and an unknown root both fail the build. (Deep
+            // instance paths are now supported; see the framework tests for a resolved chain.)
+            foreach (var expression in new[] { "Model.Missing", "Nope.Thing == 1" })
             {
                 Action emit = () => EmitBinding(expression);
                 var error = emit.Should().Throw<RazorSubControlDiagnosticException>().Which;

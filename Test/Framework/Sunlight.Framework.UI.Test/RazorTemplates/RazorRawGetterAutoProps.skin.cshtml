@@ -5,6 +5,10 @@
 <span data-case="F2" class="@(Model.Flag && Model.Other ? "on" : "off")">F2</span>
 <span data-case="J0" class="@(!Model.Flag ? "on" : "off")">J0</span>
 <span data-case="K0" class="@(Model.Name == "styled-content" ? "match" : "nomatch")">K0</span>
+<span data-case="M1" class="@("lead-" + Model.Lead.Name)">M1</span>
+<span data-case="M2" class="@(Model.Decorate(Model.Name))">M2</span>
+<span data-case="M3" class="@(Model.Count / 2 % 4 == 1 ? "yes" : "no")">M3</span>
+<span data-case="M5" class="@(Model.Nick ?? "none")">M5</span>
 @foreach (var row in Model.Rows)
 {
     <div data-row="1">

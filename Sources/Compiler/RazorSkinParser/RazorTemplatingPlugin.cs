@@ -1182,6 +1182,8 @@ namespace Sunlight.Framework.Observables
                         kvp.Value.ControlTypeName, methods, seen);
                     CollectSubControlMethodReferences(kvp.Value, kvp.Value.ModelTypeName,
                         kvp.Value.UsingNamespaces, methods, seen);
+                    CollectBindingInvocationReferences(kvp.Value, kvp.Value.ModelTypeName,
+                        kvp.Value.ControlTypeName, methods, seen);
                 }
             }
 
@@ -1269,6 +1271,125 @@ namespace Sunlight.Framework.Observables
             var expression = isItemMethod ? handler.Substring(itemPrefix.Length) : handler;
             var method = TryFindEventMethodDefinition(expression, typeName);
             if (method != null && seen.Add(method.FullName)) methods.Add(method);
+        }
+
+        /// <summary>
+        /// Walks an IR tree and collects methods invoked from binding expressions
+        /// (e.g. <c>class="@(Model.Decorate(Model.Name))"</c>) so the demand-driven converter
+        /// emits their bodies. Event handlers are collected separately
+        /// (<see cref="CollectEventMethodReferences"/>); this covers the getter side.
+        /// </summary>
+        private void CollectBindingInvocationReferences(
+            IRNode node, string modelTypeName, string controlTypeName,
+            List<MethodReference> methods, HashSet<string> seen,
+            string itemTypeName = null, string itemVariableName = null)
+        {
+            if (node is TemplateIR.ExpressionBindingNode binding)
+                AddBindingInvocationReferences(binding.Classification?.CSharpExpression,
+                    modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+
+            if (node is TemplateIR.ConditionalNode conditional)
+            {
+                AddBindingInvocationReferences(conditional.Condition?.CSharpExpression,
+                    modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+                foreach (var child in conditional.TrueBranch)
+                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, itemTypeName, itemVariableName);
+                foreach (var child in conditional.FalseBranch)
+                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, itemTypeName, itemVariableName);
+            }
+
+            if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
+            {
+                var loopItemTypeName = TryResolveItemTypeName(modelTypeName, loop);
+                foreach (var child in loop.ItemTemplate)
+                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, loopItemTypeName, loop.ItemVariableName);
+            }
+
+            if (node.Children != null)
+                foreach (var child in node.Children)
+                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, itemTypeName, itemVariableName);
+        }
+
+        private void AddBindingInvocationReferences(
+            string expression, string modelTypeName, string controlTypeName,
+            string itemTypeName, string itemVariableName,
+            List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (string.IsNullOrEmpty(expression) || _clrContext == null) return;
+            foreach (var invocation in BindingExpressionConverter.CollectInvocations(expression))
+            {
+                var method = ResolveBindingInvocationMethod(
+                    invocation, modelTypeName, controlTypeName, itemTypeName, itemVariableName);
+                if (method != null && seen.Add(method.FullName)) methods.Add(method);
+            }
+        }
+
+        /// <summary>
+        /// Resolves a binding invocation to the method the emitter will call: the receiver root
+        /// (Model/Control/loop variable) gives the starting type, each further receiver segment is
+        /// a property hop, and the method is matched by name and argument count on the final type.
+        /// Returns null for an unknown root (e.g. a static type) — the emitter reports that case.
+        /// </summary>
+        private MethodDefinition ResolveBindingInvocationMethod(
+            BindingExpressionConverter.InvocationRef invocation,
+            string modelTypeName, string controlTypeName, string itemTypeName, string itemVariableName)
+        {
+            var segments = invocation.ReceiverSegments;
+            if (segments.Count == 0) return null;
+
+            string rootTypeName;
+            var root = segments[0];
+            if (root == "Model") rootTypeName = modelTypeName;
+            else if (root == "Control") rootTypeName = controlTypeName;
+            else if (!string.IsNullOrEmpty(itemVariableName) && root == itemVariableName)
+                rootTypeName = itemTypeName;
+            else return null;
+
+            var currentType = FindSubControlTypeInAssemblies(rootTypeName);
+            for (int i = 1; i < segments.Count && currentType != null; i++)
+            {
+                var property = FindPropertyOnHierarchy(currentType, segments[i]);
+                currentType = SafeResolve(property?.PropertyType);
+            }
+            if (currentType == null) return null;
+
+            return FindInvocableMethodOnHierarchy(
+                currentType, invocation.MethodName, invocation.ArgumentCount);
+        }
+
+        private static PropertyDefinition FindPropertyOnHierarchy(TypeDefinition type, string propertyName)
+        {
+            for (var current = type; current != null; current = SafeResolve(current.BaseType))
+            {
+                var property = current.Properties.FirstOrDefault(p => p.Name == propertyName);
+                if (property != null) return property;
+            }
+            return null;
+        }
+
+        private static MethodDefinition FindInvocableMethodOnHierarchy(
+            TypeDefinition type, string methodName, int argumentCount)
+        {
+            for (var current = type; current != null; current = SafeResolve(current.BaseType))
+            {
+                var method = current.Methods.FirstOrDefault(candidate =>
+                    candidate.Name == methodName && candidate.IsPublic && !candidate.IsConstructor
+                    && candidate.HasThis && candidate.Parameters.Count == argumentCount);
+                if (method != null) return method;
+            }
+            return null;
+        }
+
+        private static TypeDefinition SafeResolve(TypeReference reference)
+        {
+            if (reference == null) return null;
+            try { return reference.Resolve(); }
+            catch (AssemblyResolutionException) { return null; }
+            catch (Exception) { return null; }
         }
 
         /// <summary>

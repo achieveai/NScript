@@ -22,5 +22,17 @@ namespace Sunlight.Framework.UI.Test
         [AutoFire] public bool Flag { get; set; }
         [AutoFire] public bool Other { get; set; }
         [AutoFire] public string Name { get; set; }
+
+        // #104 "restore full expression support": a numeric property for / and %, a nested object
+        // for deep instance paths (Model.Lead.Name), and a nullable string for ?? ; Decorate is an
+        // instance method invoked from a binding (Model.Decorate(Model.Name)).
+        [AutoFire] public int Count { get; set; }
+        [AutoFire] public RazorModeRow Lead { get; set; }
+        [AutoFire] public string Nick { get; set; }
+
+        public string Decorate(string value)
+        {
+            return "d-" + value;
+        }
     }
 }
