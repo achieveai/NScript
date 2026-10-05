@@ -52,6 +52,9 @@ namespace Sunlight.Framework.UI.Test
             // ?? case (Model.Nick ?? "none") takes the null branch by default.
             vm.Count = 10;
             vm.Lead = Row("lead", true, true);
+            var child = new RazorModeChild();
+            child.Leaf = "leaf1";
+            vm.Child = child;
             return vm;
         }
 
@@ -140,6 +143,40 @@ namespace Sunlight.Framework.UI.Test
             vm.Nick = "nick";
             var host2 = Render(vm);
             assert.Equal("nick", CaseClass(host2, "M5"), "M5 (Model.Nick ?? \"none\"), Nick set");
+        }
+
+        [Test]
+        public static void TestTemplateOnlyComputedGetterRenders(Assert assert)
+        {
+            // Issue #82: a computed getter read only by the skin (@Model.ReproComputed) must be
+            // retained and emitted under the name the getter calls. Before the fix the getter was
+            // dead-code-eliminated and mounting threw "get_reproComputed is not a function".
+            var host = Render(NewVm(true, false, "parent"));
+            assert.Equal("rc-parent", CaseClass(host, "M6"),
+                "M6 template-only computed getter (@Model.ReproComputed)");
+        }
+
+        [Test]
+        public static void TestChainedBindingUpdatesOnLeafAndMidPathChange(Assert assert)
+        {
+            // A chained path binding (@Model.Child.Leaf) must listen on the leaf, not just the root.
+            // It must update when the leaf changes, and move its listener when the whole child is
+            // replaced so later leaf changes on the new child still propagate.
+            var vm = NewVm(true, false, "parent");
+            var host = Render(vm);
+            assert.Equal("leaf1", CaseClass(host, "M7"), "M7 chained initial (Model.Child.Leaf)");
+
+            vm.Child.Leaf = "leaf2";
+            assert.Equal("leaf2", CaseClass(host, "M7"), "M7 updates when the leaf changes");
+
+            var replacement = new RazorModeChild();
+            replacement.Leaf = "leaf3";
+            vm.Child = replacement;
+            assert.Equal("leaf3", CaseClass(host, "M7"), "M7 updates when the mid-path child is replaced");
+
+            vm.Child.Leaf = "leaf4";
+            assert.Equal("leaf4", CaseClass(host, "M7"),
+                "M7 updates when the new child's leaf changes (listener moved)");
         }
 
         [Test]

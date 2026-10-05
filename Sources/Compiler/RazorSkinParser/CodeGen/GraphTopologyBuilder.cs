@@ -230,19 +230,15 @@ namespace NScript.RazorSkin.CodeGen
 
                 if (isChained)
                 {
-                    // Chained path: Property node for root + Computed node for full expression
+                    // Chained path: Property node for the root hop + Computed node for the full
+                    // expression. The subscription targets the COMPUTED node, not the root property:
+                    // when only the leaf mutates, the root property's reference is unchanged, so
+                    // marking the root node would be dropped by Flush's flip-flop elimination and the
+                    // DOM would stay stale. Re-evaluating the full chain picks up the leaf change.
                     int propIdx = ctx.GetOrCreatePropertyNode(
                         GetGetterPropertyName(dep, binding.Classification.CSharpExpression,
                             ctx.ItemVariablePrefix), 0);
                     if (gateIndex != -1) ctx.SetGateIndex(propIdx, gateIndex);
-
-                    if (isOneWay)
-                    {
-                        var segments = dep.PropertyChain.Split('.');
-                        ctx.AddSubscription(dep.PropertyName, propIdx,
-                            ctx.GetDependencySourceSlot(dep, binding.Classification.CSharpExpression),
-                            segments);
-                    }
 
                     // Computed node evaluates the full chain expression
                     int computedIdx = ctx.AddNode(GraphNodeTypeConstants.Computed,
@@ -250,6 +246,14 @@ namespace NScript.RazorSkin.CodeGen
                     if (gateIndex != -1) ctx.SetGateIndex(computedIdx, gateIndex);
                     ctx.AddEdge(0, computedIdx);
                     ctx.AddEdge(propIdx, computedIdx);
+
+                    if (isOneWay)
+                    {
+                        var segments = dep.PropertyChain.Split('.');
+                        ctx.AddSubscription(dep.PropertyName, computedIdx,
+                            ctx.GetDependencySourceSlot(dep, binding.Classification.CSharpExpression),
+                            segments);
+                    }
 
                     SubscribeUndetectedReads(ctx, binding.Classification.CSharpExpression, deps, computedIdx);
                     int domIdx = ctx.AddDomTarget(binding, computedIdx, gateIndex);

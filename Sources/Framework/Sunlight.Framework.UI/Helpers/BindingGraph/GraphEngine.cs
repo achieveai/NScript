@@ -1512,6 +1512,16 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 SubscriptionEntry entry = (SubscriptionEntry)subscriptions[i];
                 if (object.IsNullOrUndefined(entry)) continue;
 
+                if (GraphEngine.IsChainedEntry(entry))
+                {
+                    if (object.IsNullOrUndefined(childState.ChainListeners))
+                        childState.ChainListeners =
+                            new NativeArray<NativeArray<ChainListenerHandle>>(subCount);
+                    GraphEngine.WireChainedSubscription(childState, entry, i);
+                    listeners[i] = null;
+                    continue;
+                }
+
                 object source = GraphEngine.GetCollectionItemSource(childState, entry.SourceSlot);
                 INotifyPropertyChanged observable = source as INotifyPropertyChanged;
                 if (object.IsNullOrUndefined(observable)) continue;
@@ -1546,6 +1556,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 SubscriptionEntry entry = (SubscriptionEntry)subscriptions[i];
                 if (object.IsNullOrUndefined(entry)) continue;
 
+                if (GraphEngine.IsChainedEntry(entry))
+                {
+                    GraphEngine.UnwireChainedSubscription(childState, i);
+                    continue;
+                }
+
                 object source = GraphEngine.GetCollectionItemSource(childState, entry.SourceSlot);
                 if (object.IsNullOrUndefined(source)) continue;
 
@@ -1561,6 +1577,112 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             childState.SubscriptionsActive = false;
+        }
+
+        /// <summary>
+        /// True when a subscription entry describes a chained property path (e.g. Model.Child.Leaf)
+        /// that must listen on every object along the path, not just the root.
+        /// </summary>
+        public static bool IsChainedEntry(SubscriptionEntry entry)
+        {
+            return !object.IsNullOrUndefined(entry.PathSegments) && entry.PathSegments.Length > 1;
+        }
+
+        /// <summary>
+        /// Wires PropertyChanged listeners for every hop of a chained property path. Entry
+        /// <c>ChainParentGetters[k]</c> yields the object that owns <c>PathSegments[k]</c>, and a
+        /// listener is attached to each for its segment. A change at any level re-targets the
+        /// deeper listeners and marks the consuming node dirty. Handles are stored in
+        /// <c>state.ChainListeners[entryIndex]</c> for cleanup.
+        /// </summary>
+        public static void WireChainedSubscription(
+            GraphState state, SubscriptionEntry entry, int entryIndex)
+        {
+            NativeArray<string> segments = entry.PathSegments;
+            if (object.IsNullOrUndefined(segments)) return;
+
+            NativeArray<ChainListenerHandle> handles = new NativeArray<ChainListenerHandle>(0);
+            Action<INotifyPropertyChanged, string> callback =
+                GraphEngine.CreateChainCallback(state, entry, entryIndex);
+
+            object dc = state.Sources[GraphSourceSlot.DataContext];
+            object tp = state.Sources[GraphSourceSlot.TemplateParent];
+            NativeArray<Func<object, object, object>> owners = entry.ChainParentGetters;
+
+            int count = segments.Length;
+            for (int k = 0; k < count; k++)
+            {
+                object owner = null;
+                if (!object.IsNullOrUndefined(owners) && k < owners.Length)
+                {
+                    Func<object, object, object> getOwner = owners[k];
+                    if (!object.IsNullOrUndefined(getOwner))
+                        owner = getOwner(dc, tp);
+                }
+                GraphEngine.AttachChainListener(handles, owner, segments[k], callback);
+            }
+
+            state.ChainListeners[entryIndex] = handles;
+        }
+
+        /// <summary>
+        /// Attaches one PropertyChanged listener for a chained-path hop and records a handle so it
+        /// can be removed later. No-op when the owner is not observable (e.g. a null mid-path value).
+        /// </summary>
+        private static void AttachChainListener(
+            NativeArray<ChainListenerHandle> handles, object owner, string propertyName,
+            Action<INotifyPropertyChanged, string> callback)
+        {
+            INotifyPropertyChanged observable = owner as INotifyPropertyChanged;
+            if (object.IsNullOrUndefined(observable)) return;
+
+            observable.AddPropertyChangedListener(propertyName, callback);
+
+            ChainListenerHandle handle = new ChainListenerHandle();
+            handle.Observable = observable;
+            handle.PropertyName = propertyName;
+            handle.Callback = callback;
+            handles.Push(handle);
+        }
+
+        /// <summary>
+        /// Removes all PropertyChanged listeners previously attached for a chained subscription and
+        /// clears its handle list. Safe to call when the chain was never wired.
+        /// </summary>
+        public static void UnwireChainedSubscription(GraphState state, int entryIndex)
+        {
+            if (object.IsNullOrUndefined(state.ChainListeners)) return;
+            NativeArray<ChainListenerHandle> handles = state.ChainListeners[entryIndex];
+            if (object.IsNullOrUndefined(handles)) return;
+
+            for (int k = 0; k < handles.Length; k++)
+            {
+                ChainListenerHandle handle = handles[k];
+                if (object.IsNullOrUndefined(handle) || object.IsNullOrUndefined(handle.Observable))
+                    continue;
+                handle.Observable.RemovePropertyChangedListener(handle.PropertyName, handle.Callback);
+            }
+
+            state.ChainListeners[entryIndex] = null;
+        }
+
+        /// <summary>
+        /// Creates the PropertyChanged callback for a chained subscription. On any hop change it
+        /// re-wires the chain (so a replaced mid-path object moves the deeper listeners onto the new
+        /// object), then marks the consuming node dirty and flushes. Built in a separate method so
+        /// each entry gets its own closure scope (NScript compiles C# locals as function-scoped vars).
+        /// </summary>
+        private static Action<INotifyPropertyChanged, string> CreateChainCallback(
+            GraphState state, SubscriptionEntry entry, int entryIndex)
+        {
+            return delegate(INotifyPropertyChanged sender, string propName)
+            {
+                if (state.Suspended) return;
+                GraphEngine.UnwireChainedSubscription(state, entryIndex);
+                GraphEngine.WireChainedSubscription(state, entry, entryIndex);
+                state.Dirty[entry.NodeIdx] = true;
+                GraphEngine.Flush(state.Descriptor, state);
+            };
         }
 
         private static object GetCollectionItemSource(GraphState childState, int sourceSlot)

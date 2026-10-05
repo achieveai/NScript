@@ -15,6 +15,16 @@ namespace Sunlight.Framework.UI.Test
         public bool HasDescription { get; set; }
     }
 
+    /// <summary>
+    /// Observable child used to exercise chained-path bindings (Model.Child.Leaf): the leaf
+    /// property raises PropertyChanged, so a correct chained subscription updates when the leaf
+    /// changes and re-targets when the whole child object is replaced.
+    /// </summary>
+    public class RazorModeChild : ObservableObject
+    {
+        [AutoFire] public string Leaf { get; set; }
+    }
+
     public class RazorModeVM : ObservableObject
     {
         [AutoFire] public ObservableCollection<RazorModeRow> Rows { get; set; }
@@ -30,9 +40,20 @@ namespace Sunlight.Framework.UI.Test
         [AutoFire] public RazorModeRow Lead { get; set; }
         [AutoFire] public string Nick { get; set; }
 
+        // Observable child for chained-path binding (Model.Child.Leaf).
+        [AutoFire] public RazorModeChild Child { get; set; }
+
         public string Decorate(string value)
         {
             return "d-" + value;
+        }
+
+        // Issue #82: a computed getter read ONLY by the skin (@Model.ReproComputed), never from C#.
+        // Without getter retention it is dead-code-eliminated and the emitted binding getter calls a
+        // missing function at mount.
+        public string ReproComputed
+        {
+            get { return "rc-" + this.Name; }
         }
     }
 }

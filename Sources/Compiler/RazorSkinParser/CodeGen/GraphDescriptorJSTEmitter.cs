@@ -77,6 +77,7 @@ namespace NScript.RazorSkin.CodeGen
         private readonly IIdentifier _subscriptionNodeIdxField;
         private readonly IIdentifier _subscriptionSourceSlotField;
         private readonly IIdentifier _subscriptionPathSegmentsField;
+        private readonly IIdentifier _subscriptionChainParentGettersField;
 
         // Resolved field identifiers for GateTargetInfo
         private readonly IIdentifier _gateMarkerIdxField;
@@ -151,6 +152,9 @@ namespace NScript.RazorSkin.CodeGen
             _getterSourceSlotsField = ResolveFieldId(
                 FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GraphDescriptor"),
                 "GetterSourceSlots");
+            _subscriptionChainParentGettersField = ResolveFieldId(
+                FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubscriptionEntry"),
+                "ChainParentGetters");
 
             // Resolve all field identifiers at construction time
             ResolveFieldIdentifiers(
@@ -1793,6 +1797,8 @@ namespace NScript.RazorSkin.CodeGen
                         }
                         fields.Add((_subscriptionPathSegmentsField, "PathSegments",
                             new InlineNewArrayInitialization(null, _scope, pathArray)));
+                        fields.Add((_subscriptionChainParentGettersField, "ChainParentGetters",
+                            new InlineNewArrayInitialization(null, _scope, BuildChainParentGetters(sub))));
                     }
 
                     items.Add(EmitTypedObject(_subscriptionEntryFactory, fields));
@@ -1818,6 +1824,8 @@ namespace NScript.RazorSkin.CodeGen
                         }
                         AddField(subObj, _subscriptionPathSegmentsField, "PathSegments",
                             new InlineNewArrayInitialization(null, _scope, pathArray));
+                        AddField(subObj, _subscriptionChainParentGettersField, "ChainParentGetters",
+                            new InlineNewArrayInitialization(null, _scope, BuildChainParentGetters(sub)));
                     }
 
                     items.Add(subObj);
@@ -1825,6 +1833,39 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// Builds the per-segment owner accessors for a chained subscription. Accessor <c>k</c>
+        /// returns the object that owns <c>PathSegments[k]</c>: the chain root for <c>k == 0</c>,
+        /// otherwise the root walked through the first <c>k</c> segments. Each is a
+        /// <c>(dc, tp) =&gt; value</c> function resolved exactly like a node getter, so the runtime
+        /// can subscribe to the leaf object and re-target listeners when a mid-path object changes.
+        /// </summary>
+        private List<Expression> BuildChainParentGetters(SubscriptionInfo sub)
+        {
+            var getters = new List<Expression>();
+            string root = ChainRootToken(sub.SourceSlot);
+            for (int k = 0; k < sub.PathSegments.Length; k++)
+            {
+                string ownerExpression = root;
+                for (int j = 0; j < k; j++)
+                    ownerExpression += "." + sub.PathSegments[j];
+                getters.Add(BuildBindingExpressionGetter(ownerExpression));
+            }
+            return getters;
+        }
+
+        /// <summary>
+        /// Maps a subscription source slot to its chain root token: 1 =&gt; Control, 2 =&gt; the loop
+        /// variable (item graphs), everything else =&gt; Model. The token is resolved by
+        /// <see cref="ResolveRoot"/> the same way node getters resolve their roots.
+        /// </summary>
+        private string ChainRootToken(int sourceSlot)
+        {
+            if (sourceSlot == 1) return "Control";
+            if (sourceSlot == 2 && IsItemGraph) return _topology.ItemVariablePrefix.TrimEnd('.');
+            return "Model";
         }
 
         /// <summary>

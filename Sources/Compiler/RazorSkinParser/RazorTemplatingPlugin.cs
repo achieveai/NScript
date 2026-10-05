@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using NScript.CLR;
 using NScript.Converter;
 using NScript.Converter.TypeSystemConverter;
@@ -1182,7 +1183,7 @@ namespace Sunlight.Framework.Observables
                         kvp.Value.ControlTypeName, methods, seen);
                     CollectSubControlMethodReferences(kvp.Value, kvp.Value.ModelTypeName,
                         kvp.Value.UsingNamespaces, methods, seen);
-                    CollectBindingInvocationReferences(kvp.Value, kvp.Value.ModelTypeName,
+                    CollectBindingExpressionReferences(kvp.Value, kvp.Value.ModelTypeName,
                         kvp.Value.ControlTypeName, methods, seen);
                 }
             }
@@ -1274,29 +1275,32 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
-        /// Walks an IR tree and collects methods invoked from binding expressions
-        /// (e.g. <c>class="@(Model.Decorate(Model.Name))"</c>) so the demand-driven converter
-        /// emits their bodies. Event handlers are collected separately
-        /// (<see cref="CollectEventMethodReferences"/>); this covers the getter side.
+        /// Walks an IR tree and collects methods referenced by binding expressions (not event
+        /// handlers, which <see cref="CollectEventMethodReferences"/> covers) so the demand-driven
+        /// converter emits their bodies. Two kinds are retained: methods invoked from a binding
+        /// (e.g. <c>class="@(Model.Decorate(Model.Name))"</c>) and computed-property getters read
+        /// by a binding path (e.g. <c>@Model.ReproComputed</c>, issue #82) — both are reachable
+        /// only through hand-built getter JST, so dead-code elimination (ADR-0022) would otherwise
+        /// drop them and the emitted getter would call a missing function.
         /// </summary>
-        private void CollectBindingInvocationReferences(
+        private void CollectBindingExpressionReferences(
             IRNode node, string modelTypeName, string controlTypeName,
             List<MethodReference> methods, HashSet<string> seen,
             string itemTypeName = null, string itemVariableName = null)
         {
             if (node is TemplateIR.ExpressionBindingNode binding)
-                AddBindingInvocationReferences(binding.Classification?.CSharpExpression,
+                AddBindingExpressionReferences(binding.Classification?.CSharpExpression,
                     modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
 
             if (node is TemplateIR.ConditionalNode conditional)
             {
-                AddBindingInvocationReferences(conditional.Condition?.CSharpExpression,
+                AddBindingExpressionReferences(conditional.Condition?.CSharpExpression,
                     modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
                 foreach (var child in conditional.TrueBranch)
-                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
                         methods, seen, itemTypeName, itemVariableName);
                 foreach (var child in conditional.FalseBranch)
-                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
                         methods, seen, itemTypeName, itemVariableName);
             }
 
@@ -1304,28 +1308,94 @@ namespace Sunlight.Framework.Observables
             {
                 var loopItemTypeName = TryResolveItemTypeName(modelTypeName, loop);
                 foreach (var child in loop.ItemTemplate)
-                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
                         methods, seen, loopItemTypeName, loop.ItemVariableName);
             }
 
             if (node.Children != null)
                 foreach (var child in node.Children)
-                    CollectBindingInvocationReferences(child, modelTypeName, controlTypeName,
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
                         methods, seen, itemTypeName, itemVariableName);
         }
 
-        private void AddBindingInvocationReferences(
+        private void AddBindingExpressionReferences(
             string expression, string modelTypeName, string controlTypeName,
             string itemTypeName, string itemVariableName,
             List<MethodReference> methods, HashSet<string> seen)
         {
             if (string.IsNullOrEmpty(expression) || _clrContext == null) return;
+
             foreach (var invocation in BindingExpressionConverter.CollectInvocations(expression))
             {
                 var method = ResolveBindingInvocationMethod(
                     invocation, modelTypeName, controlTypeName, itemTypeName, itemVariableName);
                 if (method != null && seen.Add(method.FullName)) methods.Add(method);
             }
+
+            foreach (var path in BindingExpressionConverter.CollectMemberPaths(expression))
+                AddBindingPropertyGetterReferences(
+                    path, modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+        }
+
+        /// <summary>
+        /// Retains the getter of every computed property read along a binding path
+        /// (e.g. <c>Model.ComposerUpload.StatusText</c>): each hop resolves against the previous
+        /// hop's type, and a getter that is not a trivial auto-property field read — which the
+        /// emitter inlines to a field access rather than a call — is added for emission. A trivial
+        /// auto-property getter is skipped because the getter JST reads its backing field directly.
+        /// Unknown roots (static types) are left to the emitter, which reports them.
+        /// </summary>
+        private void AddBindingPropertyGetterReferences(
+            IReadOnlyList<string> path, string modelTypeName, string controlTypeName,
+            string itemTypeName, string itemVariableName,
+            List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (path.Count < 2) return;
+
+            string rootTypeName;
+            var root = path[0];
+            if (root == "Model") rootTypeName = modelTypeName;
+            else if (root == "Control") rootTypeName = controlTypeName;
+            else if (!string.IsNullOrEmpty(itemVariableName) && root == itemVariableName)
+                rootTypeName = itemTypeName;
+            else return;
+
+            var currentType = FindSubControlTypeInAssemblies(rootTypeName);
+            for (int i = 1; i < path.Count && currentType != null; i++)
+            {
+                var property = FindPropertyOnHierarchy(currentType, path[i]);
+                if (property == null) return;
+                var getter = property.GetMethod;
+                if (getter != null && !IsTrivialFieldGetter(getter) && seen.Add(getter.FullName))
+                    methods.Add(getter);
+                currentType = SafeResolve(property.PropertyType);
+            }
+        }
+
+        /// <summary>
+        /// True when <paramref name="getter"/> is a simple auto-property backing-field read
+        /// (<c>ldarg.0; ldfld; ret</c>, allowing the debug-build temporary/branch noise). These are
+        /// inlined to a field access by the getter emitter, so they need no method emission; any
+        /// other body is a computed getter that must be retained. Mirrors the backing-field
+        /// detection in GraphDescriptorJSTEmitter.TryFindBackingFieldOnType.
+        /// </summary>
+        private static bool IsTrivialFieldGetter(MethodDefinition getter)
+        {
+            if (getter.Body == null) return false;
+
+            bool sawLdarg0 = false;
+            bool sawLdfld = false;
+            foreach (var instr in getter.Body.Instructions)
+            {
+                var op = instr.OpCode;
+                if (op == OpCodes.Nop || op == OpCodes.Ret || op == OpCodes.Stloc_0
+                    || op == OpCodes.Ldloc_0 || op == OpCodes.Br_S)
+                    continue;
+                if (op == OpCodes.Ldarg_0) { sawLdarg0 = true; continue; }
+                if (op == OpCodes.Ldfld && sawLdarg0 && !sawLdfld) { sawLdfld = true; continue; }
+                return false;
+            }
+            return sawLdfld;
         }
 
         /// <summary>

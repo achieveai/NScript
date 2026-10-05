@@ -28,6 +28,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Active PropertyChanged listener handles for cleanup.</summary>
         public NativeArray Listeners;
 
+        /// <summary>
+        /// Per-subscription chained-path listeners: entry <c>i</c> holds a NativeArray of
+        /// <see cref="ChainListenerHandle"/> for a chained subscription (null otherwise), so the
+        /// leaf-level listeners can be removed and re-attached when a mid-path object changes.
+        /// </summary>
+        public NativeArray<NativeArray<ChainListenerHandle>> ChainListeners;
+
         /// <summary>Number of active listeners (for cleanup iteration).</summary>
         public int ListenerCount;
 
@@ -146,5 +153,17 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 this.CollectionChangesInProgress = new NativeArray<bool>(n);
             }
         }
+    }
+
+    /// <summary>
+    /// One attached PropertyChanged listener for a chained-path subscription: the observable it is
+    /// attached to, the property name, and the callback, so it can be detached and re-attached when
+    /// a mid-path object in the chain changes.
+    /// </summary>
+    public class ChainListenerHandle
+    {
+        public INotifyPropertyChanged Observable;
+        public string PropertyName;
+        public Action<INotifyPropertyChanged, string> Callback;
     }
 }

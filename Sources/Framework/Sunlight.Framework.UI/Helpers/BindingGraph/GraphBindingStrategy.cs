@@ -58,6 +58,17 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             for (int i = 0; i < subCount; i++)
             {
                 SubscriptionEntry entry = (SubscriptionEntry)subscriptions[i];
+
+                if (GraphEngine.IsChainedEntry(entry))
+                {
+                    if (object.IsNullOrUndefined(this.state.ChainListeners))
+                        this.state.ChainListeners =
+                            new NativeArray<NativeArray<ChainListenerHandle>>(subCount);
+                    GraphEngine.WireChainedSubscription(this.state, entry, i);
+                    listeners[i] = null;
+                    continue;
+                }
+
                 object source = this.state.Sources[entry.SourceSlot];
                 if (object.IsNullOrUndefined(source)) continue;
 
@@ -204,6 +215,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             for (int i = 0; i < subCount; i++)
             {
                 SubscriptionEntry entry = (SubscriptionEntry)subscriptions[i];
+
+                if (GraphEngine.IsChainedEntry(entry))
+                {
+                    GraphEngine.UnwireChainedSubscription(this.state, i);
+                    continue;
+                }
+
                 object source = this.state.Sources[entry.SourceSlot];
                 if (object.IsNullOrUndefined(source)) continue;
 
