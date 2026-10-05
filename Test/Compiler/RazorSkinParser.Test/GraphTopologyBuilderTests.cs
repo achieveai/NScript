@@ -695,5 +695,27 @@ namespace RazorSkinParser.Test
             itemTopology.Subscriptions.Should().ContainSingle(s =>
                 s.PropertyName == "Flag" && s.SourceSlot == 0 && s.NodeIdx == ValueNodeOf(itemTopology, 0));
         }
+
+        [TestMethod]
+        public void CompoundExpressionInsideForeach_SubscribesSamePropertyFromBothSources()
+        {
+            // F-001: the same property read from two different sources into one value node must
+            // keep both subscriptions. Deduplicating by node+property alone collapsed Control.Count
+            // (slot 1) and parent Model.Count (slot 0) into one, dropping the Model subscription so
+            // the row went stale when the parent Count changed. OneTime => neither read is a
+            // reported dependency, matching the analysis-missed path that feeds both slots.
+            var binding = MakeBinding("Model.IsActive ? Control.Count : Model.Count", BindingMode.OneTime,
+                ExpressionTarget.CssClass, "e0", "Count");
+
+            var itemTopology = GraphTopologyBuilder.Build(MakeTemplate(
+                MakeLoop("Model.Rows", "row", new List<IRNode> { binding })))
+                .Collections.Single().ItemTopology;
+
+            int valueNode = ValueNodeOf(itemTopology, 0);
+            itemTopology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Count" && s.SourceSlot == 1 && s.NodeIdx == valueNode);
+            itemTopology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Count" && s.SourceSlot == 0 && s.NodeIdx == valueNode);
+        }
     }
 }

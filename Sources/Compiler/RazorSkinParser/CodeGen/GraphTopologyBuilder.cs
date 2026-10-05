@@ -875,8 +875,12 @@ namespace NScript.RazorSkin.CodeGen
 
             public void AddSubscription(string propertyName, int nodeIdx, int sourceSlot, string[] pathSegments = null)
             {
-                // For chains, deduplicate by full chain key; for simple, by property name
-                var dedupeKey = nodeIdx + ":" + (pathSegments != null
+                // For chains, deduplicate by full chain key; for simple, by property name.
+                // The source slot is part of the identity: the same property on the same
+                // node read from different slots (e.g. Control.Count and parent Model.Count
+                // in a foreach) are distinct subscriptions; collapsing them drops one and
+                // leaves that binding stale when the dropped source changes.
+                var dedupeKey = nodeIdx + ":" + sourceSlot + ":" + (pathSegments != null
                     ? string.Join(".", pathSegments) : propertyName);
                 if (_subscribedProperties.Contains(dedupeKey))
                     return;

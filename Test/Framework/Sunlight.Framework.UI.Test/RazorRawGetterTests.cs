@@ -97,6 +97,29 @@ namespace Sunlight.Framework.UI.Test
         }
 
         [Test]
+        public static void TestForeachParentModelReadUpdatesAfterActivation(Assert assert)
+        {
+            // F-003: H2 is "p-" + Model.Name — a parent-Model read inside a foreach. Initial
+            // rendering alone passes even if parent-read recovery were wrongly restricted, so this
+            // mutates Model.Name after activation and requires every live row's H2 to update
+            // without the row collection being rebuilt.
+            var vm = NewVm(true, false, "parent");
+            var host = Render(vm);
+            var rows = host.QuerySelectorAll("[data-row]");
+            assert.Equal(5, rows.Length, "five rows rendered");
+            for (var i = 0; i < rows.Length; i++)
+                assert.Equal("p-parent", CaseClass(rows[i], "H2"), "H2 initial, row " + i);
+
+            vm.Name = "changed";
+
+            var rowsAfter = host.QuerySelectorAll("[data-row]");
+            assert.Equal(5, rowsAfter.Length, "same five rows after parent mutation (collection not replaced)");
+            for (var i = 0; i < rowsAfter.Length; i++)
+                assert.Equal("p-changed", CaseClass(rowsAfter[i], "H2"),
+                    "H2 updates after Model.Name change, row " + i);
+        }
+
+        [Test]
         public static void TestBareLoopVariableRendersItemValue(Assert assert)
         {
             var host = Render(NewVm(false, false, "p"));
