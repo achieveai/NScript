@@ -108,6 +108,17 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Null for simple single-property subscriptions.
         /// </summary>
         public NativeArray<string> PathSegments;
+
+        /// <summary>
+        /// For chained property paths, one getter per path segment: entry <c>k</c> takes the data
+        /// context and template parent (exactly as node getters do) and returns the object that
+        /// <em>owns</em> <c>PathSegments[k]</c> — the chain root (Model/Control/loop item) for
+        /// <c>k == 0</c>, else <c>root.PathSegments[0..k-1]</c>. The runtime subscribes to that
+        /// object for <c>PathSegments[k]</c>. Length equals <c>PathSegments.Length</c>. Null for
+        /// simple subscriptions. Lets the runtime listen on the leaf object, not just the root, so
+        /// a leaf change propagates and the listeners re-target when a mid-path object is replaced.
+        /// </summary>
+        public NativeArray<Func<object, object, object>> ChainParentGetters;
     }
 
     /// <summary>

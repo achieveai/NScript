@@ -198,6 +198,8 @@ namespace NScript.Converter
                 return false;
             }
 
+            bool emitFailed = false;
+
             try
             {
                 if (entryPoint != null)
@@ -331,17 +333,31 @@ namespace NScript.Converter
                         Path.GetFileName(this.jsScript))
                     : this.sourceMapRoot;
 
-                writer.Write(
-                    this.jsScript,
-                    effectiveSourceRoot,
-                    emitLegacyAshxHandler: isLegacySourceRoot,
-                    repoRoot: this.repoRoot,
-                    secondaryRepoRoot: this.secondaryRepoRoot,
-                    secondarySourceRoot: this.secondarySourceRoot);
-                log.Information("JSWriter.End {JsScript}", this.jsScript);
+                if (converterContext.Errors.Count > 0)
+                {
+                    // Conversion produced errors (e.g. an unresolved Razor handler or an
+                    // unsupported binding expression that was turned into a diagnostic). Do not
+                    // publish a partial bundle that silently omits the failed output: the errors
+                    // are printed below and Execute returns failure so callers exit non-zero.
+                    log.Warning(
+                        "Builder: {ErrorCount} converter error(s); skipping JavaScript output {JsScript}",
+                        converterContext.Errors.Count, this.jsScript);
+                }
+                else
+                {
+                    writer.Write(
+                        this.jsScript,
+                        effectiveSourceRoot,
+                        emitLegacyAshxHandler: isLegacySourceRoot,
+                        repoRoot: this.repoRoot,
+                        secondaryRepoRoot: this.secondaryRepoRoot,
+                        secondarySourceRoot: this.secondarySourceRoot);
+                    log.Information("JSWriter.End {JsScript}", this.jsScript);
+                }
             }
             catch(ConverterLocationException ex)
             {
+                emitFailed = true;
                 System.Console.Out.WriteLine(
                     string.Format("{0}({1},{2}): error ERR0123: {3}",
                         ex.Location.FileName,
@@ -351,6 +367,7 @@ namespace NScript.Converter
             }
             catch(System.Exception ex)
             {
+                emitFailed = true;
                 System.Console.Out.WriteLine(
                     "NScript.Exe(0,0): error UNK0001: {0}",
                     ex.Message);
@@ -407,7 +424,7 @@ namespace NScript.Converter
                 converterContext.Warnings.Count,
                 converterContext.Errors.Count);
 
-            return true;
+            return !emitFailed && converterContext.Errors.Count == 0;
         }
 
         /// <summary>

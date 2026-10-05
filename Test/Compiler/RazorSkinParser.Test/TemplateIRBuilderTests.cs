@@ -402,5 +402,188 @@ namespace RazorSkinParser.Test
             html.Should().NotContain("<divdraggable",
                 "binding attribute removal must not eat the whitespace separator in item templates");
         }
+
+        // --- Bound attribute must not delete earlier static HTML ---
+        // Regression for the nscript-bound-attr-trim-bug: a bound attribute such as
+        // class="@Model.X" used LastIndexOf(attrName + "=") over the whole preceding HTML
+        // block. For the structured (HtmlAttributeIntermediateNode) representation the bound
+        // attribute is NOT in that HTML, so the search found an EARLIER element's attribute
+        // and cut from there, silently deleting static markup. The fix cuts only the
+        // still-open attribute at the tail of the open tag.
+
+        [TestMethod]
+        public void BoundClassAttribute_DoesNotDeleteEarlierStaticElement()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div class=\"wrap\">\n" +
+                "    <p>@Model.Text</p>\n" +
+                "    <span class=\"static-one\" data-test=\"repro-static\">STATIC_TEXT</span>\n" +
+                "    <span class=\"@Model.CssClass\" data-test=\"repro-bound\">BOUND_TEXT</span>\n" +
+                "</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("static-one", "the earlier static element's class must survive");
+            html.Should().Contain("STATIC_TEXT", "the earlier static element's text must survive");
+            html.Should().Contain("repro-static");
+            html.Should().Contain("repro-bound", "the bound element must still be emitted");
+            ir.Children.OfType<ExpressionBindingNode>()
+                .Should().Contain(b => b.Target == ExpressionTarget.CssClass
+                    && b.Classification.CSharpExpression.Contains("Model.CssClass"),
+                    "the bound class becomes a binding, not static class text");
+        }
+
+        [TestMethod]
+        public void BoundTitleAttribute_DoesNotDeleteEarlierStaticElementWithTitle()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div>\n" +
+                "    <span title=\"static-title\" data-test=\"s\">AAA</span>\n" +
+                "    <span title=\"@Model.Tip\" data-test=\"b\">BBB</span>\n" +
+                "</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("static-title", "earlier static title must survive");
+            html.Should().Contain("AAA");
+            html.Should().Contain("BBB");
+            ir.Children.OfType<ExpressionBindingNode>()
+                .Should().Contain(b => b.AttributeName == "title"
+                    && b.Classification.CSharpExpression.Contains("Model.Tip"));
+        }
+
+        [TestMethod]
+        public void BoundClassAttribute_WhenBoundElementHasEarlierStaticAttribute_KeepsBothElements()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div>\n" +
+                "    <span class=\"earlier\" data-test=\"e\">E</span>\n" +
+                "    <span data-test=\"x\" class=\"@Model.Y\">Y</span>\n" +
+                "</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("earlier", "earlier static element must survive");
+            html.Should().Contain("data-test=\"x\"", "the bound element's own static attribute must stay on it");
+            html.Should().Contain("data-test=\"e\"");
+        }
+
+        [TestMethod]
+        public void BoundClassAttribute_DoesNotFalseMatchDataClassOrQuotedClassText()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div>\n" +
+                "    <span data-class=\"keep1\" title=\"class=keep2\" data-test=\"e\">E</span>\n" +
+                "    <span class=\"@Model.Y\" data-test=\"b\">B</span>\n" +
+                "</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("data-class=\"keep1\"", "data-class is not a class attribute");
+            html.Should().Contain("class=keep2", "a class= inside a quoted value is not an attribute");
+            html.Should().Contain("E");
+        }
+
+        [TestMethod]
+        public void BoundClassAttribute_WithLiteralPrefix_KeepsEarlierElementAndPrefix()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div>\n" +
+                "    <span class=\"earlier\" data-test=\"e\">E</span>\n" +
+                "    <span class=\"base @Model.Y\" data-test=\"b\">B</span>\n" +
+                "</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("earlier", "earlier static element must survive");
+
+            var binding = ir.Children.OfType<ExpressionBindingNode>()
+                .FirstOrDefault(b => b.Target == ExpressionTarget.CssClass);
+            binding.Should().NotBeNull();
+            binding.AttributePrefix.Should().Contain("base", "the literal class prefix must be preserved");
+            binding.Classification.CSharpExpression.Should().Contain("Model.Y");
+        }
+
+        [TestMethod]
+        public void BoundClassAttribute_InForeach_DoesNotDeleteEarlierStaticElement()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "@foreach (var item in Model.Items)\n{\n" +
+                "    <span class=\"static-one\" data-test=\"s\">S</span>\n" +
+                "    <span class=\"@item.Css\" data-test=\"b\">B</span>\n" +
+                "}");
+
+            var loop = ir.Children.OfType<LoopNode>().Single();
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(loop.ItemTemplate);
+            html.Should().Contain("static-one", "earlier static element in the loop body must survive");
+            html.Should().Contain("data-test=\"s\"");
+        }
+
+        [TestMethod]
+        public void BoundClassAttribute_InIfElseBranches_DoesNotDeleteEarlierStaticElements()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "@if (Model.Flag)\n{\n" +
+                "    <span class=\"static-one\" data-test=\"s1\">S1</span>\n" +
+                "    <span class=\"@Model.Css\" data-test=\"b1\">B1</span>\n" +
+                "}\nelse\n{\n" +
+                "    <span class=\"static-two\" data-test=\"s2\">S2</span>\n" +
+                "    <span class=\"@Model.Css2\" data-test=\"b2\">B2</span>\n" +
+                "}");
+
+            var cond = ir.Children.OfType<ConditionalNode>().Single();
+            var trueHtml = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(cond.TrueBranch);
+            var falseHtml = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectItemTemplateHtmlPublic(cond.FalseBranch);
+            trueHtml.Should().Contain("static-one", "earlier static element in the if-branch must survive");
+            falseHtml.Should().Contain("static-two", "earlier static element in the else-branch must survive");
+        }
+
+        [TestMethod]
+        public void BoundClassAttribute_AsFirstChild_EmitsElementAndBinding()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div class=\"@Model.Css\" data-test=\"only\">X</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("data-test=\"only\"");
+            html.Should().Contain("</div>");
+            html.Should().NotContain("<divdata-test", "tag name and attribute must not fuse");
+            ir.Children.OfType<ExpressionBindingNode>()
+                .Should().Contain(b => b.Target == ExpressionTarget.CssClass);
+        }
+
+        [TestMethod]
+        public void ConsecutiveBoundAttributes_OnSameTag_AllBecomeBindingsWithoutError()
+        {
+            // The inline path strips each binding's closing quote, so a later bound attribute
+            // begins the next HTML node (e.g. data-count=") with no leading whitespace. The trim
+            // helper must recognise it there and must not raise a false "refusing to trim" error.
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div data-test=\"1\" title=\"@Model.Title\" data-count=\"@Model.Count\">Attributed</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("data-test=\"1\"", "the static attribute must remain");
+            html.Should().Contain(">Attributed<");
+            var attrs = ir.Children.OfType<ExpressionBindingNode>().Select(b => b.AttributeName).ToList();
+            attrs.Should().Contain("title").And.Contain("data-count");
+        }
+
+        [TestMethod]
+        public void MultipleBoundAttributes_ClassTitleData_AllBecomeBindings()
+        {
+            var ir = BuildIR(
+                "@model TestVM\n" +
+                "<div data-test=\"1\" class=\"@Model.CssClass\" title=\"@Model.Title\" data-count=\"@Model.Count\">Multi</div>");
+
+            var html = NScript.RazorSkin.CodeGen.RazorSkinCodeGenerator.CollectHtmlPublic(ir.Children);
+            html.Should().Contain("data-test=\"1\"");
+            html.Should().Contain(">Multi<");
+            var attrs = ir.Children.OfType<ExpressionBindingNode>().Select(b => b.AttributeName).ToList();
+            attrs.Should().Contain("class").And.Contain("title").And.Contain("data-count");
+        }
     }
 }

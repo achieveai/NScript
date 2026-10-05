@@ -329,16 +329,12 @@ namespace NScript.RazorSkin.TemplateIR
 
                                 // Trim the incomplete attribute from the last HTML node
                                 // e.g. '<div class="' → '<div' (the attribute is now a binding, not static HTML)
+                                // Inline path: the HTML is known to end with attrName=",
+                                // so a miss means the tail was rewritten — fail, never cut blindly.
                                 var lastChild = currentParent.Children.Count > 0
                                     ? currentParent.Children[currentParent.Children.Count - 1] as HtmlNode
                                     : null;
-                                if (lastChild != null)
-                                {
-                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
-                                        StringComparison.OrdinalIgnoreCase);
-                                    if (idx >= 0)
-                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
-                                }
+                                TrimOpenBindingAttributeOrThrow(lastChild, attrName, binding.Location, templateName);
 
                                 currentParent.Children.Add(binding);
 
@@ -436,17 +432,13 @@ namespace NScript.RazorSkin.TemplateIR
                             binding.AttributeName = attrName;
                             binding.AttributePrefix = attrPrefix ?? "";
 
-                            // Trim incomplete attribute from preceding HTML node
+                            // Structured path: Razor already extracted the attribute, so it is
+                            // normally absent from the static HTML and this is a no-op; never
+                            // cut an earlier element's attribute of the same name.
                             var lastChild = currentParent.Children.Count > 0
                                 ? currentParent.Children[currentParent.Children.Count - 1] as HtmlNode
                                 : null;
-                            if (lastChild != null)
-                            {
-                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
-                                    StringComparison.OrdinalIgnoreCase);
-                                if (idx >= 0)
-                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
-                            }
+                            TryTrimOpenBindingAttribute(lastChild, attrName);
 
                             currentParent.Children.Add(binding);
                         }
@@ -604,15 +596,10 @@ namespace NScript.RazorSkin.TemplateIR
                                 binding.AttributeName = attrName;
                                 binding.AttributePrefix = prefix;
 
+                                // Inline path: HTML ends with attrName="; a miss is a build error.
                                 var lastChild = targetBranch.Count > 0
                                     ? targetBranch[targetBranch.Count - 1] as HtmlNode : null;
-                                if (lastChild != null)
-                                {
-                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
-                                        StringComparison.OrdinalIgnoreCase);
-                                    if (idx >= 0)
-                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
-                                }
+                                TrimOpenBindingAttributeOrThrow(lastChild, attrName, binding.Location, templateName);
                                 targetBranch.Add(binding);
 
                                 if (i + 1 < nodes.Count && nodes[i + 1] is HtmlContentIntermediateNode)
@@ -662,15 +649,10 @@ namespace NScript.RazorSkin.TemplateIR
                             binding.AttributeName = attrName;
                             binding.AttributePrefix = attrPrefix ?? "";
 
+                            // Structured path: attribute already extracted; no-op if absent.
                             var lastChild = targetBranch.Count > 0
                                 ? targetBranch[targetBranch.Count - 1] as HtmlNode : null;
-                            if (lastChild != null)
-                            {
-                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
-                                    StringComparison.OrdinalIgnoreCase);
-                                if (idx >= 0)
-                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
-                            }
+                            TryTrimOpenBindingAttribute(lastChild, attrName);
                             targetBranch.Add(binding);
                         }
                     }
@@ -812,17 +794,11 @@ namespace NScript.RazorSkin.TemplateIR
                                 binding.AttributeName = attrName;
                                 binding.AttributePrefix = prefix;
 
-                                // Trim the incomplete attribute from the last HTML node
+                                // Inline path: HTML ends with attrName="; a miss is a build error.
                                 var lastChild = loop.ItemTemplate.Count > 0
                                     ? loop.ItemTemplate[loop.ItemTemplate.Count - 1] as HtmlNode
                                     : null;
-                                if (lastChild != null)
-                                {
-                                    var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
-                                        StringComparison.OrdinalIgnoreCase);
-                                    if (idx >= 0)
-                                        lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
-                                }
+                                TrimOpenBindingAttributeOrThrow(lastChild, attrName, binding.Location, templateName);
 
                                 loop.ItemTemplate.Add(binding);
 
@@ -875,17 +851,11 @@ namespace NScript.RazorSkin.TemplateIR
                             binding.AttributeName = attrName;
                             binding.AttributePrefix = attrPrefix ?? "";
 
-                            // Trim incomplete attribute from preceding HTML node
+                            // Structured path: attribute already extracted; no-op if absent.
                             var lastChild = loop.ItemTemplate.Count > 0
                                 ? loop.ItemTemplate[loop.ItemTemplate.Count - 1] as HtmlNode
                                 : null;
-                            if (lastChild != null)
-                            {
-                                var idx = lastChild.HtmlContent.LastIndexOf(attrName + "=",
-                                    StringComparison.OrdinalIgnoreCase);
-                                if (idx >= 0)
-                                    lastChild.HtmlContent = lastChild.HtmlContent.Substring(0, idx);
-                            }
+                            TryTrimOpenBindingAttribute(lastChild, attrName);
 
                             loop.ItemTemplate.Add(binding);
                         }
@@ -914,6 +884,73 @@ namespace NScript.RazorSkin.TemplateIR
             {
                 lastHtml.HtmlContent += " ";
             }
+        }
+
+        /// <summary>
+        /// Removes the just-opened binding attribute (for example the <c>class="</c> that
+        /// introduces <c>class="@Model.X"</c>) from the tail of the preceding static HTML so
+        /// it can be replaced by a binding node. Only the attribute Razor left dangling at the
+        /// very end of <paramref name="lastChild"/>'s HTML is cut: a whole-name
+        /// <c>attrName="</c> (at the start of the HTML or preceded by whitespace) whose value
+        /// quote is not closed before the end of the string. Anchoring on that unterminated tail
+        /// guarantees an earlier,
+        /// completed attribute or element is never cut — the bug this replaces, where a blind
+        /// <c>LastIndexOf(attrName + "=")</c> over the whole block matched an earlier element
+        /// and deleted the static markup between it and the binding. The whitespace-prefixed
+        /// whole-name match also means <c>data-class="</c> or a quoted <c>title="class=..."</c>
+        /// never count. The whitespace before the attribute is preserved
+        /// (<c>&lt;div class="</c> becomes <c>&lt;div </c>).
+        /// </summary>
+        /// <returns>
+        /// True if an open attribute was found and cut; false if there was nothing to cut. The
+        /// latter is the normal case for the structured <c>HtmlAttributeIntermediateNode</c>
+        /// representation, where Razor has already extracted the attribute and it is absent
+        /// from the static HTML.
+        /// </returns>
+        private static bool TryTrimOpenBindingAttribute(HtmlNode lastChild, string attrName)
+        {
+            if (lastChild == null || string.IsNullOrEmpty(lastChild.HtmlContent)
+                || string.IsNullOrEmpty(attrName))
+                return false;
+
+            var html = lastChild.HtmlContent;
+            // (?<![^\s]) = the attribute name is at the start of the HTML or preceded by
+            // whitespace — a whole attribute, never the tail of another name. When Razor splits
+            // consecutive bound attributes, the previous binding's closing quote is stripped and
+            // the next node begins with the attribute (e.g. "data-count=\""), so start-of-string
+            // must be allowed as well as a leading space. A preceding '-' (data-class) or '"'
+            // (title="class=...") still fails the guard.
+            var match = Regex.Match(
+                html,
+                @"(?<![^\s])" + Regex.Escape(attrName) + @"\s*=\s*""[^""]*$",
+                RegexOptions.IgnoreCase);
+            if (!match.Success)
+                return false;
+
+            lastChild.HtmlContent = html.Substring(0, match.Index);
+            return true;
+        }
+
+        /// <summary>
+        /// Inline-path variant of <see cref="TryTrimOpenBindingAttribute"/>. The caller has
+        /// already detected (via <see cref="DetectAttributeBindingContext"/>) that the HTML
+        /// ends with <c>attrName="</c>, so a failure to find it means the tail was cut or
+        /// rewritten unexpectedly. Rather than trim static HTML blindly (the old behaviour
+        /// silently deleted earlier elements), fail the build with the attribute name and
+        /// location. A null <paramref name="lastChild"/> is left alone, matching the previous
+        /// guard.
+        /// </summary>
+        private static void TrimOpenBindingAttributeOrThrow(
+            HtmlNode lastChild, string attrName, Location location, string templateName)
+        {
+            if (lastChild == null || TryTrimOpenBindingAttribute(lastChild, attrName))
+                return;
+
+            throw new NScript.Converter.ConverterLocationException(
+                location ?? new Location(templateName ?? "(razor)", 0, 0),
+                $"Razor attribute binding '{attrName}=\"@...\"' expected an open '{attrName}=\"' "
+                + "at the end of the preceding markup but did not find one; refusing to trim "
+                + "static HTML blindly. Check the template around this attribute.");
         }
 
         private static ExpressionBindingNode CreateExpressionBinding(

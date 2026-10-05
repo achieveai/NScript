@@ -170,6 +170,30 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void InvocationExpression_CreatesComputedNodeNotBarePropertyRead()
+        {
+            // #104: an instance method call whose only detected dependency is its argument
+            // (e.g. @Model.Decorate(Model.Name) depends on Name) has no operators, so the
+            // complexity check used to miss it and route the DOM target straight to the
+            // argument's Property node — dropping the call and rendering the receiver value.
+            // The parentheses must mark it complex so the getter evaluates the whole call.
+            var template = MakeTemplate(
+                MakeBinding("Model.Decorate(Model.Name)", BindingMode.OneWay,
+                    ExpressionTarget.TextContent, "e0", "Name"));
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // The node feeding the DOM target must be a Computed node carrying the full call,
+            // not a Property node that only reads Model.Name.
+            int valueNode = ValueNodeOf(topology, 0);
+            topology.NodeTypes[valueNode].Should().Be(GraphNodeTypeConstants.Computed);
+            topology.GetterExpressions[valueNode].Should().Be("Model.Decorate(Model.Name)");
+
+            // The argument's Property node still exists so the invocation re-evaluates on change.
+            topology.Subscriptions.Should().ContainSingle(s => s.PropertyName == "Name");
+        }
+
+        [TestMethod]
         public void EventBinding_CreatesEventTopology()
         {
             var template = MakeTemplate(MakeEvent("click", "Model.OnSubmit"));
@@ -653,6 +677,69 @@ namespace RazorSkinParser.Test
             var domTarget = topology.DomTargets[0];
             domTarget.AttributeName.Should().Be("value");
             domTarget.Target.Should().Be(ExpressionTarget.Attribute);
+        }
+
+        // ------------------------------------------------------------------
+        // Issue #102: reads the Roslyn analysis misses still subscribe
+        // ------------------------------------------------------------------
+
+        private static int ValueNodeOf(GraphTopology topology, int domTargetIndex)
+            => topology.ParentIndices[topology.DomTargets[domTargetIndex].NodeIdx].Single();
+
+        [TestMethod]
+        public void CompoundExpression_SubscribesEveryControlPropertyRead()
+        {
+            // The analysis reports no Control.* dependency for these (control stub is not
+            // observable); before the fix only expressions *starting* with Control. subscribed.
+            var concat = MakeBinding("\"c-\" + Control.Label", BindingMode.OneTime,
+                ExpressionTarget.CssClass, "e0", "Label");
+            var mixed = MakeBinding("Control.Armed && Model.Flag ? \"on\" : \"off\"", BindingMode.OneWay,
+                ExpressionTarget.CssClass, "e1", "Flag");
+
+            var topology = GraphTopologyBuilder.Build(MakeTemplate(concat, mixed));
+
+            topology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Label" && s.SourceSlot == 1 && s.NodeIdx == ValueNodeOf(topology, 0));
+            topology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Armed" && s.SourceSlot == 1 && s.NodeIdx == ValueNodeOf(topology, 1));
+            topology.Subscriptions.Should().ContainSingle(s => s.PropertyName == "Flag" && s.SourceSlot == 0);
+        }
+
+        [TestMethod]
+        public void CompoundExpressionInsideForeach_SubscribesParentModelRead()
+        {
+            // Inside @foreach the analysis only scans the item prefix, so Model.Flag has no dependency.
+            var binding = MakeBinding("Model.Flag && row.IsEditable ? \"on\" : \"off\"", BindingMode.OneTime,
+                ExpressionTarget.CssClass, "e0", "Flag");
+
+            var itemTopology = GraphTopologyBuilder.Build(MakeTemplate(
+                MakeLoop("Model.Rows", "row", new List<IRNode> { binding })))
+                .Collections.Single().ItemTopology;
+
+            itemTopology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Flag" && s.SourceSlot == 0 && s.NodeIdx == ValueNodeOf(itemTopology, 0));
+        }
+
+        [TestMethod]
+        public void CompoundExpressionInsideForeach_SubscribesSamePropertyFromBothSources()
+        {
+            // F-001: the same property read from two different sources into one value node must
+            // keep both subscriptions. Deduplicating by node+property alone collapsed Control.Count
+            // (slot 1) and parent Model.Count (slot 0) into one, dropping the Model subscription so
+            // the row went stale when the parent Count changed. OneTime => neither read is a
+            // reported dependency, matching the analysis-missed path that feeds both slots.
+            var binding = MakeBinding("Model.IsActive ? Control.Count : Model.Count", BindingMode.OneTime,
+                ExpressionTarget.CssClass, "e0", "Count");
+
+            var itemTopology = GraphTopologyBuilder.Build(MakeTemplate(
+                MakeLoop("Model.Rows", "row", new List<IRNode> { binding })))
+                .Collections.Single().ItemTopology;
+
+            int valueNode = ValueNodeOf(itemTopology, 0);
+            itemTopology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Count" && s.SourceSlot == 1 && s.NodeIdx == valueNode);
+            itemTopology.Subscriptions.Should().ContainSingle(s =>
+                s.PropertyName == "Count" && s.SourceSlot == 0 && s.NodeIdx == valueNode);
         }
     }
 }

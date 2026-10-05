@@ -52,7 +52,10 @@ namespace NScript.Lib
                 var stopWatch = new System.Diagnostics.Stopwatch();
                 stopWatch.Start();
 
-                _ = builder.Execute();
+                // Execute returns false when conversion produced errors (and no output was
+                // published). Surface that as a non-zero exit code so direct callers of the
+                // compiler do not mistake an incomplete bundle for a successful build.
+                bool succeeded = builder.Execute();
 
                 stopWatch.Stop();
                 System.Console.WriteLine("TimeTaken[cs2jsc]: {0}ms", stopWatch.ElapsedMilliseconds);
@@ -64,7 +67,7 @@ namespace NScript.Lib
                         stopWatch.ElapsedMilliseconds);
                 }
 
-                return 0;
+                return succeeded ? 0 : 1;
             }
             finally
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using NScript.CLR;
 using NScript.Converter;
 using NScript.Converter.TypeSystemConverter;
@@ -1182,6 +1183,8 @@ namespace Sunlight.Framework.Observables
                         kvp.Value.ControlTypeName, methods, seen);
                     CollectSubControlMethodReferences(kvp.Value, kvp.Value.ModelTypeName,
                         kvp.Value.UsingNamespaces, methods, seen);
+                    CollectBindingExpressionReferences(kvp.Value, kvp.Value.ModelTypeName,
+                        kvp.Value.ControlTypeName, methods, seen);
                 }
             }
 
@@ -1269,6 +1272,194 @@ namespace Sunlight.Framework.Observables
             var expression = isItemMethod ? handler.Substring(itemPrefix.Length) : handler;
             var method = TryFindEventMethodDefinition(expression, typeName);
             if (method != null && seen.Add(method.FullName)) methods.Add(method);
+        }
+
+        /// <summary>
+        /// Walks an IR tree and collects methods referenced by binding expressions (not event
+        /// handlers, which <see cref="CollectEventMethodReferences"/> covers) so the demand-driven
+        /// converter emits their bodies. Two kinds are retained: methods invoked from a binding
+        /// (e.g. <c>class="@(Model.Decorate(Model.Name))"</c>) and computed-property getters read
+        /// by a binding path (e.g. <c>@Model.ReproComputed</c>, issue #82) — both are reachable
+        /// only through hand-built getter JST, so dead-code elimination (ADR-0022) would otherwise
+        /// drop them and the emitted getter would call a missing function.
+        /// </summary>
+        private void CollectBindingExpressionReferences(
+            IRNode node, string modelTypeName, string controlTypeName,
+            List<MethodReference> methods, HashSet<string> seen,
+            string itemTypeName = null, string itemVariableName = null)
+        {
+            if (node is TemplateIR.ExpressionBindingNode binding)
+                AddBindingExpressionReferences(binding.Classification?.CSharpExpression,
+                    modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+
+            if (node is TemplateIR.ConditionalNode conditional)
+            {
+                AddBindingExpressionReferences(conditional.Condition?.CSharpExpression,
+                    modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+                foreach (var child in conditional.TrueBranch)
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, itemTypeName, itemVariableName);
+                foreach (var child in conditional.FalseBranch)
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, itemTypeName, itemVariableName);
+            }
+
+            if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
+            {
+                var loopItemTypeName = TryResolveItemTypeName(modelTypeName, loop);
+                foreach (var child in loop.ItemTemplate)
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, loopItemTypeName, loop.ItemVariableName);
+            }
+
+            if (node.Children != null)
+                foreach (var child in node.Children)
+                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
+                        methods, seen, itemTypeName, itemVariableName);
+        }
+
+        private void AddBindingExpressionReferences(
+            string expression, string modelTypeName, string controlTypeName,
+            string itemTypeName, string itemVariableName,
+            List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (string.IsNullOrEmpty(expression) || _clrContext == null) return;
+
+            foreach (var invocation in BindingExpressionConverter.CollectInvocations(expression))
+            {
+                var method = ResolveBindingInvocationMethod(
+                    invocation, modelTypeName, controlTypeName, itemTypeName, itemVariableName);
+                if (method != null && seen.Add(method.FullName)) methods.Add(method);
+            }
+
+            foreach (var path in BindingExpressionConverter.CollectMemberPaths(expression))
+                AddBindingPropertyGetterReferences(
+                    path, modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+        }
+
+        /// <summary>
+        /// Retains the getter of every computed property read along a binding path
+        /// (e.g. <c>Model.ComposerUpload.StatusText</c>): each hop resolves against the previous
+        /// hop's type, and a getter that is not a trivial auto-property field read — which the
+        /// emitter inlines to a field access rather than a call — is added for emission. A trivial
+        /// auto-property getter is skipped because the getter JST reads its backing field directly.
+        /// Unknown roots (static types) are left to the emitter, which reports them.
+        /// </summary>
+        private void AddBindingPropertyGetterReferences(
+            IReadOnlyList<string> path, string modelTypeName, string controlTypeName,
+            string itemTypeName, string itemVariableName,
+            List<MethodReference> methods, HashSet<string> seen)
+        {
+            if (path.Count < 2) return;
+
+            string rootTypeName;
+            var root = path[0];
+            if (root == "Model") rootTypeName = modelTypeName;
+            else if (root == "Control") rootTypeName = controlTypeName;
+            else if (!string.IsNullOrEmpty(itemVariableName) && root == itemVariableName)
+                rootTypeName = itemTypeName;
+            else return;
+
+            var currentType = FindSubControlTypeInAssemblies(rootTypeName);
+            for (int i = 1; i < path.Count && currentType != null; i++)
+            {
+                var property = FindPropertyOnHierarchy(currentType, path[i]);
+                if (property == null) return;
+                var getter = property.GetMethod;
+                if (getter != null && !IsTrivialFieldGetter(getter) && seen.Add(getter.FullName))
+                    methods.Add(getter);
+                currentType = SafeResolve(property.PropertyType);
+            }
+        }
+
+        /// <summary>
+        /// True when <paramref name="getter"/> is a simple auto-property backing-field read
+        /// (<c>ldarg.0; ldfld; ret</c>, allowing the debug-build temporary/branch noise). These are
+        /// inlined to a field access by the getter emitter, so they need no method emission; any
+        /// other body is a computed getter that must be retained. Mirrors the backing-field
+        /// detection in GraphDescriptorJSTEmitter.TryFindBackingFieldOnType.
+        /// </summary>
+        private static bool IsTrivialFieldGetter(MethodDefinition getter)
+        {
+            if (getter.Body == null) return false;
+
+            bool sawLdarg0 = false;
+            bool sawLdfld = false;
+            foreach (var instr in getter.Body.Instructions)
+            {
+                var op = instr.OpCode;
+                if (op == OpCodes.Nop || op == OpCodes.Ret || op == OpCodes.Stloc_0
+                    || op == OpCodes.Ldloc_0 || op == OpCodes.Br_S)
+                    continue;
+                if (op == OpCodes.Ldarg_0) { sawLdarg0 = true; continue; }
+                if (op == OpCodes.Ldfld && sawLdarg0 && !sawLdfld) { sawLdfld = true; continue; }
+                return false;
+            }
+            return sawLdfld;
+        }
+
+        /// <summary>
+        /// Resolves a binding invocation to the method the emitter will call: the receiver root
+        /// (Model/Control/loop variable) gives the starting type, each further receiver segment is
+        /// a property hop, and the method is matched by name and argument count on the final type.
+        /// Returns null for an unknown root (e.g. a static type) — the emitter reports that case.
+        /// </summary>
+        private MethodDefinition ResolveBindingInvocationMethod(
+            BindingExpressionConverter.InvocationRef invocation,
+            string modelTypeName, string controlTypeName, string itemTypeName, string itemVariableName)
+        {
+            var segments = invocation.ReceiverSegments;
+            if (segments.Count == 0) return null;
+
+            string rootTypeName;
+            var root = segments[0];
+            if (root == "Model") rootTypeName = modelTypeName;
+            else if (root == "Control") rootTypeName = controlTypeName;
+            else if (!string.IsNullOrEmpty(itemVariableName) && root == itemVariableName)
+                rootTypeName = itemTypeName;
+            else return null;
+
+            var currentType = FindSubControlTypeInAssemblies(rootTypeName);
+            for (int i = 1; i < segments.Count && currentType != null; i++)
+            {
+                var property = FindPropertyOnHierarchy(currentType, segments[i]);
+                currentType = SafeResolve(property?.PropertyType);
+            }
+            if (currentType == null) return null;
+
+            return FindInvocableMethodOnHierarchy(
+                currentType, invocation.MethodName, invocation.ArgumentCount);
+        }
+
+        private static PropertyDefinition FindPropertyOnHierarchy(TypeDefinition type, string propertyName)
+        {
+            for (var current = type; current != null; current = SafeResolve(current.BaseType))
+            {
+                var property = current.Properties.FirstOrDefault(p => p.Name == propertyName);
+                if (property != null) return property;
+            }
+            return null;
+        }
+
+        private static MethodDefinition FindInvocableMethodOnHierarchy(
+            TypeDefinition type, string methodName, int argumentCount)
+        {
+            for (var current = type; current != null; current = SafeResolve(current.BaseType))
+            {
+                var method = current.Methods.FirstOrDefault(candidate =>
+                    candidate.Name == methodName && candidate.IsPublic && !candidate.IsConstructor
+                    && candidate.HasThis && candidate.Parameters.Count == argumentCount);
+                if (method != null) return method;
+            }
+            return null;
+        }
+
+        private static TypeDefinition SafeResolve(TypeReference reference)
+        {
+            if (reference == null) return null;
+            try { return reference.Resolve(); }
+            catch (AssemblyResolutionException) { return null; }
+            catch (Exception) { return null; }
         }
 
         /// <summary>
