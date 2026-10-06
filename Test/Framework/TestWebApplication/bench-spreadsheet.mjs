@@ -3,7 +3,14 @@
 // Opens SpreadsheetApp.htm, runs the app's own benchmark (every op at
 // 50/100/200 rows, batching off and on, median of 3) and prints the table.
 //
-//   node bench-spreadsheet.mjs
+//   node bench-spreadsheet.mjs            # print the table
+//   node bench-spreadsheet.mjs --check    # also compare with the baseline, exit 1 on regression
+//   node bench-spreadsheet.mjs --update   # rewrite the baseline from this run
+//
+// Baseline: docs/benchmarks/spreadsheet-flush.baseline.json. DOM writes are
+// deterministic and must match exactly. Time is noisy: a cell is a regression
+// when sync or batched ms grows more than REGRESSION_PCT over the baseline on
+// the multi-cell ops at 100+ rows; smaller cells only warn.
 //
 import http from 'http';
 import fs from 'fs';
@@ -69,3 +76,41 @@ for (const r of rows) {
 }
 console.log('');
 console.log(JSON.stringify(rows));
+
+const BASELINE = path.resolve(__dirname, '../../../docs/benchmarks/spreadsheet-flush.baseline.json');
+const REGRESSION_PCT = 25;
+const WARN_PCT = 15;
+const args = process.argv.slice(2);
+
+if (args.includes('--update')) {
+  fs.writeFileSync(BASELINE, JSON.stringify({ recorded: new Date().toISOString().slice(0, 10), rows }, null, 2) + '\n');
+  console.log('Baseline written: ' + BASELINE);
+} else if (args.includes('--check')) {
+  if (!fs.existsSync(BASELINE)) { console.log('No baseline at ' + BASELINE + '; run with --update first.'); process.exit(1); }
+  const base = JSON.parse(fs.readFileSync(BASELINE, 'utf8'));
+  const baseByKey = new Map(base.rows.map(r => [r.op + '|' + r.rows, r]));
+  let failures = 0;
+  for (const r of rows) {
+    const b = baseByKey.get(r.op + '|' + r.rows);
+    if (!b) { console.log('NEW   ' + r.op + ' x ' + r.rows + ' (no baseline row)'); continue; }
+    const gate = r.rows >= 100 && r.op !== 'A1 + 1';
+    const pct = (now, was) => was > 0 ? ((now - was) / was) * 100 : 0;
+    const checks = [
+      ['sync ms', pct(r.syncMs, b.syncMs)],
+      ['batched ms', pct(r.batchedMs, b.batchedMs)],
+    ];
+    for (const [what, p] of checks) {
+      if (p > REGRESSION_PCT && gate) { failures++; console.log('FAIL  ' + r.op + ' x ' + r.rows + ': ' + what + ' +' + p.toFixed(0) + '% vs baseline'); }
+      else if (p > WARN_PCT) console.log('WARN  ' + r.op + ' x ' + r.rows + ': ' + what + ' +' + p.toFixed(0) + '% vs baseline');
+    }
+    if (r.syncWrites !== b.syncWrites || r.batchedWrites !== b.batchedWrites) {
+      failures++;
+      console.log('FAIL  ' + r.op + ' x ' + r.rows + ': DOM writes ' + r.syncWrites + '/' + r.batchedWrites
+        + ' vs baseline ' + b.syncWrites + '/' + b.batchedWrites);
+    }
+    if (r.batchedWrites > r.syncWrites) { failures++; console.log('FAIL  ' + r.op + ' x ' + r.rows + ': batched writes exceed sync'); }
+  }
+  console.log(failures ? '\nBenchmark check: ' + failures + ' regression(s) against baseline from ' + base.recorded
+    : '\nBenchmark check: OK against baseline from ' + base.recorded);
+  process.exit(failures ? 1 : 0);
+}

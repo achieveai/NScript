@@ -35,13 +35,13 @@ Framework and compiler changes are only done when the browser suites and the dem
 node run-qunit.mjs            # all QUnit suites (Framework, UI, Data, TodoApp, SpreadsheetApp)
 node e2e-todo-tests.js        # TodoApp end-to-end (real clicks, IndexedDB)
 node e2e-sheet-tests.mjs      # SpreadsheetApp end-to-end (formula bar, keyboard, toolbar)
-node bench-spreadsheet.mjs    # binding-flush benchmark: sync vs batched, 50/100/200 rows
+node bench-spreadsheet.mjs --check   # binding-flush benchmark vs docs/benchmarks/spreadsheet-flush.baseline.json
 ```
 
 Rules:
 - Run all four after touching `Sources/Framework/`, `Sources/Compiler/`, a Razor/XWML plugin, or either demo app. `npm test` in that folder runs the first three.
 - Report results by suite name. A skipped suite is reported as skipped, never implied green.
-- Benchmark: compare against the last recorded table (`docs/benchmarks/spreadsheet-flush.md`). A regression of more than 15% on any `All A + 1` or `Randomize A,B` row, or batched DOM writes rising above sync, blocks the change until explained. Update the table when the change is meant to move it.
+- Benchmark `--check` exits 1 when DOM write counts differ from the baseline, batched writes exceed sync, or `All A + 1` / `Randomize A,B` at 100+ rows get more than 25% slower. That blocks the change until explained. When a change is meant to move the numbers, run `--update`, refresh the table in `docs/benchmarks/spreadsheet-flush.md`, and say so in the commit.
 - Benchmark numbers come from timed passes with no MutationObserver; DOM writes come from a separate counting pass. Do not merge the two or the observer skews sync mode.
 - Never `dotnet test NScript_Full.sln`; run compiler test projects one at a time.
 
