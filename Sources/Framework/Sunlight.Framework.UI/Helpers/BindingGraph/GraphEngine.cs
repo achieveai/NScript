@@ -65,9 +65,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             if (!object.IsNullOrUndefined(existing))
                             {
                                 GraphEngine.DisposeGateSubControls(desc, state, gateInfo, wasOpen);
+                                GraphEngine.UnbindGatedEvents(desc, state, wasOpen ? i : -(i + 2));
                                 GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
-                                existing.Remove();
-                                state.GateElements[i] = null;
+                                GraphEngine.RemoveGateBranch(state, i);
                             }
 
                             Element marker = (Element)state.ElemRefs[gateInfo.MarkerIdx];
@@ -77,18 +77,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                             if (!object.IsNullOrUndefined(templateObj) && !object.IsNullOrUndefined(marker))
                             {
-                                Element clone = GraphEngine.ParseTemplateHtml((string)templateObj, marker);
+                                Element clone = GraphEngine.InsertGateBranch(state, i, (string)templateObj, marker);
                                 if (!object.IsNullOrUndefined(clone))
                                 {
-                                    Node parent = marker.ParentNode;
-                                    if (!object.IsNullOrUndefined(parent))
-                                    {
-                                        parent.InsertBefore(clone, marker);
-                                    }
-                                    state.GateElements[i] = clone;
-
-                                    GraphEngine.ResolveGateChildElems(
-                                        state, gateInfo, clone, gateIsOpen);
+                                    GraphEngine.ResolveGateChildElems(state, gateInfo, i, gateIsOpen);
                                     GraphEngine.CreateSubControls(desc, state, clone,
                                         GraphEngine.GetSubControlDataContext(state));
                                 }
@@ -235,17 +227,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[i];
                             if (!object.IsNullOrUndefined(gateInfo))
                             {
-                                // Clear child elem refs from the OLD branch before removing.
+                                // Unbind the old branch's listeners and clear its elem
+                                // refs before removing it. Unbinding must happen first: an
+                                // event marker that trails a void root element resolves to
+                                // the gate's parent, which outlives the branch.
                                 GraphEngine.DisposeGateSubControls(desc, state, gateInfo, wasOpen);
+                                GraphEngine.UnbindGatedEvents(desc, state, wasOpen ? i : -(i + 2));
                                 GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
-
-                                // Remove current branch element.
-                                Element oldElem = (Element)state.GateElements[i];
-                                if (!object.IsNullOrUndefined(oldElem))
-                                {
-                                    oldElem.Remove();
-                                    state.GateElements[i] = null;
-                                }
+                                GraphEngine.RemoveGateBranch(state, i);
 
                                 // Insert new branch template.
                                 object templateObj = gateIsOpen
@@ -255,19 +244,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                                 if (!object.IsNullOrUndefined(templateObj) && !object.IsNullOrUndefined(marker))
                                 {
-                                    Element clone = GraphEngine.ParseTemplateHtml((string)templateObj, marker);
+                                    Element clone = GraphEngine.InsertGateBranch(state, i, (string)templateObj, marker);
                                     if (!object.IsNullOrUndefined(clone))
                                     {
-                                        Node parent = marker.ParentNode;
-                                        if (!object.IsNullOrUndefined(parent))
-                                        {
-                                            parent.InsertBefore(clone, marker);
-                                        }
-                                        state.GateElements[i] = clone;
-
                                         // Resolve child elem refs from the new branch.
-                                        GraphEngine.ResolveGateChildElems(
-                                            state, gateInfo, clone, gateIsOpen);
+                                        GraphEngine.ResolveGateChildElems(state, gateInfo, i, gateIsOpen);
                                         GraphEngine.CreateSubControls(desc, state, clone,
                                             GraphEngine.GetSubControlDataContext(state));
                                     }
@@ -408,11 +389,32 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             state.Dirty[nodeIdx] = true;
 
+            // A flush already running on this graph drains new dirty nodes in
+            // its own settle loop; scheduling again would only add a no-op pass.
+            if (state.Flushing) return;
+
             if (!state.FlushScheduled)
             {
                 state.FlushScheduled = true;
                 GraphFlushCoordinator.ScheduleDirty(state);
             }
+        }
+
+        /// <summary>
+        /// Entry point for every PropertyChanged notification that targets a
+        /// node. Batched mode defers to the coordinator; otherwise the graph
+        /// flushes synchronously so the DOM is current before the setter returns.
+        /// </summary>
+        public static void NotifyDirty(GraphState state, int nodeIdx)
+        {
+            if (GraphFlushCoordinator.BatchingEnabled)
+            {
+                GraphEngine.MarkDirty(state, nodeIdx);
+                return;
+            }
+
+            state.Dirty[nodeIdx] = true;
+            GraphEngine.Flush(state.Descriptor, state);
         }
 
         /// <summary>
@@ -734,8 +736,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphState parentState, CollectionTargetInfo colInfo, Element clone, object item)
         {
             NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
-            GraphEngine.ResolveEventElements(clone, childElemRefs);
-            GraphEngine.ResolveBindElements(clone, childElemRefs);
+            GraphEngine.ResolveEventElements(childElemRefs);
+            GraphEngine.ResolveBindElements(childElemRefs);
 
             GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, parentState.Depth + 1);
             NativeArray itemContext = new NativeArray(3);
@@ -844,6 +846,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (object.IsNullOrUndefined(marker)) continue;
 
                 UIElement control = (UIElement)info.TypeFactory(marker);
+                // Nested skins flush after this graph (see GraphFlushCoordinator).
+                // Must be set before the skin is assigned: SkinInstance.Bind reads it.
+                control.BindingDepth = state.Depth + 1;
                 UISkinableElement skinable = control as UISkinableElement;
                 if (!object.IsNullOrUndefined(skinable)
                     && !object.IsNullOrUndefined(info.SkinFactory))
@@ -1688,8 +1693,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (state.Suspended) return;
                 GraphEngine.UnwireChainedSubscription(state, entryIndex);
                 GraphEngine.WireChainedSubscription(state, entry, entryIndex);
-                state.Dirty[entry.NodeIdx] = true;
-                GraphEngine.Flush(state.Descriptor, state);
+                GraphEngine.NotifyDirty(state, entry.NodeIdx);
             };
         }
 
@@ -1737,49 +1741,151 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             return result;
         }
 
-        public static void ResolveEventElements(Element clone, NativeArray elemRefs)
+        /// <summary>
+        /// Replaces every data-ns-evt marker span in elemRefs with its parent
+        /// element. Non-span elements (e.g. <button data-ns-evt/>) bind to
+        /// themselves. Works on the refs directly so a marker that is a sibling
+        /// of a gate branch's void root element resolves too.
+        /// </summary>
+        public static void ResolveEventElements(NativeArray elemRefs)
         {
-            NativeArray<Element> evtSpans = clone.QuerySelectorAll("[data-ns-evt]");
-            if (object.IsNullOrUndefined(evtSpans) || evtSpans.Length == 0)
-                return;
+            GraphEngine.ResolveMarkerSpans(elemRefs, "data-ns-evt");
+        }
 
-            for (int i = 0; i < evtSpans.Length; i++)
+        public static void ResolveBindElements(NativeArray elemRefs)
+        {
+            GraphEngine.ResolveMarkerSpans(elemRefs, "data-ns-bind");
+        }
+
+        private static void ResolveMarkerSpans(NativeArray elemRefs, string attribute)
+        {
+            for (int j = 0; j < elemRefs.Length; j++)
             {
-                Element marker = evtSpans[i];
-                for (int j = 0; j < elemRefs.Length; j++)
+                Element marker = elemRefs[j] as Element;
+                if (object.IsNullOrUndefined(marker)) continue;
+                if (marker.TagName != "SPAN" || !marker.HasAttribute(attribute)) continue;
+
+                // The compiler cannot place a marker inside a void element, so it
+                // emits the span as the element's trailing sibling. Bind to that
+                // element, not the parent: two inputs in one row would otherwise
+                // share the parent's handler and cross-fire on each other's events.
+                Element previous = marker.PreviousSibling as Element;
+                if (!object.IsNullOrUndefined(previous) && GraphEngine.IsVoidElement(previous))
                 {
-                    if ((object)elemRefs[j] == (object)marker)
-                    {
-                        // Only replace span markers with their parent; non-span
-                        // elements (e.g. <button data-ns-evt/>) bind to themselves.
-                        if (marker.TagName == "SPAN")
-                            elemRefs[j] = (Element)marker.ParentNode;
-                        break;
-                    }
+                    elemRefs[j] = previous;
+                    continue;
                 }
+
+                elemRefs[j] = (Element)marker.ParentNode;
             }
         }
 
-        public static void ResolveBindElements(Element clone, NativeArray elemRefs)
+        private static bool IsVoidElement(Element element)
         {
-            NativeArray<Element> bindSpans = clone.QuerySelectorAll("[data-ns-bind]");
-            if (object.IsNullOrUndefined(bindSpans) || bindSpans.Length == 0)
-                return;
+            string tag = element.TagName;
+            return tag == "INPUT" || tag == "IMG" || tag == "BR" || tag == "HR"
+                || tag == "AREA" || tag == "BASE" || tag == "COL" || tag == "EMBED"
+                || tag == "LINK" || tag == "META" || tag == "PARAM" || tag == "SOURCE"
+                || tag == "TRACK" || tag == "WBR";
+        }
 
-            for (int i = 0; i < bindSpans.Length; i++)
+        /// <summary>
+        /// Collects compiler-generated markers across every top-level node of a
+        /// gate branch: a node that is itself a marker (a void root carrying
+        /// data-ns-bind, or a trailing data-ns-evt span) followed by its
+        /// descendant markers, in document order.
+        /// </summary>
+        public static NativeArray CollectGateSpanElements(NativeArray<Element> nodes)
+        {
+            NativeArray result = new NativeArray(0);
+            for (int k = 0; k < nodes.Length; k++)
             {
-                Element marker = bindSpans[i];
-                for (int j = 0; j < elemRefs.Length; j++)
+                Element node = nodes[k];
+                if (object.IsNullOrUndefined(node) || object.IsNullOrUndefined(node.TagName)) continue;
+                if (node.HasAttribute("data-ns-ph") || node.HasAttribute("data-ns-bind")
+                    || node.HasAttribute("data-ns-evt") || node.HasAttribute("data-ns-subctl"))
                 {
-                    if ((object)elemRefs[j] == (object)marker)
-                    {
-                        // Only replace span markers with their parent; non-span
-                        // elements (e.g. <input data-ns-bind/>) bind to themselves.
-                        if (marker.TagName == "SPAN")
-                            elemRefs[j] = (Element)marker.ParentNode;
-                        break;
-                    }
+                    result.Push(node);
                 }
+                NativeArray<Element> inner = node.QuerySelectorAll("[data-ns-ph], [data-ns-bind], [data-ns-evt], [data-ns-subctl]");
+                for (int i = 0; i < inner.Length; i++) result.Push(inner[i]);
+            }
+            if (result.Length == 0 && nodes.Length > 0) result.Push(nodes[0]);
+            return result;
+        }
+
+        /// <summary>
+        /// Parses a gate branch template and inserts every top-level node
+        /// before the marker. The first node is the branch root (GateElements);
+        /// any further nodes (e.g. the event marker span that trails a void root
+        /// element) are kept in GateExtraElements so they are removed with it.
+        /// </summary>
+        public static Element InsertGateBranch(GraphState state, int gateNodeIdx, string html, Element marker)
+        {
+            if (object.IsNullOrUndefined(html) || html == "") return null;
+
+            Document doc = marker.OwnerDocument;
+            Element container = doc.CreateElement("div");
+            container.InnerHTML = html;
+
+            // Copy first: inserting a node elsewhere removes it from the live list.
+            NativeArray<Node> children = container.ChildNodes;
+            NativeArray<Element> nodes = new NativeArray<Element>(0);
+            for (int k = 0; k < children.Length; k++) nodes.Push((Element)children[k]);
+            if (nodes.Length == 0) return null;
+
+            Node parent = marker.ParentNode;
+            if (!object.IsNullOrUndefined(parent))
+            {
+                for (int k = 0; k < nodes.Length; k++) parent.InsertBefore(nodes[k], marker);
+            }
+
+            state.GateElements[gateNodeIdx] = nodes[0];
+            state.GateExtraElements[gateNodeIdx] = nodes.Length > 1 ? nodes : null;
+            return nodes[0];
+        }
+
+        /// <summary>Removes a gate branch's root and any extra top-level nodes.</summary>
+        public static void RemoveGateBranch(GraphState state, int gateNodeIdx)
+        {
+            Element root = (Element)state.GateElements[gateNodeIdx];
+            if (!object.IsNullOrUndefined(root)) root.Remove();
+            state.GateElements[gateNodeIdx] = null;
+
+            if (object.IsNullOrUndefined(state.GateExtraElements)) return;
+            NativeArray<Element> extras = (NativeArray<Element>)state.GateExtraElements[gateNodeIdx];
+            if (!object.IsNullOrUndefined(extras))
+            {
+                for (int k = 1; k < extras.Length; k++)
+                {
+                    if (!object.IsNullOrUndefined(extras[k])) extras[k].Remove();
+                }
+            }
+            state.GateExtraElements[gateNodeIdx] = null;
+        }
+
+        /// <summary>
+        /// Unbinds the listeners of every EventBinding node controlled by the
+        /// given gate reference (gate index for the true branch, -(gate + 2)
+        /// for the false branch). Must run before the branch's elem refs are
+        /// cleared, otherwise the target element can no longer be found.
+        /// </summary>
+        public static void UnbindGatedEvents(GraphDescriptor desc, GraphState state, int gateRef)
+        {
+            if (object.IsNullOrUndefined(state.EventListeners)) return;
+            int n = desc.NodeCount;
+            for (int j = 0; j < n; j++)
+            {
+                if (desc.GateIndices[j] != gateRef || desc.NodeTypes[j] != GraphNodeType.EventBinding) continue;
+                Action<Element, ElementEvent> handler = (Action<Element, ElementEvent>)state.EventListeners[j];
+                if (object.IsNullOrUndefined(handler)) continue;
+                EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[j];
+                if (!object.IsNullOrUndefined(evtInfo))
+                {
+                    Element elem = GraphEngine.GetEventElement(state, evtInfo.ElemIdx);
+                    if (!object.IsNullOrUndefined(elem)) elem.UnBind(evtInfo.EventName, handler);
+                }
+                state.EventListeners[j] = null;
             }
         }
 
@@ -1816,12 +1922,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             for (int i = 0; i < childState.GateElements.Length; i++)
             {
-                Element gateElem = (Element)childState.GateElements[i];
-                if (!object.IsNullOrUndefined(gateElem))
-                {
-                    gateElem.Remove();
-                    childState.GateElements[i] = null;
-                }
+                if (!object.IsNullOrUndefined(childState.GateElements[i]))
+                    GraphEngine.RemoveGateBranch(childState, i);
             }
         }
 
@@ -1832,7 +1934,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Uses CollectSpanElements to find marker spans in the rendered template.
         /// </summary>
         public static void ResolveGateChildElems(
-            GraphState state, GateTargetInfo gateInfo, Element clone, bool gateIsOpen)
+            GraphState state, GateTargetInfo gateInfo, int gateNodeIdx, bool gateIsOpen)
         {
             NativeArray<int> childIndices = gateIsOpen
                 ? gateInfo.TrueChildElemIndices
@@ -1841,9 +1943,15 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             if (object.IsNullOrUndefined(childIndices) || childIndices.Length == 0)
                 return;
 
-            NativeArray spans = GraphEngine.CollectSpanElements(clone);
-            GraphEngine.ResolveEventElements(clone, spans);
-            GraphEngine.ResolveBindElements(clone, spans);
+            NativeArray<Element> nodes = (NativeArray<Element>)state.GateExtraElements[gateNodeIdx];
+            if (object.IsNullOrUndefined(nodes))
+            {
+                nodes = new NativeArray<Element>(0);
+                nodes.Push((Element)state.GateElements[gateNodeIdx]);
+            }
+            NativeArray spans = GraphEngine.CollectGateSpanElements(nodes);
+            GraphEngine.ResolveEventElements(spans);
+            GraphEngine.ResolveBindElements(spans);
             int spanCount = spans.Length;
 
             for (int k = 0; k < childIndices.Length; k++)

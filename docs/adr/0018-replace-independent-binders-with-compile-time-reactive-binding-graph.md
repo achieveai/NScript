@@ -116,9 +116,17 @@ Razor templates use a compile-time reactive binding graph. The graph is a DAG wi
 
 **Collection operations**: the CollectionManager creates child `GraphState` instances per item, each with its own subscription lifecycle. Add/remove/replace/reset operations manipulate DOM elements and child graph states incrementally.
 
-### Microtask Batching Infrastructure
+### Batched Flushing (opt-in)
 
-A `GraphFlushCoordinator` exists for future depth-based batched flushing. Currently, property changes trigger synchronous flushes for simplicity and test predictability. The coordinator infrastructure is in place and can be activated by routing property callbacks through `GraphEngine.MarkDirty` instead of direct `GraphEngine.Flush`.
+Property-change notifications reach the graph through `GraphEngine.NotifyDirty`. By default each notification flushes its graph synchronously, so the DOM is current before the setter returns. Setting `GraphFlushCoordinator.BatchingEnabled = true` (typically in the application `Main()`) switches to batched mode:
+
+- A notification only marks the node dirty and registers the graph with `GraphFlushCoordinator` once per boundary (`GraphState.FlushScheduled` de-duplicates).
+- The coordinator flushes all pending graphs on the next boundary. `GraphFlushCoordinator.Mode` selects it: `Microtask` (default, `queueMicrotask`; no paint between the change and the flush) or `Macrotask` (`TaskScheduler` high-priority task; a paint may land first).
+- Graphs flush in nesting-depth order, parents before children. Depth is the skin nesting level: a root skin is depth 0, `@foreach` item graphs and sub-control skins are parent + 1. `UIElement.BindingDepth` carries the depth from `GraphEngine.CreateSubControls` into the child's `SkinInstance.Bind`, and `IBindingStrategy.SetDepth` re-stamps sub-controls created before the depth was known.
+- A change raised during a flush (a child writing to its parent, or a setter cascade) goes back into the same depth queue; `FlushAll` repeats depth passes until nothing is pending, bounded by 100 passes, after which it resets and throws. There is no separate second-phase queue because that would flush a parent after its children and leave them stale.
+- A graph that throws is logged and skipped so the others still flush. Disposed or suspended graphs are dropped. `GraphFlushCoordinator.FlushNow()` is the escape hatch for code that must read the DOM right after a model write.
+
+Still synchronous in batched mode: initial activation, `DataContext` / `TemplateParent` changes, and collection add/remove/reset. Consequence: an item removed from a collection in the same task as a property change on it is disposed before the flush, so the old element never receives the new value; the replacement element is created with the final value. Tests that hold a DOM handle across a save must re-query. The XWML `LegacyBinderStrategy` ignores the flag.
 
 ## Consequences
 

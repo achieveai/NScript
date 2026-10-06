@@ -1239,6 +1239,19 @@ namespace Sunlight.Framework.Observables
                         modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
             }
 
+            // Gate branches are not in Children; walk them with the same item context so
+            // an item handler inside @if within @foreach (e.g. onchange="@cell.OnInputChange")
+            // is retained like a top-level one.
+            if (node is TemplateIR.ConditionalNode conditional)
+            {
+                foreach (var child in conditional.TrueBranch)
+                    CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
+                        itemTypeName, itemVariableName);
+                foreach (var child in conditional.FalseBranch)
+                    CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
+                        itemTypeName, itemVariableName);
+            }
+
             // For loops, also scan item template with the item type for item-level methods
             if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
             {

@@ -145,6 +145,11 @@ namespace Sunlight.Framework.UI.Test
                 return this.nextHandle++;
             }
 
+            public void QueueMicrotask(Action action)
+            {
+                this.pendingActions.Enqueue(action);
+            }
+
             public void RunNext()
             {
                 Action action = this.pendingActions.Dequeue();

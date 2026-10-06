@@ -106,6 +106,36 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorBatchNestedHost.skin.cshtml")]
+        public static Skin RazorBatchNestedHost
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorBatchNested.skin.cshtml")]
+        public static Skin RazorBatchNested
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorGateVoidEvent.skin.cshtml")]
+        public static Skin RazorGateVoidEvent
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorGateOnlyHandler.skin.cshtml")]
+        public static Skin RazorGateOnlyHandler
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSiblingVoidEvents.skin.cshtml")]
+        public static Skin RazorSiblingVoidEvents
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlPart.skin.cshtml")]
         public static Skin RazorSubControlPart
         {

@@ -88,6 +88,11 @@
     <EmbeddedResource Include="RazorTemplates\RazorSubControlDomEvent.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorProbeAlternate.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlComposition.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorBatchNestedHost.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorBatchNested.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorGateVoidEvent.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorGateOnlyHandler.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorSiblingVoidEvents.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlPart.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorValueProbeControl.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorSubControlTwoWay.skin.cshtml" />

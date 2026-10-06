@@ -1,0 +1,11 @@
+@model SpreadsheetApp.ViewModels.RowViewModel
+@control SpreadsheetApp.Controls.RowControl
+@styles "SpreadsheetApp.RazorTemplates.Sheet.css"
+
+<div class="@Model.CssClass">
+    <div class="row-label">@Model.Label</div>
+    @foreach (var cell in Model.Cells)
+    {
+        <div class="@cell.CssClass" onclick="@cell.OnClick">@cell.Display</div>
+    }
+</div>

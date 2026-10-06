@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sheet - NScript</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
+      color: #323130;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="text/javascript">
+    // Measurement helper used by SpreadsheetApp.Services.Perf. Kept as plain
+    // page JS so the app's inline-script facades stay one-line calls.
+    window.__perf = {
+      // Runs op(), lets the microtask queue drain (which includes a batched
+      // binding flush), then forces style recalc + layout by reading
+      // offsetHeight so the rendering cost of the DOM writes is inside the
+      // measured time. Paint is not included.
+      // countWrites=false: timing pass, no observer, writes reported as -1.
+      // countWrites=true: a MutationObserver counts DOM records under root;
+      // the observer's record allocation skews ms, so use it only for counts.
+      measure: function (root, countWrites, op, done) {
+        var n = -1, obs = null;
+        if (countWrites) {
+          n = 0;
+          obs = new MutationObserver(function (records) { n += records.length; });
+          obs.observe(root, { subtree: true, childList: true, characterData: true, attributes: true });
+        }
+        var t0 = performance.now();
+        op();
+        queueMicrotask(function () {
+          var forced = root.offsetHeight;
+          var t1 = performance.now();
+          if (obs) { n += obs.takeRecords().length; obs.disconnect(); }
+          done(t1 - t0, n);
+        });
+      },
+      expose: function (runAll, isRunning, resultsJson, setBatching, op) {
+        window.__sheet = {
+          runAll: runAll,
+          isRunning: isRunning,
+          resultsJson: resultsJson,
+          setBatching: setBatching,
+          op: op
+        };
+      }
+    };
+  </script>
+  <script src="GeneratedScripts/SpreadsheetApp.js" type="text/javascript"></script>
+</body>
+</html>

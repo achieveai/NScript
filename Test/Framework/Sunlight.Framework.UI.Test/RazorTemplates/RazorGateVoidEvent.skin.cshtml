@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="gate-void-event">
+@if (Model.IsActive)
+{
+    <input type="button" class="gated-button" value="@Model.Name" onclick="@Model.OnDomClick" />
+}
+</div>

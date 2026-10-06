@@ -27,6 +27,24 @@ dotnet test Test/Compiler/NScriptTest/NScriptTest.csproj --filter "FullyQualifie
 
 **NuGet package generation**: Set `<GenerateNScriptPackages>true</GenerateNScriptPackages>` in root `Directory.Build.props`, then build Release. Packages output to `NScriptToolSet/`.
 
+## Validation After Any Change (REQUIRED)
+
+Framework and compiler changes are only done when the browser suites and the demo apps still work. Build Debug first, then from `Test/Framework/TestWebApplication/`:
+
+```bash
+node run-qunit.mjs            # all QUnit suites (Framework, UI, Data, TodoApp, SpreadsheetApp)
+node e2e-todo-tests.js        # TodoApp end-to-end (real clicks, IndexedDB)
+node e2e-sheet-tests.mjs      # SpreadsheetApp end-to-end (formula bar, keyboard, toolbar)
+node bench-spreadsheet.mjs    # binding-flush benchmark: sync vs batched, 50/100/200 rows
+```
+
+Rules:
+- Run all four after touching `Sources/Framework/`, `Sources/Compiler/`, a Razor/XWML plugin, or either demo app. `npm test` in that folder runs the first three.
+- Report results by suite name. A skipped suite is reported as skipped, never implied green.
+- Benchmark: compare against the last recorded table (`docs/benchmarks/spreadsheet-flush.md`). A regression of more than 15% on any `All A + 1` or `Randomize A,B` row, or batched DOM writes rising above sync, blocks the change until explained. Update the table when the change is meant to move it.
+- Benchmark numbers come from timed passes with no MutationObserver; DOM writes come from a separate counting pass. Do not merge the two or the observer skews sync mode.
+- Never `dotnet test NScript_Full.sln`; run compiler test projects one at a time.
+
 ## Compiler Pipeline (Critical to Understand)
 
 The compilation is a **two-stage process with an assembly as the handoff artifact**:

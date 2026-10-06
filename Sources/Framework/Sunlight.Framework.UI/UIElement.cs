@@ -28,6 +28,13 @@ namespace Sunlight.Framework.UI
             this.element = element;
         }
 
+        /// <summary>
+        /// Skin nesting depth: 0 for a root control, parent + 1 for a control
+        /// created inside another skin's template. Orders batched binding
+        /// flushes so a parent's graph runs before the graphs it feeds.
+        /// </summary>
+        public int BindingDepth;
+
         public event Action<UIEvent> OnClick
         {
             add

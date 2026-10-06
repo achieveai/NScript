@@ -1,0 +1,15 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="gate-only-handler">
+@foreach (var item in Model.Items)
+{
+    @if (item.IsComplete)
+    {
+        <button class="gate-only-button" onclick="@item.OnGateOnlyClick">Go</button>
+    }
+    else
+    {
+        <span class="gate-only-off">@item.Name</span>
+    }
+}
+</div>

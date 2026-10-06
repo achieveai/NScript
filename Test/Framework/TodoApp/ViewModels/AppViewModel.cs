@@ -45,6 +45,7 @@ namespace TodoApp.ViewModels
         private TodoItemViewModel draggedTodo;
 
         private string completedSectionClass;
+        private string progressText;
         private ObservableCollection<FolderTagViewModel> detailFolderTags;
 
         public AppViewModel()
@@ -60,6 +61,7 @@ namespace TodoApp.ViewModels
             this.isCompletedSectionExpanded = false;
             this.completedCount = 0;
             this.completedSectionClass = AppShellCss.CompletedSection + " " + AppShellCss.Collapsed;
+            this.progressText = "";
             this.detailFolderTags = new ObservableCollection<FolderTagViewModel>();
         }
 
@@ -530,6 +532,96 @@ namespace TodoApp.ViewModels
         }
 
         /// <summary>
+        /// "N of M done" for the current folder, shown in the center header.
+        /// Recomputed together with CompletedCount in RefreshCurrentTodos.
+        /// </summary>
+        public string ProgressText
+        {
+            get { return this.progressText; }
+            set
+            {
+                if (this.progressText != value)
+                {
+                    this.progressText = value;
+                    base.FirePropertyChanged("ProgressText");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Marks every pending todo in the current folder as completed in one
+        /// task. Each todo raises several property changes (IsCompleted, CssClass,
+        /// CheckboxClass, ...) and the folder counts, progress text and completed
+        /// section all change too; with batched flushing the DOM sees one pass.
+        /// </summary>
+        public void CompleteAll()
+        {
+            if (this.selectedFolder == null) return;
+
+            var pending = new List<TodoItemViewModel>();
+            for (int i = 0; i < this.CurrentTodos.Count; i++)
+            {
+                var todo = this.CurrentTodos[i];
+                if (!todo.IsCompleted) pending.Add(todo);
+            }
+
+            if (pending.Count == 0) return;
+
+            for (int i = 0; i < pending.Count; i++)
+            {
+                pending[i].IsCompleted = true;
+                this.PersistTodo(pending[i]);
+            }
+
+            this.UpdateAllFolderCounts();
+            this.RefreshCurrentTodos();
+        }
+
+        /// <summary>
+        /// Reopens every completed todo visible in the current folder (the
+        /// completed section, or the main list when the Completed folder is
+        /// selected). Counterpart of CompleteAll.
+        /// </summary>
+        public void ReopenAll()
+        {
+            if (this.selectedFolder == null) return;
+
+            var done = new List<TodoItemViewModel>();
+            for (int i = 0; i < this.CompletedCurrentTodos.Count; i++)
+            {
+                done.Add(this.CompletedCurrentTodos[i]);
+            }
+            for (int i = 0; i < this.CurrentTodos.Count; i++)
+            {
+                var todo = this.CurrentTodos[i];
+                if (todo.IsCompleted) done.Add(todo);
+            }
+
+            if (done.Count == 0) return;
+
+            for (int i = 0; i < done.Count; i++)
+            {
+                done[i].IsCompleted = false;
+                this.PersistTodo(done[i]);
+            }
+
+            this.UpdateAllFolderCounts();
+            this.RefreshCurrentTodos();
+        }
+
+        /// <summary>
+        /// Writes a todo to the store without refreshing the view. Bulk actions
+        /// persist each item here and refresh the view once at the end.
+        /// </summary>
+        private void PersistTodo(TodoItemViewModel todo)
+        {
+            if (this.dataService != null)
+            {
+                this.dataService.SaveTodo(this.BuildTodoEntity(todo));
+            }
+        }
+
+        /// <summary>
         /// Toggles the collapsed/expanded state of the completed section.
         /// </summary>
         public void ToggleCompletedSection()
@@ -750,8 +842,9 @@ namespace TodoApp.ViewModels
                 this.RefreshFolderTags(todo);
             }
 
-            // Refresh the current view so folder counts and filtered lists stay in sync
-            // after property changes like IsImportant, IsMyDay, or IsCompleted.
+            // Refresh the sidebar counts and the current view so they stay in
+            // sync after property changes like IsImportant, IsMyDay, or IsCompleted.
+            this.UpdateAllFolderCounts();
             this.RefreshCurrentTodos();
         }
 
@@ -1014,6 +1107,7 @@ namespace TodoApp.ViewModels
             if (this.selectedFolder == null)
             {
                 this.CompletedCount = 0;
+                this.ProgressText = "";
                 this.IsCompletedSectionVisible = false;
                 return;
             }
@@ -1067,6 +1161,13 @@ namespace TodoApp.ViewModels
 
             this.CompletedCount = this.CompletedCurrentTodos.Count;
             this.IsCompletedSectionVisible = !isCompletedFolder;
+            int doneCount = this.CompletedCurrentTodos.Count;
+            for (int i = 0; i < this.CurrentTodos.Count; i++)
+            {
+                if (this.CurrentTodos[i].IsCompleted) doneCount = doneCount + 1;
+            }
+            int totalCount = this.CurrentTodos.Count + this.CompletedCurrentTodos.Count;
+            this.ProgressText = doneCount.ToString() + " of " + totalCount.ToString() + " done";
             this.selectedFolder.TodoCount = this.CurrentTodos.Count + this.CompletedCurrentTodos.Count;
             this.UpdateCompletedSectionClass();
         }
@@ -1076,6 +1177,10 @@ namespace TodoApp.ViewModels
         /// </summary>
         private void UpdateAllFolderCounts()
         {
+            // Folders exist only after InitializeWithData; a bare view model
+            // (unit tests) has nothing to count.
+            if (this.Folders == null) return;
+
             int myDayCount = 0;
             int importantCount = 0;
             int plannedCount = 0;

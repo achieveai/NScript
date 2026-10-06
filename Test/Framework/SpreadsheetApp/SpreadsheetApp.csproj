@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.props" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>$(CompilerNetFramework)</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>SpreadsheetApp</RootNamespace>
+    <AssemblyName>SpreadsheetApp</AssemblyName>
+    <GenerateJs>True</GenerateJs>
+    <JsOutputPath>../TestWebApplication/GeneratedScripts</JsOutputPath>
+    <NoWarn>0824;0169</NoWarn>
+    <CscToolPath>$(NScriptToolsetBinDir)</CscToolPath>
+    <CscToolExe>$(NScriptCompilerToolName)</CscToolExe>
+    <NScriptExe>$(NScriptToolsetBinDir)$(NScriptEmitterToolFileName)</NScriptExe>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="PluginConfig.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="RazorTemplates\Sheet.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RowControl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\Sheet.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sources\Framework\mscorlib\NScript.MsCorlib.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web.Html\System.Web.Html.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\System.Web\System.Web.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework\Sunlight.Framework.csproj" />
+    <ProjectReference Include="..\..\..\Sources\Framework\Sunlight.Framework.UI\Sunlight.Framework.UI.csproj" />
+  </ItemGroup>
+  <Target Name="EnsureJsOutputDirectory" BeforeTargets="ScriptGenerate" Condition="$(GenerateJs) == 'True'">
+    <MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />
+  </Target>
+  <Import Project="../../../Sources/Compiler/NScript.Sdk/Sdk/Sdk.targets" />
+</Project>

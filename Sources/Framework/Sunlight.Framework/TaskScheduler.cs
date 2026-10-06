@@ -87,6 +87,12 @@ namespace Sunlight.Framework
         void ClearInterval(int intervalHandle);
 
         int RequestAnimationFrame(Action action);
+
+        /// <summary>
+        /// Runs the action on the microtask queue: after the current JS task
+        /// completes, before any timer, event, or paint.
+        /// </summary>
+        void QueueMicrotask(Action action);
     }
 
     public class WindowTimer: IWindowTimer
@@ -135,6 +141,16 @@ namespace Sunlight.Framework
         public extern int RequestAnimationFrame(Action action);
 
         /// <summary>
+        /// Queues a microtask. Falls back to setTimeout(0) (a macrotask) only
+        /// on engines without queueMicrotask.
+        /// </summary>
+        [Script(
+            @"if (typeof @{[System.Web]System.Web.Globals::QueueMicrotask([mscorlib]System.Action)} != 'undefined')
+                return @{[System.Web]System.Web.Globals::QueueMicrotask([mscorlib]System.Action)}(action);
+            return @{[System.Web]System.Web.Globals::SetTimeout([mscorlib]System.Action, [mscorlib]System.Int32)}(action, 0);")]
+        public extern void QueueMicrotask(Action action);
+
+        /// <summary>
         /// Sets an interval.
         /// </summary>
         /// <param name="action">       The action. </param>
@@ -169,6 +185,7 @@ namespace Sunlight.Framework
         private readonly bool deferred;
         private readonly List<Action> pendingAnimationFrames;
         private readonly List<Action> pendingImmediates;
+        private readonly List<Action> pendingMicrotasks;
 
         public TestWindowTimer()
             : this(false)
@@ -180,6 +197,18 @@ namespace Sunlight.Framework
             this.deferred = deferred;
             this.pendingAnimationFrames = new List<Action>();
             this.pendingImmediates = new List<Action>();
+            this.pendingMicrotasks = new List<Action>();
+        }
+
+        public void QueueMicrotask(Action action)
+        {
+            if (this.deferred)
+            {
+                this.pendingMicrotasks.Add(action);
+                return;
+            }
+
+            action();
         }
 
         public int SetImmediate(Action action)
@@ -253,6 +282,32 @@ namespace Sunlight.Framework
             {
                 batch[i]();
             }
+        }
+
+        /// <summary>
+        /// Drains the microtask queue the way the browser does: callbacks
+        /// queued while draining run in the same drain, until the queue is
+        /// empty. Only meaningful in deferred mode.
+        /// </summary>
+        public void FlushMicrotasks()
+        {
+            while (this.pendingMicrotasks.Count > 0)
+            {
+                var batch = this.pendingMicrotasks.ToArray();
+                this.pendingMicrotasks.Clear();
+                for (int i = 0; i < batch.Length; i++)
+                {
+                    batch[i]();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Count of pending microtask callbacks.
+        /// </summary>
+        public int PendingMicrotaskCount
+        {
+            get { return this.pendingMicrotasks.Count; }
         }
 
         /// <summary>
@@ -387,6 +442,35 @@ namespace Sunlight.Framework
 
             this.tasks.Add(taskRef[0].TaskId, taskRef[0]);
             return new TaskHandle(taskRef[0].TaskId);
+        }
+
+        /// <summary>
+        /// Runs work on the microtask queue under the caller's CallContext.
+        /// Bypasses the priority queues and time slicing: the work runs once,
+        /// in full, before the browser gets control back.
+        /// </summary>
+        public void EnqueueMicrotask(Action work, string traceId)
+        {
+            var context = CallContext.Current;
+            this.windowTimer.QueueMicrotask(
+                delegate
+                {
+                    var previousContext = CallContext.Current;
+                    try
+                    {
+                        CallContext.Current = context;
+                        work();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("TaskScheduler microtask failed: " + this.FormatTaskException(ex));
+                        this.DispatchUnhandledTaskException(ex);
+                    }
+                    finally
+                    {
+                        CallContext.Current = previousContext;
+                    }
+                });
         }
 
         public TaskHandle EnqueHighPriTask(Action work, string traceId)

@@ -41,6 +41,7 @@ namespace Sunlight.Framework.Test.Logging
                 }
             }
             public int RequestAnimationFrame(Action action) { action(); return 0; }
+            public void QueueMicrotask(Action action) { action(); }
 
             public void Tick()
             {

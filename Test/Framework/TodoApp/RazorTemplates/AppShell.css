@@ -94,6 +94,33 @@
     margin-left: 12px;
 }
 
+.progress-text {
+    margin-left: auto;
+    margin-right: 12px;
+    font-size: 13px;
+    color: var(--color-text-secondary, #605e5c);
+    white-space: nowrap;
+}
+
+.btn-complete-all,
+.btn-reopen-all {
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 10px;
+    margin-left: 6px;
+    border: 1px solid var(--color-border, #edebe9);
+    border-radius: 4px;
+    color: var(--color-text-secondary, #605e5c);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn-complete-all:hover,
+.btn-reopen-all:hover {
+    background: var(--color-hover-bg, #f3f2f1);
+    color: var(--color-text, #323130);
+}
+
 /* ─── TOGGLE / CLOSE BUTTONS ─── */
 
 .btn-toggle-left {

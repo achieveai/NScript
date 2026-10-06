@@ -71,6 +71,28 @@ namespace Sunlight.Framework.UI.Test
         [AutoFire] public string Status { get; set; }
         [AutoFire] public int SelectCount { get; set; }
 
+        /// <summary>
+        /// Referenced only from an @if branch inside a @foreach (RazorGateOnlyHandler).
+        /// Must not be dead-code-eliminated just because no top-level binding names it.
+        /// </summary>
+        public void OnGateOnlyClick(Element elem, ElementEvent evt)
+        {
+            this.SelectCount += 10;
+        }
+
+        public int FirstChanges;
+        public int SecondChanges;
+
+        public void OnFirstChange(Element elem, ElementEvent evt)
+        {
+            this.FirstChanges++;
+        }
+
+        public void OnSecondChange(Element elem, ElementEvent evt)
+        {
+            this.SecondChanges++;
+        }
+
         public void Select()
         {
             this.SelectCount++;
