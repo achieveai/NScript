@@ -247,6 +247,73 @@ namespace Sunlight.Framework.UI.Test
         }
 
         [Test]
+        public static void TestNullSafeHopKeepsGroupingInOrAndConditionPositions(Assert assert)
+        {
+            // PR #105 review F-001: a null-safe mid-path read is emitted as
+            // `(h = dc.child) == null ? null : h.flag`. As the left operand of `||` or as a ternary
+            // condition it must stay grouped; ungrouped, a null Child made M8 and M9 evaluate to
+            // null (class "") instead of taking the `||` fallback / the "no" branch.
+            var vm = NewVm(true, true, "parent"); // Other = true, Child.Flag = false
+            var host = Render(vm);
+            assert.Equal("on", CaseClass(host, "M8"), "M8 (Model.Child.Flag || Model.Other): false || true");
+            assert.Equal("no", CaseClass(host, "M9"), "M9 (Model.Child.Flag ? yes : no): false");
+
+            vm.Child.Flag = true;
+            assert.Equal("yes", CaseClass(host, "M9"), "M9 follows the chained flag");
+            vm.Other = false;
+            assert.Equal("on", CaseClass(host, "M8"), "M8: true || false");
+            vm.Child.Flag = false;
+            assert.Equal("off", CaseClass(host, "M8"), "M8: false || false");
+
+            vm.Child = null;
+            assert.Equal("off", CaseClass(host, "M8"), "M8 with a null Child: null || false");
+            assert.Equal("no", CaseClass(host, "M9"), "M9 with a null Child selects the false branch");
+            vm.Other = true;
+            assert.Equal("on", CaseClass(host, "M8"), "M8 with a null Child and a true OR fallback");
+
+            var again = Child("again");
+            again.Flag = true;
+            vm.Child = again;
+            assert.Equal("yes", CaseClass(host, "M9"), "M9 recovers when the child is set again");
+            vm.Other = false;
+            assert.Equal("on", CaseClass(host, "M8"), "M8 reads the re-set child's flag");
+        }
+
+        [Test]
+        public static void TestThreeHopChainedBindingClearsAndRecovers(Assert assert)
+        {
+            // PR #105 review F-002: @Model.Child.Inner.Leaf has two null-safe hops. The binding
+            // must clear when either hop is null, recover when it is set, and re-wire when the
+            // child is replaced.
+            var vm = NewVm(true, false, "parent"); // Child.Inner = null
+            var host = Render(vm);
+            assert.Equal("", CaseClass(host, "M10"), "M10 falls back while Inner is null");
+
+            vm.Child.Inner = Child("in1");
+            assert.Equal("in1", CaseClass(host, "M10"), "M10 renders once Inner is set");
+            vm.Child.Inner.Leaf = "in2";
+            assert.Equal("in2", CaseClass(host, "M10"), "M10 follows the third hop's leaf");
+
+            var replacement = Child("leaf-r");
+            replacement.Inner = Child("in3");
+            vm.Child = replacement;
+            assert.Equal("in3", CaseClass(host, "M10"), "M10 re-renders from the replacement child's Inner");
+            replacement.Inner.Leaf = "in4";
+            assert.Equal("in4", CaseClass(host, "M10"), "M10 listener moved to the replacement's Inner");
+            replacement.Inner = Child("in5");
+            assert.Equal("in5", CaseClass(host, "M10"), "M10 re-renders when the middle hop is replaced");
+
+            vm.Child.Inner = null;
+            assert.Equal("", CaseClass(host, "M10"), "M10 clears when the middle hop is nulled");
+            vm.Child = null;
+            assert.Equal("", CaseClass(host, "M10"), "M10 clears when the first hop is nulled");
+
+            vm.Child = replacement;
+            replacement.Inner = Child("in6");
+            assert.Equal("in6", CaseClass(host, "M10"), "M10 recovers after both hops are restored");
+        }
+
+        [Test]
         public static void TestLoopOverTemplateOnlyComputedGetterRenders(Assert assert)
         {
             // Item 2 of the 1.1.12 gaps: a getter read ONLY as a @foreach source (Model.RowsView)

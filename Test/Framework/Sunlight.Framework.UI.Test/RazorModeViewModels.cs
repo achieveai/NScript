@@ -24,6 +24,13 @@ namespace Sunlight.Framework.UI.Test
     {
         [AutoFire] public string Leaf { get; set; }
 
+        // Read through a null-safe hop in `||` and condition positions
+        // (Model.Child.Flag || Model.Other, Model.Child.Flag ? ... : ...).
+        [AutoFire] public bool Flag { get; set; }
+
+        // Third hop of a chained binding (Model.Child.Inner.Leaf). Null by default.
+        [AutoFire] public RazorModeChild Inner { get; set; }
+
         // Chained loop source: @foreach (var w in Model.Child.Items). Items are observable so the
         // test can prove the loop variable was typed through the chain (w.Leaf updates live).
         [AutoFire] public ObservableCollection<RazorModeChild> Items { get; set; }

@@ -170,6 +170,44 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void ComputedExpression_WithChainedDependency_SubscribesComputedNodeToTheChain()
+        {
+            // PR #105 review F-001 shape: @(Model.Child.Flag || Model.Other). The multi-dependency
+            // branch used to subscribe only the root hop ("Child") on its Property node, so a
+            // change to Child.Flag never re-evaluated the expression; only replacing Child did.
+            var template = MakeTemplate(
+                new ExpressionBindingNode
+                {
+                    Target = ExpressionTarget.CssClass,
+                    ElementId = "e0",
+                    Classification = new BindingClassification
+                    {
+                        CSharpExpression = "Model.Child.Flag || Model.Other ? \"on\" : \"off\"",
+                        Mode = BindingMode.OneWay,
+                        SourceKind = BindingSourceKind.DataContext,
+                        Dependencies = new List<ObservableDependency>
+                        {
+                            new ObservableDependency(BindingSourceKind.DataContext, "Child", "Child.Flag"),
+                            new ObservableDependency(BindingSourceKind.DataContext, "Other", "Other")
+                        }
+                    }
+                });
+
+            var topology = GraphTopologyBuilder.Build(template);
+
+            // Source(0) -> Property_Child(1) -> Computed(3) -> DomTarget(4)
+            //           -> Property_Other(2) -> Computed(3)
+            topology.NodeTypes[3].Should().Be(GraphNodeTypeConstants.Computed);
+            topology.Subscriptions.Should().HaveCount(3);
+            topology.Subscriptions.Should().ContainSingle(s => s.NodeIdx == 1 && s.PropertyName == "Child" && s.PathSegments == null,
+                "the root hop still dirties its Property node when Child is replaced");
+            topology.Subscriptions.Should().ContainSingle(s => s.NodeIdx == 2 && s.PropertyName == "Other" && s.PathSegments == null);
+            var chained = topology.Subscriptions.Single(s => s.NodeIdx == 3);
+            chained.PropertyName.Should().Be("Child");
+            chained.PathSegments.Should().Equal("Child", "Flag");
+        }
+
+        [TestMethod]
         public void InvocationExpression_CreatesComputedNodeNotBarePropertyRead()
         {
             // #104: an instance method call whose only detected dependency is its argument

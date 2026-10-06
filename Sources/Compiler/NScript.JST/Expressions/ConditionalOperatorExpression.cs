@@ -141,7 +141,9 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
-            writer.Write(this.condition, this.condition.Precedence < this.Precedence)
+            // `?:` is right-associative, so a conditional in condition position must be
+            // parenthesised: `a ? b : c ? d : e` parses as `a ? b : (c ? d : e)`.
+            writer.Write(this.condition, this.condition.Precedence <= this.Precedence)
                 .Write(Symbols.Conditional)
                 .Write(this.TrueExpression, this.TrueExpression.Precedence < this.Precedence)
                 .Write(Symbols.ConditionalElse)

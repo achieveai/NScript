@@ -11,6 +11,9 @@
 <span data-case="M5" class="@(Model.Nick ?? "none")">M5</span>
 <span data-case="M6" class="@Model.ReproComputed">M6</span>
 <span data-case="M7" class="@Model.Child.Leaf">M7</span>
+<span data-case="M8" class="@(Model.Child.Flag || Model.Other ? "on" : "off")">M8</span>
+<span data-case="M9" class="@(Model.Child.Flag ? "yes" : "no")">M9</span>
+<span data-case="M10" class="@Model.Child.Inner.Leaf">M10</span>
 @foreach (var row in Model.Rows)
 {
     <div data-row="1">

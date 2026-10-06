@@ -332,6 +332,22 @@ namespace NScript.RazorSkin.CodeGen
                     ctx.AddEdge(propIdx, computedIdx);
                 }
 
+                // A chained dependency (Model.Child.Flag || Model.Other) also needs a chained
+                // subscription targeting the Computed node, exactly as in the single-dependency
+                // case above: the root property subscription only fires when the root reference
+                // is replaced, not when a later hop mutates.
+                if (isOneWay)
+                {
+                    foreach (var dep in deps)
+                    {
+                        if (dep.PropertyChain == null || !dep.PropertyChain.Contains("."))
+                            continue;
+                        ctx.AddSubscription(dep.PropertyName, computedIdx,
+                            ctx.GetDependencySourceSlot(dep, binding.Classification.CSharpExpression),
+                            dep.PropertyChain.Split('.'));
+                    }
+                }
+
                 // Create DomTarget consuming from computed
                 SubscribeUndetectedReads(ctx, binding.Classification.CSharpExpression, deps, computedIdx);
                 int domIdx = ctx.AddDomTarget(binding, computedIdx, gateIndex);

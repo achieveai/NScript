@@ -132,13 +132,27 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
-        public void ConditionalShapesTheJsWriterCannotParenthesise_AreRejected()
+        public void ConditionalsInConditionAndLeftOfOrPositions_AreParenthesised()
         {
-            ShouldReject("(Model.A ? Model.B : Model.C) ? \"x\" : \"y\"", "condition of another conditional");
-            ShouldReject("(Model.A ? Model.B : Model.C) || Model.D", "left operand of '||'");
-            // `??` desugars to a conditional, so it is barred from the same two positions.
-            ShouldReject("(Model.A ?? Model.B) ? \"x\" : \"y\"", "condition of another conditional");
-            ShouldReject("(Model.A ?? Model.B) || Model.C", "left operand of '||'");
+            // PR #105 review F-001: the JST writer gave `?:` and `||` equal precedence and never
+            // parenthesised a conditional as the condition of another conditional or as the left
+            // operand of `||`. The emitter synthesises exactly that shape for null-safe mid-path
+            // reads (`(h = recv) == null ? null : h.Prop`), so the writer must group it.
+            ToJs("(Model.A ? Model.B : Model.C) ? \"x\" : \"y\"")
+                .Should().Be("(Model_A ? Model_B : Model_C) ? \"x\" : \"y\"");
+            ToJs("(Model.A ? Model.B : Model.C) || Model.D")
+                .Should().Be("(Model_A ? Model_B : Model_C) || Model_D");
+            // `??` desugars to the same assignment-in-conditional shape as a null-safe hop.
+            ToJs("(Model.A ?? Model.B) ? \"x\" : \"y\"")
+                .Should().Be("((nc0 = Model_A) != null ? nc0 : Model_B) ? \"x\" : \"y\"");
+            ToJs("(Model.A ?? Model.B) || Model.C")
+                .Should().Be("((nc0 = Model_A) != null ? nc0 : Model_B) || Model_C");
+            // The right operand of `||` and both branches of `?:` were already grouped correctly;
+            // `||` in condition position must stay ungrouped.
+            ToJs("Model.A || (Model.B ? Model.C : Model.D)")
+                .Should().Be("Model_A || (Model_B ? Model_C : Model_D)");
+            ToJs("Model.A || Model.B ? \"x\" : \"y\"").Should().Be("Model_A || Model_B ? \"x\" : \"y\"");
+            ToJs("Model.A ? Model.B ? \"x\" : \"y\" : \"z\"").Should().Be("Model_A ? Model_B ? \"x\" : \"y\" : \"z\"");
         }
 
         [TestMethod]
