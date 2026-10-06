@@ -1593,7 +1593,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <c>ChainParentGetters[k]</c> yields the object that owns <c>PathSegments[k]</c>, and a
         /// listener is attached to each for its segment. A change at any level re-targets the
         /// deeper listeners and marks the consuming node dirty. Handles are stored in
-        /// <c>state.ChainListeners[entryIndex]</c> for cleanup.
+        /// <c>state.ChainListeners[entryIndex]</c> for cleanup. Wiring stops at the first null
+        /// hop, so a null DataContext or a null mid-path object wires only the live prefix.
         /// </summary>
         public static void WireChainedSubscription(
             GraphState state, SubscriptionEntry entry, int entryIndex)
@@ -1610,9 +1611,16 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             NativeArray<Func<object, object, object>> owners = entry.ChainParentGetters;
 
             int count = segments.Length;
+            object owner = null;
             for (int k = 0; k < count; k++)
             {
-                object owner = null;
+                // Owner k is root.PathSegments[0..k-1]. When owner k-1 is null/undefined — a null
+                // DataContext (e.g. the skin was handed a foreign view-model type) or a mid-path
+                // object that is not set yet — owner k cannot exist and its getter would read a
+                // property of null. Stop at the last live hop; a change there re-wires the rest.
+                if (k > 0 && object.IsNullOrUndefined(owner)) break;
+
+                owner = null;
                 if (!object.IsNullOrUndefined(owners) && k < owners.Length)
                 {
                     Func<object, object, object> getOwner = owners[k];

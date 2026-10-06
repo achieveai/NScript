@@ -11,6 +11,9 @@
 <span data-case="M5" class="@(Model.Nick ?? "none")">M5</span>
 <span data-case="M6" class="@Model.ReproComputed">M6</span>
 <span data-case="M7" class="@Model.Child.Leaf">M7</span>
+<span data-case="M8" class="@(Model.Child.Flag || Model.Other ? "on" : "off")">M8</span>
+<span data-case="M9" class="@(Model.Child.Flag ? "yes" : "no")">M9</span>
+<span data-case="M10" class="@Model.Child.Inner.Leaf">M10</span>
 @foreach (var row in Model.Rows)
 {
     <div data-row="1">
@@ -29,5 +32,22 @@
 @foreach (var s in Model.Names)
 {
     <span data-name="1" title="@s">@s</span>
+}
+@foreach (var rv in Model.RowsView)
+{
+    <span data-rowview="1">@rv.Name</span>
+}
+@foreach (var c in Model.Children)
+{
+    <div data-child="1">
+        @foreach (var t in c.TagsView)
+        {
+            <span data-tag="1">@t</span>
+        }
+    </div>
+}
+@foreach (var w in Model.Child.Items)
+{
+    <span data-chained-item="1">@w.Leaf</span>
 }
 </div>

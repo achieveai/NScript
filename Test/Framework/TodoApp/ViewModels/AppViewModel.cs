@@ -39,7 +39,6 @@ namespace TodoApp.ViewModels
         private string detailTitle;
 
         private ObservableCollection<TodoItemViewModel> completedCurrentTodos;
-        private ObservableCollection<SubTaskViewModel> detailSubTasks;
         private bool isCompletedSectionVisible;
         private bool isCompletedSectionExpanded;
         private int completedCount;
@@ -57,7 +56,6 @@ namespace TodoApp.ViewModels
             this.allTodos = new ObservableCollection<TodoItemViewModel>();
             this.currentTodos = new ObservableCollection<TodoItemViewModel>();
             this.completedCurrentTodos = new ObservableCollection<TodoItemViewModel>();
-            this.detailSubTasks = new ObservableCollection<SubTaskViewModel>();
             this.isCompletedSectionVisible = true;
             this.isCompletedSectionExpanded = false;
             this.completedCount = 0;
@@ -114,8 +112,20 @@ namespace TodoApp.ViewModels
                 {
                     this.folders = value;
                     base.FirePropertyChanged("Folders");
+                    base.FirePropertyChanged("MoveTargets");
                 }
             }
+        }
+
+        /// <summary>
+        /// Folders offered by the "Move to" picker. A read-only computed view over
+        /// <see cref="Folders"/> that only the skin reads (<c>@foreach (var folder in
+        /// Model.MoveTargets)</c>): the compiler must keep a getter that is referenced solely as a
+        /// loop source. <see cref="Folders"/> raises "MoveTargets" so the picker follows a reload.
+        /// </summary>
+        public ObservableCollection<FolderViewModel> MoveTargets
+        {
+            get { return this.Folders; }
         }
 
         public ObservableCollection<TodoItemViewModel> CurrentTodos
@@ -209,19 +219,6 @@ namespace TodoApp.ViewModels
             }
         }
 
-        public ObservableCollection<SubTaskViewModel> DetailSubTasks
-        {
-            get { return this.detailSubTasks; }
-            set
-            {
-                if (this.detailSubTasks != value)
-                {
-                    this.detailSubTasks = value;
-                    base.FirePropertyChanged("DetailSubTasks");
-                }
-            }
-        }
-
         public bool IsCompletedSectionVisible
         {
             get { return this.isCompletedSectionVisible; }
@@ -284,18 +281,19 @@ namespace TodoApp.ViewModels
                 this.CompletedSectionClass = AppShellCss.CompletedSection;
         }
 
+        // The subtask list is bound straight to the chained path Model.SelectedTodo.SubTasks:
+        // the skin follows a new selection, a replaced SubTasks collection, and a cleared
+        // selection (null mid-path reads as an empty list) without a pass-through property.
         private void UpdateDetailProperties()
         {
             if (this.selectedTodo != null)
             {
                 this.DetailTitle = this.selectedTodo.Title;
-                this.DetailSubTasks = this.selectedTodo.SubTasks;
                 this.RefreshFolderTags(this.selectedTodo);
             }
             else
             {
                 this.DetailTitle = "";
-                this.DetailSubTasks = new ObservableCollection<SubTaskViewModel>();
                 this.DetailFolderTags = new ObservableCollection<FolderTagViewModel>();
             }
         }

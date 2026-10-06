@@ -50,5 +50,43 @@ namespace NScript.RazorSkin.CodeGen
             }
             return null;
         }
+
+        /// <summary>
+        /// Walks a property path hop by hop from an already-resolved root type — the
+        /// <c>Child.Items</c> of <c>Model.Child.Items</c> — and returns the final property, or null
+        /// when the root or any hop is unknown. Each hop is looked up on the previous property's
+        /// declared type, so a chained <c>@foreach</c> source types its loop variable the same way
+        /// a one-hop source does.
+        /// </summary>
+        public PropertyDefinition FindPropertyPath(TypeDefinition rootType, IEnumerable<string> path)
+        {
+            PropertyDefinition property = null;
+            var type = rootType;
+            foreach (var name in path)
+            {
+                property = type != null ? FindProperty(type, name) : null;
+                if (property == null) return null;
+                type = FindTypeDefinition(property.PropertyType.FullName) ?? SafeResolve(property.PropertyType);
+            }
+            return property;
+        }
+
+        /// <summary>
+        /// Element type name of a generic collection property (ObservableCollection&lt;T&gt; → T's
+        /// full name), or null when the property is missing or not a generic instance.
+        /// </summary>
+        public static string CollectionItemTypeName(PropertyDefinition collection)
+        {
+            var type = collection?.PropertyType as GenericInstanceType;
+            return type != null && type.GenericArguments.Count > 0
+                ? type.GenericArguments[0].FullName
+                : null;
+        }
+
+        private static TypeDefinition SafeResolve(TypeReference reference)
+        {
+            try { return reference?.Resolve(); }
+            catch (System.Exception) { return null; }
+        }
     }
 }

@@ -274,79 +274,81 @@ namespace NScript.JST
         Assignment = 1,
 
         /// <summary>
-        /// ?: precedence.
+        /// ?: precedence. Strictly below <see cref="LogicalOr"/>, as in JavaScript: a conditional
+        /// used as an operand of <c>||</c> must be parenthesised, while <c>||</c> used as the
+        /// condition of a conditional must not be.
         /// </summary>
         Conditional = 2,
 
         /// <summary>
         /// LogicalOr precedence.
         /// </summary>
-        LogicalOr = 2,
+        LogicalOr = 3,
 
         /// <summary>
         /// Logical And precedence.
         /// </summary>
-        LogicalAnd = 3,
+        LogicalAnd = 4,
 
         /// <summary>
         /// BitwiseOr precedence.
         /// </summary>
-        BitwiseOr = 4,
+        BitwiseOr = 5,
 
         /// <summary>
         /// BirwiseXor precedence.
         /// </summary>
-        BitwiseXor = 5,
+        BitwiseXor = 6,
 
         /// <summary>
         /// BitwiseAnd precedence.
         /// </summary>
-        BitwiseAnd = 6,
+        BitwiseAnd = 7,
 
         /// <summary>
         /// Equality precedence.
         /// </summary>
-        Equality = 7,
+        Equality = 8,
 
         /// <summary>
         /// Relational precedence.
         /// </summary>
-        Relational = 8,
+        Relational = 9,
 
         /// <summary>
         /// Shift precedence.
         /// </summary>
-        Shift = 9,
+        Shift = 10,
 
         /// <summary>
         /// Additive precedence.
         /// </summary>
-        Additive = 10,
+        Additive = 11,
 
         /// <summary>
         /// Multiplicative precedence.
         /// </summary>
-        Multiplicative = 11,
+        Multiplicative = 12,
 
         /// <summary>
         /// Unary precedence.
         /// </summary>
-        Unary = 12,
+        Unary = 13,
 
         /// <summary>
         /// PostFix precedence.
         /// </summary>
-        IncrementDecrement = 13,
+        IncrementDecrement = 14,
 
         /// <summary>
         /// LeftHandSide precedence.
         /// </summary>
-        LHS = 14,
+        LHS = 15,
 
         /// <summary>
         /// Primary precedence.
         /// </summary>
-        Primary = 15
+        Primary = 16
     }
 
     /// <summary>

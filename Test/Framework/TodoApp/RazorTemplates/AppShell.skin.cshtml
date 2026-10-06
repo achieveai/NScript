@@ -68,7 +68,7 @@
             <div class="detail-section">
                 <div class="section-label">Move to</div>
                 <div class="folder-picker">
-                    @foreach (var folder in Model.Folders)
+                    @foreach (var folder in Model.MoveTargets)
                     {
                         <div class="folder-pick-item" onclick="@Model.MoveSelectedToFolder(folder)">
                             <div class="folder-pick-icon">@folder.Icon</div>
@@ -79,7 +79,7 @@
             </div>
             <div class="detail-section">
                 <div class="section-label">Subtasks</div>
-                @foreach (var sub in Model.DetailSubTasks)
+                @foreach (var sub in Model.SelectedTodo.SubTasks)
                 {
                     <div class="@(sub.IsCompleted ? "subtask-item completed" : "subtask-item")">
                         <div class="@(sub.IsCompleted ? "btn-check checked" : "btn-check")" onclick="@sub.ToggleComplete">&#10003;</div>

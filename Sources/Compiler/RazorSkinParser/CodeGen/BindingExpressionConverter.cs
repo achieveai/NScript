@@ -161,12 +161,6 @@ namespace NScript.RazorSkin.CodeGen
                         return Visit(parenthesized.Expression);
 
                     case ConditionalExpressionSyntax conditional:
-                        // ConditionalOperatorExpression.Write does not parenthesise a
-                        // conditional in condition position, so `(a ? b : c) ? d : e`
-                        // would be written as `a ? b : c ? d : e`. `??` desugars to a
-                        // conditional, so it is barred from the condition position too.
-                        if (ProducesConditional(conditional.Condition))
-                            throw Fail("a conditional expression used as the condition of another conditional is not supported");
                         return new ConditionalOperatorExpression(null, _scope,
                             Visit(conditional.Condition),
                             Visit(conditional.WhenTrue),
@@ -220,11 +214,6 @@ namespace NScript.RazorSkin.CodeGen
                     default:
                         throw Fail("operator '" + binary.OperatorToken.Text + "' is not supported");
                 }
-
-                // BinaryExpression.Write does not parenthesise a left operand of equal
-                // precedence, and `?:` (which `??` desugars to) shares precedence with `||`.
-                if (op == BinaryOperator.LogicalOr && ProducesConditional(binary.Left))
-                    throw Fail("a conditional expression as the left operand of '||' is not supported");
 
                 return new BinaryExpression(null, _scope, op, Visit(binary.Left), Visit(binary.Right));
             }
@@ -354,26 +343,6 @@ namespace NScript.RazorSkin.CodeGen
                     default:
                         return false;
                 }
-            }
-
-            private static ExpressionSyntax Unwrap(ExpressionSyntax node)
-            {
-                while (node is ParenthesizedExpressionSyntax parenthesized)
-                    node = parenthesized.Expression;
-                return node;
-            }
-
-            /// <summary>
-            /// True when <paramref name="node"/> emits a JST conditional the writer cannot
-            /// parenthesise in condition or left-of-<c>||</c> position: a C# conditional, or a
-            /// <c>??</c> (which desugars to one).
-            /// </summary>
-            private static bool ProducesConditional(ExpressionSyntax node)
-            {
-                node = Unwrap(node);
-                return node is ConditionalExpressionSyntax
-                    || (node is BinaryExpressionSyntax binary
-                        && binary.Kind() == SyntaxKind.CoalesceExpression);
             }
 
             private static string Describe(ExpressionSyntax node)

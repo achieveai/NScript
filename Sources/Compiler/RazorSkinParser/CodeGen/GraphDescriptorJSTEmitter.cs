@@ -31,6 +31,10 @@ namespace NScript.RazorSkin.CodeGen
         private readonly string _modelTypeName;
         private readonly string _parentModelTypeName;
         private readonly string _controlTypeName;
+
+        // Numbers the temps behind null-safe mid-path reads (h0, h1, ...) so each is unique within
+        // this emitter's getters.
+        private int _nullSafeHopTemps;
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers;
         private readonly IEnumerable<string> _usingNamespaces;
         private readonly CecilTypeHelper _typeHelper;
@@ -572,7 +576,9 @@ namespace NScript.RazorSkin.CodeGen
                     return null;
                 }
 
-                receiver = BuildPropertyRead(receiver, currentType, property, scope);
+                receiver = i == 1
+                    ? BuildPropertyRead(receiver, currentType, property, scope)
+                    : BuildNullSafePropertyRead(receiver, currentType, property, scope);
                 // Advance to the property's declared type via the SAME ClrContext instance so the
                 // scope manager resolves the next hop's field/getter identifiers correctly.
                 currentType = FindTypeDefinition(property.PropertyType.FullName);
@@ -583,23 +589,57 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
+        /// Reads a property off a mid-path receiver that may legitimately be null — an object not
+        /// loaded yet, or cleared (<c>Model.Child = null</c>) — as
+        /// <c>(h = receiver) == null ? null : h.Prop</c>, so the binding yields null (which DOM
+        /// targets replace with their default) instead of throwing and aborting the whole flush.
+        /// The temp is a scoped local the getter function declares as <c>var</c>, like the temp
+        /// behind <c>??</c>. The first hop needs no guard: the engine never calls a getter on a
+        /// null root.
+        /// </summary>
+        private Expression BuildNullSafePropertyRead(
+            Expression receiver, TypeDefinition typeDefinition, PropertyDefinition property,
+            IdentifierScope scope)
+        {
+            var temp = SimpleIdentifier.CreateScopeIdentifier(scope, "h" + _nullSafeHopTemps++, true);
+            var assign = new BinaryExpression(null, scope, BinaryOperator.Assignment,
+                new IdentifierExpression(temp, scope), receiver);
+            var test = new BinaryExpression(null, scope, BinaryOperator.Equals,
+                assign, new NullLiteralExpression(scope));
+            return new ConditionalOperatorExpression(null, scope, test,
+                new NullLiteralExpression(scope),
+                BuildPropertyRead(new IdentifierExpression(temp, scope), typeDefinition, property, scope));
+        }
+
+        /// <summary>
         /// Maps a binding root name to its receiver expression and declared type name: <c>Model</c>
         /// (the parent model inside an item graph), <c>Control</c>, or the loop variable. Returns
         /// (null, null) for anything else, which the caller treats as a static member.
         /// </summary>
         private (Expression receiver, string typeName) ResolveRoot(string root, IdentifierScope scope)
         {
+            var typeName = ResolveRootTypeName(root);
             if (root == "Model")
-                return (CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 0),
-                    IsItemGraph ? _parentModelTypeName : _modelTypeName);
+                return (CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 0), typeName);
             if (root == "Control")
-                return (new IdentifierExpression(scope.ParameterIdentifiers[1], scope), _controlTypeName);
-
-            var itemVariable = IsItemGraph ? _topology.ItemVariablePrefix.TrimEnd('.') : null;
-            if (itemVariable != null && root == itemVariable)
-                return (CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 2), _modelTypeName);
+                return (new IdentifierExpression(scope.ParameterIdentifiers[1], scope), typeName);
+            if (typeName != null)
+                return (CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 2), typeName);
 
             return (null, null);
+        }
+
+        /// <summary>
+        /// Declared type name of a binding root: <c>Model</c> (the parent model inside an item
+        /// graph), <c>Control</c>, or the loop variable (the item type). Null for anything else.
+        /// </summary>
+        private string ResolveRootTypeName(string root)
+        {
+            if (root == "Model") return IsItemGraph ? _parentModelTypeName : _modelTypeName;
+            if (root == "Control") return _controlTypeName;
+
+            var itemVariable = IsItemGraph ? _topology.ItemVariablePrefix.TrimEnd('.') : null;
+            return itemVariable != null && root == itemVariable ? _modelTypeName : null;
         }
 
         /// <summary>
@@ -1528,36 +1568,20 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Resolves the element type of a collection property by analyzing the property's
-        /// return type's generic arguments. E.g., ObservableCollection&lt;RazorItemVM&gt; → "RazorItemVM".
+        /// Resolves the element type of a loop's collection by walking the collection path from
+        /// its root (Model, Control or the enclosing loop variable) hop by hop —
+        /// <c>Model.Child.Items</c> as well as <c>Model.Items</c> — and reading the final
+        /// property's generic argument, e.g. ObservableCollection&lt;RazorItemVM&gt; → "RazorItemVM".
+        /// Null when the root or any hop is unknown.
         /// </summary>
         private string ResolveCollectionItemTypeName(CollectionTopology ct)
         {
-            if (_clrContext == null || string.IsNullOrEmpty(_modelTypeName))
-                return null;
+            if (_clrContext == null) return null;
 
-            // The collection expression is like "Model.Items"
-            var collExpr = ct.IrNode.CollectionExpression ?? "";
-            if (collExpr.StartsWith("Model."))
-                collExpr = collExpr.Substring(6);
-            if (collExpr.Contains("."))
-                return null; // Don't handle chained paths
-
-            var modelType = FindTypeDefinition(_modelTypeName);
-            if (modelType == null) return null;
-
-            var property = FindProperty(modelType, collExpr);
-            if (property == null) return null;
-
-            // Get the generic instance type (e.g., ObservableCollection<RazorItemVM>)
-            var returnType = property.PropertyType as Mono.Cecil.GenericInstanceType;
-            if (returnType != null && returnType.GenericArguments.Count > 0)
-            {
-                var itemType = returnType.GenericArguments[0];
-                return itemType.FullName;
-            }
-
-            return null;
+            var segments = (ct.IrNode.CollectionExpression ?? "").Split('.');
+            var rootType = FindTypeDefinition(ResolveRootTypeName(segments[0]));
+            return CecilTypeHelper.CollectionItemTypeName(
+                _typeHelper.FindPropertyPath(rootType, segments.Skip(1)));
         }
 
         private static string EscapeJsString(string s)
