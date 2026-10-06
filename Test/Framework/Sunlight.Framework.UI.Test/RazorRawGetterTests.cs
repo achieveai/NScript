@@ -54,18 +54,54 @@ namespace Sunlight.Framework.UI.Test
             vm.Lead = Row("lead", true, true);
             var child = new RazorModeChild();
             child.Leaf = "leaf1";
+            child.Items = Leaves("w1", "w2");
             vm.Child = child;
+            // Nested loop over a computed getter of the outer item: c1 has two tags, c2 one.
+            var children = new ObservableCollection<RazorModeChild>();
+            children.Add(Child("c1", "t1", "t2"));
+            children.Add(Child("c2", "t3"));
+            vm.Children = children;
             return vm;
+        }
+
+        private static ObservableCollection<RazorModeChild> Leaves(params string[] leaves)
+        {
+            var items = new ObservableCollection<RazorModeChild>();
+            foreach (var leaf in leaves) items.Add(Child(leaf));
+            return items;
+        }
+
+        private static RazorModeChild Child(string leaf, params string[] tags)
+        {
+            var child = new RazorModeChild();
+            child.Leaf = leaf;
+            child.Tags = new ObservableCollection<string>();
+            foreach (var tag in tags) child.Tags.Add(tag);
+            return child;
+        }
+
+        private static string[] Texts(Element scope, string selector)
+        {
+            var spans = scope.QuerySelectorAll(selector);
+            var texts = new string[spans.Length];
+            for (var i = 0; i < spans.Length; i++) texts[i] = spans[i].TextContent;
+            return texts;
         }
 
         private static Element Render(RazorModeVM vm)
         {
             var host = Window.Instance.Document.CreateElement("div");
+            Mount(vm, host);
+            return host;
+        }
+
+        private static UISkinableElement Mount(RazorModeVM vm, Element host)
+        {
             var control = new UISkinableElement(host);
             control.DataContext = vm;
             control.Skin = RazorRawGetterTemplates.RazorRawGetterAutoProps;
             control.Activate();
-            return host;
+            return control;
         }
 
         [Test]
@@ -177,6 +213,112 @@ namespace Sunlight.Framework.UI.Test
             vm.Child.Leaf = "leaf4";
             assert.Equal("leaf4", CaseClass(host, "M7"),
                 "M7 updates when the new child's leaf changes (listener moved)");
+        }
+
+        [Test]
+        public static void TestChainedBindingSurvivesNullMidPathAndForeignDataContext(Assert assert)
+        {
+            // Item 1 of the 1.1.12 gaps: the chained subscription (Model.Child.Leaf) used to call
+            // every hop's owner getter even when the DataContext was null, so a foreign DataContext
+            // (AsType → null) or a cleared mid-path object threw during re-wiring or flush.
+            var vm = NewVm(true, false, "parent");
+            var host = Window.Instance.Document.CreateElement("div");
+            var control = Mount(vm, host);
+            assert.Equal("leaf1", CaseClass(host, "M7"), "M7 initial");
+
+            vm.Child = null;
+            assert.Equal("", CaseClass(host, "M7"), "M7 falls back to the empty default when the child is null");
+
+            var again = new RazorModeChild();
+            again.Leaf = "leaf-again";
+            vm.Child = again;
+            assert.Equal("leaf-again", CaseClass(host, "M7"), "M7 recovers when the child is set again");
+            again.Leaf = "leaf-again-2";
+            assert.Equal("leaf-again-2", CaseClass(host, "M7"), "M7 follows the leaf of the re-set child");
+
+            // A DataContext of another type: the skin resolves it to null and must not throw.
+            control.DataContext = new RazorModeRow();
+            assert.Equal("", CaseClass(host, "M7"), "M7 falls back when the DataContext is a foreign type");
+
+            control.DataContext = vm;
+            assert.Equal("leaf-again-2", CaseClass(host, "M7"), "M7 renders again once the view-model is restored");
+            vm.Child.Leaf = "leaf-final";
+            assert.Equal("leaf-final", CaseClass(host, "M7"), "M7 is re-wired to the restored view-model");
+        }
+
+        [Test]
+        public static void TestLoopOverTemplateOnlyComputedGetterRenders(Assert assert)
+        {
+            // Item 2 of the 1.1.12 gaps: a getter read ONLY as a @foreach source (Model.RowsView)
+            // was not retained, and mounting threw "get_rowsView is not a function".
+            var vm = NewVm(true, false, "parent");
+            var host = Render(vm);
+            assert.DeepEqual(new string[] { "r1", "r2", "r3", "r4", "styled-content" },
+                Texts(host, "[data-rowview]"), "rows rendered through the computed getter");
+
+            vm.Rows.Add(Row("r6", false, false));
+            assert.Equal(6, host.QuerySelectorAll("[data-rowview]").Length,
+                "the computed getter returns the live collection, so an Add renders incrementally");
+        }
+
+        [Test]
+        public static void TestNestedLoopOverLoopVariableComputedGetterRenders(Assert assert)
+        {
+            // The same retention inside an item template: @foreach (var t in c.TagsView) where
+            // TagsView is a getter of the OUTER loop item.
+            var vm = NewVm(true, false, "parent");
+            var host = Render(vm);
+            assert.Equal(2, host.QuerySelectorAll("[data-child]").Length, "two children rendered");
+            assert.DeepEqual(new string[] { "t1", "t2", "t3" }, Texts(host, "[data-tag]"),
+                "tags rendered through the item's computed getter");
+
+            vm.Children[0].Tags.Add("t4");
+            assert.DeepEqual(new string[] { "t1", "t2", "t4", "t3" }, Texts(host, "[data-tag]"),
+                "an Add on the inner collection renders inside its own child");
+        }
+
+        [Test]
+        public static void TestChainedLoopSourceFollowsEveryHop(Assert assert)
+        {
+            // Item 3 of the 1.1.12 gaps: @foreach (var w in Model.Child.Items) used to fail to
+            // compile (ERR0123 'w.Name' cannot be resolved). It must render, add incrementally,
+            // and re-render when the collection, the child, or a null child changes.
+            var vm = NewVm(true, false, "parent");
+            var host = Render(vm);
+            assert.DeepEqual(new string[] { "w1", "w2" }, Texts(host, "[data-chained-item]"), "initial items");
+
+            // The loop variable must be typed through the chain (Model → Child → Items → item),
+            // otherwise item bindings are OneTime and never update.
+            vm.Child.Items[0].Leaf = "w1-edited";
+            assert.DeepEqual(new string[] { "w1-edited", "w2" }, Texts(host, "[data-chained-item]"),
+                "an item property change updates the rendered item (loop variable typed through the chain)");
+
+            vm.Child.Items.Add(Child("w3"));
+            assert.DeepEqual(new string[] { "w1-edited", "w2", "w3" }, Texts(host, "[data-chained-item]"),
+                "incremental Add on the chained collection");
+
+            vm.Child.Items = Leaves("x1");
+            assert.DeepEqual(new string[] { "x1" }, Texts(host, "[data-chained-item]"),
+                "replacing the collection (last hop) re-renders");
+
+            var replacement = new RazorModeChild();
+            replacement.Leaf = "leaf-r";
+            replacement.Items = Leaves("y1", "y2");
+            vm.Child = replacement;
+            assert.DeepEqual(new string[] { "y1", "y2" }, Texts(host, "[data-chained-item]"),
+                "replacing the child (mid hop) re-renders from the new child's collection");
+            replacement.Items.Add(Child("y3"));
+            assert.Equal(3, host.QuerySelectorAll("[data-chained-item]").Length,
+                "the collection listener moved to the new child's collection");
+
+            vm.Child = null;
+            assert.Equal(0, host.QuerySelectorAll("[data-chained-item]").Length,
+                "a null child clears the loop instead of throwing");
+
+            vm.Child = Child("leaf-z");
+            vm.Child.Items = Leaves("z1");
+            assert.DeepEqual(new string[] { "z1" }, Texts(host, "[data-chained-item]"),
+                "setting the child again and then its collection renders");
         }
 
         [Test]

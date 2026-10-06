@@ -550,16 +550,18 @@ namespace NScript.RazorSkin.CodeGen
             ctx.AddEdge(0, collIdx);
 
             // Subscribe to PropertyChanged for the collection property so that
-            // collection reference changes (e.g., setting DetailSubTasks to a new
+            // collection reference changes (e.g., setting Items to a new
             // ObservableCollection) trigger a Flush that detaches the old listener
-            // and re-renders with the new collection.
+            // and re-renders with the new collection. A chained path (Model.Child.Items)
+            // becomes a chained subscription that listens on every hop, so replacing the
+            // child — or clearing it — re-renders as well.
             string collExpr = loop.CollectionExpression ?? "";
-            string propName = collExpr;
-            if (propName.StartsWith("Model."))
-                propName = propName.Substring("Model.".Length);
-            if (!string.IsNullOrEmpty(propName))
+            string path = ctx.StripSourcePrefix(collExpr);
+            if (!string.IsNullOrEmpty(path))
             {
-                ctx.AddSubscription(propName, collIdx, ctx.GetSourceSlot(collExpr));
+                var segments = path.Split('.');
+                ctx.AddSubscription(segments[0], collIdx, ctx.GetSourceSlot(collExpr),
+                    segments.Length > 1 ? segments : null);
             }
 
             // Build item topology recursively if there's an item template.
@@ -819,6 +821,20 @@ namespace NScript.RazorSkin.CodeGen
                 if (!string.IsNullOrEmpty(_itemVariablePrefix)
                     && (expression ?? string.Empty).StartsWith(_itemVariablePrefix)) return 2;
                 return 0;
+            }
+
+            /// <summary>
+            /// Removes the root that names the source slot (<c>Model.</c>, <c>Control.</c> or the
+            /// loop variable prefix), leaving the property path relative to that source.
+            /// </summary>
+            public string StripSourcePrefix(string expression)
+            {
+                expression = expression ?? string.Empty;
+                if (expression.StartsWith("Model.")) return expression.Substring("Model.".Length);
+                if (expression.StartsWith("Control.")) return expression.Substring("Control.".Length);
+                if (!string.IsNullOrEmpty(_itemVariablePrefix) && expression.StartsWith(_itemVariablePrefix))
+                    return expression.Substring(_itemVariablePrefix.Length);
+                return expression;
             }
 
             public int GetDependencySourceSlot(ObservableDependency dependency,

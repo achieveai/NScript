@@ -1076,16 +1076,16 @@ namespace NScript.RazorSkin.CodeGen
 
                 if (node is LoopNode loop)
                 {
-                    var collectionOwner = (loop.CollectionExpression ?? string.Empty)
-                        .StartsWith("Model.") ? modelType : itemType ?? modelType;
-                    var propertyName = (loop.CollectionExpression ?? string.Empty)
-                        .Split('.').LastOrDefault();
-                    var collection = collectionOwner != null
-                        ? FindProperty(collectionOwner, propertyName) : null;
-                    var collectionType = collection?.PropertyType as GenericInstanceType;
-                    var itemReference = collectionType?.GenericArguments.FirstOrDefault();
-                    var loopItemType = itemReference != null
-                        ? FindTypeDefinition(itemReference.FullName) : null;
+                    // Walk the whole collection path (Model.Child.Items, item.Tags) so the loop
+                    // variable is typed for sub-control attributes in the item template.
+                    var segments = (loop.CollectionExpression ?? string.Empty).Split('.');
+                    bool rootIsModel = segments[0] == "Model";
+                    bool rootIsItem = !string.IsNullOrEmpty(itemVariablePrefix)
+                        && segments[0] + "." == itemVariablePrefix;
+                    var collectionOwner = rootIsModel ? modelType : itemType ?? modelType;
+                    var hops = rootIsModel || rootIsItem ? segments.Skip(1) : segments;
+                    var loopItemType = FindTypeDefinition(CecilTypeHelper.CollectionItemTypeName(
+                        _typeHelper.FindPropertyPath(collectionOwner, hops)));
                     ResolveSubControlAttributes(loop.ItemTemplate, modelType,
                         loopItemType, loop.ItemVariableName + ".");
                 }

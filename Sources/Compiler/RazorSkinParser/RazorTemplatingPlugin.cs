@@ -1242,8 +1242,9 @@ namespace Sunlight.Framework.Observables
             // For loops, also scan item template with the item type for item-level methods
             if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
             {
-                // Resolve item type from collection property on the model
-                var loopItemTypeName = TryResolveItemTypeName(modelTypeName, loop);
+                // Resolve item type from the collection path (Model.Items, Model.Child.Items, item.Tags)
+                var loopItemTypeName = TryResolveItemTypeName(
+                    modelTypeName, controlTypeName, itemTypeName, itemVariableName, loop);
 
                 foreach (var child in loop.ItemTemplate)
                     CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
@@ -1304,12 +1305,21 @@ namespace Sunlight.Framework.Observables
                         methods, seen, itemTypeName, itemVariableName);
             }
 
-            if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
+            if (node is TemplateIR.LoopNode loop)
             {
-                var loopItemTypeName = TryResolveItemTypeName(modelTypeName, loop);
-                foreach (var child in loop.ItemTemplate)
-                    CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
-                        methods, seen, loopItemTypeName, loop.ItemVariableName);
+                // The collection path itself (Model.Workspaces, Model.Child.Items) may read computed
+                // getters, exactly like a text or attribute binding does.
+                AddBindingExpressionReferences(loop.CollectionExpression,
+                    modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+
+                if (loop.ItemTemplate != null)
+                {
+                    var loopItemTypeName = TryResolveItemTypeName(
+                        modelTypeName, controlTypeName, itemTypeName, itemVariableName, loop);
+                    foreach (var child in loop.ItemTemplate)
+                        CollectBindingExpressionReferences(child, modelTypeName, controlTypeName,
+                            methods, seen, loopItemTypeName, loop.ItemVariableName);
+                }
             }
 
             if (node.Children != null)
@@ -1352,13 +1362,9 @@ namespace Sunlight.Framework.Observables
         {
             if (path.Count < 2) return;
 
-            string rootTypeName;
-            var root = path[0];
-            if (root == "Model") rootTypeName = modelTypeName;
-            else if (root == "Control") rootTypeName = controlTypeName;
-            else if (!string.IsNullOrEmpty(itemVariableName) && root == itemVariableName)
-                rootTypeName = itemTypeName;
-            else return;
+            var rootTypeName = ResolveBindingRootTypeName(
+                path[0], modelTypeName, controlTypeName, itemTypeName, itemVariableName);
+            if (rootTypeName == null) return;
 
             var currentType = FindSubControlTypeInAssemblies(rootTypeName);
             for (int i = 1; i < path.Count && currentType != null; i++)
@@ -1370,6 +1376,19 @@ namespace Sunlight.Framework.Observables
                     methods.Add(getter);
                 currentType = SafeResolve(property.PropertyType);
             }
+        }
+
+        /// <summary>
+        /// Declared type name of a binding root: <c>Model</c>, <c>Control</c>, or the enclosing
+        /// loop variable (the item type). Null for anything else (static types, unknown names).
+        /// </summary>
+        private static string ResolveBindingRootTypeName(string root, string modelTypeName,
+            string controlTypeName, string itemTypeName, string itemVariableName)
+        {
+            if (root == "Model") return modelTypeName;
+            if (root == "Control") return controlTypeName;
+            if (!string.IsNullOrEmpty(itemVariableName) && root == itemVariableName) return itemTypeName;
+            return null;
         }
 
         /// <summary>
@@ -1584,43 +1603,23 @@ namespace Sunlight.Framework.Observables
         }
 
         /// <summary>
-        /// Resolves the item type name for a foreach loop by inspecting
-        /// the collection property's generic type argument on the model type.
+        /// Resolves the item type name for a foreach loop from its collection path. The root
+        /// (Model, Control or the enclosing loop variable) is walked hop by hop, so a chained path
+        /// (<c>Model.Child.Items</c>) and an item-rooted nested loop (<c>item.Tags</c>) type their
+        /// loop variable like a one-hop source; the final property's generic argument is the item
+        /// type (ObservableCollection&lt;T&gt; → T).
         /// </summary>
-        private string TryResolveItemTypeName(string modelTypeName, TemplateIR.LoopNode loop)
+        private string TryResolveItemTypeName(string modelTypeName, string controlTypeName,
+            string itemTypeName, string itemVariableName, TemplateIR.LoopNode loop)
         {
-            try
-            {
-                // CollectionExpression is like "Model.CurrentTodos"
-                var collExpr = loop.CollectionExpression;
-                if (string.IsNullOrEmpty(collExpr)) return null;
+            if (_clrContext == null || string.IsNullOrEmpty(loop.CollectionExpression)) return null;
 
-                if (collExpr.StartsWith("Model."))
-                    collExpr = collExpr.Substring(6);
-
-                // Find the property on the model type
-                TypeDefinition modelType = null;
-                foreach (var t in _clrContext.GetTypes())
-                {
-                    if (t.FullName == modelTypeName || t.Name == modelTypeName)
-                    {
-                        modelType = t;
-                        break;
-                    }
-                }
-                if (modelType == null) return null;
-
-                var prop = modelType.Properties.FirstOrDefault(p => p.Name == collExpr);
-                if (prop == null) return null;
-
-                // Extract generic type argument from ObservableCollection<T>
-                var propType = prop.PropertyType;
-                if (propType is Mono.Cecil.GenericInstanceType git && git.GenericArguments.Count > 0)
-                    return git.GenericArguments[0].FullName;
-            }
-            catch { }
-
-            return null;
+            var segments = loop.CollectionExpression.Split('.');
+            var rootTypeName = ResolveBindingRootTypeName(
+                segments[0], modelTypeName, controlTypeName, itemTypeName, itemVariableName);
+            var rootType = FindSubControlTypeInAssemblies(rootTypeName);
+            return CecilTypeHelper.CollectionItemTypeName(
+                _typeHelper.FindPropertyPath(rootType, segments.Skip(1)));
         }
 
         /// <summary>

@@ -77,11 +77,9 @@ namespace NScript.RazorSkin
                 ir.ControlTypeName, controlType != null);
 
             // Walk all IR nodes and refine classifications.
-            // This now handles expression bindings, conditionals, and loop item types.
+            // This now handles expression bindings, conditionals, and loop collection/item types
+            // (including the IsObservableCollection flag).
             RefineNodes(ir.Children, modelType, controlType, compilation, semanticModel);
-
-            // Refine loop nodes (sets IsObservableCollection flag)
-            RefineLoopNodes(ir.Children, modelType, compilation);
 
             // Count promotions (OneTime -> OneWay)
             var promotionCount = CountPromotions(ir.Children);
@@ -114,8 +112,12 @@ namespace NScript.RazorSkin
                 }
                 else if (node is LoopNode loop)
                 {
-                    // Resolve item type from the collection property's generic argument.
-                    var itemType = ResolveLoopItemType(loop, modelType);
+                    // Type the collection by walking its full path (Model.Child.Items, item.Tags),
+                    // then take the loop variable's type from the collection's element type.
+                    var collectionType = ResolveCollectionType(
+                        loop.CollectionExpression, modelType, modelPrefix, parentModelType);
+                    loop.IsObservableCollection = ObservableAnalyzer.IsObservableCollection(collectionType);
+                    var itemType = ResolveElementType(collectionType);
                     var itemPrefix = loop.ItemVariableName + ".";
                     if (itemType != null)
                     {
@@ -140,35 +142,59 @@ namespace NScript.RazorSkin
         }
 
         /// <summary>
-        /// Resolves the item type for a loop node by finding the collection property
-        /// on the model type and extracting its generic type argument.
-        /// E.g., ObservableCollection&lt;RazorItemVM&gt; → RazorItemVM.
+        /// Resolves the declared type of a <c>@foreach</c> collection path. The root is the
+        /// current model prefix (<c>Model.</c> at the top level, the loop variable inside a loop)
+        /// or, inside a loop, <c>Model.</c> for the enclosing model; every further segment is a
+        /// property on the previous segment's type, so <c>Model.Child.Items</c> resolves the same
+        /// way <c>Model.Items</c> does. Null when the root or any hop is unknown.
         /// </summary>
-        private static INamedTypeSymbol ResolveLoopItemType(LoopNode loop, INamedTypeSymbol modelType)
+        private static ITypeSymbol ResolveCollectionType(
+            string collectionExpression, INamedTypeSymbol modelType, string modelPrefix,
+            INamedTypeSymbol parentModelType)
         {
-            if (modelType == null) return null;
-
-            var collExpr = loop.CollectionExpression;
-            var propName = collExpr.Replace("Model.", "").Split('.')[0];
-            var prop = FindProperty(modelType, propName);
-            if (prop == null) return null;
-
-            var collectionType = prop.Type as INamedTypeSymbol;
-            if (collectionType == null) return null;
-
-            // Check generic type arguments (e.g., ObservableCollection<T> has one arg)
-            if (collectionType.TypeArguments.Length > 0)
+            var expression = collectionExpression ?? "";
+            ITypeSymbol current;
+            string path;
+            if (expression.StartsWith(modelPrefix))
             {
-                return collectionType.TypeArguments[0] as INamedTypeSymbol;
+                current = modelType;
+                path = expression.Substring(modelPrefix.Length);
+            }
+            else if (expression.StartsWith("Model."))
+            {
+                current = parentModelType;
+                path = expression.Substring("Model.".Length);
+            }
+            else
+            {
+                return null;
             }
 
-            // Check interfaces for IEnumerable<T>
-            foreach (var iface in collectionType.AllInterfaces)
+            foreach (var segment in path.Split('.'))
+            {
+                var prop = current is INamedTypeSymbol owner ? FindProperty(owner, segment) : null;
+                if (prop == null) return null;
+                current = prop.Type;
+            }
+            return current;
+        }
+
+        /// <summary>
+        /// Element type of a collection: its first generic argument
+        /// (ObservableCollection&lt;RazorItemVM&gt; → RazorItemVM), else the T of an implemented
+        /// IEnumerable&lt;T&gt;.
+        /// </summary>
+        private static INamedTypeSymbol ResolveElementType(ITypeSymbol collectionType)
+        {
+            if (!(collectionType is INamedTypeSymbol named)) return null;
+
+            if (named.TypeArguments.Length > 0)
+                return named.TypeArguments[0] as INamedTypeSymbol;
+
+            foreach (var iface in named.AllInterfaces)
             {
                 if (iface.Name == "IEnumerable" && iface.TypeArguments.Length > 0)
-                {
                     return iface.TypeArguments[0] as INamedTypeSymbol;
-                }
             }
 
             return null;
@@ -218,33 +244,6 @@ namespace NScript.RazorSkin
             binding.Classification.Mode = dependencies.Count > 0
                 ? BindingMode.OneWay
                 : BindingMode.OneTime;
-        }
-
-        private static void RefineLoopNodes(
-            List<IRNode> nodes,
-            INamedTypeSymbol modelType,
-            CSharpCompilation compilation)
-        {
-            foreach (var node in nodes)
-            {
-                if (node is LoopNode loop && modelType != null)
-                {
-                    // Check if the collection is observable
-                    var collExpr = loop.CollectionExpression;
-                    var propName = collExpr.Replace("Model.", "").Split('.')[0];
-                    var prop = FindProperty(modelType, propName);
-                    if (prop != null)
-                    {
-                        loop.IsObservableCollection =
-                            ObservableAnalyzer.IsObservableCollection(prop.Type);
-                    }
-
-                    // Recurse into item template (M3)
-                    RefineLoopNodes(loop.ItemTemplate, modelType, compilation);
-                }
-
-                RefineLoopNodes(node.Children, modelType, compilation);
-            }
         }
 
         /// <summary>

@@ -224,6 +224,91 @@ public class ItemVM : ObservableObject
             topology.GetterExpressions.Should().Contain("Model.Name").And.Contain("item.Name");
         }
 
+        // --- Chained and computed loop sources (1.1.12) ---
+
+        [TestMethod]
+        public void ForeachOverChainedPath_TypesLoopVariableAndDetectsObservableCollection()
+        {
+            // @foreach (var w in Model.Child.Items) used to fail with ERR0123 because the loop
+            // item type was resolved from a single hop only, leaving @w.Name unresolvable.
+            var vmSource = @"
+using Sunlight.Framework.Observables;
+public class TestVM : ObservableObject
+{
+    public ChildVM Child { get; set; }
+}
+public class ChildVM : ObservableObject
+{
+    public ObservableCollection<ItemVM> Items { get; set; }
+}
+public class ItemVM : ObservableObject
+{
+    public string Name { get; set; }
+}";
+            var template = @"
+@model TestVM
+@foreach (var w in Model.Child.Items)
+{
+    <span>@w.Name</span>
+}";
+
+            var ir = BuildAndAnalyze(template, vmSource);
+            var loop = ir.Children.OfType<LoopNode>().Single();
+            loop.IsObservableCollection.Should().BeTrue("the final hop is an ObservableCollection");
+
+            var binding = FindNodes<ExpressionBindingNode>(loop).Single();
+            binding.Classification.Mode.Should().Be(BindingMode.OneWay,
+                "the loop variable is typed as ItemVM, whose Name is observable");
+            binding.Classification.Dependencies.Single().PropertyName.Should().Be("Name");
+
+            var topology = NScript.RazorSkin.CodeGen.GraphTopologyBuilder.Build(ir);
+            var collIdx = topology.Collections.Single().NodeIdx;
+            topology.Subscriptions.Single(s => s.NodeIdx == collIdx).PathSegments.Should().Equal("Child", "Items");
+        }
+
+        [TestMethod]
+        public void NestedForeachOverLoopVariableGetter_TypesInnerLoopVariable()
+        {
+            // The inner loop's source is a computed getter of the OUTER loop variable (c.TagsView),
+            // so the inner item type must be resolved against the outer item type, not the model.
+            var vmSource = @"
+using Sunlight.Framework.Observables;
+public class TestVM : ObservableObject
+{
+    public ObservableCollection<ChildVM> Children { get; set; }
+}
+public class ChildVM : ObservableObject
+{
+    public ObservableCollection<TagVM> Tags { get; set; }
+    public ObservableCollection<TagVM> TagsView { get { return this.Tags; } }
+}
+public class TagVM : ObservableObject
+{
+    public string Label { get; set; }
+}";
+            var template = @"
+@model TestVM
+@foreach (var c in Model.Children)
+{
+    <div>
+    @foreach (var t in c.TagsView)
+    {
+        <span>@t.Label</span>
+    }
+    </div>
+}";
+
+            var ir = BuildAndAnalyze(template, vmSource);
+            var outer = ir.Children.OfType<LoopNode>().Single();
+            var inner = FindNodes<LoopNode>(outer).Single(l => l != outer);
+            inner.IsObservableCollection.Should().BeTrue();
+
+            var binding = FindNodes<ExpressionBindingNode>(inner).Single();
+            binding.Classification.Mode.Should().Be(BindingMode.OneWay,
+                "t is typed as TagVM, whose Label is observable");
+            binding.Classification.Dependencies.Single().PropertyName.Should().Be("Label");
+        }
+
         // --- LIMIT-001: Getter-only observable property classification ---
 
         [TestMethod]

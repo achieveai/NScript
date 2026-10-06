@@ -1,6 +1,7 @@
 namespace TodoApp.Test.Controls
 {
     using Sunlight.Framework;
+    using Sunlight.Framework.Observables;
     using Sunlight.Framework.UI;
     using Sunlight.Framework.UI.Helpers;
     using SunlightUnit;
@@ -148,6 +149,74 @@ namespace TodoApp.Test.Controls
             detail = element.QuerySelector("[data-task-detail]");
             assert.Equal("Read a book", ((InputElement)detail.QuerySelector("input")).Value,
                 "Switching selection should update the child DataContext");
+        }
+
+        [Test]
+        public static void TestSubtaskListBindsToChainedSelectedTodoPath(Assert assert)
+        {
+            // The subtask list loops over Model.SelectedTodo.SubTasks directly (no pass-through
+            // DetailSubTasks property): it must be empty with no selection, follow the selection,
+            // add incrementally, and clear again when the selection is removed.
+            var element = Window.Instance.Document.CreateElement("div");
+            var shell = new UISkinableElement(element);
+            var vm = new AppViewModel();
+            vm.InitializeWithData();
+            shell.DataContext = vm;
+            shell.Skin = TodoAppSkins.AppShell;
+            shell.Activate();
+
+            assert.Equal(0, element.QuerySelectorAll("[class*='subtask-item']").Length,
+                "No subtasks render while SelectedTodo is null");
+
+            vm.SelectedTodo = vm.CurrentTodos[0];
+            var expected = vm.CurrentTodos[0].SubTasks.Count;
+            assert.Equal(expected, element.QuerySelectorAll("[class*='subtask-item']").Length,
+                "Selecting a todo renders its subtasks through the chained path");
+
+            vm.CurrentTodos[0].AddSubTask();
+            assert.Equal(expected + 1, element.QuerySelectorAll("[class*='subtask-item']").Length,
+                "Adding to the selected todo's collection renders incrementally");
+
+            // The loop variable must be typed through the chained path so item bindings are
+            // live: toggling a subtask must update its row class (the E2E "Toggle subtask
+            // completion" scenario).
+            var rows = element.QuerySelectorAll("[class*='subtask-item']");
+            var last = vm.CurrentTodos[0].SubTasks[vm.CurrentTodos[0].SubTasks.Count - 1];
+            assert.Equal(false, rows[rows.Length - 1].ClassName.IndexOf("completed") >= 0,
+                "A new subtask row starts without the completed class");
+            last.IsCompleted = true;
+            assert.Equal(true, rows[rows.Length - 1].ClassName.IndexOf("completed") >= 0,
+                "Toggling the subtask updates its row class through the item subscription");
+
+            vm.SelectedTodo = vm.CurrentTodos[1];
+            assert.Equal(vm.CurrentTodos[1].SubTasks.Count,
+                element.QuerySelectorAll("[class*='subtask-item']").Length,
+                "Switching selection re-renders from the new todo's collection");
+
+            vm.SelectedTodo = null;
+            assert.Equal(0, element.QuerySelectorAll("[class*='subtask-item']").Length,
+                "Clearing the selection empties the list without throwing");
+        }
+
+        [Test]
+        public static void TestMovePickerListsFoldersThroughTemplateOnlyGetter(Assert assert)
+        {
+            // Model.MoveTargets is a getter that only the skin reads; it must survive dead-code
+            // elimination and follow a Folders reload.
+            var element = Window.Instance.Document.CreateElement("div");
+            var shell = new UISkinableElement(element);
+            var vm = new AppViewModel();
+            vm.InitializeWithData();
+            shell.DataContext = vm;
+            shell.Skin = TodoAppSkins.AppShell;
+            shell.Activate();
+
+            assert.Equal(vm.Folders.Count, element.QuerySelectorAll("[class*='folder-pick-item']").Length,
+                "The picker lists every folder through the template-only getter");
+
+            vm.Folders = new ObservableCollection<FolderViewModel>();
+            assert.Equal(0, element.QuerySelectorAll("[class*='folder-pick-item']").Length,
+                "Replacing Folders re-renders the picker (MoveTargets change is raised)");
         }
 
         [Test]

@@ -443,6 +443,89 @@ namespace RazorSkinParser.Test
             itemTopo.NodeTypes.Should().Contain(GraphNodeTypeConstants.Computed);
         }
 
+        /// <summary>
+        /// A chained loop source (@foreach over Model.Child.Items) must subscribe to every hop,
+        /// not to the flat name "Child.Items" (which no object ever raises): replacing or clearing
+        /// Child, or replacing Items, must dirty the CollectionManager node and re-render.
+        /// </summary>
+        [TestMethod]
+        public void ForEachLoop_ChainedCollectionPath_SubscribesToEveryHop()
+        {
+            var topology = GraphTopologyBuilder.Build(new SkinTemplateNode
+            {
+                ModelTypeName = "TestModel",
+                Children = { new LoopNode
+                {
+                    ItemVariableName = "w", CollectionExpression = "Model.Child.Items",
+                    IsObservableCollection = true, CollectionSourceKind = BindingSourceKind.DataContext,
+                    ItemTemplate = new List<IRNode>
+                    {
+                        MakeBinding("w.Name", BindingMode.OneWay,
+                            BindingSourceKind.DataContext, ExpressionTarget.TextContent, "e0", "Name")
+                    }
+                } }
+            });
+
+            var collIdx = topology.Collections.Single().NodeIdx;
+            var subscription = topology.Subscriptions.Single(s => s.NodeIdx == collIdx);
+            subscription.PropertyName.Should().Be("Child", "the root hop is the listened property on the DataContext");
+            subscription.SourceSlot.Should().Be(0);
+            subscription.PathSegments.Should().Equal("Child", "Items");
+        }
+
+        /// <summary>
+        /// A single-hop loop source keeps the plain (non-chained) subscription.
+        /// </summary>
+        [TestMethod]
+        public void ForEachLoop_SingleHopCollectionPath_HasNoPathSegments()
+        {
+            var topology = GraphTopologyBuilder.Build(new SkinTemplateNode
+            {
+                ModelTypeName = "TestModel",
+                Children = { new LoopNode
+                {
+                    ItemVariableName = "w", CollectionExpression = "Model.Items",
+                    IsObservableCollection = true, CollectionSourceKind = BindingSourceKind.DataContext,
+                    ItemTemplate = new List<IRNode>()
+                } }
+            });
+
+            var subscription = topology.Subscriptions.Single(s => s.NodeIdx == topology.Collections.Single().NodeIdx);
+            subscription.PropertyName.Should().Be("Items");
+            subscription.PathSegments.Should().BeNull();
+        }
+
+        /// <summary>
+        /// A nested loop whose source is a path on the OUTER loop variable (c.Tags.Items) is
+        /// subscribed on the item slot with the item prefix stripped.
+        /// </summary>
+        [TestMethod]
+        public void ForEachLoop_NestedChainedPathOnLoopVariable_SubscribesOnItemSlot()
+        {
+            var topology = GraphTopologyBuilder.Build(new SkinTemplateNode
+            {
+                ModelTypeName = "TestModel",
+                Children = { new LoopNode
+                {
+                    ItemVariableName = "c", CollectionExpression = "Model.Children",
+                    IsObservableCollection = true, CollectionSourceKind = BindingSourceKind.DataContext,
+                    ItemTemplate = new List<IRNode> { new LoopNode
+                    {
+                        ItemVariableName = "t", CollectionExpression = "c.Inner.Tags",
+                        IsObservableCollection = true, CollectionSourceKind = BindingSourceKind.DataContext,
+                        ItemTemplate = new List<IRNode>()
+                    } }
+                } }
+            });
+
+            var itemTopology = topology.Collections.Single().ItemTopology;
+            var innerCollIdx = itemTopology.Collections.Single().NodeIdx;
+            var subscription = itemTopology.Subscriptions.Single(s => s.NodeIdx == innerCollIdx);
+            subscription.PropertyName.Should().Be("Inner");
+            subscription.SourceSlot.Should().Be(2, "the loop variable lives in tuple slot 2");
+            subscription.PathSegments.Should().Equal("Inner", "Tags");
+        }
+
         private static ExpressionBindingNode MakeBinding(
             string csharpExpr, BindingMode mode, BindingSourceKind sourceKind,
             ExpressionTarget target, string elementId, string propertyName)

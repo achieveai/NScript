@@ -24,11 +24,17 @@ namespace NScript.RazorSkin
             _typeHelper = new CecilTypeHelper(clrContext);
         }
 
+        private const string ObservableObjectFullName = "Sunlight.Framework.Observables.ObservableObject";
+
         /// <summary>
-        /// Generates a C# source stub for the model type referenced by @model in the template.
-        /// Uses Cecil type information to produce a minimal class declaration with properties,
-        /// so the Roslyn analysis phase can detect observable properties and promote bindings
-        /// from OneTime to OneWay.
+        /// Generates C# source stubs for the model type referenced by @model in the template and
+        /// for every type the template can reach from it through properties: the element types of
+        /// collection properties and any observable type a property is declared as, transitively
+        /// (<c>Model.SelectedTodo.SubTasks</c> needs the stub of <c>SelectedTodo</c>'s type so the
+        /// element type of <c>SubTasks</c> can be found). Non-observable object-typed properties
+        /// are not followed, which keeps DOM facades and services out of the analysis compilation.
+        /// The Roslyn analysis phase uses the stubs to detect observable properties, type loop
+        /// variables and promote bindings from OneTime to OneWay.
         /// </summary>
         public string GenerateModelTypeStub(string templateSource)
         {
@@ -55,142 +61,119 @@ namespace NScript.RazorSkin
                 return null;
             }
 
-            // Determine base class
-            var baseTypeName = "object";
-            var currentBase = typeDef.BaseType;
-            while (currentBase != null)
+            var sb = new System.Text.StringBuilder();
+            var stubbed = new HashSet<string> { typeDef.FullName };
+            var pending = new Queue<TypeDefinition>();
+
+            AppendTypeStub(sb, typeDef, includeMethods: true);
+            EnqueueReferencedTypes(typeDef, stubbed, pending);
+
+            while (pending.Count > 0)
             {
-                if (currentBase.FullName == "Sunlight.Framework.Observables.ObservableObject")
-                {
-                    baseTypeName = "Sunlight.Framework.Observables.ObservableObject";
-                    break;
-                }
-                try { currentBase = currentBase.Resolve()?.BaseType; }
-                catch (Mono.Cecil.AssemblyResolutionException) { break; }
-                catch (System.Exception) { break; }
+                var referenced = pending.Dequeue();
+                AppendTypeStub(sb, referenced, includeMethods: false);
+                EnqueueReferencedTypes(referenced, stubbed, pending);
             }
 
-            // Build namespace and class declaration
+            var stub = sb.ToString();
+            Log.Debug("Generated model type stub for {TypeName}: {StubLength} chars, {TypeCount} types",
+                modelTypeName, stub.Length, stubbed.Count);
+            return stub;
+        }
+
+        /// <summary>
+        /// Appends one class stub, in its own namespace block, with its public properties and
+        /// (for the model type, whose methods are event handlers) its public methods.
+        /// </summary>
+        private static void AppendTypeStub(System.Text.StringBuilder sb, TypeDefinition typeDef, bool includeMethods)
+        {
+            var baseTypeName = IsObservableObjectDerived(typeDef) ? ObservableObjectFullName : "object";
             var ns = typeDef.Namespace;
-            var className = typeDef.Name;
-            var sb = new System.Text.StringBuilder();
 
             if (!string.IsNullOrEmpty(ns))
-            {
                 sb.AppendLine($"namespace {ns} {{");
-            }
 
-            sb.AppendLine($"  public class {className} : {baseTypeName} {{");
+            sb.AppendLine($"  public class {typeDef.Name} : {baseTypeName} {{");
 
-            // Generate property stubs
             foreach (var prop in typeDef.Properties)
             {
                 var propTypeName = MapCecilTypeToSimpleName(prop.PropertyType);
                 if (prop.GetMethod != null && prop.SetMethod != null)
-                {
                     sb.AppendLine($"    public {propTypeName} {prop.Name} {{ get; set; }}");
-                }
                 else if (prop.GetMethod != null)
-                {
                     sb.AppendLine($"    public {propTypeName} {prop.Name} {{ get; }}");
-                }
             }
 
-            // Generate method stubs (for event handlers)
-            foreach (var method in typeDef.Methods)
+            if (includeMethods)
             {
-                if (!method.IsPublic || method.IsConstructor || method.IsGetter || method.IsSetter)
-                    continue;
-                var retType = MapCecilTypeToSimpleName(method.ReturnType);
-                var paramStrs = method.Parameters
-                    .Select(p => $"{MapCecilTypeToSimpleName(p.ParameterType)} {p.Name}");
-                sb.AppendLine($"    public {retType} {method.Name}({string.Join(", ", paramStrs)}) {{ }}");
+                foreach (var method in typeDef.Methods)
+                {
+                    if (!method.IsPublic || method.IsConstructor || method.IsGetter || method.IsSetter)
+                        continue;
+                    var retType = MapCecilTypeToSimpleName(method.ReturnType);
+                    var paramStrs = method.Parameters
+                        .Select(p => $"{MapCecilTypeToSimpleName(p.ParameterType)} {p.Name}");
+                    sb.AppendLine($"    public {retType} {method.Name}({string.Join(", ", paramStrs)}) {{ }}");
+                }
             }
 
             sb.AppendLine("  }");
 
             if (!string.IsNullOrEmpty(ns))
-            {
                 sb.AppendLine("}");
-            }
+        }
 
-            // Generate stubs for types referenced in collection properties AFTER
-            // closing the main namespace, so they get their own proper namespace blocks.
-            var referencedTypes = new HashSet<string>();
+        /// <summary>
+        /// Queues the types a template can reach from <paramref name="typeDef"/>'s properties:
+        /// every generic argument of a property type (collection element types, as before) and
+        /// every observable property type (a chained path hops through it). Each type is queued once.
+        /// </summary>
+        private void EnqueueReferencedTypes(
+            TypeDefinition typeDef, HashSet<string> stubbed, Queue<TypeDefinition> pending)
+        {
             foreach (var prop in typeDef.Properties)
             {
                 if (prop.PropertyType is GenericInstanceType genPropType)
                 {
                     foreach (var arg in genPropType.GenericArguments)
-                    {
-                        if (!arg.IsPrimitive && arg.FullName != "System.String" && arg.FullName != "System.Object")
-                        {
-                            referencedTypes.Add(arg.FullName);
-                        }
-                    }
+                        EnqueueReferencedType(arg, requireObservable: false, stubbed, pending);
+                }
+                else
+                {
+                    EnqueueReferencedType(prop.PropertyType, requireObservable: true, stubbed, pending);
                 }
             }
-
-            foreach (var refTypeName in referencedTypes)
-            {
-                GenerateReferencedTypeStub(sb, refTypeName);
-            }
-
-            var stub = sb.ToString();
-            Log.Debug("Generated model type stub for {TypeName}: {StubLength} chars, base={BaseType}",
-                modelTypeName, stub.Length, baseTypeName);
-            return stub;
         }
 
-        private void GenerateReferencedTypeStub(
-            System.Text.StringBuilder sb,
-            string fullTypeName)
+        private void EnqueueReferencedType(
+            TypeReference reference, bool requireObservable,
+            HashSet<string> stubbed, Queue<TypeDefinition> pending)
         {
-            var refTypeDef = _typeHelper.FindTypeDefinition(fullTypeName);
-            if (refTypeDef == null) return;
+            if (reference == null || reference.IsPrimitive || reference.IsGenericParameter
+                || reference.FullName == "System.String" || reference.FullName == "System.Object"
+                || stubbed.Contains(reference.FullName))
+                return;
 
-            // Determine base class for the referenced type
-            var refBaseType = "object";
-            var refBase = refTypeDef.BaseType;
-            while (refBase != null)
+            var referenced = _typeHelper.FindTypeDefinition(reference.FullName);
+            if (referenced == null) return;
+            if (requireObservable && !IsObservableObjectDerived(referenced)) return;
+
+            stubbed.Add(reference.FullName);
+            pending.Enqueue(referenced);
+        }
+
+        private static bool IsObservableObjectDerived(TypeDefinition typeDef)
+        {
+            var currentBase = typeDef.BaseType;
+            while (currentBase != null)
             {
-                if (refBase.FullName == "Sunlight.Framework.Observables.ObservableObject")
-                {
-                    refBaseType = "Sunlight.Framework.Observables.ObservableObject";
-                    break;
-                }
-                try { refBase = refBase.Resolve()?.BaseType; }
-                catch (Mono.Cecil.AssemblyResolutionException) { break; }
-                catch (System.Exception) { break; }
+                if (currentBase.FullName == ObservableObjectFullName)
+                    return true;
+                try { currentBase = currentBase.Resolve()?.BaseType; }
+                catch (Mono.Cecil.AssemblyResolutionException) { return false; }
+                catch (System.Exception) { return false; }
             }
-
-            // If the type is in a different namespace, wrap in its own namespace block
-            var refNs = refTypeDef.Namespace;
-            var refClassName = refTypeDef.Name;
-            bool needsNamespaceClose = false;
-
-            // Only open a namespace if it differs from what's already open
-            if (!string.IsNullOrEmpty(refNs))
-            {
-                sb.AppendLine($"  namespace {refNs} {{");
-                needsNamespaceClose = true;
-            }
-
-            sb.AppendLine($"    public class {refClassName} : {refBaseType} {{");
-
-            foreach (var prop in refTypeDef.Properties)
-            {
-                var propTypeName = MapCecilTypeToSimpleName(prop.PropertyType);
-                if (prop.GetMethod != null && prop.SetMethod != null)
-                    sb.AppendLine($"      public {propTypeName} {prop.Name} {{ get; set; }}");
-                else if (prop.GetMethod != null)
-                    sb.AppendLine($"      public {propTypeName} {prop.Name} {{ get; }}");
-            }
-
-            sb.AppendLine("    }");
-
-            if (needsNamespaceClose)
-                sb.AppendLine("  }");
+            return false;
         }
 
         /// <summary>
