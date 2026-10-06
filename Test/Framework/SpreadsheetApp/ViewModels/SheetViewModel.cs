@@ -17,7 +17,7 @@ namespace SpreadsheetApp.ViewModels
     /// </summary>
     public class SheetViewModel : ObservableObject, ICellSource
     {
-        private const int Iterations = 3;
+        private const int Iterations = 5;   // timed passes; the minimum is reported (filters host interference)
         public const int Columns = 26;
 
         private const int ScopeCellMode = 0;
@@ -728,7 +728,7 @@ namespace SpreadsheetApp.ViewModels
                     return;
                 }
                 this.results.Add(new BenchResultViewModel(OpLabel(op), size, batched ? "batched" : "sync",
-                    MedianD(msList), MedianI(writesList)));
+                    MinD(msList), MedianI(writesList)));
                 this.NextStep();
             });
         }
@@ -740,17 +740,11 @@ namespace SpreadsheetApp.ViewModels
             return "Randomize A,B";
         }
 
-        private static double MedianD(List<double> xs)
+        private static double MinD(List<double> xs)
         {
-            var copy = new List<double>();
-            for (int i = 0; i < xs.Count; i++) copy.Add(xs[i]);
-            for (int i = 1; i < copy.Count; i++)
-            {
-                double v = copy[i]; int j = i - 1;
-                while (j >= 0 && copy[j] > v) { copy[j + 1] = copy[j]; j = j - 1; }
-                copy[j + 1] = v;
-            }
-            return copy[copy.Count / 2];
+            double m = xs[0];
+            for (int i = 1; i < xs.Count; i++) if (xs[i] < m) m = xs[i];
+            return m;
         }
 
         private static int MedianI(List<int> xs)

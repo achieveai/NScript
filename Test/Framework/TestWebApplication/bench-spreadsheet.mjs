@@ -1,16 +1,18 @@
 // Headless before/after benchmark for the batched binding flush.
 //
 // Opens SpreadsheetApp.htm, runs the app's own benchmark (every op at
-// 50/100/200 rows, batching off and on, median of 3) and prints the table.
+// 50/100/200 rows, batching off and on, min of 5) and prints the table.
 //
 //   node bench-spreadsheet.mjs            # print the table
 //   node bench-spreadsheet.mjs --check    # also compare with the baseline, exit 1 on regression
 //   node bench-spreadsheet.mjs --update   # rewrite the baseline from this run
 //
-// Baseline: docs/benchmarks/spreadsheet-flush.baseline.json. DOM writes are
-// deterministic and must match exactly. Time is noisy: a cell is a regression
-// when sync or batched ms grows more than REGRESSION_PCT over the baseline on
-// the multi-cell ops at 100+ rows; smaller cells only warn.
+// Baseline: docs/benchmarks/spreadsheet-flush.baseline.json.
+// Gated (exit 1): DOM write counts must match the baseline exactly, batched
+// writes must not exceed sync, and on the multi-cell ops at 100+ rows the
+// batched/sync speedup must not fall more than SPEEDUP_DROP below baseline.
+// Absolute ms only warns: it doubles on a busy host (seen at 76% CPU load
+// with identical code), so it cannot be a gate on a dev box.
 //
 import http from 'http';
 import fs from 'fs';
@@ -67,7 +69,7 @@ for (const [k, s] of sync) {
 }
 
 const pad = (v, n, right) => { const t = String(v); return right ? t.padStart(n) : t.padEnd(n); };
-console.log('\n=== Spreadsheet binding flush: sync vs batched (median of 3) ===\n');
+console.log('\n=== Spreadsheet binding flush: sync vs batched (min of 5) ===\n');
 console.log(pad('Operation', 16) + pad('Rows', 6, true) + pad('sync ms', 10, true) + pad('batched ms', 12, true)
   + pad('speedup', 9, true) + pad('sync writes', 13, true) + pad('batched writes', 16, true));
 for (const r of rows) {
@@ -78,8 +80,8 @@ console.log('');
 console.log(JSON.stringify(rows));
 
 const BASELINE = path.resolve(__dirname, '../../../docs/benchmarks/spreadsheet-flush.baseline.json');
-const REGRESSION_PCT = 25;
-const WARN_PCT = 15;
+const SPEEDUP_DROP = 0.15;
+const WARN_PCT = 25;
 const args = process.argv.slice(2);
 
 if (args.includes('--update')) {
@@ -93,15 +95,14 @@ if (args.includes('--update')) {
   for (const r of rows) {
     const b = baseByKey.get(r.op + '|' + r.rows);
     if (!b) { console.log('NEW   ' + r.op + ' x ' + r.rows + ' (no baseline row)'); continue; }
-    const gate = r.rows >= 100 && r.op !== 'A1 + 1';
+    const gated = r.rows >= 100 && r.op !== 'A1 + 1';
     const pct = (now, was) => was > 0 ? ((now - was) / was) * 100 : 0;
-    const checks = [
-      ['sync ms', pct(r.syncMs, b.syncMs)],
-      ['batched ms', pct(r.batchedMs, b.batchedMs)],
-    ];
-    for (const [what, p] of checks) {
-      if (p > REGRESSION_PCT && gate) { failures++; console.log('FAIL  ' + r.op + ' x ' + r.rows + ': ' + what + ' +' + p.toFixed(0) + '% vs baseline'); }
-      else if (p > WARN_PCT) console.log('WARN  ' + r.op + ' x ' + r.rows + ': ' + what + ' +' + p.toFixed(0) + '% vs baseline');
+    for (const [what, p] of [['sync ms', pct(r.syncMs, b.syncMs)], ['batched ms', pct(r.batchedMs, b.batchedMs)]]) {
+      if (p > WARN_PCT) console.log('WARN  ' + r.op + ' x ' + r.rows + ': ' + what + ' +' + p.toFixed(0) + '% vs baseline (host load?)');
+    }
+    if (gated && r.speedup < b.speedup - SPEEDUP_DROP) {
+      failures++;
+      console.log('FAIL  ' + r.op + ' x ' + r.rows + ': speedup ' + r.speedup.toFixed(2) + 'x vs baseline ' + b.speedup.toFixed(2) + 'x');
     }
     if (r.syncWrites !== b.syncWrites || r.batchedWrites !== b.batchedWrites) {
       failures++;

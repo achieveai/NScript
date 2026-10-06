@@ -41,7 +41,7 @@ node bench-spreadsheet.mjs --check   # binding-flush benchmark vs docs/benchmark
 Rules:
 - Run all four after touching `Sources/Framework/`, `Sources/Compiler/`, a Razor/XWML plugin, or either demo app. `npm test` in that folder runs the first three.
 - Report results by suite name. A skipped suite is reported as skipped, never implied green.
-- Benchmark `--check` exits 1 when DOM write counts differ from the baseline, batched writes exceed sync, or `All A + 1` / `Randomize A,B` at 100+ rows get more than 25% slower. That blocks the change until explained. When a change is meant to move the numbers, run `--update`, refresh the table in `docs/benchmarks/spreadsheet-flush.md`, and say so in the commit.
+- Benchmark `--check` exits 1 when DOM write counts differ from the baseline, batched writes exceed sync, or the batched/sync speedup on `All A + 1` / `Randomize A,B` at 100+ rows drops more than 0.15 below baseline. Absolute ms only warns: it doubles on a loaded host with identical code. When a change is meant to move the numbers, run `--update`, refresh the table in `docs/benchmarks/spreadsheet-flush.md`, and say so in the commit.
 - Benchmark numbers come from timed passes with no MutationObserver; DOM writes come from a separate counting pass. Do not merge the two or the observer skews sync mode.
 - Never `dotnet test NScript_Full.sln`; run compiler test projects one at a time.
 
