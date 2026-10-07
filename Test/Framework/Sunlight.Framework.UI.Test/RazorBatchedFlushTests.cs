@@ -290,6 +290,73 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        /// <summary>
+        /// A collection item removed, replaced, or cleared while its graph has a
+        /// pending batched flush must be retired: the drain may not write to its
+        /// detached DOM or create sub-controls for it.
+        /// </summary>
+        [Test]
+        public static void TestBatchedFlushSkipsRemovedCollectionItems(Assert assert)
+        {
+            var timer = EnableBatching(GraphFlushMode.Microtask);
+            try
+            {
+                var doc = Window.Instance.Document;
+                var element = doc.CreateElement("div");
+                var control = new UISkinableElement(element);
+                var a = new RazorItemVM { Name = "A0", Status = "SA0" };
+                var b = new RazorItemVM { Name = "B0", Status = "SB0" };
+                var c = new RazorItemVM { Name = "C0", Status = "SC0" };
+                var vm = new RazorTestVM { Items = new ObservableCollection<RazorItemVM>() };
+                vm.Items.Add(a);
+                vm.Items.Add(b);
+                vm.Items.Add(c);
+                control.DataContext = vm;
+                control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+                control.Activate();
+                timer.FlushMicrotasks();
+
+                var spans = element.QuerySelectorAll(".item-status");
+                assert.Equal(3, spans.Length, "three items rendered");
+                var spanA = spans[0];
+                var spanB = spans[1];
+                var spanC = spans[2];
+
+                // Remove: dirty A, then take it out before the flush.
+                a.Status = "SA1";
+                a.Name = "A1";
+                vm.Items.RemoveAt(0);
+                int created = RazorProbeControl.CreatedCount;
+                timer.FlushMicrotasks();
+                assert.Equal("SA0", spanA.TextContent, "Removed item's detached span must not be written");
+                assert.Equal(created, RazorProbeControl.CreatedCount, "Removed item must not create sub-controls");
+                assert.Equal(0, GraphFlushCoordinator.PendingCount, "Drained after remove");
+
+                // Replace: dirty B, then swap it for a new item before the flush.
+                b.Status = "SB1";
+                var b2 = new RazorItemVM { Name = "B2", Status = "SB2" };
+                vm.Items[0] = b2;
+                timer.FlushMicrotasks();
+                assert.Equal("SB0", spanB.TextContent, "Replaced item's detached span must not be written");
+                var replacement = element.QuerySelector(".item-status");
+                assert.Equal("SB2", replacement.TextContent, "Replacement item renders");
+
+                // Reset: dirty C, then clear the collection before the flush.
+                c.Status = "SC1";
+                vm.Items.Clear();
+                created = RazorProbeControl.CreatedCount;
+                timer.FlushMicrotasks();
+                assert.Equal("SC0", spanC.TextContent, "Cleared item's detached span must not be written");
+                assert.Equal(created, RazorProbeControl.CreatedCount, "Cleared items must not create sub-controls");
+                assert.Equal(0, element.QuerySelectorAll(".item-status").Length, "Nothing rendered after clear");
+                assert.Equal(0, GraphFlushCoordinator.PendingCount, "Drained after clear");
+            }
+            finally
+            {
+                DisableBatching();
+            }
+        }
+
         [Test]
         public static void TestBatchedFlushContinuesAfterOneGraphThrows(Assert assert)
         {

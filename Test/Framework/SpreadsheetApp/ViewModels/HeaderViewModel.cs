@@ -28,7 +28,7 @@ namespace SpreadsheetApp.ViewModels
             {
                 if (this.formatName == value) return;
                 this.formatName = value;
-                base.FirePropertyChanged("FormatName");
+                base.FirePropertyChanged(nameof(FormatName));
             }
         }
 
@@ -42,7 +42,7 @@ namespace SpreadsheetApp.ViewModels
             string next = selected ? SheetCss.Head + " " + SheetCss.HeadSelected : SheetCss.Head;
             if (next == this.cssClass) return;
             this.cssClass = next;
-            base.FirePropertyChanged("CssClass");
+            base.FirePropertyChanged(nameof(CssClass));
         }
     }
 }

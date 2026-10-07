@@ -20,9 +20,9 @@ namespace SpreadsheetApp.Formula
                 case Node.Error: return node.TextValue;
                 case Node.Ref: return node.RefValue.Text();
                 case Node.Range: return node.RefValue.Text() + ":" + node.RefEnd.Text();
-                case Node.Unary: return node.Op + Wrap(node.Left, node);
-                case Node.Percent: return Wrap(node.Left, node) + "%";
-                case Node.Binary: return Wrap(node.Left, node) + node.Op + Wrap(node.Right, node);
+                case Node.Unary: return node.Op + Wrap(node.Left, node, false);
+                case Node.Percent: return Wrap(node.Left, node, false) + "%";
+                case Node.Binary: return Wrap(node.Left, node, false) + node.Op + Wrap(node.Right, node, true);
                 case Node.Call:
                 {
                     string s = node.TextValue + "(";
@@ -37,10 +37,24 @@ namespace SpreadsheetApp.Formula
             return "";
         }
 
-        private static string Wrap(Node child, Node parent)
+        /// <summary>
+        /// Parenthesizes a child when its precedence is lower than the parent's,
+        /// or equal on the side the operator does not associate to: the right
+        /// child of a left-associative operator (A1-(B1-C1)) and the left child
+        /// of the right-associative power ((A1^B1)^C1).
+        /// </summary>
+        private static string Wrap(Node child, Node parent, bool isRight)
         {
             string text = ToText(child);
-            return Precedence(child) < Precedence(parent) ? "(" + text + ")" : text;
+            int pc = Precedence(child);
+            int pp = Precedence(parent);
+            if (pc < pp) return "(" + text + ")";
+            if (pc == pp && parent.Kind == Node.Binary && child.Kind == Node.Binary)
+            {
+                bool rightAssoc = parent.Op == "^";
+                if (isRight != rightAssoc) return "(" + text + ")";
+            }
+            return text;
         }
 
         private static int Precedence(Node node)

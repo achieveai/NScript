@@ -82,6 +82,12 @@ namespace Sunlight.Framework.UI.Test
 
         public int FirstChanges;
         public int SecondChanges;
+        public int KeyDowns;
+
+        public void OnKeyDown(Element elem, ElementEvent evt)
+        {
+            this.KeyDowns++;
+        }
 
         public void OnFirstChange(Element elem, ElementEvent evt)
         {

@@ -123,6 +123,29 @@ namespace SpreadsheetApp.Test.Engine
             assert.Equal("#NAME?", code, "missing paren");
         }
 
+        /// <summary>
+        /// Equal-precedence grouping must survive serialization: A1-(B1-C1) is not
+        /// A1-B1-C1. Checks the left-assoc right child, the right-assoc left child,
+        /// and that the shifted text evaluates like the original.
+        /// </summary>
+        [Test]
+        public static void TestSerializationKeepsAssociativityGrouping(Assert assert)
+        {
+            var sheet = Sheet().Num("A1", 10).Num("B1", 4).Num("C1", 3).Num("A2", 10).Num("B2", 4).Num("C2", 3);
+            string[] cases = { "A1-(B1-C1)", "A1/(B1/C1)", "(A1^B1)^C1", "A1-(B1+C1)", "(A1-B1)-C1", "A1^(B1^C1)", "-(A1+B1)", "(A1+B1)%" };
+            for (int i = 0; i < cases.Length; i++)
+            {
+                Node n = Parser.Parse(cases[i]);
+                string text = FormulaText.ToText(n);
+                assert.Equal(Eval(text, sheet).NumberValue, Eval(cases[i], sheet).NumberValue, cases[i] + " -> " + text + " evaluates the same");
+                string shifted = FormulaText.ToText(FormulaText.Shift(n, 0, 1));
+                assert.Equal(Eval(shifted, sheet).NumberValue, Eval(cases[i], sheet).NumberValue, cases[i] + " shifted -> " + shifted + " evaluates the same");
+            }
+            assert.Equal(FormulaText.ToText(Parser.Parse("A1-(B1-C1)")), "A1-(B1-C1)", "right child of minus keeps its parens");
+            assert.Equal(FormulaText.ToText(Parser.Parse("(A1-B1)-C1")), "A1-B1-C1", "redundant left parens are dropped");
+            assert.Equal(FormulaText.ToText(Parser.Parse("(A1^B1)^C1")), "(A1^B1)^C1", "left child of power keeps its parens");
+        }
+
         [Test]
         public static void TestRoundTripAndShift(Assert assert)
         {

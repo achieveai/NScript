@@ -111,11 +111,73 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(1, item.SecondChanges, "Changing the first input must not run the second handler");
         }
 
+        /// <summary>
+        /// A gated void element with two event bindings trails two marker spans.
+        /// Both must resolve to the input: resolving only the first left the second
+        /// handler on the parent, where it fired for the sibling input's events.
+        /// </summary>
+        [Test]
+        public static void TestGatedVoidElementWithTwoEventsOwnsBothHandlers(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var item = new RazorItemVM { Name = "a", Status = "b", IsComplete = true };
+            var vm = new RazorTestVM { Items = new ObservableCollection<RazorItemVM>() };
+            vm.Items.Add(item);
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorGatedMultiEvent;
+            control.Activate();
+
+            var other = element.QuerySelector(".other-input");
+            var multi = element.QuerySelector(".multi-input");
+            assert.NotEqual(null, other, "The sibling input should render");
+            assert.NotEqual(null, multi, "The gated two-event input should render");
+            if (other == null || multi == null) return;
+
+            Dispatch(other, "change");
+            Dispatch(other, "keydown");
+            assert.Equal(1, item.FirstChanges, "The sibling's own change handler runs");
+            assert.Equal(0, item.SecondChanges, "The gated input's change handler must not fire for the sibling");
+            assert.Equal(0, item.KeyDowns, "The gated input's keydown handler must not fire for the sibling");
+
+            Dispatch(multi, "keydown");
+            Dispatch(multi, "change");
+            assert.Equal(1, item.KeyDowns, "keydown on the gated input runs its handler once");
+            assert.Equal(1, item.SecondChanges, "change on the gated input runs its handler once");
+            assert.Equal(1, item.FirstChanges, "the sibling handler did not fire for the gated input");
+
+            // Close the gate: the sibling must not inherit either handler.
+            item.IsComplete = false;
+            assert.Equal(null, element.QuerySelector(".multi-input"), "Closed gate removes the input");
+            Dispatch(other, "change");
+            Dispatch(other, "keydown");
+            assert.Equal(2, item.FirstChanges, "sibling still fires its own handler");
+            assert.Equal(1, item.SecondChanges, "no stale change handler after the gate closed");
+            assert.Equal(1, item.KeyDowns, "no stale keydown handler after the gate closed");
+
+            // Reopen: wired exactly once, to the input.
+            item.IsComplete = true;
+            var reopened = element.QuerySelector(".multi-input");
+            assert.NotEqual(null, reopened, "Reopened gate renders the input again");
+            if (reopened == null) return;
+            Dispatch(reopened, "keydown");
+            Dispatch(reopened, "change");
+            Dispatch(other, "change");
+            assert.Equal(2, item.KeyDowns, "reopened keydown handler fires once");
+            assert.Equal(2, item.SecondChanges, "reopened change handler fires once");
+            assert.Equal(3, item.FirstChanges, "sibling unaffected by the reopened gate");
+        }
+
         private static void DispatchChange(Element input)
         {
-            var change = Window.Instance.Document.CreateEvent("Event");
-            change.InitEvent("change", true, true);
-            input.DispatchEvent(change);
+            Dispatch(input, "change");
+        }
+
+        private static void Dispatch(Element target, string type)
+        {
+            var evt = Window.Instance.Document.CreateEvent("Event");
+            evt.InitEvent(type, true, true);
+            target.DispatchEvent(evt);
         }
     }
 }

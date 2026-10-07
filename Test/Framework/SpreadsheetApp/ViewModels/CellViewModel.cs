@@ -91,7 +91,7 @@ namespace SpreadsheetApp.ViewModels
             string next = this.sheet.FormatFor(this).Format(this.value);
             if (next == this.display) return;
             this.display = next;
-            base.FirePropertyChanged("Display");
+            base.FirePropertyChanged(nameof(Display));
         }
 
         /// <summary>
@@ -219,7 +219,7 @@ namespace SpreadsheetApp.ViewModels
                 CellViewModel p = this.sheet.CellAt(refs[i].Col, refs[i].Row);
                 if (p == null || p == this || this.precedents.IndexOf(p) >= 0) continue;
                 this.precedents.Add(p);
-                p.AddPropertyChangedListener("Value", this.precedentListener);
+                p.AddPropertyChangedListener(nameof(Value), this.precedentListener);
             }
         }
 
@@ -227,7 +227,7 @@ namespace SpreadsheetApp.ViewModels
         {
             if (this.precedents == null) return;
             for (int i = 0; i < this.precedents.Count; i++)
-                this.precedents[i].RemovePropertyChangedListener("Value", this.precedentListener);
+                this.precedents[i].RemovePropertyChangedListener(nameof(Value), this.precedentListener);
             this.precedents = null;
         }
 
@@ -268,7 +268,7 @@ namespace SpreadsheetApp.ViewModels
             this.value = v;
             this.UpdateCssClass();
             this.Refresh();
-            if (changed) base.FirePropertyChanged("Value");
+            if (changed) base.FirePropertyChanged(nameof(Value));
         }
 
         private void UpdateCssClass()
@@ -280,7 +280,7 @@ namespace SpreadsheetApp.ViewModels
             if (this.isSelected) next = next + " " + SheetCss.Selected;
             if (next == this.cssClass) return;
             this.cssClass = next;
-            base.FirePropertyChanged("CssClass");
+            base.FirePropertyChanged(nameof(CssClass));
         }
     }
 }

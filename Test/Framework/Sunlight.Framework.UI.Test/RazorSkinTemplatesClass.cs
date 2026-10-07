@@ -136,6 +136,12 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorGatedMultiEvent.skin.cshtml")]
+        public static Skin RazorGatedMultiEvent
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorSubControlPart.skin.cshtml")]
         public static Skin RazorSubControlPart
         {

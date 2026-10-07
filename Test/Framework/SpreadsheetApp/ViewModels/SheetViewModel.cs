@@ -214,7 +214,7 @@ namespace SpreadsheetApp.ViewModels
                 if (this.statusText != value)
                 {
                     this.statusText = value;
-                    base.FirePropertyChanged("StatusText");
+                    base.FirePropertyChanged(nameof(StatusText));
                 }
             }
         }
@@ -272,7 +272,7 @@ namespace SpreadsheetApp.ViewModels
             }
 
             this.rowsLabel = "Rows: " + n.ToString();
-            base.FirePropertyChanged("RowsLabel");
+            base.FirePropertyChanged(nameof(RowsLabel));
             this.SelectCell(this.rows[0].Cells[0]);
         }
 
@@ -300,14 +300,14 @@ namespace SpreadsheetApp.ViewModels
             this.headers[cell.Col].SetSelected(true);
             this.SetEditText(cell.Raw);
             this.selectedName = cell.Name;
-            base.FirePropertyChanged("SelectedName");
+            base.FirePropertyChanged(nameof(SelectedName));
             this.UpdateHint();
         }
 
         private void SetEditText(string text)
         {
             this.editText = text;
-            base.FirePropertyChanged("EditText");
+            base.FirePropertyChanged(nameof(EditText));
         }
 
         private void UpdateHint()
@@ -327,7 +327,7 @@ namespace SpreadsheetApp.ViewModels
             }
             if (hint == this.barHint) return;
             this.barHint = hint;
-            base.FirePropertyChanged("BarHint");
+            base.FirePropertyChanged(nameof(BarHint));
         }
 
         /// <summary>Commits typed text into the selected cell and refreshes dependents.</summary>
@@ -485,9 +485,9 @@ namespace SpreadsheetApp.ViewModels
         private void SetScope(int mode)
         {
             this.scope = mode;
-            base.FirePropertyChanged("ScopeCellClass");
-            base.FirePropertyChanged("ScopeRowClass");
-            base.FirePropertyChanged("ScopeColumnClass");
+            base.FirePropertyChanged(nameof(ScopeCellClass));
+            base.FirePropertyChanged(nameof(ScopeRowClass));
+            base.FirePropertyChanged(nameof(ScopeColumnClass));
         }
 
         private string ScopeClass(int mode)
@@ -630,8 +630,8 @@ namespace SpreadsheetApp.ViewModels
             bool on = GraphFlushCoordinator.BatchingEnabled;
             this.batchingLabel = on ? "Batched flush: ON" : "Batched flush: OFF";
             this.batchingClass = on ? SheetCss.Btn + " " + SheetCss.BtnOn : SheetCss.Btn;
-            base.FirePropertyChanged("BatchingLabel");
-            base.FirePropertyChanged("BatchingClass");
+            base.FirePropertyChanged(nameof(BatchingLabel));
+            base.FirePropertyChanged(nameof(BatchingClass));
         }
 
         // ─── Benchmark ───────────────────────────────────────────────────

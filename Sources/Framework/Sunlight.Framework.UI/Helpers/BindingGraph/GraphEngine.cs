@@ -1107,6 +1107,23 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
+        /// Permanently retires a collection item's graph: marks it Disposed first,
+        /// so a flush the coordinator already queued for it (batched mode) is
+        /// rejected by FlushOne instead of writing to detached DOM, re-creating
+        /// gated sub-controls, or re-attaching nested collection listeners. Then
+        /// unwires its subscriptions, events, nested collections (recursively
+        /// retiring their items) and sub-controls.
+        /// </summary>
+        public static void RetireChildState(GraphDescriptor itemDesc, GraphState child)
+        {
+            child.Disposed = true;
+            GraphEngine.UnwireChildSubscriptions(itemDesc, child);
+            GraphEngine.CleanupEventListeners(itemDesc, child);
+            GraphEngine.CleanupCollectionListeners(itemDesc, child);
+            GraphEngine.DisposeSubControls(itemDesc, child);
+        }
+
+        /// <summary>
         /// Clears all rendered items for a CollectionManager node.
         /// </summary>
         public static void ClearCollectionItems(GraphDescriptor desc, GraphState state, int nodeIdx, CollectionTargetInfo colInfo)
@@ -1150,10 +1167,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     // Clean up ALL listeners on child states: property, event, and collection.
                     if (!object.IsNullOrUndefined(itemDesc))
                     {
-                        GraphEngine.UnwireChildSubscriptions(itemDesc, child);
-                        GraphEngine.CleanupEventListeners(itemDesc, child);
-                        GraphEngine.CleanupCollectionListeners(itemDesc, child);
-                        GraphEngine.DisposeSubControls(itemDesc, child);
+                        GraphEngine.RetireChildState(itemDesc, child);
                     }
 
                     for (int v = 0; v < child.Values.Length; v++)
@@ -1390,10 +1404,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     {
                         // Dispose child graph state: unwire subscriptions, events,
                         // nested collections, and remove gate DOM elements.
-                        GraphEngine.UnwireChildSubscriptions(colInfo.ItemGraph, childState);
-                        GraphEngine.CleanupEventListeners(colInfo.ItemGraph, childState);
-                        GraphEngine.CleanupCollectionListeners(colInfo.ItemGraph, childState);
-                        GraphEngine.DisposeSubControls(colInfo.ItemGraph, childState);
+                        GraphEngine.RetireChildState(colInfo.ItemGraph, childState);
                         GraphEngine.RemoveChildGateElements(childState);
                     }
                 }
@@ -1766,18 +1777,39 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (marker.TagName != "SPAN" || !marker.HasAttribute(attribute)) continue;
 
                 // The compiler cannot place a marker inside a void element, so it
-                // emits the span as the element's trailing sibling. Bind to that
-                // element, not the parent: two inputs in one row would otherwise
-                // share the parent's handler and cross-fire on each other's events.
-                Element previous = marker.PreviousSibling as Element;
-                if (!object.IsNullOrUndefined(previous) && GraphEngine.IsVoidElement(previous))
+                // emits the span(s) as the element's trailing siblings, one per
+                // event. Walk back over that contiguous marker group to the owner
+                // and bind to it, not the parent: two inputs in one row would
+                // otherwise share the parent's handler and cross-fire.
+                Element owner = GraphEngine.VoidOwnerOfMarker(marker);
+                if (!object.IsNullOrUndefined(owner))
                 {
-                    elemRefs[j] = previous;
+                    elemRefs[j] = owner;
                     continue;
                 }
 
                 elemRefs[j] = (Element)marker.ParentNode;
             }
+        }
+
+        /// <summary>
+        /// The void element that owns a trailing marker span: the nearest
+        /// preceding sibling that is not itself a marker span. Null when the
+        /// markers are not trailing a void element.
+        /// </summary>
+        private static Element VoidOwnerOfMarker(Element marker)
+        {
+            Element previous = marker.PreviousSibling as Element;
+            while (!object.IsNullOrUndefined(previous) && GraphEngine.IsMarkerSpan(previous))
+                previous = previous.PreviousSibling as Element;
+            if (object.IsNullOrUndefined(previous) || object.IsNullOrUndefined(previous.TagName)) return null;
+            return GraphEngine.IsVoidElement(previous) ? previous : null;
+        }
+
+        private static bool IsMarkerSpan(Element element)
+        {
+            return element.TagName == "SPAN"
+                && (element.HasAttribute("data-ns-evt") || element.HasAttribute("data-ns-bind"));
         }
 
         private static bool IsVoidElement(Element element)
