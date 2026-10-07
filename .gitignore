@@ -94,3 +94,4 @@ launchsettings.json
 .env.*
 
 .claude/scheduled_tasks.lock
+.claude/launch.json
