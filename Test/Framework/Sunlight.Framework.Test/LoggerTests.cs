@@ -91,6 +91,7 @@ namespace Sunlight.Framework.Test
             }
 
             public int RequestAnimationFrame(Action action) { action(); return 0; }
+            public void QueueMicrotask(Action action) { action(); }
 
             public void Tick()
             {

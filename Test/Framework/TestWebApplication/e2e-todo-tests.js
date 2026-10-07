@@ -72,7 +72,11 @@ function sel(classMap, selector) {
   const browser = await chromium.launch({ headless: true });
   const results = { passed: 0, failed: 0, tests: [] };
 
+  // Optional substring filter: E2E_FILTER=BATCH node e2e-todo-tests.js
+  const FILTER = process.env.E2E_FILTER || '';
+
   async function runTest(name, fn) {
+    if (FILTER && !name.includes(FILTER)) return;
     const context = await browser.newContext();
     const page = await context.newPage();
     try {
@@ -163,6 +167,31 @@ function sel(classMap, selector) {
     }
 
     throw new Error('Timed out waiting for IndexedDB to persist subtask "' + subtaskTitle + '" for todo "' + todoTitle + '"');
+  }
+
+  // Polls IndexedDB until every todo satisfies the predicate. Writes are
+  // asynchronous, so a reload issued straight after a click can race them.
+  async function waitForPersistedTodos(page, predicate, label, timeout = 10000) {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      const todos = await getPersistedTodos(page);
+      if (todos.length > 0 && todos.every(predicate)) {
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    throw new Error('Timed out waiting for IndexedDB: ' + label);
+  }
+
+  // Waits until the star of the pending row at `index` has (or lacks) the
+  // important class. Rows are re-rendered after a save, so callers must not
+  // wait on a handle captured before the click.
+  async function waitForStarClass(page, s, index, important, timeout = 10000) {
+    await page.waitForFunction(({ item, star, important, index, want }) => {
+      const rows = document.querySelectorAll(item);
+      const el = rows[index] && rows[index].querySelector(star);
+      return !!el && el.className.includes(important) === want;
+    }, { item: s('.todo-item'), star: s('.star'), important: s('.important').slice(1), index, want: important }, { timeout });
   }
 
   async function waitForDetailPane(page, s, timeout = 10000) {
@@ -545,14 +574,22 @@ function sel(classMap, selector) {
     const firstTodo = await page.$(s('.todo-item:not(.completed)'));
     assert(firstTodo, 'Should have an uncompleted todo');
 
-    // Click the checkbox
+    const title = await firstTodo.$eval(s('.todo-title'), el => el.textContent);
+
+    // Click the checkbox. SaveTodo rebuilds the list, so the clicked row is
+    // replaced; find the row by title in the completed section instead of
+    // holding on to the pre-click handle.
     const checkbox = await firstTodo.$(s('.btn-check'));
     assert(checkbox, 'Todo should have a checkbox');
     await checkbox.click();
-    await page.waitForFunction(el => el.className.includes('completed'), firstTodo, { timeout: 10000 });
+    await page.waitForFunction(({ sel, title }) => {
+      return Array.from(document.querySelectorAll(sel.item)).some(el =>
+        el.querySelector(sel.title) && el.querySelector(sel.title).textContent === title
+        && el.className.includes(sel.completed));
+    }, { sel: { item: s('.completed-list .todo-item'), title: s('.todo-title'), completed: s('.completed').slice(1) }, title }, { timeout: 10000 });
 
-    const classAfter = await firstTodo.evaluate(el => el.className);
-    assert(classAfter.includes('completed'), 'Todo should have completed class after checkbox click, got: ' + classAfter);
+    const classes = await page.$$eval(s('.completed-list .todo-item'), els => els.map(el => el.className));
+    assert(classes.some(c => c.includes(s('.completed').slice(1))), 'Todo should have completed class after checkbox click, got: ' + classes.join(' | '));
   });
 
   await runTest('Completed todo moves to completed section', async (page, s) => {
@@ -794,9 +831,10 @@ function sel(classMap, selector) {
     const starClass2 = await star2.evaluate(el => el.className);
     assert(!starClass2.includes('important'), 'Second todo should have non-important star');
 
-    // Click the empty star to toggle importance
+    // Click the empty star to toggle importance. SaveTodo rebuilds the list,
+    // so wait on the re-rendered second row rather than the clicked handle.
     await star2.click();
-    await page.waitForFunction(el => el.className.includes('important'), star2, { timeout: 10000 });
+    await waitForStarClass(page, s, 1, true);
 
     // After click, the star should now be important (gate should flip)
     const updatedTodo = (await page.$$(s('.todo-item')))[1];
@@ -814,9 +852,9 @@ function sel(classMap, selector) {
     const classBefore = await star.evaluate(el => el.className);
     assert(classBefore.includes('important'), 'First todo should start important, got: ' + classBefore);
 
-    // Click to un-star
+    // Click to un-star (the row is re-rendered, so wait on the new first row)
     await star.click();
-    await page.waitForFunction(el => !el.className.includes('important'), star, { timeout: 10000 });
+    await waitForStarClass(page, s, 0, false);
 
     // Re-query after DOM update
     const updatedTodo = (await page.$$(s('.todo-item')))[0];
@@ -826,7 +864,7 @@ function sel(classMap, selector) {
 
     // Click again to re-star — verify round-trip
     await updatedStar.click();
-    await page.waitForFunction(el => el.className.includes('important'), updatedStar, { timeout: 10000 });
+    await waitForStarClass(page, s, 0, true);
 
     const reTodo = (await page.$$(s('.todo-item')))[0];
     const reStar = await reTodo.$(s('.star'));
@@ -920,12 +958,9 @@ function sel(classMap, selector) {
     const classBefore = await star.evaluate(el => el.className);
 
     await star.click();
-    // Wait for the star's class to change (important toggled)
-    if (classBefore.includes('important')) {
-      await page.waitForFunction(el => !el.className.includes('important'), star, { timeout: 10000 });
-    } else {
-      await page.waitForFunction(el => el.className.includes('important'), star, { timeout: 10000 });
-    }
+    // Wait for the re-rendered first row's star to flip (the list is rebuilt
+    // on save, so the clicked handle goes stale)
+    await waitForStarClass(page, s, 0, !classBefore.includes('important'));
 
     const updatedItems = await page.$$(s('.todo-item'));
     const updatedStar = await updatedItems[0].$(s('.star'));
@@ -1183,6 +1218,94 @@ function sel(classMap, selector) {
     const headers = await page.evaluate(() => window.__callContext.testXhrHook());
     assert(headers.traceparent === undefined,
       'traceparent should not be set when no context is active, got: ' + JSON.stringify(headers));
+  });
+
+  // ─── BATCHED BINDING FLUSH (GraphFlushCoordinator.BatchingEnabled) ───────
+
+  await runTest('BATCH-001: Progress text reflects the current folder', async (page, s) => {
+    const pending = (await page.$$(s('.todo-list .todo-item'))).length;
+    const completedLabel = await page.$eval(s('.completed-label'), el => el.textContent);
+    const done = parseInt(completedLabel.replace(/\D/g, ''), 10);
+    const text = await page.$eval(s('.progress-text'), el => el.textContent);
+    assert(text === done + ' of ' + (pending + done) + ' done',
+      'Progress text should be "' + done + ' of ' + (pending + done) + ' done", got: ' + text);
+  });
+
+  await runTest('BATCH-002: Complete all moves every pending todo in one action', async (page, s) => {
+    const pending = (await page.$$(s('.todo-list .todo-item'))).length;
+    const completedLabel = await page.$eval(s('.completed-label'), el => el.textContent);
+    const doneBefore = parseInt(completedLabel.replace(/\D/g, ''), 10);
+    assert(pending > 0, 'Need pending todos');
+
+    await page.click(s('.btn-complete-all'));
+    await page.waitForFunction(({ selector }) => document.querySelectorAll(selector).length === 0,
+      { selector: s('.todo-list .todo-item') }, { timeout: 10000 });
+
+    const total = pending + doneBefore;
+    const labelAfter = await page.$eval(s('.completed-label'), el => el.textContent);
+    assert(labelAfter.includes(String(total)), 'Completed count should be ' + total + ', got: ' + labelAfter);
+    const text = await page.$eval(s('.progress-text'), el => el.textContent);
+    assert(text === total + ' of ' + total + ' done', 'Progress text should show all done, got: ' + text);
+
+    // Every row in the completed section carries the completed class.
+    await page.click(s('.completed-header'));
+    await waitForSelectorCount(page, s('.completed-list .todo-item'), total);
+    const classes = await page.$$eval(s('.completed-list .todo-item'), els => els.map(e => e.className));
+    const map = await buildClassMap(page);
+    const completedClass = map['completed'] || 'completed';
+    assert(classes.every(c => c.includes(completedClass)), 'All rows should be completed, got: ' + classes.join(' | '));
+
+    // Completed folder count in the sidebar matches.
+    const folderCounts = await page.$$eval(s('.folder-item'), els => els.map(e => e.textContent));
+    assert(folderCounts.some(t => t.includes('Completed') && t.includes(String(total))),
+      'Completed folder should show ' + total + ', got: ' + folderCounts.join(' | '));
+  });
+
+  await runTest('BATCH-003: Reopen all restores the pending list and persists', async (page, s) => {
+    const pending = (await page.$$(s('.todo-list .todo-item'))).length;
+    const completedLabel = await page.$eval(s('.completed-label'), el => el.textContent);
+    const doneBefore = parseInt(completedLabel.replace(/\D/g, ''), 10);
+    const total = pending + doneBefore;
+
+    await page.click(s('.btn-complete-all'));
+    await page.waitForFunction(({ selector }) => document.querySelectorAll(selector).length === 0,
+      { selector: s('.todo-list .todo-item') }, { timeout: 10000 });
+
+    await page.click(s('.btn-reopen-all'));
+    await waitForSelectorCount(page, s('.todo-list .todo-item'), total);
+
+    const text = await page.$eval(s('.progress-text'), el => el.textContent);
+    assert(text === '0 of ' + total + ' done', 'Progress text should show nothing done, got: ' + text);
+    const labelAfter = await page.$eval(s('.completed-label'), el => el.textContent);
+    assert(labelAfter.includes('(0)'), 'Completed count should be 0, got: ' + labelAfter);
+
+    // Persisted state agrees after reload. Wait for the writes to land first;
+    // a reload issued while the UpSerts are in flight aborts them.
+    await waitForPersistedTodos(page, t => !t.IsCompleted, 'all todos reopened');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector(s('.folder-item'), { timeout: 10000 });
+    await waitForSelectorCount(page, s('.todo-list .todo-item'), total);
+  });
+
+  await runTest('BATCH-004: Starring one todo updates the sidebar count in the next flush', async (page, s) => {
+    const countOf = async (name) => {
+      const texts = await page.$$eval(s('.folder-item'), els => els.map(e => e.textContent.replace(/\s+/g, ' ').trim()));
+      const row = texts.find(t => t.includes(name));
+      return parseInt(row.replace(/\D/g, ''), 10);
+    };
+    const importantBefore = await countOf('Important');
+
+    // Second sample todo ("Read a book") starts un-starred.
+    const star = (await page.$$(s('.todo-item .star')))[1];
+    assert(star, 'Second todo should have a star');
+    await star.click();
+    await waitForStarClass(page, s, 1, true);
+
+    await page.waitForFunction(({ selector, name, expected }) => {
+      const row = Array.from(document.querySelectorAll(selector)).map(e => e.textContent).find(t => t.includes(name));
+      return !!row && parseInt(row.replace(/\D/g, ''), 10) === expected;
+    }, { selector: s('.folder-item'), name: 'Important', expected: importantBefore + 1 }, { timeout: 10000 });
+    assert(await countOf('Important') === importantBefore + 1, 'Important count should grow by one after a single star click');
   });
 
   // ─── RESULTS ────────────────────────────────────────────────────────────────

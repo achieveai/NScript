@@ -7,6 +7,7 @@ namespace TodoApp
     using TodoApp.ViewModels;
     using TodoApp.Services;
     using TodoApp.Skins;
+    using Sunlight.Framework.UI.Helpers.BindingGraph;
 
     /// <summary>
     /// Application entry point for the Microsoft To Do clone SPA.
@@ -18,6 +19,11 @@ namespace TodoApp
         public static void Main()
         {
             TaskScheduler.Instance = new TaskScheduler(new WindowTimer(), 10, 10);
+
+            // Dog-food the batched binding flush: property changes made in one
+            // task (bulk complete, folder switch, drag-drop) reach the DOM in one
+            // depth-ordered microtask flush instead of one flush per setter.
+            GraphFlushCoordinator.BatchingEnabled = true;
 
             var dataService = new TodoDataService();
 

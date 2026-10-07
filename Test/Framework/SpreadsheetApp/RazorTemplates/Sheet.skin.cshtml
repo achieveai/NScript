@@ -1,0 +1,69 @@
+@model SpreadsheetApp.ViewModels.SheetViewModel
+@using SpreadsheetApp.Controls
+@styles "SpreadsheetApp.RazorTemplates.Sheet.css"
+
+<div data-test="1">
+    <div class="toolbar">
+        <div class="app-title">Sheet</div>
+        <div class="btn" onclick="@Model.CopySelected">Copy</div>
+        <div class="btn" onclick="@Model.PasteToSelected">Paste</div>
+        <div class="btn" onclick="@Model.FillDown">Fill down</div>
+        <div class="toolbar-gap"></div>
+        <div class="toolbar-label">Format</div>
+        <div class="@Model.ScopeCellClass" onclick="@Model.ScopeCell">Cell</div>
+        <div class="@Model.ScopeRowClass" onclick="@Model.ScopeRow">Row</div>
+        <div class="@Model.ScopeColumnClass" onclick="@Model.ScopeColumn">Column</div>
+        <div class="btn" onclick="@Model.FormatGeneral">General</div>
+        <div class="btn" onclick="@Model.FormatNumber">1,234.50</div>
+        <div class="btn" onclick="@Model.FormatInteger">1,234</div>
+        <div class="btn" onclick="@Model.FormatPercent">12.5%</div>
+        <div class="btn" onclick="@Model.FormatCurrency">$</div>
+        <div class="btn" onclick="@Model.FormatDate">Date</div>
+        <div class="btn" onclick="@Model.FormatDateTime">Date time</div>
+        <div class="toolbar-gap"></div>
+        <div class="btn" onclick="@Model.EditA1">A1 + 1</div>
+        <div class="btn" onclick="@Model.ShiftAll">All A + 1</div>
+        <div class="btn" onclick="@Model.Randomize">Randomize A,B</div>
+        <div class="btn" onclick="@Model.CycleRows">@Model.RowsLabel</div>
+        <div class="@Model.BatchingClass" onclick="@Model.ToggleBatching">@Model.BatchingLabel</div>
+        <div class="btn btn-primary" onclick="@Model.RunBenchmark">Run benchmark</div>
+        <div class="status">@Model.StatusText</div>
+    </div>
+    <div class="formula-bar">
+        <div class="cell-name">@Model.SelectedName</div>
+        <input type="text" class="formula-input" id="formula-input" value="@Model.EditText" onkeydown="@Model.OnBarKeyDown" onchange="@Model.OnBarChange" />
+        <div class="bar-hint">@Model.BarHint</div>
+    </div>
+    <div class="sheet" id="sheet" tabindex="0" onkeydown="@Model.OnGridKeyDown">
+        <div class="header-row">
+            <div class="row-label"></div>
+            @foreach (var h in Model.Headers)
+            {
+                <div class="@h.CssClass">@h.Label<span class="formula-text">@h.FormatName</span></div>
+            }
+        </div>
+        @foreach (var row in Model.Rows)
+        {
+            <RowControl />
+        }
+    </div>
+    <div class="results">
+        <div class="results-row results-head">
+            <div class="rcell">Operation</div>
+            <div class="rcell">Rows</div>
+            <div class="rcell">Mode</div>
+            <div class="rcell">ms (median)</div>
+            <div class="rcell">DOM writes</div>
+        </div>
+        @foreach (var r in Model.Results)
+        {
+            <div class="results-row">
+                <div class="rcell">@r.Op</div>
+                <div class="rcell">@r.RowsText</div>
+                <div class="rcell">@r.Mode</div>
+                <div class="rcell">@r.MsText</div>
+                <div class="rcell">@r.WritesText</div>
+            </div>
+        }
+    </div>
+</div>

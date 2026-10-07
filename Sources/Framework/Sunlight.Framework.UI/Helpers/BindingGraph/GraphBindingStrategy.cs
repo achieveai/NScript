@@ -143,8 +143,26 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphEngine.DeactivateSubControls(this.descriptor, this.state);
         }
 
+        public void SetDepth(int depth)
+        {
+            this.state.Depth = depth;
+
+            // The constructor created this graph's sub-controls at the default
+            // depth before SkinInstance.Bind could tell us the real one; their
+            // own skins are not instantiated until activation, so re-stamping
+            // here is enough for them to pick up the corrected depth.
+            NativeArray<UIElement> controls = this.state.SubControlInstances;
+            if (object.IsNullOrUndefined(controls)) return;
+            for (int i = 0; i < controls.Length; i++)
+            {
+                if (!object.IsNullOrUndefined(controls[i]))
+                    controls[i].BindingDepth = depth + 1;
+            }
+        }
+
         public void Dispose()
         {
+            this.state.Disposed = true;
             UnsubscribeAll();
             this.state.SubscriptionsActive = false;
 
@@ -157,14 +175,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             for (int i = 0; i < n; i++)
             {
                 // Remove gate elements from DOM.
-                if (this.descriptor.NodeTypes[i] == GraphNodeType.Gate)
+                if (this.descriptor.NodeTypes[i] == GraphNodeType.Gate
+                    && !object.IsNullOrUndefined(this.state.GateElements[i]))
                 {
-                    object gateElem = this.state.GateElements[i];
-                    if (!object.IsNullOrUndefined(gateElem))
-                    {
-                        ((System.Web.Html.Element)gateElem).Remove();
-                        this.state.GateElements[i] = null;
-                    }
+                    GraphEngine.RemoveGateBranch(this.state, i);
                 }
 
                 this.state.Values[i] = null;
@@ -197,12 +211,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             return delegate(INotifyPropertyChanged sender, string propName)
             {
                 if (state.Suspended) return;
-                // Synchronous flush: mark node dirty and evaluate immediately.
-                // This ensures DOM is up-to-date before the next line of application
-                // code executes. The reentrancy guard in Flush() (try-finally)
-                // prevents cascading flushes if a DOM write triggers further changes.
-                state.Dirty[nodeIdx] = true;
-                GraphEngine.Flush(descriptor, state);
+                // Default: synchronous flush so the DOM is up-to-date before the
+                // next line of application code executes. With
+                // GraphFlushCoordinator.BatchingEnabled the node is only marked
+                // dirty and one depth-ordered flush runs on the next boundary.
+                GraphEngine.NotifyDirty(state, nodeIdx);
             };
         }
 

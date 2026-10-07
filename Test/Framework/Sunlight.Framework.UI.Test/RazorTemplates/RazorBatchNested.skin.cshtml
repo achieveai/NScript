@@ -1,0 +1,6 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="batch-nested">
+    <RazorProbeControl Skin="@RazorSkinTemplatesClass.RazorBatchNestedHost" DataContext="@Model.Child" />
+    <span class="parent-title">@Model.Title</span>
+</div>

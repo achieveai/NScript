@@ -23,6 +23,10 @@ const QUNIT_SUITES = [
     name: 'Sunlight.Framework.Data.Test',
     scripts: ['/GeneratedScripts/Sunlight.Framework.Data.Test.js'],
   },
+  {
+    name: 'SpreadsheetApp.Test',
+    scripts: ['/GeneratedScripts/SpreadsheetApp.Test.js'],
+  },
 ];
 
 const MIME_TYPES = {

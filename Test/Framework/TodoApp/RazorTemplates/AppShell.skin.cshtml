@@ -22,6 +22,9 @@
         <div class="pane-header">
             <div class="btn-toggle-left" onclick="@Model.ToggleLeftPane">&#9776;</div>
             <div class="current-folder-name">@Model.SelectedFolderName</div>
+            <div class="progress-text">@Model.ProgressText</div>
+            <div class="btn-complete-all" onclick="@Model.CompleteAll">Complete all</div>
+            <div class="btn-reopen-all" onclick="@Model.ReopenAll">Reopen all</div>
         </div>
         <div class="todo-list">
             @foreach (var todo in Model.CurrentTodos)

@@ -56,6 +56,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Active cloned DOM element per Gate node (null for non-gate nodes).</summary>
         public NativeArray GateElements;
 
+        /// <summary>
+        /// All top-level nodes of the active branch per Gate node, when the
+        /// branch template has more than one (e.g. a void root element followed
+        /// by its event marker span). Null when the branch is a single element.
+        /// </summary>
+        public NativeArray GateExtraElements;
+
         /// <summary>Active event listener handles per EventBinding node (for cleanup).</summary>
         public NativeArray EventListeners;
 
@@ -85,6 +92,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         /// <summary>Whether this graph is suspended by parent deactivation.</summary>
         public bool Suspended;
+
+        /// <summary>Set by Dispose so a pending batched flush skips this graph.</summary>
+        public bool Disposed;
 
         /// <summary>Collection changes to replay when the graph reactivates.</summary>
         public NativeArray<NativeArray<CollectionChangedEventArgs>> PendingCollectionChanges;
@@ -132,6 +142,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             if (hasGates)
             {
                 this.GateElements = new NativeArray(n);
+                this.GateExtraElements = new NativeArray(n);
                 this.GateOpen = new NativeArray<bool>(n);
                 // All gates start open (true). Gate.Evaluate during initial push
                 // will close gates whose condition is false.

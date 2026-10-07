@@ -1,0 +1,14 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="gated-multi-event">
+@foreach (var item in Model.Items)
+{
+    <div class="void-row">
+        <input type="text" class="other-input" value="@item.Name" onchange="@item.OnFirstChange" />
+        @if (item.IsComplete)
+        {
+            <input type="text" class="multi-input" value="@item.Status" onkeydown="@item.OnKeyDown" onchange="@item.OnSecondChange" />
+        }
+    </div>
+}
+</div>

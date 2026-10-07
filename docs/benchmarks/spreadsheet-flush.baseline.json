@@ -1,0 +1,86 @@
+{
+  "recorded": "2026-10-06",
+  "rows": [
+    {
+      "op": "A1 + 1",
+      "rows": 50,
+      "syncMs": 3.8,
+      "batchedMs": 3.5,
+      "speedup": 1.0857142857142856,
+      "syncWrites": 111,
+      "batchedWrites": 111
+    },
+    {
+      "op": "All A + 1",
+      "rows": 50,
+      "syncMs": 27.7,
+      "batchedMs": 20.5,
+      "speedup": 1.3512195121951218,
+      "syncWrites": 3068,
+      "batchedWrites": 360
+    },
+    {
+      "op": "Randomize A,B",
+      "rows": 50,
+      "syncMs": 48.5,
+      "batchedMs": 34,
+      "speedup": 1.4264705882352942,
+      "syncWrites": 6688,
+      "batchedWrites": 448
+    },
+    {
+      "op": "A1 + 1",
+      "rows": 100,
+      "syncMs": 5.5,
+      "batchedMs": 5.4,
+      "speedup": 1.0185185185185184,
+      "syncWrites": 210,
+      "batchedWrites": 210
+    },
+    {
+      "op": "All A + 1",
+      "rows": 100,
+      "syncMs": 84.9,
+      "batchedMs": 66.9,
+      "speedup": 1.2690582959641254,
+      "syncWrites": 11111,
+      "batchedWrites": 712
+    },
+    {
+      "op": "Randomize A,B",
+      "rows": 100,
+      "syncMs": 158.6,
+      "batchedMs": 127.9,
+      "speedup": 1.2400312744331508,
+      "syncWrites": 22749,
+      "batchedWrites": 857
+    },
+    {
+      "op": "A1 + 1",
+      "rows": 200,
+      "syncMs": 11.9,
+      "batchedMs": 12.6,
+      "speedup": 0.9444444444444445,
+      "syncWrites": 410,
+      "batchedWrites": 410
+    },
+    {
+      "op": "All A + 1",
+      "rows": 200,
+      "syncMs": 301.5,
+      "batchedMs": 246.5,
+      "speedup": 1.2231237322515214,
+      "syncWrites": 42208,
+      "batchedWrites": 1411
+    },
+    {
+      "op": "Randomize A,B",
+      "rows": 200,
+      "syncMs": 633.7,
+      "batchedMs": 490.7,
+      "speedup": 1.2914204198084371,
+      "syncWrites": 84236,
+      "batchedWrites": 1668
+    }
+  ]
+}

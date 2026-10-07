@@ -53,5 +53,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Called by SkinInstance.QueuedDeactivation().
         /// </summary>
         void OnQueuedDeactivation(bool isActive, bool isDisposed);
+
+        /// <summary>
+        /// Sets the skin nesting depth (0 = root) used to order batched flushes.
+        /// Called by SkinInstance.Bind() from the skinable's BindingDepth.
+        /// </summary>
+        void SetDepth(int depth);
     }
 }

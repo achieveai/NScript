@@ -318,6 +318,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
+        /// No-op: XWML binders flush synchronously and are not depth ordered.
+        /// </summary>
+        public void SetDepth(int depth)
+        {
+        }
+
+        /// <summary>
         /// Internal helper: updates binder sources for the given source type.
         /// This is the binder loop portion of the original SkinInstance.UpdateBinderSource().
         /// </summary>

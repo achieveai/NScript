@@ -73,6 +73,9 @@ namespace System.Web
         [ScriptAlias("setImmediate")]
         public extern static void SetImmediate(Action callback);
 
+        [ScriptAlias("queueMicrotask")]
+        public extern static void QueueMicrotask(Action callback);
+
         [ScriptAlias("setTimeout")]
         public extern static int SetTimeout(Action callback, int interval);
 

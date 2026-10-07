@@ -1,0 +1,14 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="sibling-void-events">
+@foreach (var item in Model.Items)
+{
+    <div class="void-row">
+        <input type="text" class="first-input" value="@item.Name" onchange="@item.OnFirstChange" />
+        @if (item.IsComplete)
+        {
+            <input type="text" class="second-input" value="@item.Status" onchange="@item.OnSecondChange" />
+        }
+    </div>
+}
+</div>

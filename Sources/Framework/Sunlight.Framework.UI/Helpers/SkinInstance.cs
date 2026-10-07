@@ -205,6 +205,7 @@ namespace Sunlight.Framework.UI.Helpers
             }
 
             this.skinableParent = skinable;
+            this.bindingStrategy.SetDepth(skinable != null ? skinable.BindingDepth : 0);
 
             if (this.skinableParent != null)
             {

@@ -80,6 +80,9 @@ For CI or headless runs, use Playwright to launch a browser, navigate to each pe
 - `Test/Framework/TestWebApplication/Sunlight.Framework.UI.TestPage.htm` -- UI framework suite
 - `Test/Framework/TestWebApplication/DataTestPage.htm` -- data-layer suite
 - `Test/Framework/TestWebApplication/TodoApp.TestPage.htm` -- TodoApp suite
+- `Test/Framework/TestWebApplication/SpreadsheetApp.TestPage.htm` -- SpreadsheetApp suite (formula engine + sheet view model)
+- `Test/Framework/TestWebApplication/e2e-todo-tests.js`, `e2e-sheet-tests.mjs` -- Playwright end-to-end tests for the two demo apps
+- `Test/Framework/TestWebApplication/bench-spreadsheet.mjs` -- binding-flush benchmark (see root CLAUDE.md, Validation After Any Change)
 - `Test/Framework/TestWebApplication/GeneratedScripts/` -- Compiled JS output
 - `Test/Framework/TestWebApplication/Scripts/QUnit.2.2.0.js` -- QUnit framework
 - `Test/Framework/Sunlight.Framework.Test/` -- Core framework tests (container, events, observables, binders)
