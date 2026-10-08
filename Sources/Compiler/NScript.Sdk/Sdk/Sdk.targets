@@ -301,10 +301,34 @@
 		</ItemGroup>
 	</Target>
 
+	<!--
+	  ScriptGenerate's Inputs/Outputs check sees timestamps only. The JS is shared by every
+	  configuration, and the build service (and its watch, later) writes it in dev mode, so a build
+	  in another mode could find it up to date and keep the wrong JS. The obj stamp holds the mode
+	  key and the JS write time of this configuration's last run. When either differs, a missing
+	  extra output makes ScriptGenerate run.
+	-->
+	<Target Name="_NScriptCheckJsMode"
+	        BeforeTargets="ScriptGenerate"
+	        DependsOnTargets="ComputeNScriptRepoMetadata;ComputeNScriptSecondaryRepoMetadata"
+	        Condition="$(GenerateJs) == True">
+		<PropertyGroup>
+			<_NScriptJsFile>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(JsOutputPath)', '$(AssemblyName).js'))</_NScriptJsFile>
+			<_NScriptJsModeFile>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', '$(AssemblyName).nscript.jsmode'))</_NScriptJsModeFile>
+			<_NScriptJsModeKey>minify=$(Minify),uglify=$(Uglify),optimize=$(JsOptimize),devMode=$([MSBuild]::ValueOrDefault('$(_NScriptUseService)', 'false')),maps=$([MSBuild]::StableStringHash('$(SourceMapRoot)|$(NScriptRepoRoot)|$(NScriptSecondarySourceMapRoot)|$(NScriptSecondaryRepoRoot)'))</_NScriptJsModeKey>
+			<_NScriptJsModeWant>$(_NScriptJsModeKey)|$([System.IO.File]::GetLastWriteTime('$(_NScriptJsFile)').Ticks)</_NScriptJsModeWant>
+			<_NScriptJsModeHave Condition="Exists('$(_NScriptJsModeFile)')">$([System.IO.File]::ReadAllText('$(_NScriptJsModeFile)').Trim())</_NScriptJsModeHave>
+			<_NScriptJsModeForce Condition="'$(_NScriptJsModeHave)' != '$(_NScriptJsModeWant)'">$(_NScriptJsModeFile).mismatch</_NScriptJsModeForce>
+		</PropertyGroup>
+		<Message Importance="high"
+		         Condition="'$(_NScriptJsModeForce)' != '' and Exists('$(_NScriptJsFile)')"
+		         Text="NScript: $(_NScriptJsFile) was not written by this configuration in mode '$(_NScriptJsModeKey)'; regenerating." />
+	</Target>
+
 	<Target
 		Name="ScriptGenerate"
 		Inputs="$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext);@(ReferencePath)"
-		Outputs="$(JsOutputPath)\$(AssemblyName).js"
+		Outputs="$(JsOutputPath)\$(AssemblyName).js;$(_NScriptJsModeForce)"
 		DependsOnTargets="$(CoreCompile);ComputeNScriptRepoMetadata;ComputeNScriptSecondaryRepoMetadata"
 		Condition="$(GenerateJs) == True">
 
@@ -336,6 +360,10 @@
 		<MakeDir Directories="$(JsOutputPath)" Condition="!Exists('$(JsOutputPath)')" />
 
 		<Exec Command="&quot;$(NScriptExe)&quot; @(ScriptGenerateOption->'%(Identity)', ' ')"/>
+
+		<WriteLinesToFile File="$(_NScriptJsModeFile)"
+		                  Lines="$(_NScriptJsModeKey)|$([System.IO.File]::GetLastWriteTime('$(_NScriptJsFile)').Ticks)"
+		                  Overwrite="true" />
 
 	</Target>
 
