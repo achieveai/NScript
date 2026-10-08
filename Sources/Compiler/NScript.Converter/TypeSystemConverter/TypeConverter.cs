@@ -440,8 +440,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// Slice-2 Inc 0 probe counters, reset and logged per build by <see cref="Builder"/>.
         /// Static is safe: stage-2 builds never overlap in one process (the service lock).
         /// </summary>
-        internal static long ProbeMethodConvertTicks, ProbeMaxMethodConvertTicks;
-        internal static int ProbeMethodsConverted, ProbeNestedConverts, ProbeDepth;
+        internal static long ProbeMethodConvertTicks, ProbeMaxMethodConvertTicks, ProbeParseTicks;
+        internal static int ProbeMethodsConverted, ProbeNestedConverts, ProbeDepth, ProbeParseHits;
 
         /// <summary>
         /// Adds the field to implementation.

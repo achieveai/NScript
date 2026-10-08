@@ -20,6 +20,11 @@ namespace NScript.RazorSkin
     {
         private static ILogger Log => RazorSkinCompiler.Logger;
 
+        /// <summary>
+        /// Parsed stylesheets by content, kept for the process (see <see cref="ContentCache{T}"/>).
+        /// </summary>
+        internal static readonly ContentCache<CssParser.CssGrammer> ParsedSheets = new ContentCache<CssParser.CssGrammer>(256);
+
         private readonly IdentifierScope _cssScope;
         private readonly List<RazorCssSheet> _sheets = new List<RazorCssSheet>();
 
@@ -49,7 +54,8 @@ namespace NScript.RazorSkin
         /// Adds a CSS stylesheet. Stylesheets must be added in the order declared by @styles directives.
         /// Later stylesheets can reference classes from earlier ones (nested selectors only).
         /// </summary>
-        public void AddStylesheet(string resourceName, string cssText)
+        /// <returns>True when the parsed stylesheet came from the process-wide cache.</returns>
+        public bool AddStylesheet(string resourceName, string cssText)
         {
             if (string.IsNullOrEmpty(resourceName))
                 throw new ArgumentNullException(nameof(resourceName));
@@ -60,14 +66,24 @@ namespace NScript.RazorSkin
 
             try
             {
-                var grammar = new CssParser.CssGrammer(cssText, parseProperties: false);
+                // The parsed rules are only read afterwards (class-name finder, serializer with
+                // rename callbacks), so one parse per stylesheet content is shared, uncopied.
+                // RazorCssCacheTests fails if a build changes the shared grammar.
+                var grammar = ParsedSheets.GetOrCreate(
+                    ContentCache<CssParser.CssGrammer>.Key(cssText),
+                    () =>
+                    {
+                        var parsed = new CssParser.CssGrammer(cssText, parseProperties: false);
+                        parsed.CollectCssVariablesFromRules();
+                        parsed.CollectUsedCssVariablesFromRules();
+                        return parsed;
+                    },
+                    out var cacheHit);
 
                 // Collect CSS variables
-                grammar.CollectCssVariablesFromRules();
                 foreach (var variable in grammar.DefinedCssVariables)
                     sheet.DeclaredCssVariables.Add(variable);
 
-                grammar.CollectUsedCssVariablesFromRules();
                 foreach (var variable in grammar.UsedCssVariables)
                     sheet.UsedCssVariables.Add(variable);
 
@@ -80,6 +96,7 @@ namespace NScript.RazorSkin
 
                 Log.Debug("Added stylesheet {ResourceName} with {ClassCount} classes, {RuleCount} rules",
                     resourceName, sheet.ClassNames.Count, sheet.Rules.Count);
+                return cacheHit;
             }
             catch (CssParser.ParseException ex)
             {

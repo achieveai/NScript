@@ -23,6 +23,31 @@ namespace NScript.RazorSkin
     {
         private static ILogger Log => RazorSkinCompiler.Logger;
 
+        /// <summary>
+        /// Compiled skin IR by content, kept for the process (see <see cref="ContentCache{T}"/>).
+        /// </summary>
+        internal static readonly ContentCache<SkinTemplateNode> SkinIRs = new ContentCache<SkinTemplateNode>(512);
+
+        /// <summary>
+        /// Returns this build's own copy of the compiled IR. The IR depends only on these
+        /// strings; codegen later writes Cecil-derived values into it, so the cached IR is
+        /// never handed out directly.
+        /// </summary>
+        internal static SkinTemplateNode GetSkinIR(
+            string templateName, string templateSource, string[] additionalSources, string fileName)
+            => GetSkinIR(templateName, templateSource, additionalSources, fileName, out _);
+
+        internal static SkinTemplateNode GetSkinIR(
+            string templateName, string templateSource, string[] additionalSources, string fileName, out bool cacheHit)
+        {
+            var irKey = ContentCache<SkinTemplateNode>.Key(
+                new[] { templateName, templateSource, fileName }.Concat(additionalSources).ToArray());
+            return TemplateIR.IRCloner.Clone(SkinIRs.GetOrCreate(
+                irKey,
+                () => RazorSkinCompiler.CompileToIR(templateName, templateSource, additionalSources, fileName),
+                out cacheHit));
+        }
+
         private RuntimeScopeManager _runtimeScopeManager;
         private ClrContext _clrContext;
         private CecilTypeHelper _typeHelper;
@@ -164,6 +189,9 @@ namespace NScript.RazorSkin
         /// </summary>
         private CssLiteralReplacer _cssLiteralReplacer;
 
+        // This build's parsed-CSS cache hits and misses (Probe.RazorInit).
+        private int _cssHits, _cssMisses;
+
         /// <summary>
         /// All embedded CSS resources found during module scanning, keyed by resource name.
         /// Used to resolve @styles references to actual CSS content.
@@ -229,6 +257,10 @@ namespace Sunlight.Framework.Observables
 
             // Reset per-compilation data index counter
             _nextDataIndex = 100;
+            var probeTotal = System.Diagnostics.Stopwatch.StartNew();
+            long probeStubTicks = 0, probeCompileTicks = 0;
+            int probeTemplates = 0;
+            int irHits = 0, irMisses = 0;
 
             // Scan embedded resources for .skin.cshtml and .css files
             foreach (var module in clrContext.Modules)
@@ -264,14 +296,18 @@ namespace Sunlight.Framework.Observables
                             // Generate C# stubs for the model type from Cecil type info.
                             // This allows the Roslyn analysis phase to detect observable
                             // properties and promote bindings from OneTime to OneWay.
+                            var probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
                             var modelTypeStub = _stubGenerator.GenerateModelTypeStub(templateSource);
+                            probeStubTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
+                            probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
                             var additionalSources = modelTypeStub != null
                                 ? new[] { FrameworkTypeStubs, modelTypeStub }
                                 : new[] { FrameworkTypeStubs };
 
-                            var ir = RazorSkinCompiler.CompileToIR(
-                                templateName, templateSource,
-                                additionalSources, fileName);
+                            var ir = GetSkinIR(templateName, templateSource, additionalSources, fileName, out var irHit);
+                            if (irHit) { irHits++; } else { irMisses++; }
+                            probeCompileTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
+                            probeTemplates++;
                             var resourceKey = GetTemplateKey(module, embeddedResource.Name);
                             _compiledIRs[resourceKey] = ir;
                             _templateShortNames[resourceKey] = templateName;
@@ -301,6 +337,8 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
+            long probeKnownMs = 0, probeResolveMs = 0, probeCssMs = 0, probeScanMs = 0;
+            var probePhase = System.Diagnostics.Stopwatch.StartNew();
             if (_hasRazorTemplates)
             {
                 try
@@ -317,14 +355,28 @@ namespace Sunlight.Framework.Observables
                         false);
                 }
 
+                probeKnownMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
                 ResolveRuntimeIdentifiers(clrContext, runtimeScopeManager);
+                probeResolveMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
 
                 // Load CSS for templates with @styles directives
                 LoadCssForTemplates(runtimeScopeManager);
+                probeCssMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
 
                 // Scan [CssClass] const fields and enable minification
                 ScanCssClassAttributes(runtimeScopeManager);
+                probeScanMs = probePhase.ElapsedMilliseconds;
             }
+
+            var probeTicksPerMs = System.Diagnostics.Stopwatch.Frequency / 1000.0;
+            Log.Information(
+                "Probe.RazorInit TotalMs={TotalMs} StubMs={StubMs} CompileMs={CompileMs} Templates={Templates} KnownMs={KnownMs} ResolveMs={ResolveMs} CssMs={CssMs} ScanMs={ScanMs} IrHits={IrHits} IrMisses={IrMisses} CssHits={CssHits} CssMisses={CssMisses} ProcessIrHits={ProcessIrHits} ProcessIrMisses={ProcessIrMisses} ProcessCssHits={ProcessCssHits} ProcessCssMisses={ProcessCssMisses}",
+                probeTotal.ElapsedMilliseconds,
+                System.Math.Round(probeStubTicks / probeTicksPerMs),
+                System.Math.Round(probeCompileTicks / probeTicksPerMs),
+                probeTemplates, probeKnownMs, probeResolveMs, probeCssMs, probeScanMs,
+                irHits, irMisses, _cssHits, _cssMisses,
+                SkinIRs.Hits, SkinIRs.Misses, RazorCssManager.ParsedSheets.Hits, RazorCssManager.ParsedSheets.Misses);
         }
 
         /// <summary>
@@ -362,7 +414,7 @@ namespace Sunlight.Framework.Observables
                         using var reader = new StreamReader(stream);
                         var cssText = reader.ReadToEnd();
 
-                        cssManager.AddStylesheet(cssResourceName, cssText);
+                        if (cssManager.AddStylesheet(cssResourceName, cssText)) { _cssHits++; } else { _cssMisses++; }
                         Log.Debug("Loaded CSS {ResourceName} for template {TemplateName}",
                             cssResourceName, ir.TemplateName);
                     }

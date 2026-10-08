@@ -312,8 +312,8 @@ namespace NScript.Converter
         private bool ExecuteCore()
         {
             var log = CompilerLog.ForComponent("Builder");
-            TypeConverter.ProbeMethodConvertTicks = TypeConverter.ProbeMaxMethodConvertTicks = 0;
-            TypeConverter.ProbeMethodsConverted = TypeConverter.ProbeNestedConverts = 0;
+            TypeConverter.ProbeMethodConvertTicks = TypeConverter.ProbeMaxMethodConvertTicks = TypeConverter.ProbeParseTicks = 0;
+            TypeConverter.ProbeMethodsConverted = TypeConverter.ProbeNestedConverts = TypeConverter.ProbeParseHits = 0;
             var totalSw = System.Diagnostics.Stopwatch.StartNew();
             log.Information("Builder.Start {MainAssembly} {ReferenceCount}", this.mainAssembly, this.references?.Length ?? 0);
 
@@ -454,13 +454,15 @@ namespace NScript.Converter
                 log.Information("Convert completed in {ElapsedMs}ms", convertSw.ElapsedMilliseconds);
                 var ticksPerMs = System.Diagnostics.Stopwatch.Frequency / 1000.0;
                 log.Information(
-                    "Probe.Convert ConvertMs={ConvertMs} MethodConvertMs={MethodConvertMs} PluginInitMs={PluginInitMs} MethodsConverted={MethodsConverted} MaxMethodConvertMs={MaxMethodConvertMs} NestedConverts={NestedConverts}",
+                    "Probe.Convert ConvertMs={ConvertMs} MethodConvertMs={MethodConvertMs} PluginInitMs={PluginInitMs} MethodsConverted={MethodsConverted} MaxMethodConvertMs={MaxMethodConvertMs} NestedConverts={NestedConverts} ParseMs={ParseMs} ParseHits={ParseHits}",
                     convertSw.ElapsedMilliseconds,
                     System.Math.Round(TypeConverter.ProbeMethodConvertTicks / ticksPerMs),
                     pluginInitMs,
                     TypeConverter.ProbeMethodsConverted,
                     System.Math.Round(TypeConverter.ProbeMaxMethodConvertTicks / ticksPerMs, 1),
-                    TypeConverter.ProbeNestedConverts);
+                    TypeConverter.ProbeNestedConverts,
+                    System.Math.Round(TypeConverter.ProbeParseTicks / ticksPerMs),
+                    TypeConverter.ProbeParseHits);
 
                 if (this.plugins != null)
                 {
