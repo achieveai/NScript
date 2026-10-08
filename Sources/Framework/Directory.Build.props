@@ -41,6 +41,21 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
+  <!--
+    NScriptWatch=true: compile through the build service and register with its watch.
+    The stamp makes CoreCompile run, so an up-to-date project still registers.
+  -->
+  <PropertyGroup Condition="'$(NScriptWatch)' == 'true'">
+    <CscEnvironment>$(CscEnvironment);NSCRIPT_WATCH=true</CscEnvironment>
+  </PropertyGroup>
+
+  <Target Name="NScriptWatchStamp" BeforeTargets="CoreCompile" Condition="'$(NScriptWatch)' == 'true'">
+    <Touch Files="$(IntermediateOutputPath)nscript.watch.stamp" AlwaysCreate="true" />
+    <ItemGroup>
+      <CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)nscript.watch.stamp" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="EnsureNScriptToolsetBuilt"
           BeforeTargets="CoreCompile"
           Condition="!Exists('$(CscToolPath)$(CscToolExe)') or !Exists('$(NScriptToolsetBinDir)$(NScriptEmitterToolFileName)')">

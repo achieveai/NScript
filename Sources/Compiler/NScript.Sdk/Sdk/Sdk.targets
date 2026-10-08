@@ -13,6 +13,13 @@
 		<Uglify Condition="$(Uglify) == ''">false</Uglify>
 		<JsOptimize Condition="$(JsOptimize) == ''">false</JsOptimize>
 		<RepoLinkedSourceMaps Condition="'$(RepoLinkedSourceMaps)' == ''">false</RepoLinkedSourceMaps>
+		<!-- NScriptService=true routes dev builds through the warm build service (nscript.exe service).
+		     Stage 1: the Csc task has no free-form argument, so csc.exe is opted in through its environment.
+		     Release-style builds (-minify/-uglify/-optimize) always stay batch. -->
+		<!-- NScriptWatch=true implies the service and registers this build with its watch (M5). -->
+		<NScriptService Condition="'$(NScriptWatch)' == 'true'">true</NScriptService>
+		<_NScriptUseService Condition="'$(NScriptService)' == 'true' and '$(Minify)' != 'true' and '$(Uglify)' != 'true' and '$(JsOptimize)' != 'true'">true</_NScriptUseService>
+		<CscEnvironment Condition="'$(_NScriptUseService)' == 'true'">$(CscEnvironment);NSCRIPT_SERVICE=1;NSCRIPT_WATCH=$(NScriptWatch);NSCRIPT_WATCH_SDKDIR=$(MSBuildThisFileDirectory)</CscEnvironment>
 	</PropertyGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" >
@@ -286,6 +293,14 @@
 		         Condition="'$(NScriptSecondarySourceMapRoot)' != ''" />
 	</Target>
 
+	<!-- NScriptWatch=true: the stamp makes CoreCompile run, so an up-to-date project still registers with watch. -->
+	<Target Name="NScriptWatchStamp" BeforeTargets="CoreCompile" Condition="'$(NScriptWatch)' == 'true'">
+		<Touch Files="$(IntermediateOutputPath)nscript.watch.stamp" AlwaysCreate="true" />
+		<ItemGroup>
+			<CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)nscript.watch.stamp" />
+		</ItemGroup>
+	</Target>
+
 	<Target
 		Name="ScriptGenerate"
 		Inputs="$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).$(Ext);@(ReferencePath)"
@@ -308,6 +323,8 @@
 			<ScriptGenerateOption Include="-minify" Condition="'$(Minify)' == 'true'" />
 			<ScriptGenerateOption Include="-uglify" Condition="'$(Uglify)' == 'true'" />
 			<ScriptGenerateOption Include="-optimize" Condition="'$(JsOptimize)' == 'true'" />
+			<ScriptGenerateOption Include="-service" Condition="'$(_NScriptUseService)' == 'true'" />
+			<ScriptGenerateOption Include="-watch" Condition="'$(_NScriptUseService)' == 'true' and '$(NScriptWatch)' == 'true'" />
 			<ScriptGenerateOption Include="-sourceMapRoot &quot;$(SourceMapRoot)&quot;" Condition="'$(SourceMapRoot)' != ''" />
 			<ScriptGenerateOption Include="-repoRoot &quot;$(NScriptRepoRoot)&quot;" Condition="'$(SourceMapRoot)' != '' and '$(NScriptRepoRoot)' != ''" />
 			<ScriptGenerateOption Include="-secondarySourceRoot &quot;$(NScriptSecondarySourceMapRoot)&quot;"

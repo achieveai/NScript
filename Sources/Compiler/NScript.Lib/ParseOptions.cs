@@ -62,6 +62,11 @@ namespace NScript.Lib
         private bool optimize = false;
 
         /// <summary>
+        /// Dev-mode output (used by the build service): never minified, uglified or optimized.
+        /// </summary>
+        private bool devMode = false;
+
+        /// <summary>
         /// Optional structured log file path (null => logging disabled).
         /// </summary>
         private string logPath;
@@ -160,6 +165,13 @@ namespace NScript.Lib
         public bool Uglify => this.uglify;
 
         public bool Optimize => this.optimize;
+
+        /// <summary>
+        /// Gets a value indicating whether <c>-devMode</c> was supplied. Dev-mode output is the
+        /// unminified, unoptimized bundle that the build service produces; combining it with
+        /// <c>-minify</c>, <c>-uglify</c> or <c>-optimize</c> is rejected.
+        /// </summary>
+        public bool DevMode => this.devMode;
 
         /// <summary>
         /// Gets the structured log file path, or null when <c>--log</c> was not supplied.
@@ -298,6 +310,9 @@ namespace NScript.Lib
                         continue;
                     case "-optimize":
                         options.optimize = true;
+                        continue;
+                    case "-devmode":
+                        options.devMode = true;
                         continue;
                     case "-sourcemaproot":
                         option = CurrentOption.None;
@@ -532,15 +547,26 @@ namespace NScript.Lib
                     "-secondarySourceRoot must be an https:// URL");
             }
 
+            if (options.devMode && (options.minify || options.uglify || options.optimize))
+            {
+                Logger.Instance.LogError(
+                    "-devMode cannot be combined with -minify, -uglify or -optimize: dev-mode output is never minified or optimized");
+            }
+
             return Logger.Instance.HasErrors ? null : options;
         }
 
         /// <summary>
-        /// Prints the usage.
+        /// The one-line usage text printed for invalid arguments.
+        /// </summary>
+        public const string Usage = "NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-sourceMapRoot <url>] [-repoRoot <absolute-path>] [-secondarySourceRoot <url>] [-secondaryRepoRoot <absolute-path>] [-devMode] [-log <jsonl path>] [-runid <id>]";
+
+        /// <summary>
+        /// Prints the usage and exits the process with code 1.
         /// </summary>
         public static void PrintUsage()
         {
-            Console.WriteLine("NScript -outJs <JSFileName> -references <references (dll paths)... > -entryAssembly <assembly with entrypoint> [-pluginConfig <plugin for JsGenerator>] [-pluginHintPath <; seperated directories to find plugin dlls in>] [-referenceHintPath <;seperated directories to find reference dlls in>] [-sourceMapRoot <url>] [-repoRoot <absolute-path>] [-secondarySourceRoot <url>] [-secondaryRepoRoot <absolute-path>] [-log <jsonl path>] [-runid <id>]");
+            Console.WriteLine(Usage);
             Environment.Exit(1);
         }
 

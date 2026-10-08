@@ -19,7 +19,7 @@ namespace NScript.CLR
     /// <summary>
     /// Definition for ClrContext
     /// </summary>
-    public class ClrContext
+    public class ClrContext : IDisposable
     {
         /// <summary>
         /// The assembly resolver.
@@ -125,6 +125,9 @@ namespace NScript.CLR
                 new ReaderParameters()
                 {
                     AssemblyResolver = assemblyResolver,
+                    // Read the image into memory so no file handle outlives the load: the
+                    // build service keeps the process alive and must not lock obj/ DLLs.
+                    InMemory = true,
                     ReadSymbols = loadSymbols,
                     SymbolReaderProvider = loadSymbols ? symbolReader : null
                 });
@@ -138,6 +141,7 @@ namespace NScript.CLR
                 // Early return when BstInfo is not present.
                 // This is done to skip loading assemblies which
                 // are not compiled with custom Roslyn compiler.
+                moduleDefinition.Dispose();
                 return;
             }
 
@@ -152,6 +156,20 @@ namespace NScript.CLR
                 moduleDefinition.Name;
 
             this.assemblies[moduleDefinition.Name.ToLowerInvariant()] = moduleDefinition;
+        }
+
+        /// <summary>
+        /// Releases the loaded modules and every assembly the resolver opened (the resolver
+        /// reads referenced assemblies from disk and keeps their files open until disposed).
+        /// </summary>
+        public void Dispose()
+        {
+            foreach (var module in this.assemblies.Values)
+            {
+                module.Dispose();
+            }
+
+            this.assemblyResolver.Dispose();
         }
 
         /// <summary>

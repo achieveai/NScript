@@ -136,6 +136,17 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Resets process-wide state that one build leaves behind, so a long-lived process
+        /// (the build service) starts every build as a fresh process would: the Cecil
+        /// comparer's reference-keyed hash cache and the sticky error flag of the Logger.
+        /// </summary>
+        public static void ResetProcessState()
+        {
+            MemberReferenceComparer.Instance.ClearCache();
+            Logger.Instance = new Logger();
+        }
+
+        /// <summary>
         /// Executes this object.
         /// </summary>
         /// <returns>
@@ -154,7 +165,7 @@ namespace NScript.Converter
             }
 
             var loadSw = System.Diagnostics.Stopwatch.StartNew();
-            ClrContext clrContext = new ClrContext();
+            using ClrContext clrContext = new ClrContext();
             foreach (var reference in references)
             {
                 clrContext.LoadAssembly(reference);
@@ -170,6 +181,7 @@ namespace NScript.Converter
             MethodDefinition entryPoint;
             List<MethodDefinition> moduleInitializers;
 
+            var contextSw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 converterContext = new ConverterContext(
@@ -183,6 +195,7 @@ namespace NScript.Converter
                 methodDefinitionsToEmit = new List<MethodDefinition>();
                 entryPoint = this.GetEntryPoint(converterContext, Path.GetFileName(mainAssembly));
                 moduleInitializers = this.GetModuleInitializers(converterContext, Path.GetFileName(mainAssembly));
+                log.Information("ConverterContext completed in {ElapsedMs}ms", contextSw.ElapsedMilliseconds);
             }
             catch(System.Exception ex)
             {
@@ -236,7 +249,9 @@ namespace NScript.Converter
                 }
 
                 // Let's convert all the code to JS.
+                var convertSw = System.Diagnostics.Stopwatch.StartNew();
                 var statements = runtimeManager.Convert(methodDefinitionsToEmit, plugins);
+                log.Information("Convert completed in {ElapsedMs}ms", convertSw.ElapsedMilliseconds);
 
                 if (this.plugins != null)
                 {
@@ -306,6 +321,7 @@ namespace NScript.Converter
                 System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
                 log.Information("InstanceScopeNaming completed in {ElapsedMs}ms", stopWatch.ElapsedMilliseconds);
 
+                var writerSw = System.Diagnostics.Stopwatch.StartNew();
                 var writer = new JSWriter(true, scriptGenerateSettings.uglify);
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
@@ -352,7 +368,7 @@ namespace NScript.Converter
                         repoRoot: this.repoRoot,
                         secondaryRepoRoot: this.secondaryRepoRoot,
                         secondarySourceRoot: this.secondarySourceRoot);
-                    log.Information("JSWriter.End {JsScript}", this.jsScript);
+                    log.Information("JSWriter.End {JsScript} {ElapsedMs}ms", this.jsScript, writerSw.ElapsedMilliseconds);
                 }
             }
             catch(ConverterLocationException ex)

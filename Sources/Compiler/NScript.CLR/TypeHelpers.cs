@@ -2072,6 +2072,13 @@ namespace NScript.CLR
     {
         Dictionary<object, int> calculatedHashCodes = new Dictionary<object, int>();
 
+        /// <summary>
+        /// Drops every cached hash code. The cache is keyed by Cecil object reference, so a
+        /// long-lived process (the build service) clears it between builds; it clears in place
+        /// because callers capture <see cref="Instance"/>.
+        /// </summary>
+        public void ClearCache() => this.calculatedHashCodes.Clear();
+
         private static MemberReferenceComparer instance;
 
         /// <summary>

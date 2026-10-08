@@ -358,17 +358,21 @@ namespace NScript.JST
         ///     <paramref name="secondaryRepoRoot"/>. Must be an absolute <c>https://</c> URL. </param>
         public void Write(string jsFileName, string sourceRoot, bool emitLegacyAshxHandler = true, string repoRoot = null, string secondaryRepoRoot = null, string secondarySourceRoot = null)
         {
-            using var streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8);
-            this.Write(
-                streamWriter,
-                Path.GetFileName(jsFileName),
-                Path.GetDirectoryName(jsFileName),
-                true,
-                sourceRoot,
-                emitLegacyAshxHandler,
-                repoRoot,
-                secondaryRepoRoot,
-                secondarySourceRoot);
+            // Temp file + rename (the .map too, in SourceMap.Write): a reader never sees a
+            // truncated bundle, and a process killed mid-write keeps the old one.
+            OwaSourceMapper.AtomicFile.Write(
+                jsFileName,
+                System.Text.Encoding.UTF8,
+                streamWriter => this.Write(
+                    streamWriter,
+                    Path.GetFileName(jsFileName),
+                    Path.GetDirectoryName(jsFileName),
+                    true,
+                    sourceRoot,
+                    emitLegacyAshxHandler,
+                    repoRoot,
+                    secondaryRepoRoot,
+                    secondarySourceRoot));
         }
 
         /// <summary>

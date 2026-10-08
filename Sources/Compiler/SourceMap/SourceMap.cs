@@ -592,8 +592,7 @@ namespace OwaSourceMapper
             string fileName = Path.Combine(
                 dirctory,
                 Path.GetFileNameWithoutExtension(this.File));
-            using (StreamWriter mapWriter = new StreamWriter(fileName + ".map", false, System.Text.Encoding.ASCII))
-                mapWriter.Write(this.ToString());
+            AtomicFile.Write(fileName + ".map", System.Text.Encoding.ASCII, mapWriter => mapWriter.Write(this.ToString()));
 
             if (!this.EmitLegacyAshxHandler)
             {
