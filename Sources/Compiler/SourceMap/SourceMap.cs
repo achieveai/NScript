@@ -101,25 +101,32 @@ namespace OwaSourceMapper
         public string ToStringRelative(SourceMapping previousMapping, int previousNameIndex, bool firstSegment)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(
-                Base64VLQ.ConvertToBase64VLQ(
+            this.AppendRelative(sb, previousMapping, previousNameIndex, firstSegment);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Appends what <see cref="ToStringRelative"/> returns to <paramref name="sb"/>.
+        /// </summary>
+        public void AppendRelative(StringBuilder sb, SourceMapping previousMapping, int previousNameIndex, bool firstSegment)
+        {
+            Base64VLQ.AppendBase64VLQ(
+                sb,
                 firstSegment
                     ? this.SourceColumn
-                    : this.SourceColumn - previousMapping.SourceColumn));
+                    : this.SourceColumn - previousMapping.SourceColumn);
 
             if (this.SourceFileIndex >= 0)
             {
-                sb.Append(Base64VLQ.ConvertToBase64VLQ(this.SourceFileIndex - previousMapping.SourceFileIndex));
-                sb.Append(Base64VLQ.ConvertToBase64VLQ(this.TargetLine - previousMapping.TargetLine));
-                sb.Append(Base64VLQ.ConvertToBase64VLQ(this.TargetColumn - previousMapping.TargetColumn));
+                Base64VLQ.AppendBase64VLQ(sb, this.SourceFileIndex - previousMapping.SourceFileIndex);
+                Base64VLQ.AppendBase64VLQ(sb, this.TargetLine - previousMapping.TargetLine);
+                Base64VLQ.AppendBase64VLQ(sb, this.TargetColumn - previousMapping.TargetColumn);
 
                 if (this.SourceNameIndex != -1)
                 {
-                    sb.Append(Base64VLQ.ConvertToBase64VLQ(this.SourceNameIndex - previousNameIndex));
+                    Base64VLQ.AppendBase64VLQ(sb, this.SourceNameIndex - previousNameIndex);
                 }
             }
-
-            return sb.ToString();
         }
     }
 
@@ -128,7 +135,7 @@ namespace OwaSourceMapper
         /// <summary>
         /// The mappings.
         /// </summary>
-        private SortedList<Tuple<int, int>, SourceMapping> mappings;
+        private SortedList<(int Line, int Column), SourceMapping> mappings;
 
         /// <summary>
         /// The files.
@@ -136,9 +143,19 @@ namespace OwaSourceMapper
         private List<string> files = new List<string>();
 
         /// <summary>
+        /// Index in <see cref="files"/> of each raw (unescaped) file path.
+        /// </summary>
+        private readonly Dictionary<string, int> fileIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        /// <summary>
         /// The names.
         /// </summary>
         private List<string> names = new List<string>();
+
+        /// <summary>
+        /// Index in <see cref="names"/> of each name.
+        /// </summary>
+        private readonly Dictionary<string, int> nameIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
 
         /// <summary>
         /// The version.
@@ -150,7 +167,7 @@ namespace OwaSourceMapper
         /// </summary>
         public SourceMap()
         {
-            mappings = new SortedList<Tuple<int, int>, SourceMapping>();
+            mappings = new SortedList<(int Line, int Column), SourceMapping>();
         }
 
         /// <summary>
@@ -427,50 +444,34 @@ namespace OwaSourceMapper
         /// <param name="name">  (optional) the name. </param>
         public void AddMapping(int sLine, int sCol, int tLine, int tCol, string file, string name = null)
         {
-            if (file != null)
+            // Keyed by the raw path: escaping is one-to-one, so this finds the same entry as a
+            // search of the escaped list, without a linear scan or a Replace per mapping.
+            int sFileIndex = -1;
+            if (file != null
+                && !this.fileIndexes.TryGetValue(file, out sFileIndex))
             {
-                file = file.Replace("\\", "\\\\");
-            }
-
-            int sFileIndex = this.files.IndexOf(file);
-
-            if (sFileIndex == -1
-                && file != null)
-            {
-                this.files.Add(file);
-                sFileIndex = this.files.Count - 1;
+                sFileIndex = this.files.Count;
+                this.files.Add(file.Replace("\\", "\\\\"));
+                this.fileIndexes.Add(file, sFileIndex);
             }
 
             int sNameIndex = -1;
-
-            if (name != null)
+            if (name != null
+                && !this.nameIndexes.TryGetValue(name, out sNameIndex))
             {
-                sNameIndex = this.names.IndexOf(name);
-                if (sNameIndex == -1)
-                {
-                    this.names.Add(name);
-                    sNameIndex = this.names.Count - 1;
-                }
+                sNameIndex = this.names.Count;
+                this.names.Add(name);
+                this.nameIndexes.Add(name, sNameIndex);
             }
 
-            SourceMapping mapping = new SourceMapping(
+            // Adds, or replaces the mapping already at this position.
+            this.mappings[(sLine, sCol)] = new SourceMapping(
                 sLine,
                 sCol,
                 tLine,
                 tCol,
                 sFileIndex,
                 sNameIndex);
-
-            Tuple<int, int> key = Tuple.Create<int, int>(sLine, sCol);
-
-            if (mappings.ContainsKey(key))
-            {
-                mappings[key] = mapping;
-            }
-            else
-            {
-                mappings.Add(key, mapping);
-            }
         }
 
         /// <summary>
@@ -562,7 +563,7 @@ namespace OwaSourceMapper
                     firstSegment = false;
                 }
 
-                mappingSb.Append(mapping.ToStringRelative(previousMapping, previousNameIndex, firstSegment));
+                mapping.AppendRelative(mappingSb, previousMapping, previousNameIndex, firstSegment);
                 currentSourceLine = mapping.SourceLine;
                 if (mapping.SourceFileIndex >= 0)
                 {
