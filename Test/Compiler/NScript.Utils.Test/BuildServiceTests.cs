@@ -828,6 +828,62 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// P14: a slow checkout trickles files in while a batch runs. A save that lands
+        /// mid-batch supersedes the batch's remaining steps; they stay dirty and the next batch
+        /// runs them, so a storm does not rebuild the whole chain once per batch.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 2-3 s.
+        public void WatchBatch_SaveDuringBatch_SupersedesRemainingSteps()
+        {
+            int projectReplays = 0;
+            int dependentReplays = 0;
+            var firstReplay = new ManualResetEventSlim();
+            var release = new ManualResetEventSlim();
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (watch.Registered < 2)
+                {
+                    return new ServiceResponse { ExitCode = 0 };
+                }
+
+                if (string.Equals(request.Cwd, watch.Dependent, StringComparison.OrdinalIgnoreCase))
+                {
+                    Interlocked.Increment(ref dependentReplays);
+                }
+                else if (Interlocked.Increment(ref projectReplays) == 1)
+                {
+                    firstReplay.Set();
+                    release.Wait(TimeSpan.FromSeconds(5));
+                }
+
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                watch.Register("A.cs");
+                watch.RegisterIn(watch.Dependent, "B.cs");
+
+                watch.EditSource();
+                Assert.IsTrue(firstReplay.Wait(TimeSpan.FromSeconds(5)), "The edit did not replay the compile.");
+                File.WriteAllText(Path.Combine(watch.Project, "A.cs"), "class A { int y; }");
+
+                // The second save is observable only through the batch it starts; give the
+                // watcher time to deliver it before the first batch moves on.
+                Thread.Sleep(1000);
+                release.Set();
+
+                // Batch 1 stops after A; batch 2 runs the dependent it left dirty. (The faked
+                // compile hashes its inputs after it returns, so A already counts the second save
+                // and batch 2 does not recompile it; a real compile snapshots before.)
+                WaitForLog("WatchBatchSuperseded", 1);
+                WaitForLog("WatchBatchEnd", 2);
+                Assert.AreEqual(1, Volatile.Read(ref projectReplays));
+                Assert.AreEqual(1, Volatile.Read(ref dependentReplays), "The dependent should compile once, in the batch after the superseded one.");
+            }
+        }
+
+        /// <summary>
         /// The locked-copy path: MSBuild's copy of a project's DLL (bin\A.dll, read by a bundle)
         /// is held open by another process, so the refresh after a compile cannot overwrite it.
         /// The copy is marked pending, its bundle is kept, and a timed retry copies it once the

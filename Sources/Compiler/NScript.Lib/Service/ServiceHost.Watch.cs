@@ -48,13 +48,16 @@ namespace NScript.Lib.Service
         private WatchRegistry registry = null!;
         private HashSet<string> pendingPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private long pendingEvents;
+
+        // Watcher events on source or build files; a batch planned before the count moved is superseded.
+        private long sourceEvents;
         private long firstEventMs = -1;
         private long lastEventMs;
         private long batchCounter;
         private readonly RetryBudget bundleRetries = new RetryBudget(MaxBundleRetries);
         private string lastBatch = "none";
 
-        // The result word of lastBatch: ok, failed, blocked or kept.
+        // The result word of lastBatch: ok, failed, blocked, kept or superseded.
         private string lastBatchResult = "ok";
         private Thread? watchThread;
         private ILogger? watchLog;
@@ -489,6 +492,10 @@ namespace NScript.Lib.Service
                         {
                             this.pendingPaths.Add(candidate);
                             any = true;
+                            if (WatchRegistry.IsSourceKind(candidate) || WatchRegistry.IsBuildFile(candidate))
+                            {
+                                this.sourceEvents++;
+                            }
                         }
                     }
 
@@ -590,7 +597,7 @@ namespace NScript.Lib.Service
                     }
 
                     HashSet<string> paths;
-                    long events, debounceMs;
+                    long events, debounceMs, sourceEventsTaken;
                     while (true)
                     {
                         long now = this.uptime.ElapsedMilliseconds;
@@ -615,6 +622,7 @@ namespace NScript.Lib.Service
                     {
                         paths = this.pendingPaths;
                         events = this.pendingEvents;
+                        sourceEventsTaken = this.sourceEvents;
                         debounceMs = this.firstEventMs < 0 ? 0 : this.uptime.ElapsedMilliseconds - this.firstEventMs;
                         this.pendingPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         this.pendingEvents = 0;
@@ -635,7 +643,7 @@ namespace NScript.Lib.Service
                             return;
                         }
 
-                        this.RunBatch(paths, events, debounceMs);
+                        this.RunBatch(paths, events, debounceMs, sourceEventsTaken);
                     }
                     finally
                     {
@@ -650,7 +658,13 @@ namespace NScript.Lib.Service
             }
         }
 
-        private void RunBatch(HashSet<string> paths, long events, long debounceMs)
+        /// <summary>
+        /// Runs one batch. <paramref name="sourceEventsTaken"/> is the source event count when
+        /// <paramref name="paths"/> was taken: a later source event (a checkout still landing)
+        /// supersedes the rest of the batch. Unrun steps stay dirty for the next batch, so each
+        /// project compiles about once per storm, and every batch still runs at least one step.
+        /// </summary>
+        private void RunBatch(HashSet<string> paths, long events, long debounceMs, long sourceEventsTaken)
         {
             long batchId = Interlocked.Increment(ref this.batchCounter);
             var log = CompilerLog.ForComponent("Watch");
@@ -765,8 +779,23 @@ namespace NScript.Lib.Service
 
                 // Each bundle is emitted as soon as what it reads has compiled, not after every
                 // compile of the batch: on a framework save the first bundle lands seconds sooner.
-                foreach (var work in steps)
+                for (int index = 0; index < steps.Count; index++)
                 {
+                    var work = steps[index];
+                    long sourceEventsNow;
+                    lock (this.watchGate)
+                    {
+                        sourceEventsNow = this.sourceEvents;
+                    }
+
+                    if (index > 0 && sourceEventsNow != sourceEventsTaken)
+                    {
+                        log.Information("WatchBatchSuperseded BatchId={BatchId} StepsRun={StepsRun} StepsLeft={StepsLeft}", batchId, index, steps.Count - index);
+                        this.WatchLog("superseded batch {0}: new changes arrived; {1} step(s) left for the next batch", batchId, steps.Count - index);
+                        result = result == "ok" ? "superseded" : result;
+                        break;
+                    }
+
                     if (work.Compile == null)
                     {
                         result = this.RunEmitStep(batchId, work.Emit!, result, batchClock, debounceMs, ref firstBundleMs);
