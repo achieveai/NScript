@@ -415,11 +415,33 @@ namespace NScript.Converter.TypeSystemConverter
 
             if (!this.implementedMethods.ContainsKey(methodDefinition))
             {
-                this.implementedMethods.Add(
-                    methodDefinition,
-                    new MethodConverter(this, methodDefinition));
+                // Slice-2 Inc 0 probe: time spent inside new MethodConverter, outermost call only.
+                var outermost = ProbeDepth++ == 0;
+                ProbeNestedConverts += outermost ? 0 : 1;
+                var start = System.Diagnostics.Stopwatch.GetTimestamp();
+                try
+                {
+                    this.implementedMethods.Add(
+                        methodDefinition,
+                        new MethodConverter(this, methodDefinition));
+                }
+                finally
+                {
+                    ProbeDepth--;
+                    var elapsed = System.Diagnostics.Stopwatch.GetTimestamp() - start;
+                    ProbeMethodsConverted++;
+                    ProbeMethodConvertTicks += outermost ? elapsed : 0;
+                    ProbeMaxMethodConvertTicks = Math.Max(ProbeMaxMethodConvertTicks, elapsed);
+                }
             }
         }
+
+        /// <summary>
+        /// Slice-2 Inc 0 probe counters, reset and logged per build by <see cref="Builder"/>.
+        /// Static is safe: stage-2 builds never overlap in one process (the service lock).
+        /// </summary>
+        internal static long ProbeMethodConvertTicks, ProbeMaxMethodConvertTicks;
+        internal static int ProbeMethodsConverted, ProbeNestedConverts, ProbeDepth;
 
         /// <summary>
         /// Adds the field to implementation.
@@ -484,6 +506,15 @@ namespace NScript.Converter.TypeSystemConverter
                                 this.typeScope,
                                 strBuilder.ToString(),
                                 false);
+                            if (this.typeScope == this.RuntimeManager.Scope)
+                            {
+                                // Non-generic owner: the local type reference is a root identifier.
+                                var localRef = typeReference;
+                                DevNames.Assign(
+                                    this.context,
+                                    rv,
+                                    () => DevNames.TypeHelper(this.typeDefinition, "lt$" + DevNames.TypeForm(localRef)));
+                            }
                         }
 
                         this.localTypeReferences.Add(typeReference, rv);
@@ -1202,9 +1233,24 @@ namespace NScript.Converter.TypeSystemConverter
                 this.Scope,
                 new IdentifierScope(this.Scope),
                 new List<IIdentifier>(),
-                typeName ?? SimpleIdentifier.CreateScopeIdentifier(
-                    this.Scope,
-                    this.typeDefinition.FullName, false));
+                typeName ?? this.CreateFallbackConstructorName());
+
+        /// <summary>
+        /// Name for a constructor function that has no type identifier. In dev mode it gets a
+        /// stable name when it lives in the root scope.
+        /// </summary>
+        protected IIdentifier CreateFallbackConstructorName()
+        {
+            var rv = SimpleIdentifier.CreateScopeIdentifier(
+                this.Scope,
+                this.typeDefinition.FullName, false);
+            if (this.Scope == this.RuntimeManager.Scope)
+            {
+                DevNames.Assign(this.context, rv, () => DevNames.TypeHelper(this.typeDefinition, "ctor"));
+            }
+
+            return rv;
+        }
 
         /// <summary>
         /// Initializes the type id.
@@ -1334,6 +1380,13 @@ namespace NScript.Converter.TypeSystemConverter
                     this.Scope,
                     "__initTracker",
                     false);
+                if (this.Scope == this.RuntimeManager.Scope)
+                {
+                    DevNames.Assign(
+                        this.context,
+                        initTracker,
+                        () => DevNames.TypeHelper(this.typeDefinition, "initTracker"));
+                }
 
                 List<Statement> ifStatements = new List<Statement>();
                 ifStatements.Add(new ReturnStatement(null, innerScope, null));

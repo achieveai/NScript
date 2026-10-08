@@ -89,6 +89,12 @@ namespace NScript.Converter.TypeSystemConverter
             new Dictionary<TypeDefinition, string>(MemberReferenceComparer.Instance);
 
         /// <summary>
+        /// Dev mode only: which type owns each hashed type id, to report collisions (NSDEV001).
+        /// </summary>
+        private readonly Dictionary<string, TypeDefinition> devTypeIdOwners =
+            new Dictionary<string, TypeDefinition>(StringComparer.Ordinal);
+
+        /// <summary>
         /// Map from static member to identifier at global level.
         /// </summary>
         private readonly Dictionary<MemberReference, IIdentifier> staticMemberMap =
@@ -167,6 +173,7 @@ namespace NScript.Converter.TypeSystemConverter
                 globalNamespaceManager.Scope,
                 "ptyp_",
                 false);
+            DevNames.Assign(context, ReusablePrototypeIdentifier, () => "$$ptyp");
             InitializeKnownGlobalIdentifiers();
 
             ImplementInstanceAsStatic = instanceAsStatic;
@@ -712,6 +719,14 @@ namespace NScript.Converter.TypeSystemConverter
                             ? typeName.Item2
                             : (typeName.Item2).Replace('.', '_'),
                         isExtended);
+                    var stableTypeReference = typeReference;
+                    DevNames.Assign(
+                        Context,
+                        resolvedIdentifier,
+                        () => DevNames.TypeForm(
+                            stableTypeReference.GetGenericTypeScope() != null
+                                ? stableTypeReference.Resolve()
+                                : stableTypeReference));
 
                     returnValue = new List<IIdentifier>
                     {
@@ -942,6 +957,14 @@ namespace NScript.Converter.TypeSystemConverter
                     methodReference.DeclaringType.Resolve().Name + "." + methodReference.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(Context, returnValue, () =>
+                {
+                    var methodDefinition = methodReference.Resolve();
+                    return DevNames.StaticMember(
+                        methodDefinition.DeclaringType,
+                        methodDefinition.Name,
+                        DevNames.MethodSig(methodDefinition));
+                });
 
                 methodNameIdentifier.Add(methodReference, returnValue);
             }
@@ -1037,6 +1060,10 @@ namespace NScript.Converter.TypeSystemConverter
                     constructor.DeclaringType.Resolve().Name + "_factory";
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(
+                    Context,
+                    returnValue,
+                    () => DevNames.Factory(typeDef, DevNames.MethodSig(constructor)));
 
                 staticFactoryMap.Add(constructor, returnValue);
             }
@@ -1068,6 +1095,10 @@ namespace NScript.Converter.TypeSystemConverter
                     fieldDefinition.DeclaringType.Resolve().Name + "." + fieldDefinition.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(
+                    Context,
+                    returnValue,
+                    () => DevNames.StaticMember(typeDef, fieldDefinition.Name));
 
                 staticMemberMap.Add(fieldDefinition, returnValue);
             }
@@ -1094,6 +1125,13 @@ namespace NScript.Converter.TypeSystemConverter
                     propertyDefinition.DeclaringType.Resolve().Name + "." + propertyDefinition.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(
+                    Context,
+                    returnValue,
+                    () => DevNames.StaticMember(
+                        typeDef,
+                        propertyDefinition.Name,
+                        DevNames.PropertySig(propertyDefinition)));
 
                 staticMemberMap.Add(propertyDefinition, returnValue);
             }
@@ -1202,6 +1240,22 @@ namespace NScript.Converter.TypeSystemConverter
                     || Context.IsPsudoType(typeDefinition))
                 {
                     typeId = GetTypeId(Context.ClrKnownReferences.Object);
+                }
+                else if (Context.DevMode)
+                {
+                    typeId = DevNames.TypeId(typeDefinition);
+                    if (devTypeIdOwners.TryGetValue(typeId, out var owner))
+                    {
+                        Context.AddError(
+                            null,
+                            "NSDEV001: dev type id '" + typeId + "' is shared by "
+                                + owner.FullName + " and " + typeDefinition.FullName + ".",
+                            false);
+                    }
+                    else
+                    {
+                        devTypeIdOwners.Add(typeId, typeDefinition);
+                    }
                 }
                 else
                 {

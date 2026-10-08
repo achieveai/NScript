@@ -85,6 +85,11 @@ namespace NScript.Converter
         private readonly string secondaryRepoRoot;
 
         /// <summary>
+        /// Dev mode: identity-derived stable names and hashed type ids (slice 2, Inc 1).
+        /// </summary>
+        private readonly bool devMode;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="jsScript">               The js script. </param>
@@ -116,7 +121,8 @@ namespace NScript.Converter
             string sourceMapRoot = null,
             string repoRoot = null,
             string secondarySourceRoot = null,
-            string secondaryRepoRoot = null)
+            string secondaryRepoRoot = null,
+            bool devMode = false)
         {
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
@@ -133,6 +139,7 @@ namespace NScript.Converter
             this.repoRoot = repoRoot;
             this.secondarySourceRoot = secondarySourceRoot;
             this.secondaryRepoRoot = secondaryRepoRoot;
+            this.devMode = devMode;
         }
 
         /// <summary>
@@ -147,6 +154,67 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Slice-2 Inc 0 probe: with <c>NSCRIPT_PROBE_RETAIN=1</c> the last build's ClrContext,
+        /// its BstInfo method map and its ConverterContext stay alive until the next build,
+        /// which measures what each one retains (<c>GC.GetTotalMemory(true)</c> deltas,
+        /// released in that order) before releasing them.
+        /// </summary>
+        private static readonly bool ProbeRetain =
+            System.Environment.GetEnvironmentVariable("NSCRIPT_PROBE_RETAIN") == "1";
+        private static ClrContext probeClr;
+        private static object probeAstMap;
+        private static ConverterContext probeConverter;
+
+        /// <summary>
+        /// Dev-mode naming (slice 2, Inc 1): stable names for the global and member trees.
+        /// NSDEV errors become converter errors, so no bundle is written.
+        /// </summary>
+        private static void NameForDevMode(
+            RuntimeScopeManager runtimeManager,
+            ConverterContext converterContext,
+            Serilog.ILogger log)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var rootNamer = IdentifierScope.DevStableNamer.NameExecutionTree(runtimeManager.Scope);
+            var memberNamer = IdentifierScope.DevStableNamer.NameTypeTree(
+                runtimeManager.JSBaseObjectScopeManager.InstanceScope);
+            foreach (var error in rootNamer.Errors.Concat(memberNamer.Errors))
+            {
+                converterContext.AddError(null, error, false);
+                log.Error("DevNaming.Collision {Message}", error);
+            }
+
+            var fallbacks = rootNamer.Fallbacks.Concat(memberNamer.Fallbacks).ToList();
+            log.Information(
+                "DevNaming RootNamed={RootNamed} MemberNamed={MemberNamed} Errors={Errors} Fallbacks={Fallbacks} FallbackNames={FallbackNames} ElapsedMs={ElapsedMs}",
+                rootNamer.NamedCount,
+                memberNamer.NamedCount,
+                rootNamer.Errors.Count + memberNamer.Errors.Count,
+                fallbacks.Count,
+                string.Join(",", fallbacks.Distinct().Take(40)),
+                sw.ElapsedMilliseconds);
+        }
+
+        private static void ProbeMeasureAndReleaseRetained(Serilog.ILogger log)
+        {
+            if (probeClr == null) { return; }
+            const double Mb = 1024.0 * 1024.0;
+            var workingSetMb = System.Environment.WorkingSet / Mb;
+            var all = System.GC.GetTotalMemory(true);
+            probeConverter = null;
+            var session = System.GC.GetTotalMemory(true);
+            probeAstMap = null;
+            var clrOnly = System.GC.GetTotalMemory(true);
+            probeClr.Dispose();
+            probeClr = null;
+            var baseline = System.GC.GetTotalMemory(true);
+            log.Information(
+                "Probe.Retained ClrMb={ClrMb} SessionMb={SessionMb} WithConverterContextMb={WithConverterContextMb} BaselineMb={BaselineMb} WorkingSetMb={WorkingSetMb}",
+                System.Math.Round((clrOnly - baseline) / Mb, 1), System.Math.Round((session - baseline) / Mb, 1),
+                System.Math.Round((all - baseline) / Mb, 1), System.Math.Round(baseline / Mb, 1), System.Math.Round(workingSetMb));
+        }
+
+        /// <summary>
         /// Executes this object.
         /// </summary>
         /// <returns>
@@ -155,6 +223,9 @@ namespace NScript.Converter
         public bool Execute()
         {
             var log = CompilerLog.ForComponent("Builder");
+            if (ProbeRetain) { ProbeMeasureAndReleaseRetained(log); }
+            TypeConverter.ProbeMethodConvertTicks = TypeConverter.ProbeMaxMethodConvertTicks = 0;
+            TypeConverter.ProbeMethodsConverted = TypeConverter.ProbeNestedConverts = 0;
             var totalSw = System.Diagnostics.Stopwatch.StartNew();
             log.Information("Builder.Start {MainAssembly} {ReferenceCount}", this.mainAssembly, this.references?.Length ?? 0);
 
@@ -165,7 +236,9 @@ namespace NScript.Converter
             }
 
             var loadSw = System.Diagnostics.Stopwatch.StartNew();
-            using ClrContext clrContext = new ClrContext();
+            ClrContext clrContext = new ClrContext();
+            using ClrContext ownedClrContext = ProbeRetain ? null : clrContext;
+            if (ProbeRetain) { probeClr = clrContext; }
             foreach (var reference in references)
             {
                 clrContext.LoadAssembly(reference);
@@ -188,6 +261,7 @@ namespace NScript.Converter
                     clrContext,
                     this.methodConverterPlugins,
                     this.typeConverterPlugins);
+                converterContext.DevMode = this.devMode;
                 runtimeManager = new RuntimeScopeManager(
                     converterContext,
                     instanceAsStatic: this.scriptGenerateSettings.optimize);
@@ -227,6 +301,7 @@ namespace NScript.Converter
 
                 // Let's go through first pass and collect all the method references
                 // to emit.
+                var pluginInitSw = System.Diagnostics.Stopwatch.StartNew();
                 if (this.plugins != null)
                 {
                     foreach (var plugin in this.plugins)
@@ -249,9 +324,19 @@ namespace NScript.Converter
                 }
 
                 // Let's convert all the code to JS.
+                var pluginInitMs = pluginInitSw.ElapsedMilliseconds;
                 var convertSw = System.Diagnostics.Stopwatch.StartNew();
                 var statements = runtimeManager.Convert(methodDefinitionsToEmit, plugins);
                 log.Information("Convert completed in {ElapsedMs}ms", convertSw.ElapsedMilliseconds);
+                var ticksPerMs = System.Diagnostics.Stopwatch.Frequency / 1000.0;
+                log.Information(
+                    "Probe.Convert ConvertMs={ConvertMs} MethodConvertMs={MethodConvertMs} PluginInitMs={PluginInitMs} MethodsConverted={MethodsConverted} MaxMethodConvertMs={MaxMethodConvertMs} NestedConverts={NestedConverts}",
+                    convertSw.ElapsedMilliseconds,
+                    System.Math.Round(TypeConverter.ProbeMethodConvertTicks / ticksPerMs),
+                    pluginInitMs,
+                    TypeConverter.ProbeMethodsConverted,
+                    System.Math.Round(TypeConverter.ProbeMaxMethodConvertTicks / ticksPerMs, 1),
+                    TypeConverter.ProbeNestedConverts);
 
                 if (this.plugins != null)
                 {
@@ -308,18 +393,25 @@ namespace NScript.Converter
                 var stopWatch = new System.Diagnostics.Stopwatch();
 
                 stopWatch.Start();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
-                    runtimeManager.Scope,
-                    scriptGenerateSettings.minify);
-                stopWatch.Stop();
-                System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
-                log.Information("RootScopeNaming completed in {ElapsedMs}ms", stopWatch.ElapsedMilliseconds);
-                stopWatch.Restart();
-                IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
-                    runtimeManager.JSBaseObjectScopeManager.InstanceScope,
-                    scriptGenerateSettings.minify);
-                System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
-                log.Information("InstanceScopeNaming completed in {ElapsedMs}ms", stopWatch.ElapsedMilliseconds);
+                if (this.devMode)
+                {
+                    NameForDevMode(runtimeManager, converterContext, log);
+                }
+                else
+                {
+                    IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                        runtimeManager.Scope,
+                        scriptGenerateSettings.minify);
+                    stopWatch.Stop();
+                    System.Console.WriteLine("Root scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
+                    log.Information("RootScopeNaming completed in {ElapsedMs}ms", stopWatch.ElapsedMilliseconds);
+                    stopWatch.Restart();
+                    IdentifierScope.IdentifierMinifiedNamer.MinifyNames(
+                        runtimeManager.JSBaseObjectScopeManager.InstanceScope,
+                        scriptGenerateSettings.minify);
+                    System.Console.WriteLine("Instance scope naming time taken: {0}", stopWatch.ElapsedMilliseconds);
+                    log.Information("InstanceScopeNaming completed in {ElapsedMs}ms", stopWatch.ElapsedMilliseconds);
+                }
 
                 var writerSw = System.Diagnostics.Stopwatch.StartNew();
                 var writer = new JSWriter(true, scriptGenerateSettings.uglify);
@@ -439,6 +531,14 @@ namespace NScript.Converter
                 totalSw.ElapsedMilliseconds,
                 converterContext.Warnings.Count,
                 converterContext.Errors.Count);
+
+            if (ProbeRetain)
+            {
+                probeConverter = converterContext;
+                probeAstMap = typeof(ConverterContext)
+                    .GetField("methodAstMapping", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    .GetValue(converterContext);
+            }
 
             return !emitFailed && converterContext.Errors.Count == 0;
         }

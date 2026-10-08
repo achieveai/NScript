@@ -287,6 +287,13 @@ namespace NScript.Converter
         { get { return this.converterKnownReferences; } }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this build uses dev-mode stable names and
+        /// dev type ids. Set it before the <see cref="TypeSystemConverter.RuntimeScopeManager"/>
+        /// is created.
+        /// </summary>
+        public bool DevMode { get; set; }
+
+        /// <summary>
         /// Gets the errors.
         /// </summary>
         /// <value>

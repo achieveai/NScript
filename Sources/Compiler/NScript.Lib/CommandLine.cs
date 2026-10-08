@@ -84,7 +84,8 @@ namespace NScript.Lib
                 parseOptions.SourceMapRoot,
                 parseOptions.RepoRoot,
                 parseOptions.SecondarySourceRoot,
-                parseOptions.SecondaryRepoRoot);
+                parseOptions.SecondaryRepoRoot,
+                parseOptions.DevMode);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();

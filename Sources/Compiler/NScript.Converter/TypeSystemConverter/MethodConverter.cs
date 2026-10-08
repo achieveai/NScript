@@ -956,6 +956,7 @@ namespace NScript.Converter.TypeSystemConverter
                     PopJsScope();
                 }
 
+                var delegateOrdinal = delegateCount;
                 var delegateFunctionNameId =
                     localMethodName
                     ?? SimpleIdentifier.CreateScopeIdentifier(
@@ -967,6 +968,15 @@ namespace NScript.Converter.TypeSystemConverter
                                 ? string.Empty
                                 : delegateCount.ToString()),
                         false);
+                if (localMethodName == null
+                    && GetMethodName(methodDefinition) is SimpleIdentifier { StableName: { } ownerStableName })
+                {
+                    // The ordinal counts delegates in this method only, so the name stays local.
+                    DevNames.Assign(
+                        RuntimeManager.Context,
+                        delegateFunctionNameId,
+                        () => ownerStableName + "$del" + delegateOrdinal);
+                }
 
                 var rv = new FunctionExpression(
                     parameterBlock.Location,

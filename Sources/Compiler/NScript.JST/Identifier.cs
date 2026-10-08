@@ -91,6 +91,12 @@ namespace NScript.JST
             => this.originalSuggestedName;
 
         /// <summary>
+        /// Gets or sets the identity-derived name used by <see cref="IdentifierScope.DevStableNamer"/>
+        /// in dev mode. Null means the namer derives the name itself. Release naming ignores it.
+        /// </summary>
+        public string StableName { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether Identifier should enforce suggestion.
         /// </summary>
         /// <value>
