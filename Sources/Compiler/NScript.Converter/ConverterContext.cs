@@ -141,14 +141,14 @@ namespace NScript.Converter
         private readonly List<string> additionalCssContributions = new();
 
         /// <summary>
-        /// The method converter plugins.
+        /// The method converter plugins (per build; see <see cref="BeginBuild"/>).
         /// </summary>
-        private readonly IList<IMethodConverterPlugin> methodConverterPlugins;
+        private IList<IMethodConverterPlugin> methodConverterPlugins;
 
         /// <summary>
-        /// The method converter plugins.
+        /// The type converter plugins (per build; see <see cref="BeginBuild"/>).
         /// </summary>
-        private readonly IList<ITypeConverterPlugin> typeConverterPlugins;
+        private IList<ITypeConverterPlugin> typeConverterPlugins;
 
         /// <summary>
         /// Constructor.
@@ -257,6 +257,31 @@ namespace NScript.Converter
             }
 
             // Console.WriteLine("JsonCost: {0}, BondCost: {1}", jsonCost, bondCost);
+        }
+
+        /// <summary>
+        /// Starts another build on a kept context (build session): takes this build's plugins
+        /// and clears what the last build reported (errors, warnings, CSS contributions).
+        /// </summary>
+        public void BeginBuild(
+            IList<IMethodConverterPlugin> methodConverterPlugins,
+            IList<ITypeConverterPlugin> typeConverterPlugins)
+        {
+            this.methodConverterPlugins = methodConverterPlugins ?? new List<IMethodConverterPlugin>();
+            this.typeConverterPlugins = typeConverterPlugins ?? new List<ITypeConverterPlugin>();
+            this.errors.Clear();
+            this.warnings.Clear();
+            this.additionalCssContributions.Clear();
+        }
+
+        /// <summary>
+        /// Ends a build on a kept context: drops the plugins, which hold the build's
+        /// <c>RuntimeScopeManager</c>, so the session keeps no per-build objects alive.
+        /// </summary>
+        public void EndBuild()
+        {
+            this.methodConverterPlugins = new List<IMethodConverterPlugin>();
+            this.typeConverterPlugins = new List<ITypeConverterPlugin>();
         }
 
         /// <summary>

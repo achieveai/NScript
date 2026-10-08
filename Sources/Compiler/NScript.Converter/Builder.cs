@@ -19,7 +19,7 @@ namespace NScript.Converter
     /// <summary>
     /// Definition for Builder.
     /// </summary>
-    public class Builder
+    public class Builder : System.IDisposable
     {
         /// <summary>
         /// The main assembly.
@@ -37,19 +37,39 @@ namespace NScript.Converter
         private readonly string[] references;
 
         /// <summary>
-        /// The plugins.
+        /// The plugins given to the constructor; <see cref="Execute()"/> builds with them.
         /// </summary>
-        private readonly IRuntimeConverterPlugin[] plugins;
+        private readonly IConverterPlugin[] ctorPlugins;
 
         /// <summary>
-        /// The method converter plugins.
+        /// The plugins of the running build.
         /// </summary>
-        private readonly IMethodConverterPlugin[] methodConverterPlugins;
+        private IRuntimeConverterPlugin[] plugins;
 
         /// <summary>
-        /// The type converter plugins.
+        /// The method converter plugins of the running build.
         /// </summary>
-        private readonly ITypeConverterPlugin[] typeConverterPlugins;
+        private IMethodConverterPlugin[] methodConverterPlugins;
+
+        /// <summary>
+        /// The type converter plugins of the running build.
+        /// </summary>
+        private ITypeConverterPlugin[] typeConverterPlugins;
+
+        /// <summary>
+        /// Build session (slice 2, Inc 3; dev mode only): the loaded modules and the converter
+        /// context kept from the last successful build, reused while no input file changed.
+        /// </summary>
+        private ClrContext sessionClr;
+
+        private ConverterContext sessionContext;
+
+        /// <summary>
+        /// (full path, SHA-256 of the content) of every input the session was built from.
+        /// Content, not length and mtime: a rewrite can keep both (cp -p, restored packages,
+        /// two writes in one timestamp tick).
+        /// </summary>
+        private List<(string path, string sha256)> sessionStamps;
 
         private readonly int jsParts;
 
@@ -127,12 +147,7 @@ namespace NScript.Converter
             this.mainAssembly = mainAssembly;
             this.jsScript = jsScript;
             this.references = references;
-            this.plugins = (from p in plugins where p is IRuntimeConverterPlugin select p as IRuntimeConverterPlugin)
-                .ToArray<IRuntimeConverterPlugin>();
-            this.methodConverterPlugins = (from p in plugins where p is IMethodConverterPlugin select p as IMethodConverterPlugin)
-                .ToArray<IMethodConverterPlugin>();
-            this.typeConverterPlugins = (from p in plugins where p is IRuntimeConverterPlugin select p as ITypeConverterPlugin)
-                .ToArray<ITypeConverterPlugin>();
+            this.ctorPlugins = plugins;
             this.jsParts = jsParts;
             this.scriptGenerateSettings = scriptGenerateSettings;
             this.sourceMapRoot = sourceMapRoot;
@@ -154,16 +169,52 @@ namespace NScript.Converter
         }
 
         /// <summary>
-        /// Slice-2 Inc 0 probe: with <c>NSCRIPT_PROBE_RETAIN=1</c> the last build's ClrContext,
-        /// its BstInfo method map and its ConverterContext stay alive until the next build,
-        /// which measures what each one retains (<c>GC.GetTotalMemory(true)</c> deltas,
-        /// released in that order) before releasing them.
+        /// "cold" when the last <see cref="Execute()"/> loaded its inputs, "warm" when it reused
+        /// the session; null before the first build.
         /// </summary>
-        private static readonly bool ProbeRetain =
-            System.Environment.GetEnvironmentVariable("NSCRIPT_PROBE_RETAIN") == "1";
-        private static ClrContext probeClr;
-        private static object probeAstMap;
-        private static ConverterContext probeConverter;
+        public string LastBuildKind { get; private set; }
+
+        /// <summary>
+        /// Whether builds keep a session: dev mode, unless <c>NSCRIPT_SESSION=off</c>.
+        /// </summary>
+        private bool UseSession =>
+            this.devMode && System.Environment.GetEnvironmentVariable("NSCRIPT_SESSION") != "off";
+
+        /// <summary>
+        /// Releases the session's modules (and the files the resolver read).
+        /// </summary>
+        public void Dispose() => this.DropSession();
+
+        private void DropSession()
+        {
+            this.sessionClr?.Dispose();
+            this.sessionClr = null;
+            this.sessionContext = null;
+            this.sessionStamps = null;
+        }
+
+        private void SetPlugins(IConverterPlugin[] buildPlugins)
+        {
+            this.plugins = (from p in buildPlugins where p is IRuntimeConverterPlugin select p as IRuntimeConverterPlugin)
+                .ToArray<IRuntimeConverterPlugin>();
+            this.methodConverterPlugins = (from p in buildPlugins where p is IMethodConverterPlugin select p as IMethodConverterPlugin)
+                .ToArray<IMethodConverterPlugin>();
+            this.typeConverterPlugins = (from p in buildPlugins where p is IRuntimeConverterPlugin select p as ITypeConverterPlugin)
+                .ToArray<ITypeConverterPlugin>();
+        }
+
+        private List<(string path, string sha256)> ReadInputStamps()
+        {
+            var stamps = new List<(string path, string sha256)>();
+            foreach (var input in this.references.Append(this.mainAssembly))
+            {
+                var fullPath = Path.GetFullPath(input);
+                var hash = System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(fullPath));
+                stamps.Add((fullPath, System.Convert.ToHexString(hash)));
+            }
+
+            return stamps;
+        }
 
         /// <summary>
         /// Logs chunk counts and render time; with <c>NSCRIPT_DEV_CHUNK_INDEX=1</c> also writes
@@ -221,35 +272,46 @@ namespace NScript.Converter
                 sw.ElapsedMilliseconds);
         }
 
-        private static void ProbeMeasureAndReleaseRetained(Serilog.ILogger log)
-        {
-            if (probeClr == null) { return; }
-            const double Mb = 1024.0 * 1024.0;
-            var workingSetMb = System.Environment.WorkingSet / Mb;
-            var all = System.GC.GetTotalMemory(true);
-            probeConverter = null;
-            var session = System.GC.GetTotalMemory(true);
-            probeAstMap = null;
-            var clrOnly = System.GC.GetTotalMemory(true);
-            probeClr.Dispose();
-            probeClr = null;
-            var baseline = System.GC.GetTotalMemory(true);
-            log.Information(
-                "Probe.Retained ClrMb={ClrMb} SessionMb={SessionMb} WithConverterContextMb={WithConverterContextMb} BaselineMb={BaselineMb} WorkingSetMb={WorkingSetMb}",
-                System.Math.Round((clrOnly - baseline) / Mb, 1), System.Math.Round((session - baseline) / Mb, 1),
-                System.Math.Round((all - baseline) / Mb, 1), System.Math.Round(baseline / Mb, 1), System.Math.Round(workingSetMb));
-        }
-
         /// <summary>
-        /// Executes this object.
+        /// Builds with the plugins given to the constructor.
         /// </summary>
         /// <returns>
         /// true if it succeeds, false if it fails.
         /// </returns>
-        public bool Execute()
+        public bool Execute() => this.Execute(this.ctorPlugins);
+
+        /// <summary>
+        /// Builds with this build's plugin instances. In dev mode the instance keeps a session
+        /// after a successful build: the next call reuses the loaded modules and the converter
+        /// context while no input file changed (<see cref="LastBuildKind"/> "warm"). Any
+        /// failure drops the session, so the next build is cold.
+        /// </summary>
+        public bool Execute(IConverterPlugin[] buildPlugins)
+        {
+            this.SetPlugins(buildPlugins);
+            bool succeeded = false;
+            try
+            {
+                succeeded = this.ExecuteCore();
+                return succeeded;
+            }
+            finally
+            {
+                this.SetPlugins(System.Array.Empty<IConverterPlugin>());
+                if (succeeded && this.UseSession)
+                {
+                    this.sessionContext.EndBuild();
+                }
+                else
+                {
+                    this.DropSession();
+                }
+            }
+        }
+
+        private bool ExecuteCore()
         {
             var log = CompilerLog.ForComponent("Builder");
-            if (ProbeRetain) { ProbeMeasureAndReleaseRetained(log); }
             TypeConverter.ProbeMethodConvertTicks = TypeConverter.ProbeMaxMethodConvertTicks = 0;
             TypeConverter.ProbeMethodsConverted = TypeConverter.ProbeNestedConverts = 0;
             var totalSw = System.Diagnostics.Stopwatch.StartNew();
@@ -262,17 +324,40 @@ namespace NScript.Converter
             }
 
             var loadSw = System.Diagnostics.Stopwatch.StartNew();
-            ClrContext clrContext = new ClrContext();
-            using ClrContext ownedClrContext = ProbeRetain ? null : clrContext;
-            if (ProbeRetain) { probeClr = clrContext; }
-            foreach (var reference in references)
+            var stamps = this.ReadInputStamps();
+            bool warm = this.UseSession
+                && this.sessionContext != null
+                && stamps.SequenceEqual(this.sessionStamps);
+            string sessionReason = !this.UseSession ? "off"
+                : warm ? "unchanged"
+                : this.sessionContext == null ? "new"
+                : "inputs-changed";
+            ClrContext clrContext;
+            if (warm)
             {
-                clrContext.LoadAssembly(reference);
+                clrContext = this.sessionClr;
+            }
+            else
+            {
+                // Execute(plugins) releases it after the build unless the session keeps it.
+                this.DropSession();
+                clrContext = new ClrContext();
+                this.sessionClr = clrContext;
+                foreach (var reference in references)
+                {
+                    clrContext.LoadAssembly(reference);
+                }
+
+                clrContext.LoadAssembly(this.mainAssembly);
             }
 
-            clrContext.LoadAssembly(this.mainAssembly);
+            this.LastBuildKind = warm ? "warm" : "cold";
             loadSw.Stop();
             log.Information("LoadAssemblies completed in {ElapsedMs}ms", loadSw.ElapsedMilliseconds);
+            log.Information(
+                "Session.Build Kind={Kind} Reason={Reason}",
+                this.LastBuildKind,
+                sessionReason);
 
             RuntimeScopeManager runtimeManager;
             ConverterContext converterContext;
@@ -283,10 +368,21 @@ namespace NScript.Converter
             var contextSw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
-                converterContext = new ConverterContext(
-                    clrContext,
-                    this.methodConverterPlugins,
-                    this.typeConverterPlugins);
+                if (warm)
+                {
+                    converterContext = this.sessionContext;
+                    converterContext.BeginBuild(this.methodConverterPlugins, this.typeConverterPlugins);
+                }
+                else
+                {
+                    converterContext = new ConverterContext(
+                        clrContext,
+                        this.methodConverterPlugins,
+                        this.typeConverterPlugins);
+                    this.sessionContext = converterContext;
+                    this.sessionStamps = stamps;
+                }
+
                 converterContext.DevMode = this.devMode;
                 converterContext.DevChunks = this.devMode
                     && System.Environment.GetEnvironmentVariable("NSCRIPT_DEV_CHUNKS") != "off";
@@ -563,14 +659,6 @@ namespace NScript.Converter
                 totalSw.ElapsedMilliseconds,
                 converterContext.Warnings.Count,
                 converterContext.Errors.Count);
-
-            if (ProbeRetain)
-            {
-                probeConverter = converterContext;
-                probeAstMap = typeof(ConverterContext)
-                    .GetField("methodAstMapping", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                    .GetValue(converterContext);
-            }
 
             return !emitFailed && converterContext.Errors.Count == 0;
         }

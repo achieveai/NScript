@@ -22,10 +22,25 @@ namespace NScript.CLR
     public class ClrContext : IDisposable
     {
         /// <summary>
-        /// The assembly resolver.
+        /// The assembly resolver. It resolves exactly as <see cref="DefaultAssemblyResolver"/>
+        /// does, but reads each resolved file into memory, so a kept build session holds no
+        /// file open.
         /// </summary>
-        private readonly DefaultAssemblyResolver assemblyResolver =
-            new DefaultAssemblyResolver();
+        private readonly InMemoryAssemblyResolver assemblyResolver =
+            new InMemoryAssemblyResolver();
+
+        /// <summary>
+        /// Same search order and cache as <see cref="DefaultAssemblyResolver"/>; only the read
+        /// mode changes (<see cref="ReaderParameters.InMemory"/>).
+        /// </summary>
+        private sealed class InMemoryAssemblyResolver : DefaultAssemblyResolver
+        {
+            public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
+            {
+                parameters.InMemory = true;
+                return base.Resolve(name, parameters);
+            }
+        }
 
         /// <summary>
         /// The assemblies.

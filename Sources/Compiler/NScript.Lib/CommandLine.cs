@@ -74,12 +74,12 @@ namespace NScript.Lib
                 new TestGenerator()
             };
 
-            var builder = new Builder(
+            Builder CreateBuilder(IConverterPlugin[] builderPlugins) => new Builder(
                 parseOptions.JsFileName,
                 parseOptions.JsParts,
                 parseOptions.EntryAssembly,
                 parseOptions.ReferenceDlls.ToArray(),
-                plugins.ToArray(),
+                builderPlugins,
                 (parseOptions.Minify, parseOptions.Uglify, parseOptions.Optimize),
                 parseOptions.SourceMapRoot,
                 parseOptions.RepoRoot,
@@ -93,7 +93,13 @@ namespace NScript.Lib
             // Execute returns false when conversion produced errors (and no output was
             // published). Surface that as a non-zero exit code so direct callers of the
             // compiler do not mistake an incomplete bundle for a successful build.
-            bool succeeded = builder.Execute();
+            // Dev mode builds through the output's session, which gets this build's plugins.
+            bool succeeded = parseOptions.DevMode
+                ? BuilderSessions.Execute(
+                    parseOptions,
+                    () => CreateBuilder(Array.Empty<IConverterPlugin>()),
+                    plugins.ToArray())
+                : CreateBuilder(plugins.ToArray()).Execute();
 
             stopWatch.Stop();
             System.Console.WriteLine("TimeTaken[cs2jsc]: {0}ms", stopWatch.ElapsedMilliseconds);
