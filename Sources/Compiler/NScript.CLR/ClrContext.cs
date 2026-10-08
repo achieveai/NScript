@@ -22,21 +22,34 @@ namespace NScript.CLR
     public class ClrContext : IDisposable
     {
         /// <summary>
-        /// The assembly resolver. It resolves exactly as <see cref="DefaultAssemblyResolver"/>
-        /// does, but reads each resolved file into memory, so a kept build session holds no
-        /// file open.
+        /// The assembly resolver. It returns the assemblies this context loaded, and reads any
+        /// other into memory, so a kept build session holds no file open.
         /// </summary>
-        private readonly InMemoryAssemblyResolver assemblyResolver =
-            new InMemoryAssemblyResolver();
+        private readonly InMemoryAssemblyResolver assemblyResolver;
 
         /// <summary>
-        /// Same search order and cache as <see cref="DefaultAssemblyResolver"/>; only the read
-        /// mode changes (<see cref="ReaderParameters.InMemory"/>).
+        /// Resolves to an assembly the context already loaded when there is one. Otherwise it
+        /// uses the search order and cache of <see cref="DefaultAssemblyResolver"/>, reading
+        /// the file into memory (<see cref="ReaderParameters.InMemory"/>). Without the first
+        /// step a reference into a loaded assembly resolved to a second copy read from disk,
+        /// so one type had two TypeDefinitions and the converter emitted it twice.
         /// </summary>
         private sealed class InMemoryAssemblyResolver : DefaultAssemblyResolver
         {
+            private readonly ClrContext context;
+
+            public InMemoryAssemblyResolver(ClrContext context)
+            {
+                this.context = context;
+            }
+
             public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
             {
+                if (this.context.TryGetModuleDefinition(name.Name, out var module))
+                {
+                    return module.Assembly;
+                }
+
                 parameters.InMemory = true;
                 return base.Resolve(name, parameters);
             }
@@ -79,6 +92,7 @@ namespace NScript.CLR
         /// </summary>
         public ClrContext()
         {
+            this.assemblyResolver = new InMemoryAssemblyResolver(this);
             this.knownReferences = new ClrKnownReferences(this);
         }
 
