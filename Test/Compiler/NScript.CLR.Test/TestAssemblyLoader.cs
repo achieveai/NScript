@@ -53,7 +53,7 @@
 
             if (isRoslyn)
             {
-                LoadRoslynAssemblies(Path.GetTempPath());
+                LoadRoslynAssemblies(Csc.Lib.Test.TestResources.FixtureDirectory);
             }
             else
             {

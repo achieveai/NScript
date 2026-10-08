@@ -319,7 +319,7 @@ namespace NScript.Csc.Lib.Test
         public void DevModeBuild_FixtureHasNoNamingErrorsAndUsesStableNames()
         {
             TestAssemblyLoader.LoadAssemblies();
-            var temp = Path.GetTempPath();
+            var temp = TestResources.FixtureDirectory;
             var outJs = Path.Combine(temp, "devnaming_" + Guid.NewGuid().ToString("N") + ".js");
             try
             {

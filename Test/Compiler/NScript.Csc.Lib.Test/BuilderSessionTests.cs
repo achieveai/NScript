@@ -103,7 +103,7 @@ namespace NScript.Csc.Lib.Test
         public void Session_WarmBuildEqualsColdAndHoldsNoFilesPluginsOrOldContext()
         {
             TestAssemblyLoader.LoadAssemblies();
-            var temp = Path.GetTempPath();
+            var temp = TestResources.FixtureDirectory;
             var dir = Path.Combine(temp, "nscript-session-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(dir);
             string Copy(string name)

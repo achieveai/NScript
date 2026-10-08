@@ -54,7 +54,7 @@
 
             if (isRoslyn)
             {
-                LoadRoslynAssemblies(Path.GetTempPath());
+                LoadRoslynAssemblies(TestResources.FixtureDirectory);
             }
             else
             {
