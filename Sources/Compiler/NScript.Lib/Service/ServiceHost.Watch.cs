@@ -679,6 +679,7 @@ namespace NScript.Lib.Service
             {
                 WatchChanges changes;
                 WatchPlan plan;
+                IReadOnlyList<WatchStep> steps;
                 List<CopyEdge> retryCopies;
                 lock (this.watchGate)
                 {
@@ -709,6 +710,7 @@ namespace NScript.Lib.Service
                     }
 
                     plan = this.registry.Plan();
+                    steps = this.registry.Schedule(plan);
                     retryCopies = this.registry.CopyPending.ToList();
                 }
 
@@ -761,8 +763,17 @@ namespace NScript.Lib.Service
                     }
                 }
 
-                foreach (var project in plan.Compiles)
+                // Each bundle is emitted as soon as what it reads has compiled, not after every
+                // compile of the batch: on a framework save the first bundle lands seconds sooner.
+                foreach (var work in steps)
                 {
+                    if (work.Compile == null)
+                    {
+                        result = this.RunEmitStep(batchId, work.Emit!, result, batchClock, debounceMs, ref firstBundleMs);
+                        continue;
+                    }
+
+                    var project = work.Compile;
                     string? blocked;
                     lock (this.watchGate)
                     {
@@ -831,63 +842,6 @@ namespace NScript.Lib.Service
                     }
                 }
 
-                foreach (var bundle in plan.Bundles)
-                {
-                    string? kept;
-                    lock (this.watchGate)
-                    {
-                        kept = this.registry.BundleBlockReason(bundle);
-                    }
-
-                    if (kept != null)
-                    {
-                        log.Information("WatchStep BatchId={BatchId} Step={Step} Key={Key} Result={Result} Reason={Reason}", batchId, "emitJs", bundle.Key, "kept", kept);
-                        this.WatchLog("KEPT    {0} (last good; {1})", bundle.Key, kept);
-                        if (result == "ok")
-                        {
-                            result = "kept";
-                        }
-
-                        continue;
-                    }
-
-                    var step = Stopwatch.StartNew();
-                    var response = this.ExecuteLocked(
-                        new ServiceRequest { Kind = ServiceProtocol.KindEmitJs, Cwd = bundle.Cwd, Args = bundle.Args },
-                        "watch",
-                        0,
-                        out _,
-                        out _);
-                    bool ok = !response.InternalError && response.ExitCode == 0;
-                    lock (this.watchGate)
-                    {
-                        this.registry.RecordBundleRun(bundle.Key, ok);
-                    }
-
-                    if (firstBundleMs < 0)
-                    {
-                        firstBundleMs = batchClock.ElapsedMilliseconds + debounceMs;
-                    }
-
-                    log.Information(
-                        "WatchStep BatchId={BatchId} Step={Step} Key={Key} ExitCode={ExitCode} ElapsedMs={ElapsedMs} RequestId={RequestId} Result={Result} Message={Message}",
-                        batchId, "emitJs", bundle.Key, response.ExitCode, step.ElapsedMilliseconds, response.RequestId, ok ? "ok" : "failed", response.Message);
-                    this.WatchLog("emit    {0} {1} {2} ms", bundle.Key, ok ? "ok" : "FAILED", step.ElapsedMilliseconds);
-                    if (ok)
-                    {
-                        lock (this.watchGate)
-                        {
-                            this.bundleRetries.Succeeded(bundle.Key);
-                        }
-                    }
-                    else
-                    {
-                        result = "failed";
-                        this.WatchLogDiagnostics(response);
-                        this.RetryIfOutputInUse(bundle, response);
-                    }
-                }
-
                 long totalMs = batchClock.ElapsedMilliseconds + debounceMs;
                 log.Information(
                     "WatchBatchEnd BatchId={BatchId} Result={Result} ElapsedMs={ElapsedMs} FirstBundleMs={FirstBundleMs} DebounceMs={DebounceMs}",
@@ -901,6 +855,64 @@ namespace NScript.Lib.Service
             {
                 this.requestLock.Release();
             }
+        }
+
+        /// <summary>
+        /// Emits <paramref name="bundle"/>, or keeps its last good output when a project it reads
+        /// is blocked, red or not rebuilt. Returns the batch result after this step. Must be
+        /// called under <see cref="requestLock"/>.
+        /// </summary>
+        private string RunEmitStep(long batchId, BundleRecord bundle, string result, Stopwatch batchClock, long debounceMs, ref long firstBundleMs)
+        {
+            var log = CompilerLog.ForComponent("Watch");
+            string? kept;
+            lock (this.watchGate)
+            {
+                kept = this.registry.BundleBlockReason(bundle);
+            }
+
+            if (kept != null)
+            {
+                log.Information("WatchStep BatchId={BatchId} Step={Step} Key={Key} Result={Result} Reason={Reason}", batchId, "emitJs", bundle.Key, "kept", kept);
+                this.WatchLog("KEPT    {0} (last good; {1})", bundle.Key, kept);
+                return result == "ok" ? "kept" : result;
+            }
+
+            var step = Stopwatch.StartNew();
+            var response = this.ExecuteLocked(
+                new ServiceRequest { Kind = ServiceProtocol.KindEmitJs, Cwd = bundle.Cwd, Args = bundle.Args },
+                "watch",
+                0,
+                out _,
+                out _);
+            bool ok = !response.InternalError && response.ExitCode == 0;
+            lock (this.watchGate)
+            {
+                this.registry.RecordBundleRun(bundle.Key, ok);
+            }
+
+            if (firstBundleMs < 0)
+            {
+                firstBundleMs = batchClock.ElapsedMilliseconds + debounceMs;
+            }
+
+            log.Information(
+                "WatchStep BatchId={BatchId} Step={Step} Key={Key} ExitCode={ExitCode} ElapsedMs={ElapsedMs} RequestId={RequestId} Result={Result} Message={Message}",
+                batchId, "emitJs", bundle.Key, response.ExitCode, step.ElapsedMilliseconds, response.RequestId, ok ? "ok" : "failed", response.Message);
+            this.WatchLog("emit    {0} {1} {2} ms", bundle.Key, ok ? "ok" : "FAILED", step.ElapsedMilliseconds);
+            if (ok)
+            {
+                lock (this.watchGate)
+                {
+                    this.bundleRetries.Succeeded(bundle.Key);
+                }
+
+                return result;
+            }
+
+            this.WatchLogDiagnostics(response);
+            this.RetryIfOutputInUse(bundle, response);
+            return "failed";
         }
 
         /// <summary>

@@ -466,6 +466,83 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// P11: a --status against a hung daemon takes its only waiting pipe instance, so the
+        /// --stop that follows cannot connect. The daemon still holds its run lock: --stop must
+        /// say it is not answering and point to --force, not report "no daemon running".
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // Waits out the 1 s pipe connect timeout of --stop.
+        public void SendControl_StopAfterHungStatus_PointsToForceNotNoDaemon()
+        {
+            var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(identity.RunDir);
+            try
+            {
+                using (new FileStream(Path.Combine(identity.RunDir, ServiceLauncher.DaemonLockFile), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                using (var server = new System.IO.Pipes.NamedPipeServerStream(
+                    identity.PipeName,
+                    System.IO.Pipes.PipeDirection.InOut,
+                    1,
+                    System.IO.Pipes.PipeTransmissionMode.Byte,
+                    System.IO.Pipes.PipeOptions.Asynchronous))
+                {
+                    var accepted = server.WaitForConnectionAsync();
+                    ServiceHost.SendControl(identity, ServiceProtocol.KindStatus, new StringWriter(), TimeSpan.FromMilliseconds(300));
+                    Assert.IsTrue(accepted.IsCompleted, "the hung daemon never saw the --status connection");
+
+                    var output = new StringWriter();
+                    int exitCode = ServiceHost.SendControl(identity, ServiceProtocol.KindStop, output, Timeout.InfiniteTimeSpan);
+
+                    Assert.AreEqual(1, exitCode);
+                    StringAssert.Contains(output.ToString(), "--stop --force");
+                    Assert.IsFalse(output.ToString().Contains("no daemon running", StringComparison.Ordinal), output.ToString());
+                }
+            }
+            finally
+            {
+                Directory.Delete(identity.ServiceRoot, recursive: true);
+                Directory.Delete(identity.ToolsetDir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// Ruling (M5.1): a plain --stop that connects to a hung daemon waited for a reply
+        /// forever. It must give up after <see cref="ServiceHost.StopReplyTimeout"/> and point
+        /// to --stop --force.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // Waits out the real 10 s --stop reply timeout.
+        public void Stop_HungDaemon_TimesOutWithForceHint()
+        {
+            var identity = ServiceIdentity.ForToolset(AppContext.BaseDirectory);
+            using var server = new System.IO.Pipes.NamedPipeServerStream(
+                identity.PipeName,
+                System.IO.Pipes.PipeDirection.InOut,
+                1,
+                System.IO.Pipes.PipeTransmissionMode.Byte,
+                System.IO.Pipes.PipeOptions.Asynchronous | System.IO.Pipes.PipeOptions.CurrentUserOnly);
+            var accepted = server.WaitForConnectionAsync();
+            var output = new StringWriter();
+            var savedOut = Console.Out;
+            int exitCode = -1;
+            var stop = new Thread(() => exitCode = ServiceHost.Run(new[] { "--stop" })) { IsBackground = true };
+            Console.SetOut(output);
+            try
+            {
+                stop.Start();
+                Assert.IsTrue(stop.Join(TimeSpan.FromSeconds(20)), "--stop never gave up on the hung daemon.");
+            }
+            finally
+            {
+                Console.SetOut(savedOut);
+            }
+
+            Assert.IsTrue(accepted.IsCompleted, "--stop never connected to the hung daemon.");
+            Assert.AreEqual(1, exitCode);
+            StringAssert.Contains(output.ToString(), "--stop --force");
+        }
+
+        /// <summary>
         /// Contract 9: a step that runs past the request timeout makes the watchdog end the
         /// process with reason "watchdog" (the exit itself is injected here).
         /// </summary>

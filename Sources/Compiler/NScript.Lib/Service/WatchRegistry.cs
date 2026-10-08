@@ -148,6 +148,9 @@ namespace NScript.Lib.Service
     /// <summary>The ordered work of one batch.</summary>
     public sealed record WatchPlan(IReadOnlyList<ProjectRecord> Compiles, IReadOnlyList<BundleRecord> Bundles);
 
+    /// <summary>One step of a batch: a compile (<see cref="Compile"/>) or an emit (<see cref="Emit"/>).</summary>
+    public sealed record WatchStep(ProjectRecord? Compile, BundleRecord? Emit);
+
     /// <summary>
     /// Watch-mode state: the compile and emit requests built with <c>NScriptWatch=true</c>,
     /// what each one read, and the planner that turns changed paths into ordered replays.
@@ -424,7 +427,9 @@ namespace NScript.Lib.Service
 
         /// <summary>
         /// The batch's work: dirty compiles in dependency order (ties by registration order),
-        /// then dirty bundles, those whose entry project changed this window first.
+        /// then dirty bundles: those whose entry project changed this window first, in
+        /// registration order; then the rest, most recently registered first (the app the
+        /// user built last).
         /// </summary>
         public WatchPlan Plan()
         {
@@ -444,12 +449,56 @@ namespace NScript.Lib.Service
                 remaining.Remove(ready.Key);
             }
 
+            bool OwnerChanged(BundleRecord b) => this.lastOwners.Any(o => this.Owned(this.projects[o]).Contains(b.Entry));
             var orderedBundles = this.dirtyBundles
                 .Select(k => this.bundles[k])
-                .OrderBy(b => this.lastOwners.Any(o => this.Owned(this.projects[o]).Contains(b.Entry)) ? 0 : 1)
-                .ThenBy(b => b.Seq)
+                .OrderBy(b => OwnerChanged(b) ? 0 : 1)
+                .ThenBy(b => OwnerChanged(b) ? b.Seq : -b.Seq)
                 .ToList();
             return new WatchPlan(ordered, orderedBundles);
+        }
+
+        /// <summary>
+        /// The plan as steps, each bundle emitted as soon as what it reads has compiled: for
+        /// each bundle in plan order, its compiles not yet scheduled (with their dirty
+        /// dependencies) in plan order, then its emit. Compiles no bundle reads come last.
+        /// Plan order is topological, so every subsequence of it is too.
+        /// </summary>
+        public IReadOnlyList<WatchStep> Schedule(WatchPlan plan)
+        {
+            var planned = new HashSet<string>(plan.Compiles.Select(p => p.Key), StringComparer.OrdinalIgnoreCase);
+            var scheduled = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var steps = new List<WatchStep>();
+            foreach (var bundle in plan.Bundles)
+            {
+                var needed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var queue = new Queue<ProjectRecord>(plan.Compiles.Where(p => this.Includes(bundle, p)));
+                while (queue.Count > 0)
+                {
+                    var project = queue.Dequeue();
+                    if (needed.Add(project.Key))
+                    {
+                        foreach (var dependency in this.DependenciesOf(project).Where(d => planned.Contains(d.Key)))
+                        {
+                            queue.Enqueue(dependency);
+                        }
+                    }
+                }
+
+                foreach (var project in plan.Compiles.Where(p => needed.Contains(p.Key) && scheduled.Add(p.Key)))
+                {
+                    steps.Add(new WatchStep(project, null));
+                }
+
+                steps.Add(new WatchStep(null, bundle));
+            }
+
+            foreach (var project in plan.Compiles.Where(p => scheduled.Add(p.Key)))
+            {
+                steps.Add(new WatchStep(project, null));
+            }
+
+            return steps;
         }
 
         /// <summary>Why <paramref name="project"/> must not compile now, or null.</summary>

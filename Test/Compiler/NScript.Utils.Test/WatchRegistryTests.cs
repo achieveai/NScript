@@ -101,6 +101,30 @@ namespace NScript.Utils.Test
             CollectionAssert.AreEqual(new[] { P("web", "A.js"), P("web", "Other.js") }, plan.Bundles.Select(x => x.Key).ToArray());
         }
 
+        /// <summary>
+        /// P7: a framework save (no bundle's own project changed). The most recently registered
+        /// bundle goes first, and each bundle is emitted as soon as the compiles it reads are
+        /// done, not after every compile of the batch; a compile no bundle reads goes last.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_FrameworkChange_LatestBundleFirst_EachEmittedOnceItsCompilesAreDone()
+        {
+            var z = this.Register("Z", references: new[] { Out("F") });
+            var f = this.Register("F");
+            var x = this.Register("X", references: new[] { Out("F") });
+            var u = this.Register("U", references: new[] { Out("F") });
+            var t = this.Register("T", references: new[] { Out("U"), Out("F") });
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "X.js"), Out("X"), new[] { Out("F") });
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "T.js"), Out("T"), new[] { Out("U"), Out("F") });
+
+            this.disk[Src("F")] = "h1";
+            var steps = this.registry.Schedule(this.Change(Src("F")));
+
+            CollectionAssert.AreEqual(
+                new[] { f.Key, u.Key, t.Key, P("web", "T.js"), x.Key, P("web", "X.js"), z.Key },
+                steps.Select(s => s.Compile?.Key ?? s.Emit.Key).ToArray());
+        }
+
         /// <summary>Contract 2: a resource-only change (a skin) recompiles only its owner.</summary>
         [TestMethod]
         public void Plan_ResourceOnlyChange_CompilesOnlyOwner()

@@ -95,6 +95,12 @@ namespace NScript.Lib.Service
         /// <summary>How long <c>--status</c> waits for a reply before saying the daemon is not answering.</summary>
         public static readonly TimeSpan StatusReplyTimeout = TimeSpan.FromSeconds(5);
 
+        /// <summary>
+        /// How long a plain <c>--stop</c> waits for a reply. A healthy daemon answers at once
+        /// (it stops after in-flight requests, without holding the reply).
+        /// </summary>
+        public static readonly TimeSpan StopReplyTimeout = TimeSpan.FromSeconds(10);
+
         private const int DefaultIdleSeconds = 600;
 
         private const string RebuildHint = "if a build was running: dotnet build --no-incremental <project>";
@@ -182,7 +188,7 @@ namespace NScript.Lib.Service
 
             if (status || stop)
             {
-                return SendControl(identity, stop ? ServiceProtocol.KindStop : ServiceProtocol.KindStatus, Console.Out, stop ? Timeout.InfiniteTimeSpan : StatusReplyTimeout);
+                return SendControl(identity, stop ? ServiceProtocol.KindStop : ServiceProtocol.KindStatus, Console.Out, stop ? StopReplyTimeout : StatusReplyTimeout);
             }
 
             var options = new ServiceHostOptions
@@ -442,6 +448,18 @@ namespace NScript.Lib.Service
         public static int SendControl(ServiceIdentity identity, string kind, TextWriter output, TimeSpan replyTimeout)
         {
             using var pipe = ServiceClient.TryConnect(identity.PipeName, 1000);
+            if (pipe == null && IsLockHeld(Path.Combine(identity.RunDir, ServiceLauncher.DaemonLockFile)))
+            {
+                // A live daemon that accepts no connection: hung, or its waiting pipe instance
+                // was taken by a client that gave up (a --status that timed out).
+                output.WriteLine(
+                    "nscript service: a daemon holds {0} but is not answering on pipe {1}; try nscript service --stop --force",
+                    Path.Combine(identity.RunDir, ServiceLauncher.DaemonLockFile),
+                    identity.PipeName);
+                output.WriteLine("Log: {0}", identity.LogPath);
+                return 1;
+            }
+
             if (pipe == null)
             {
                 output.WriteLine("nscript service: no daemon running for {0} (pipe {1})", identity.ToolsetDir, identity.PipeName);
