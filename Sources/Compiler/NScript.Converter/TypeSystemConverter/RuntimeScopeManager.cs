@@ -235,6 +235,15 @@ namespace NScript.Converter.TypeSystemConverter
                 varList.Add(new IdentifierExpression(identifier, Scope));
             }
 
+            if (Context.DevMode)
+            {
+                // Dev mode: a stable header, so a body edit that changes which roots are used
+                // first does not reorder it.
+                varList.Sort((a, b) => string.CompareOrdinal(
+                    ((IdentifierExpression)a).Identifier.GetName(),
+                    ((IdentifierExpression)b).Identifier.GetName()));
+            }
+
             if (varList.Count > 0)
             {
                 return new VarInitializerStatement(null, Scope, varList);

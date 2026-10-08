@@ -260,6 +260,7 @@ namespace NScript.Converter.TypeSystemConverter
             try
             {
                 methodFunctionExpression = Convert();
+                methodFunctionExpression.IsChunk = context.DevChunks;
             }
             catch (Exception ex)
             {

@@ -166,6 +166,32 @@ namespace NScript.Converter
         private static ConverterContext probeConverter;
 
         /// <summary>
+        /// Logs chunk counts and render time; with <c>NSCRIPT_DEV_CHUNK_INDEX=1</c> also writes
+        /// <c>&lt;out&gt;.chunks.tsv</c> (name, 1-based start line, line count).
+        /// </summary>
+        private static void LogDevChunks(JSWriter writer, string jsScript, Serilog.ILogger log)
+        {
+            log.Information(
+                "DevChunks Chunks={Chunks} Fallbacks={Fallbacks} ChunkRenderMs={ChunkRenderMs}",
+                writer.Chunks.Count,
+                writer.ChunkFallbacks,
+                System.Math.Round(writer.ChunkRenderTicks * 1000.0 / System.Diagnostics.Stopwatch.Frequency));
+
+            if (System.Environment.GetEnvironmentVariable("NSCRIPT_DEV_CHUNK_INDEX") == "1")
+            {
+                var index = new System.Text.StringBuilder("name\tstartLine\tlines\n");
+                foreach (var chunk in writer.Chunks)
+                {
+                    index.Append(chunk.Name).Append('\t')
+                        .Append(chunk.StartLine + 1).Append('\t')
+                        .Append(chunk.LineCount).Append('\n');
+                }
+
+                File.WriteAllText(jsScript + ".chunks.tsv", index.ToString());
+            }
+        }
+
+        /// <summary>
         /// Dev-mode naming (slice 2, Inc 1): stable names for the global and member trees.
         /// NSDEV errors become converter errors, so no bundle is written.
         /// </summary>
@@ -262,6 +288,8 @@ namespace NScript.Converter
                     this.methodConverterPlugins,
                     this.typeConverterPlugins);
                 converterContext.DevMode = this.devMode;
+                converterContext.DevChunks = this.devMode
+                    && System.Environment.GetEnvironmentVariable("NSCRIPT_DEV_CHUNKS") != "off";
                 runtimeManager = new RuntimeScopeManager(
                     converterContext,
                     instanceAsStatic: this.scriptGenerateSettings.optimize);
@@ -461,6 +489,10 @@ namespace NScript.Converter
                         secondaryRepoRoot: this.secondaryRepoRoot,
                         secondarySourceRoot: this.secondarySourceRoot);
                     log.Information("JSWriter.End {JsScript} {ElapsedMs}ms", this.jsScript, writerSw.ElapsedMilliseconds);
+                    if (converterContext.DevChunks)
+                    {
+                        LogDevChunks(writer, this.jsScript, log);
+                    }
                 }
             }
             catch(ConverterLocationException ex)

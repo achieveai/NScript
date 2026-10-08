@@ -50,5 +50,10 @@ namespace NScript.JST.Writer
         /// Scope Token.
         /// </summary>
         ScopeToken,
+
+        /// <summary>
+        /// A separately rendered method function (dev mode).
+        /// </summary>
+        Chunk,
     }
 }

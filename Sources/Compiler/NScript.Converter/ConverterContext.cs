@@ -294,6 +294,12 @@ namespace NScript.Converter
         public bool DevMode { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether method functions are rendered as chunks
+        /// (dev mode, unless <c>NSCRIPT_DEV_CHUNKS=off</c>). Output is the same either way.
+        /// </summary>
+        public bool DevChunks { get; set; }
+
+        /// <summary>
         /// Gets the errors.
         /// </summary>
         /// <value>
