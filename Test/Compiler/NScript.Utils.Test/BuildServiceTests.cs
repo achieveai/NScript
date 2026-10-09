@@ -1396,6 +1396,80 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// F-003: a watcher error other than overflow stops that watcher for good (Windows
+        /// FileSystemWatcher turns EnableRaisingEvents off), so edits under its root would go
+        /// unseen and sync would vouch for stale output. The watch stops and its markers go, so
+        /// dotnet build runs plain. The lost watcher is stood in for by dropped .cs events.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void WatcherError_NotOverflow_StopsWatch_NoMarkerNoYes()
+        {
+            WatchHost watch = null;
+            using (watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }, dropWatchEvents: new[] { ".cs" }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                Directory.CreateDirectory(Path.GetDirectoryName(key));
+                watch.Register("A.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(key).ExitCode, "control: nothing changed");
+                Assert.IsTrue(File.Exists(ServiceHost.WatchMarkerPath(key)), "control: the marker makes dotnet build ask");
+
+                foreach (var root in watch.Host.WatchRoots)
+                {
+                    watch.Host.OnWatcherError(root, new IOException("The specified network name is no longer available."));
+                }
+
+                bool stopped = watch.Serve.Join(TimeSpan.FromSeconds(5));
+                watch.EditSource();
+                var answer = stopped ? null : watch.Sync(key);
+                Assert.IsTrue(stopped, "the daemon kept watching with a dead watcher; sync answered " + answer?.ExitCode + ": " + answer?.Message);
+                Assert.IsFalse(File.Exists(ServiceHost.WatchMarkerPath(key)), "a marker left behind makes dotnet build ask a stopped daemon");
+            }
+        }
+
+        /// <summary>
+        /// F-003/F-005: an overflow keeps the watcher and rescans every input, so an edit whose
+        /// event was lost is still compiled.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void WatcherError_Overflow_RescansInputs_KeepsWatching()
+        {
+            int compiles = 0;
+            WatchHost watch = null;
+            using (watch = new WatchHost(
+                request =>
+                {
+                    if (request.Kind == ServiceProtocol.KindCompile)
+                    {
+                        Interlocked.Increment(ref compiles);
+                    }
+
+                    return new ServiceResponse { ExitCode = 0 };
+                },
+                dropWatchEvents: new[] { ".cs" }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                watch.Register("A.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(key).ExitCode, "control: nothing changed");
+                int before = Volatile.Read(ref compiles);
+                var roots = watch.Host.WatchRoots;
+
+                watch.EditSource();
+                foreach (var root in roots)
+                {
+                    watch.Host.OnWatcherError(root, new InternalBufferOverflowException("Too many changes at once in directory:" + root + "."));
+                }
+
+                var answer = watch.Sync(key);
+                Assert.AreEqual(ServiceHost.SyncExitYes, answer.ExitCode, answer.Message);
+                Assert.AreEqual(before + 1, Volatile.Read(ref compiles), "the rescan found the edit whose event was lost and compiled it");
+                Assert.IsTrue(watch.Serve.IsAlive, "an overflow keeps the daemon watching");
+                CollectionAssert.AreEquivalent(roots.ToList(), watch.Host.WatchRoots.ToList(), "an overflow keeps the watchers");
+            }
+        }
+
+        /// <summary>
         /// S2: while a batch runs, sync waits for it and answers busy when its wait runs out;
         /// a sync waiting when the daemon stops answers busy at once (MSBuild then builds as
         /// today), not yes or no.

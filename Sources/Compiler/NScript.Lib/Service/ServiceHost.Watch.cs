@@ -561,12 +561,38 @@ namespace NScript.Lib.Service
             }
         }
 
-        private void OnWatcherError(string root, Exception ex)
+        /// <summary>The roots that have a file watcher now.</summary>
+        internal IReadOnlyList<string> WatchRoots
+        {
+            get
+            {
+                lock (this.watchGate)
+                {
+                    return this.watchers.Keys.ToList();
+                }
+            }
+        }
+
+        /// <summary>
+        /// An overflow loses events but keeps the watcher: every input is rescanned. Any other
+        /// error stops that watcher for good (on Windows FileSystemWatcher turns
+        /// EnableRaisingEvents off) and <see cref="UpdateWatchers"/> never replaces a root it
+        /// has, so later edits there would go unseen and sync would vouch for stale output:
+        /// the watch stops and its markers go, and dotnet build runs plain.
+        /// </summary>
+        internal void OnWatcherError(string root, Exception ex)
         {
             try
             {
+                if (ex is not InternalBufferOverflowException)
+                {
+                    this.WatchLog("watcher lost {0} ({1}); watch stopped, run dotnet build -p:NScriptWatch=true", root, ex.Message);
+                    this.WatchFatal(ex);
+                    return;
+                }
+
                 CompilerLog.ForComponent("Watch").Warning(ex, "WatchOverflow Root={Root}", root);
-                this.WatchLog("watcher error on {0} ({1}); rescanning", root, ex.Message);
+                this.WatchLog("watcher overflow on {0} ({1}); rescanning", root, ex.Message);
                 lock (this.watchGate)
                 {
                     foreach (var input in this.registry.AllInputs())
