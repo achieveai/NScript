@@ -79,7 +79,7 @@ Saves within a short debounce window form one batch.
 - **An obj DLL another build rewrote** (such as that `-p:DefineConstants=X` build) is recompiled before the answer.
   - At `--sync` the daemon compares each watched obj DLL with the one it last wrote.
   - For each one that changed or is gone, watch.log says `sync <App>.dll: <Project>.dll rewritten outside watch; recompiling`.
-  - The daemon recompiles that project and the projects that use it, re-emits the bundles, then answers. Later syncs compile nothing.
+  - The daemon recompiles that project and the projects that use it, re-emits the bundles, then answers. If the build that got yes still compiled locally, the next sync recompiles that project once more. After that, syncs compile nothing.
   - One-time cost: one batch, as for a `.cs` save in those projects. After a full build with other properties, that is every watched project.
 - `--sync` waits up to 30 s for a running batch, then answers busy.
 - Turn it off: `dotnet build -p:NScriptWatchSync=false`.
@@ -143,6 +143,8 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 - **Dev-mode JS:** the daemon writes dev-mode JS; a local build writes normal JS. The file on disk is whichever wrote last.
 - **Solution builds skip the sync.** `dotnet build NScript_Full.sln` builds every project as before.
 - **A synced build skips the framework projects.** Their commit SHA stamp and the NuGet packages in `NScriptToolSet` are not refreshed. A full build fixes both.
+- **Files that arrive with old times:** a file moved in from the same volume, or copied with its times kept, after MSBuild evaluated the project can be missed. The sync may then answer yes without it. Touch the file or run a watch build.
+- **Two builds with different properties at once:** the property check runs when `--sync` starts. A watch build with other `-p:` values that registers a referenced project during the sync's wait is not seen by that sync.
 - **Windows Defender:** the first read of a freshly written DLL takes about 80 ms under real-time scanning. The second read takes about 2 ms. The service and batch builds both pay it. NScript does not change scan settings.
 
 ## Cross-links
