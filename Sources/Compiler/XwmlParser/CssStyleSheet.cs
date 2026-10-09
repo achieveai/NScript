@@ -337,7 +337,7 @@ namespace XwmlParser
 
             if (isDeclared && !nested)
             {
-                this.parserContext.ConverterContext.AddError(
+                this.parserContext.ConverterContext.AddTemplateError(
                     new Location(
                         cssBlockStartPosition.FileName,
                         cssBlockStartPosition.StartLine + cn.Line,

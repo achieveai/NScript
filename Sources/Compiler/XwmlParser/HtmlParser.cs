@@ -99,7 +99,7 @@ namespace XwmlParser
                 if (error.Code == HtmlParseErrorCode.EndTagNotRequired)
                 { continue; }
 
-                this.ParserContext.ConverterContext.AddError(
+                this.ParserContext.ConverterContext.AddTemplateError(
                     new Location(fullResourceName, error.Line, error.LinePosition),
                     error.Reason,
                     false);
@@ -686,14 +686,14 @@ namespace XwmlParser
                 }
                 catch(ConverterLocationException ex)
                 {
-                    ParserContext.ConverterContext.AddError(
+                    ParserContext.ConverterContext.AddTemplateError(
                         ex.Location,
                         ex.Message,
                         false);
                 }
                 catch (ApplicationException ex)
                 {
-                    ParserContext.ConverterContext.AddError(
+                    ParserContext.ConverterContext.AddTemplateError(
                         new Location(
                             this.resourceName,
                             childNode.Line,

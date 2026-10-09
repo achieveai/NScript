@@ -217,7 +217,7 @@
             }
             catch (ConverterLocationException ex)
             {
-                this.codeGenerator.ParserContext.ConverterContext.AddError(
+                this.codeGenerator.ParserContext.ConverterContext.AddTemplateError(
                     ex.Location,
                     ex.Message,
                     false);

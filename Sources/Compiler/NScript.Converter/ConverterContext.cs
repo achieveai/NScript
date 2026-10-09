@@ -386,6 +386,23 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Adds an error or warning at a template location (XWML, Razor skin or CSS). Template
+        /// frontends keep 0-based columns, the source-map convention; reported columns are 1-based
+        /// like the C# ones (RoslynExtensions), so the column moves by one here.
+        /// </summary>
+        public void AddTemplateError(Location templateLocation, string error, bool isWarning)
+            => this.AddError(ToReportedColumn(templateLocation), error, isWarning);
+
+        /// <summary>
+        /// The 1-based-column copy of a template location. Null, and a location with no line
+        /// (line 0), are returned as they are.
+        /// </summary>
+        public static Location ToReportedColumn(Location templateLocation)
+            => templateLocation == null || templateLocation.StartLine <= 0
+                ? templateLocation
+                : new Location(templateLocation.FileName, templateLocation.StartLine, templateLocation.StartColumn + 1);
+
+        /// <summary>
         /// Adds an error.
         /// </summary>
         /// <param name="location">  The location. </param>

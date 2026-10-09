@@ -199,6 +199,15 @@ namespace NScript.RazorSkin
         private readonly Dictionary<string, EmbeddedResource> _cssResources
             = new Dictionary<string, EmbeddedResource>();
 
+        // CSS resource name -> its source path from $$ResInfo$$, so CSS diagnostics name the file.
+        private readonly Dictionary<string, string> _cssFileNames = new Dictionary<string, string>();
+
+        // Template key -> template text, so a missing CSS class is reported at its line.
+        private readonly Dictionary<string, string> _templateSources = new Dictionary<string, string>();
+
+        // A stylesheet shared by several templates fails for each of them; report it once.
+        private readonly HashSet<string> _reportedCssErrors = new HashSet<string>();
+
         /// <summary>
         /// Maps template name to its JST getter function identifier.
         /// Populated during GetPostJavascript when JST generation succeeds.
@@ -275,6 +284,8 @@ namespace Sunlight.Framework.Observables
                     if (embeddedResource.Name.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
                     {
                         _cssResources[embeddedResource.Name] = embeddedResource;
+                        _cssFileNames[embeddedResource.Name] = runtimeScopeManager.Context.GetResourceFileName(
+                            module, embeddedResource.Name);
                         Log.Debug("Discovered CSS resource {ResourceName}", embeddedResource.Name);
                     }
 
@@ -311,6 +322,7 @@ namespace Sunlight.Framework.Observables
                             probeTemplates++;
                             var resourceKey = GetTemplateKey(module, embeddedResource.Name);
                             _compiledIRs[resourceKey] = ir;
+                            _templateSources[resourceKey] = templateSource;
                             _templateShortNames[resourceKey] = templateName;
                             _hasRazorTemplates = true;
 
@@ -329,8 +341,9 @@ namespace Sunlight.Framework.Observables
                         {
                             Log.Error(ex, "Compilation failed for resource {ResourceName}", embeddedResource.Name);
 
-                            runtimeScopeManager.Context.AddError(
-                                (ex as RazorSkinPreprocessorException)?.Location,
+                            runtimeScopeManager.Context.AddTemplateError(
+                                (ex as RazorSkinPreprocessorException)?.Location
+                                    ?? (ex as NScript.Converter.ConverterLocationException)?.Location,
                                 $"Error compiling Razor skin template '{fileName}': {ex.Message}",
                                 false);
                         }
@@ -415,7 +428,7 @@ namespace Sunlight.Framework.Observables
                         using var reader = new StreamReader(stream);
                         var cssText = reader.ReadToEnd();
 
-                        if (cssManager.AddStylesheet(cssResourceName, cssText)) { _cssHits++; } else { _cssMisses++; }
+                        if (cssManager.AddStylesheet(cssResourceName, cssText, _cssFileNames.GetValueOrDefault(cssResourceName))) { _cssHits++; } else { _cssMisses++; }
                         Log.Debug("Loaded CSS {ResourceName} for template {TemplateName}",
                             cssResourceName, ir.TemplateName);
                     }
@@ -426,7 +439,8 @@ namespace Sunlight.Framework.Observables
                         cssManager.ValidateCssVariables();
 
                         // Validate class names used in template HTML
-                        TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, cssManager);
+                        TemplateIR.TemplateIRBuilder.ValidateCssClasses(
+                            ir, cssManager, _templateSources.GetValueOrDefault(kvp.Key));
 
                         // Note: CompressNames() is called later in ScanCssClassAttributes()
                         // once [CssClass] const fields are validated, ensuring all dynamic
@@ -441,10 +455,15 @@ namespace Sunlight.Framework.Observables
                 catch (Exception ex)
                 {
                     Log.Error(ex, "CSS loading failed for template {TemplateName}", ir.TemplateName);
-                    runtimeScopeManager.Context.AddError(
-                        null,
-                        $"Error loading CSS for Razor template '{ir.TemplateName}': {ex.Message}",
-                        false);
+                    var location = (ex as NScript.Converter.ConverterLocationException)?.Location;
+                    if (_reportedCssErrors.Add(
+                            $"{location?.FileName}|{location?.StartLine}|{location?.StartColumn}|{ex.Message}"))
+                    {
+                        runtimeScopeManager.Context.AddTemplateError(
+                            location,
+                            $"Error loading CSS for Razor template '{ir.TemplateName}': {ex.Message}",
+                            false);
+                    }
                 }
             }
         }
@@ -1578,7 +1597,7 @@ namespace Sunlight.Framework.Observables
                 }
                 catch (InvalidOperationException ex)
                 {
-                    _runtimeScopeManager.Context.AddError(sub.Location, ex.Message, false);
+                    _runtimeScopeManager.Context.AddTemplateError(sub.Location, ex.Message, false);
                     controlType = null;
                 }
                 if (controlType != null)
@@ -1836,7 +1855,7 @@ namespace Sunlight.Framework.Observables
                 {
                     Log.Error(ex, "JST generation failed for template {TemplateName}", kvp.Value.TemplateName);
 
-                    _runtimeScopeManager.Context.AddError(
+                    _runtimeScopeManager.Context.AddTemplateError(
                         (ex as RazorSubControlDiagnosticException)?.Location,
                         $"Error generating JST for Razor template '{kvp.Value.TemplateName}': {ex.Message}",
                         false);

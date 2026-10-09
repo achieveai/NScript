@@ -175,6 +175,12 @@ namespace NScript.Converter
         public string LastBuildKind { get; private set; }
 
         /// <summary>
+        /// Why the last build was warm or cold (the Session.Build reason), with the refresh's miss
+        /// reason when one was tried and missed; null before the first build.
+        /// </summary>
+        public string LastBuildReason { get; private set; }
+
+        /// <summary>
         /// Whether builds keep a session: dev mode, unless <c>NSCRIPT_SESSION=off</c>.
         /// </summary>
         private bool UseSession =>
@@ -224,7 +230,7 @@ namespace NScript.Converter
         /// is an optimisation: any failure to read an input is a logged miss (a cold build),
         /// never a new way to fail. Nothing changes before the refresh commits, so a miss is safe.
         /// </summary>
-        private bool TryRefreshSession(List<(string path, string sha256)> stamps, Serilog.ILogger log)
+        private bool TryRefreshSession(List<(string path, string sha256)> stamps, Serilog.ILogger log, out string miss)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string reason = null;
@@ -273,6 +279,7 @@ namespace NScript.Converter
                 replaced,
                 reason,
                 sw.ElapsedMilliseconds);
+            miss = reason;
             return reason == null;
         }
 
@@ -392,11 +399,16 @@ namespace NScript.Converter
                 : warm ? "unchanged"
                 : this.sessionContext == null ? "new"
                 : "inputs-changed";
-            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, log))
+            string refreshMiss = null;
+            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, log, out refreshMiss))
             {
                 warm = true;
                 sessionReason = "resources-refreshed";
             }
+
+            // Set before loading, so a build that fails to load reports this build, not the last.
+            this.LastBuildKind = warm ? "warm" : "cold";
+            this.LastBuildReason = refreshMiss == null ? sessionReason : sessionReason + "; refresh miss: " + refreshMiss;
 
             ClrContext clrContext;
             if (warm)
@@ -417,7 +429,6 @@ namespace NScript.Converter
                 clrContext.LoadAssembly(this.mainAssembly);
             }
 
-            this.LastBuildKind = warm ? "warm" : "cold";
             loadSw.Stop();
             log.Information("LoadAssemblies completed in {ElapsedMs}ms", loadSw.ElapsedMilliseconds);
             log.Information(

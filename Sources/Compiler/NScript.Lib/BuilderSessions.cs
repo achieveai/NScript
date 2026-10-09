@@ -34,6 +34,21 @@ namespace NScript.Lib
         public static int Count => Volatile.Read(ref count);
 
         /// <summary>
+        /// "kind (reason)" of the last build of <paramref name="jsFileName"/>'s session, e.g.
+        /// "warm (resources-refreshed)", or null when the output has no session.
+        /// </summary>
+        public static string LastBuild(string jsFileName)
+        {
+            var outputKey = Path.GetFullPath(jsFileName).ToLowerInvariant();
+            lock (Gate)
+            {
+                return Sessions.TryGetValue(outputKey, out var entry) && entry.Builder.LastBuildKind != null
+                    ? entry.Builder.LastBuildKind + " (" + entry.Builder.LastBuildReason + ")"
+                    : null;
+            }
+        }
+
+        /// <summary>
         /// Builds through the output file's session, making a new one when there is none or
         /// when the options changed (the old one is released).
         /// </summary>

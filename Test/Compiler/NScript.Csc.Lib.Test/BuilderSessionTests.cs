@@ -263,6 +263,7 @@ namespace NScript.Csc.Lib.Test
                     SetOracleResource(main, "v2");
                     var refreshed = BuildOnce(builder, outJs, out var refreshedJs, out var refreshedMap);
                     Assert.AreEqual("warm", builder.LastBuildKind, "A resource-only change must keep the session.");
+                    Assert.AreEqual("resources-refreshed", builder.LastBuildReason, "watch.log shows this reason.");
                     Assert.IsTrue(SameTarget(cold.context, refreshed.context), "A refreshed build must reuse the session's ConverterContext.");
                     Assert.AreEqual("v2", RootsPlugin.LastOracleText, "The plugin must read the new resource.");
                     CollectionAssert.AreEqual(coldJs, refreshedJs, "A refreshed build's .js differs from the cold build.");
@@ -392,6 +393,8 @@ namespace NScript.Csc.Lib.Test
                     Assert.IsFalse(refresh[0].GetProperty("Refreshed").GetBoolean());
                     var miss = refresh[0].GetProperty("Miss").GetString();
                     Assert.IsTrue(miss.StartsWith("error ", StringComparison.Ordinal), "Miss: " + miss);
+                    Assert.AreEqual("cold", builder.LastBuildKind, "The failed build is reported, not the one before it.");
+                    Assert.AreEqual("inputs-changed; refresh miss: " + miss, builder.LastBuildReason);
 
                     File.WriteAllBytes(main, whole);
                     BuildOnce(builder, outJs, out var againJs, out _);

@@ -221,14 +221,14 @@ namespace XwmlParser.NodeInfos
             }
             catch (ConverterLocationException ex)
             {
-                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                parser.HtmlParser.ParserContext.ConverterContext.AddTemplateError(
                     ex.Location,
                     ex.Message,
                     false);
             }
             catch(ApplicationException ex)
             {
-                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                parser.HtmlParser.ParserContext.ConverterContext.AddTemplateError(
                     new Location(
                         parser.HtmlParser.ResourceName,
                         attr.Line,
@@ -238,7 +238,7 @@ namespace XwmlParser.NodeInfos
             }
             catch(Exception ex)
             {
-                parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                parser.HtmlParser.ParserContext.ConverterContext.AddTemplateError(
                     new Location(
                         parser.HtmlParser.ResourceName,
                         attr.Line,
@@ -347,7 +347,7 @@ namespace XwmlParser.NodeInfos
                     }
                     catch(ApplicationException ex)
                     {
-                        parser.HtmlParser.ParserContext.ConverterContext.AddError(
+                        parser.HtmlParser.ParserContext.ConverterContext.AddTemplateError(
                             new Location(
                                 parser.HtmlParser.ResourceName,
                                 this.Node.Line,

@@ -985,7 +985,7 @@ namespace NScript.Lib.Service
             log.Information(
                 "WatchStep BatchId={BatchId} Step={Step} Key={Key} ExitCode={ExitCode} ElapsedMs={ElapsedMs} RequestId={RequestId} Result={Result} Message={Message}",
                 batchId, "emitJs", bundle.Key, response.ExitCode, step.ElapsedMilliseconds, response.RequestId, ok ? "ok" : "failed", response.Message);
-            this.WatchLog("emit    {0} {1} {2} ms", bundle.Key, ok ? "ok" : "FAILED", step.ElapsedMilliseconds);
+            this.WatchLog("emit    {0} {1} {2} ms session={3}", bundle.Key, ok ? "ok" : "FAILED", step.ElapsedMilliseconds, BuilderSessions.LastBuild(bundle.Key) ?? "none");
             if (ok)
             {
                 lock (this.watchGate)

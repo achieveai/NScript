@@ -102,6 +102,11 @@ namespace NScript.RazorSkin.CodeGen
         public int NodeCount { get; set; }
         public int[] NodeTypes { get; set; }
         public string[] GetterExpressions { get; set; }
+        /// <summary>
+        /// Template location of the IR node that created each graph node, or null when the IR
+        /// has none. Diagnostics for a getter point here instead of at the template's first line.
+        /// </summary>
+        public Location[] GetterLocations { get; set; }
         public int[] GetterSourceSlots { get; set; }
         public List<int>[] Consumers { get; set; }
         public int[] GateIndices { get; set; }
@@ -169,6 +174,8 @@ namespace NScript.RazorSkin.CodeGen
         {
             foreach (var child in children)
             {
+                var outerLocation = ctx.CurrentLocation;
+                ctx.CurrentLocation = child.Location ?? outerLocation;
                 switch (child)
                 {
                     case ExpressionBindingNode binding:
@@ -195,6 +202,8 @@ namespace NScript.RazorSkin.CodeGen
                             WalkChildren(child.Children, ctx, gateIndex);
                         break;
                 }
+
+                ctx.CurrentLocation = outerLocation;
             }
         }
 
@@ -808,6 +817,7 @@ namespace NScript.RazorSkin.CodeGen
             private readonly string _itemVariablePrefix;
             private readonly List<int> _nodeTypes = new List<int>();
             private readonly List<string> _getterExpressions = new List<string>();
+            private readonly List<Location> _getterLocations = new List<Location>();
             private readonly List<List<int>> _consumers = new List<List<int>>();
             private readonly List<int> _gateIndices = new List<int>();
             private readonly List<object> _defaultValues = new List<object>();
@@ -867,11 +877,15 @@ namespace NScript.RazorSkin.CodeGen
                 return 0;
             }
 
+            /// <summary>Location of the IR node being walked; recorded on each node it adds.</summary>
+            public Location CurrentLocation { get; set; }
+
             public int AddNode(int nodeType, string getterExpression, object defaultValue)
             {
                 int idx = _nodeTypes.Count;
                 _nodeTypes.Add(nodeType);
                 _getterExpressions.Add(getterExpression);
+                _getterLocations.Add(CurrentLocation);
                 _consumers.Add(new List<int>());
                 _gateIndices.Add(-1);
                 _defaultValues.Add(defaultValue);
@@ -966,6 +980,7 @@ namespace NScript.RazorSkin.CodeGen
                 Topology.NodeCount = n;
                 Topology.NodeTypes = _nodeTypes.ToArray();
                 Topology.GetterExpressions = _getterExpressions.ToArray();
+                Topology.GetterLocations = _getterLocations.ToArray();
                 Topology.GetterSourceSlots = _getterExpressions.Select(expression =>
                     expression != null && expression.StartsWith("!Control.")
                         ? 1 : GetSourceSlot(expression)).ToArray();
