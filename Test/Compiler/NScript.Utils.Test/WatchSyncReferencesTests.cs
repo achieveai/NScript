@@ -5,6 +5,7 @@ namespace NScript.Utils.Test
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Xml.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NScript.Csc.Lib.Service;
     using NScript.Lib.Service;
@@ -241,6 +242,45 @@ namespace NScript.Utils.Test
             Assert.AreEqual(1, Count(output, "NScript watch: App resources are in the watch's DLL; csc skipped"), output);
             Assert.AreEqual("the daemon's patched DLL", File.ReadAllText(Path.Combine(app, "bin", "Debug", "netstandard2.1", "App.dll")), "bin gets the patched DLL");
         }
+
+        /// <summary>
+        /// A1: the synced csc skip copies CoreCompile's Inputs (split at the embedded resources)
+        /// and Outputs. An SDK that adds an input there would let a synced build skip csc when
+        /// only that input changed, so the copies must equal the CoreCompile of the SDK the
+        /// harness's MSBuild uses ($(RoslynTargetsPath), where CSharpCoreTargetsPath points by default).
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // One dotnet msbuild run of an empty target (~1-2 s).
+        public void SyncedSkipCsc_CopiesCoreCompileInputsAndOutputs_OfTheSdk()
+        {
+            const string driver =
+                "<Project>\n" +
+                "  <Target Name=\"Run\">\n" +
+                "    <WriteLinesToFile File=\"$(MSBuildThisFileDirectory)roslyn.txt\" Lines=\"$(RoslynTargetsPath)\" Overwrite=\"true\" />\n" +
+                "  </Target>\n" +
+                "</Project>\n";
+            using var tree = new SyncTree(driver);
+            tree.Run();
+            string core = Path.Combine(File.ReadAllText(Path.Combine(tree.Dir, "roslyn.txt")).Trim(), "Microsoft.CSharp.Core.targets");
+            Assert.IsTrue(File.Exists(core), core);
+
+            XElement coreCompile = Target(core, "CoreCompile");
+            string sdkTargets = tree.SdkDir + "Sdk.targets";
+            XElement compileCheck = Target(sdkTargets, "_NScriptWatchSyncedCompileCheck");
+            const string resources = "@(_CoreCompileResourceInputs)";
+            Assert.AreEqual(Items(coreCompile, "Inputs"), Items(compileCheck, "Inputs", resources), core + " vs " + sdkTargets);
+            Assert.AreEqual(resources, Items(Target(sdkTargets, "_NScriptWatchSyncedResourceAfterPatchCheck"), "Inputs"));
+            Assert.AreEqual(resources, Items(Target(sdkTargets, "_NScriptWatchSyncedResourcePatchCheck"), "Inputs"));
+            Assert.AreEqual(Items(coreCompile, "Outputs"), Items(compileCheck, "Outputs"), core + " vs " + sdkTargets);
+            Assert.AreEqual(Items(coreCompile, "Outputs"), Items(Target(sdkTargets, "_NScriptWatchSyncedResourcePatchCheck"), "Outputs"));
+        }
+
+        private static XElement Target(string file, string name)
+            => XDocument.Load(file).Descendants().Single(e => e.Name.LocalName == "Target" && (string)e.Attribute("Name") == name);
+
+        /// <summary>An Inputs/Outputs list as sorted, trimmed items, one per line.</summary>
+        private static string Items(XElement target, string attribute, params string[] extra)
+            => string.Join("\n", ((string)target.Attribute(attribute)).Split(';').Select(i => i.Trim()).Where(i => i.Length > 0).Concat(extra).OrderBy(i => i, StringComparer.Ordinal));
 
         private static int Count(string text, string part)
             => (text.Length - text.Replace(part, string.Empty).Length) / part.Length;
