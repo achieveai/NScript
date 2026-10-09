@@ -432,6 +432,10 @@ namespace NScript.Converter.TypeSystemConverter
                     ProbeMethodsConverted++;
                     ProbeMethodConvertTicks += outermost ? elapsed : 0;
                     ProbeMaxMethodConvertTicks = Math.Max(ProbeMaxMethodConvertTicks, elapsed);
+                    if (outermost && elapsed > ProbeSlowMethodTicks)
+                    {
+                        ProbeSlowMethods.Add((methodDefinition.FullName, elapsed));
+                    }
                 }
             }
         }
@@ -442,6 +446,11 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         internal static long ProbeMethodConvertTicks, ProbeMaxMethodConvertTicks, ProbeParseTicks;
         internal static int ProbeMethodsConverted, ProbeNestedConverts, ProbeDepth;
+
+        /// <summary>Outermost conversions slower than 20 ms, for Probe.Convert's SlowMethods.</summary>
+        internal static readonly List<(string Method, long Ticks)> ProbeSlowMethods = new List<(string, long)>();
+
+        private static readonly long ProbeSlowMethodTicks = System.Diagnostics.Stopwatch.Frequency / 50;
 
         /// <summary>
         /// Adds the field to implementation.
