@@ -89,7 +89,9 @@ namespace NScript.Converter.TypeSystemConverter
 
         /// <summary>
         /// Type form. Definitions use the Cecil <c>FullName</c> (nested types include the whole
-        /// declaring chain); generic instances bracket their arguments.
+        /// declaring chain); generic instances bracket their arguments. A type whose outermost type
+        /// is not public also carries its assembly (<c>M(asm) $$asm$ M(FullName) $</c>): two
+        /// assemblies of one bundle may each have an internal type of the same full name.
         /// </summary>
         public static string TypeForm(TypeReference type)
         {
@@ -103,8 +105,23 @@ namespace NScript.Converter.TypeSystemConverter
                         + string.Join("$and$", git.GenericArguments.Select(TypeForm))
                         + "$end$";
                 default:
-                    return M(type.FullName) + "$";
+                    var definition = type as TypeDefinition ?? type.Resolve();
+                    return definition != null && !Outermost(definition).IsPublic
+                        ? M(definition.Module.Assembly.Name.Name) + "$$asm$" + M(type.FullName) + "$"
+                        : M(type.FullName) + "$";
             }
+        }
+
+        // A nested type's full name starts with its outermost type's, so only that one's
+        // visibility decides whether another assembly can have the same full name.
+        private static TypeDefinition Outermost(TypeDefinition type)
+        {
+            while (type.DeclaringType != null)
+            {
+                type = type.DeclaringType;
+            }
+
+            return type;
         }
 
         /// <summary>Root static member form: <c>TF(type) M(member) [$ sig]</c>.</summary>

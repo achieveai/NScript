@@ -99,6 +99,35 @@ namespace NScript.Csc.Lib.Test
         }
 
         [TestMethod]
+        public void InternalTypesOfTheSameNameInTwoAssembliesGetDifferentForms()
+        {
+            // A source file linked into two projects gives both assemblies the same internal type.
+            TypeDefinition InternalShim(string assembly)
+            {
+                var module = ModuleDefinition.CreateModule(assembly, ModuleKind.Dll);
+                var type = new TypeDefinition("Shared", "Shim", TypeAttributes.NotPublic | TypeAttributes.Class, module.TypeSystem.Object);
+                module.Types.Add(type);
+                var nested = new TypeDefinition(string.Empty, "Closure", TypeAttributes.NestedPrivate | TypeAttributes.Class, module.TypeSystem.Object);
+                type.NestedTypes.Add(nested);
+                return type;
+            }
+
+            var first = InternalShim("LibA");
+            var second = InternalShim("LibB");
+
+            Assert.AreEqual("LibA$$asm$Shared_Shim$", DevNames.TypeForm(first));
+            Assert.AreEqual("LibB$$asm$Shared_Shim$", DevNames.TypeForm(second));
+            Assert.AreEqual("LibA$$asm$Shared_Shim_9Closure$", DevNames.TypeForm(first.NestedTypes[0]));
+
+            // Public types, and private types nested in them, keep the short form.
+            var list = Type("Pub", "List");
+            var enumerator = new TypeDefinition(string.Empty, "Enumerator", TypeAttributes.NestedPrivate | TypeAttributes.Class, Module.TypeSystem.Object);
+            list.NestedTypes.Add(enumerator);
+            Assert.AreEqual("Pub_List$", DevNames.TypeForm(list));
+            Assert.AreEqual("Pub_List_9Enumerator$", DevNames.TypeForm(enumerator));
+        }
+
+        [TestMethod]
         public void ManglingIsInjectiveOnSeparatorsAndNeverEmitsDollar()
         {
             var inputs = new[] { "a.b", "a_b", "a/b", "a`b", "a__b", "a._b", "a-b", "a<b>" };
