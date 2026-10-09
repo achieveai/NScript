@@ -60,8 +60,11 @@ namespace NScript.Lib.Service
         /// </summary>
         public IReadOnlyList<string> DropWatchEvents { get; set; } = Array.Empty<string>();
 
-        /// <summary>A setting that could not be read and fell back to its default; logged once at start.</summary>
+        /// <summary>Settings that could not be read and fell back to their defaults, one line; logged once at start.</summary>
         public string? StartupWarning { get; set; }
+
+        /// <summary>Level of the daemon log (<see cref="ServiceHost.LogLevelEnvVar"/>).</summary>
+        public LogEventLevel LogLevel { get; set; } = LogEventLevel.Information;
 
         /// <summary>Recomputes the toolset hash before each batch. Null: <see cref="ServiceIdentity.ComputeToolsetHash"/>.</summary>
         public Func<string>? ToolsetHash { get; set; }
@@ -288,7 +291,7 @@ namespace NScript.Lib.Service
                 TimeSpan wait;
                 try
                 {
-                    wait = ReadSeconds(SyncWaitSecondsEnvVar, TimeSpan.FromSeconds(30));
+                    wait = ReadSeconds(SyncWaitSecondsEnvVar, Environment.GetEnvironmentVariable(SyncWaitSecondsEnvVar), TimeSpan.FromSeconds(30));
                 }
                 catch (ArgumentException e)
                 {
@@ -326,17 +329,59 @@ namespace NScript.Lib.Service
                 return rc;
             }
 
-            var options = new ServiceHostOptions
+            var options = ReadSettings(Environment.GetEnvironmentVariable, out var idleTimeout);
+            return new ServiceHost(identity, identity.PipeName, idleTimeout, foreground, options).Serve();
+        }
+
+        /// <summary>
+        /// The daemon's settings, read through <paramref name="getEnv"/> (the process
+        /// environment in production), and its idle timeout when nothing is watched. Like
+        /// <see cref="ParseSessionIdleTimeout"/>, a value that cannot be read gives the default
+        /// and a warning naming the variable, rather than a daemon that cannot start.
+        /// </summary>
+        public static ServiceHostOptions ReadSettings(Func<string, string?> getEnv, out TimeSpan idleTimeout)
+        {
+            var warnings = new List<string>();
+            TimeSpan Seconds(string envVar, TimeSpan defaultValue)
             {
-                RequestTimeout = ReadSeconds(RequestTimeoutEnvVar, TimeSpan.FromSeconds(600)),
-                WatchIdleTimeout = ReadSeconds(WatchIdleSecondsEnvVar, TimeSpan.FromHours(8)),
-                SessionIdleTimeout = ParseSessionIdleTimeout(Environment.GetEnvironmentVariable(SessionIdleSecondsEnvVar), out var sessionIdleWarning),
-                StartupWarning = sessionIdleWarning,
-                ResourcePatch = !string.Equals(Environment.GetEnvironmentVariable(ResourcePatchEnvVar), "off", StringComparison.OrdinalIgnoreCase),
-                DropWatchEvents = (Environment.GetEnvironmentVariable(DropWatchEventsEnvVar) ?? "")
+                var value = getEnv(envVar);
+                if (TryReadSeconds(value, defaultValue, out var seconds))
+                {
+                    return seconds;
+                }
+
+                warnings.Add($"{envVar}='{value}' is not a positive whole number of seconds; using {(int)defaultValue.TotalSeconds}");
+                return defaultValue;
+            }
+
+            idleTimeout = Seconds(IdleSecondsEnvVar, TimeSpan.FromSeconds(DefaultIdleSeconds));
+            var requestTimeout = Seconds(RequestTimeoutEnvVar, TimeSpan.FromSeconds(600));
+            var watchIdleTimeout = Seconds(WatchIdleSecondsEnvVar, TimeSpan.FromHours(8));
+            var sessionIdleTimeout = ParseSessionIdleTimeout(getEnv(SessionIdleSecondsEnvVar), out var sessionIdleWarning);
+            if (sessionIdleWarning != null)
+            {
+                warnings.Add(sessionIdleWarning);
+            }
+
+            var logLevelValue = getEnv(LogLevelEnvVar);
+            var logLevel = LogEventLevel.Information;
+            if (!string.IsNullOrWhiteSpace(logLevelValue) && !Enum.TryParse(logLevelValue, ignoreCase: true, out logLevel))
+            {
+                logLevel = LogEventLevel.Information;
+                warnings.Add($"{LogLevelEnvVar}='{logLevelValue}' is not a Serilog level (Verbose, Debug, Information, Warning, Error, Fatal); using Information");
+            }
+
+            return new ServiceHostOptions
+            {
+                RequestTimeout = requestTimeout,
+                WatchIdleTimeout = watchIdleTimeout,
+                SessionIdleTimeout = sessionIdleTimeout,
+                StartupWarning = warnings.Count == 0 ? null : string.Join("; ", warnings),
+                LogLevel = logLevel,
+                ResourcePatch = !string.Equals(getEnv(ResourcePatchEnvVar), "off", StringComparison.OrdinalIgnoreCase),
+                DropWatchEvents = (getEnv(DropWatchEventsEnvVar) ?? "")
                     .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
             };
-            return new ServiceHost(identity, identity.PipeName, ReadSeconds(IdleSecondsEnvVar, TimeSpan.FromSeconds(DefaultIdleSeconds)), foreground, options).Serve();
         }
 
         /// <summary>
@@ -448,7 +493,7 @@ namespace NScript.Lib.Service
                 // The daemon log is long-lived and shared by every build: Information by
                 // default (Razor's Verbose events are ~330 KB per request); NSCRIPT_SERVICE_LOG_LEVEL
                 // (a Serilog level name, e.g. Verbose) overrides it. Capped at 20 MB, one old file kept.
-                CompilerLog.Initialize(this.identity.LogPath, "service", runId: null, ReadLogLevel(), fileSizeLimitBytes: 20L * 1024 * 1024);
+                CompilerLog.Initialize(this.identity.LogPath, "service", runId: null, this.options.LogLevel, fileSizeLimitBytes: 20L * 1024 * 1024);
                 var log = CompilerLog.ForComponent("ServiceHost");
 
                 // The run dir belongs to this daemon alone (one daemon per toolset hash, by the
@@ -711,22 +756,6 @@ namespace NScript.Lib.Service
             return response.ExitCode;
         }
 
-        private static LogEventLevel ReadLogLevel()
-        {
-            var value = Environment.GetEnvironmentVariable(LogLevelEnvVar);
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return LogEventLevel.Information;
-            }
-
-            if (!Enum.TryParse(value, ignoreCase: true, out LogEventLevel level))
-            {
-                throw new ArgumentException($"{LogLevelEnvVar} must be a Serilog level (Verbose, Debug, Information, Warning, Error, Fatal), got '{value}'");
-            }
-
-            return level;
-        }
-
         /// <summary>
         /// Reads <see cref="SessionIdleSecondsEnvVar"/>: unset gives the default, 0 turns the
         /// sweep off, a positive whole number of seconds sets it. Anything else gives the default
@@ -749,20 +778,27 @@ namespace NScript.Lib.Service
             return DefaultSessionIdleTimeout;
         }
 
-        private static TimeSpan ReadSeconds(string envVar, TimeSpan defaultValue)
+        private static TimeSpan ReadSeconds(string envVar, string? value, TimeSpan defaultValue)
+            => TryReadSeconds(value, defaultValue, out var seconds)
+                ? seconds
+                : throw new ArgumentException($"{envVar} must be a positive integer, got '{value}'");
+
+        /// <summary>Unset gives <paramref name="defaultValue"/>; false unless a positive whole number.</summary>
+        private static bool TryReadSeconds(string? value, TimeSpan defaultValue, out TimeSpan result)
         {
-            var value = Environment.GetEnvironmentVariable(envVar);
+            result = defaultValue;
             if (string.IsNullOrWhiteSpace(value))
             {
-                return defaultValue;
+                return true;
             }
 
             if (!int.TryParse(value, out int seconds) || seconds <= 0)
             {
-                throw new ArgumentException($"{envVar} must be a positive integer, got '{value}'");
+                return false;
             }
 
-            return TimeSpan.FromSeconds(seconds);
+            result = TimeSpan.FromSeconds(seconds);
+            return true;
         }
 
         private void AcceptLoop()

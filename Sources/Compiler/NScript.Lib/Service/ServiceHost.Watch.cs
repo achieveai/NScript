@@ -25,7 +25,7 @@ namespace NScript.Lib.Service
     public sealed partial class ServiceHost
     {
         /// <summary>The rule printed in <c>--status</c> and at the top of watch.log.</summary>
-        public const string WatchNote = "while watching, build only with -p:NScriptWatch=true, or run nscript service --stop first; Sdk.props/Sdk.targets edits need a dotnet build";
+        public const string WatchNote = "a plain dotnet build asks this daemon first and runs in full when it cannot vouch; nscript service --stop ends watching; added or deleted files and .csproj/.props/.targets edits need dotnet build -p:NScriptWatch=true";
 
         private const int MaxBundleRetries = 3;
 

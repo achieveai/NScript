@@ -575,6 +575,36 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// P8: an unreadable daemon setting falls back to its default with one warning naming the
+        /// variable and its value, as NSCRIPT_SESSION_IDLE_SECONDS does, instead of a daemon that
+        /// dies with a stack trace.
+        /// </summary>
+        [TestMethod]
+        public void DaemonSettings_BadValues_WarnAndUseTheDefaults()
+        {
+            var bad = new Dictionary<string, string>
+            {
+                [ServiceHost.IdleSecondsEnvVar] = "abc",
+                [ServiceHost.WatchIdleSecondsEnvVar] = "0",
+                [ServiceHost.RequestTimeoutEnvVar] = "-5",
+                [ServiceHost.LogLevelEnvVar] = "loud",
+            };
+
+            var options = ServiceHost.ReadSettings(name => bad.TryGetValue(name, out var value) ? value : null, out var idleTimeout);
+
+            Assert.AreEqual(TimeSpan.FromSeconds(600), idleTimeout);
+            Assert.AreEqual(TimeSpan.FromHours(8), options.WatchIdleTimeout);
+            Assert.AreEqual(TimeSpan.FromSeconds(600), options.RequestTimeout);
+            Assert.AreEqual(Serilog.Events.LogEventLevel.Information, options.LogLevel);
+            Assert.IsNotNull(options.StartupWarning);
+            Assert.IsFalse(options.StartupWarning!.Contains('\n'), options.StartupWarning);
+            foreach (var setting in bad)
+            {
+                StringAssert.Contains(options.StartupWarning, setting.Key + "='" + setting.Value + "'");
+            }
+        }
+
+        /// <summary>
         /// S2 P2: a killed daemon leaves its marker, and every build would pay the connect
         /// timeout. With no daemon, the client deletes a marker naming its own pipe, and keeps
         /// one naming another daemon's pipe.
