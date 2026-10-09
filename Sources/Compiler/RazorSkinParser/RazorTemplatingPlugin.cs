@@ -257,6 +257,7 @@ namespace Sunlight.Framework.Observables
 
             // Reset per-compilation data index counter
             _nextDataIndex = 100;
+            _templateMethodReferences = null;
             var probeTotal = System.Diagnostics.Stopwatch.StartNew();
             long probeStubTicks = 0, probeCompileTicks = 0;
             int probeTemplates = 0;
@@ -1213,6 +1214,12 @@ namespace Sunlight.Framework.Observables
             return new List<MethodReference>();
         }
 
+        /// <summary>
+        /// Methods the templates reference. They depend only on the compiled IRs and type metadata, both fixed
+        /// after Initialize, so they are collected on the first pass and reused on later passes of this build.
+        /// </summary>
+        private List<MethodReference> _templateMethodReferences;
+
         public List<MethodReference> GetMethodsToEmitPassN()
         {
             // After XWML's pass has run and created DocStorageGetter, look it up
@@ -1225,6 +1232,11 @@ namespace Sunlight.Framework.Observables
             // Collect methods referenced by template event handlers so the demand-driven
             // converter emits their bodies. Without this, methods called only from
             // templates (e.g., onclick="@Model.OnSelectTodo(todo)") would be dead-code-eliminated.
+            if (_templateMethodReferences != null)
+            {
+                return new List<MethodReference>(_templateMethodReferences);
+            }
+
             var methods = new List<MethodReference>();
             if (_hasRazorTemplates && _clrContext != null)
             {
@@ -1240,7 +1252,8 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
-            return methods;
+            _templateMethodReferences = methods;
+            return new List<MethodReference>(methods);
         }
 
         /// <summary>
