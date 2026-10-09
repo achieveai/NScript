@@ -2,6 +2,10 @@
 //
 // summary:	Implements the CSS group class
 
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("XwmlParser.Test")]
+
 namespace XwmlParser
 {
     using NScript.Converter;
@@ -20,6 +24,12 @@ namespace XwmlParser
     {
         private static Microsoft.ClearScript.V8.V8ScriptEngine jsEngine = new Microsoft.ClearScript.V8.V8ScriptEngine();
         private static Autoprefixer.Compiler compiler;
+
+        /// <summary>
+        /// Parsed stylesheets by content, kept for the process, so a warm build service
+        /// parses only the sheets that changed.
+        /// </summary>
+        internal static readonly ContentCache<CssParser.CssGrammer> ParsedSheets = new ContentCache<CssParser.CssGrammer>(1024);
 
         public static readonly Autoprefixer.BrowserSpecification browserSpecification =
             new Autoprefixer.BrowserSpecification()
@@ -178,25 +188,35 @@ namespace XwmlParser
         /// Adds the CSS.
         /// </summary>
         /// <param name="cssText"> The CSS text. </param>
-        internal void AddCss(
+        /// <returns>True when the parsed stylesheet came from <see cref="ParsedSheets"/>.</returns>
+        internal bool AddCss(
             string cssText,
             Location cssBlockStartPosition,
             List<CssStyleSheet> previousStyles)
         {
             try
             {
-                // Parse CSS - validation will happen after all blocks are accumulated
-                var grammer = new CssParser.CssGrammer(cssText, parseProperties: false);
-                
-                // Collect declared variables from :root selectors in this block
-                grammer.CollectCssVariablesFromRules();
+                // Parse CSS - validation will happen after all blocks are accumulated.
+                // The parsed rules are only read afterwards (class-name finder, serializer with
+                // rename callbacks), so one parse per content is shared, uncopied.
+                var grammer = ParsedSheets.GetOrCreate(
+                    ContentCache<CssParser.CssGrammer>.Key(cssText),
+                    () =>
+                    {
+                        var parsed = new CssParser.CssGrammer(cssText, parseProperties: false);
+                        parsed.CollectCssVariablesFromRules();
+                        parsed.CollectUsedCssVariablesFromRules();
+                        return parsed;
+                    },
+                    out var cacheHit);
+
+                // Variables declared in this block's :root selectors
                 foreach (var variable in grammer.DefinedCssVariables)
                 {
                     this.declaredCssVariables.Add(variable);
                 }
                 
-                // Collect used variables from var() functions in this block
-                grammer.CollectUsedCssVariablesFromRules();
+                // Variables used by this block's var() functions
                 foreach (var variable in grammer.UsedCssVariables)
                 {
                     this.usedCssVariables.Add(variable);
@@ -211,6 +231,7 @@ namespace XwmlParser
                     grammer.MediaRules,
                     cssBlockStartPosition,
                     previousStyles);
+                return cacheHit;
             }
             catch(CssParser.ParseException ex)
             {

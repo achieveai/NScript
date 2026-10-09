@@ -177,8 +177,11 @@ namespace XwmlParser
 
         internal int ProbeTemplatesParsed;
 
-        /// <summary>Style sheets parsed this build (Probe.XwmlInit).</summary>
+        /// <summary>Style sheets read this build (Probe.XwmlInit).</summary>
         internal int ProbeStyleSheets => this.styleSheet.Count;
+
+        /// <summary>Style sheets this build found already parsed (<see cref="CssStyleSheet.ParsedSheets"/>).</summary>
+        internal int ProbeStyleSheetHits;
 
         /// <summary>
         /// The resource map.
@@ -477,13 +480,16 @@ namespace XwmlParser
                 using (System.IO.Stream stream = resource.Item1.GetResourceStream())
                 using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
                 {
-                    rv.AddCss(
+                    if (rv.AddCss(
                         reader.ReadToEnd(),
                         new Location(
                             rv.ResourceName,
                             0,
                             0),
-                        styleSheets);
+                        styleSheets))
+                    {
+                        this.ProbeStyleSheetHits++;
+                    }
                 }
 
                 this.styleSheet.Add(relativeCssResourceId, rv);

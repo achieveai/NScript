@@ -173,7 +173,7 @@
 
             static long Ms(long ticks) => ticks * 1000 / Stopwatch.Frequency;
             CompilerLog.ForComponent("XwmlParser").Information(
-                "Probe.XwmlInit TotalMs={TotalMs} InitMs={InitMs} OverwriteMs={OverwriteMs} ParseMs={ParseMs} GenMs={GenMs} Templates={Templates} TemplatesParsed={TemplatesParsed} StyleSheets={StyleSheets} Hits={Hits} Misses={Misses}",
+                "Probe.XwmlInit TotalMs={TotalMs} InitMs={InitMs} OverwriteMs={OverwriteMs} ParseMs={ParseMs} GenMs={GenMs} Templates={Templates} TemplatesParsed={TemplatesParsed} StyleSheets={StyleSheets} StyleSheetHits={StyleSheetHits} Hits={Hits} Misses={Misses}",
                 Ms(this.probeInitTicks + this.probeOverwriteTicks + this.probeParseTicks + genTicks),
                 Ms(this.probeInitTicks),
                 Ms(this.probeOverwriteTicks),
@@ -182,6 +182,7 @@
                 this.codeGenerator.ProbeDocuments,
                 this.codeGenerator.ProbeTemplatesParsed,
                 this.codeGenerator.ProbeStyleSheets,
+                this.codeGenerator.ProbeStyleSheetHits,
                 0,
                 this.codeGenerator.ProbeDocuments);
             return statements;
