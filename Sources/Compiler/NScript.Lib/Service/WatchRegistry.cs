@@ -258,6 +258,7 @@ namespace NScript.Lib.Service
             this.dirty.Remove(record.Key);
             this.compileDirty.Remove(record.Key);
             this.SetResult(record.Key, exitCode);
+            this.RefreshCopyEdges(record.Key);
             return record;
         }
 
@@ -271,6 +272,7 @@ namespace NScript.Lib.Service
             this.copyEdges.RemoveAll(e => Same(e.HolderKey, key));
             this.copyPending.RemoveWhere(e => Same(e.HolderKey, key));
             this.dirtyBundles.Remove(key);
+            this.RefreshCopyEdges(key);
             return record;
         }
 
@@ -590,10 +592,17 @@ namespace NScript.Lib.Service
         /// <summary>
         /// Adds copy edges that the files on disk prove now: a recorded reference with the
         /// same file name and the same MVID as a project's output is MSBuild's copy of it.
+        /// A same-named reference that exists but cannot be read (a share-none lock) is taken
+        /// as the copy too, with the copy pending, so its readers are kept, never skipped; it
+        /// pairs with the reference assembly only when it sits in a <c>ref</c> folder.
         /// Edges are only added here; a stored edge lives until either record is replaced, so
         /// consecutive edits (new MVIDs on both sides) keep refreshing the copy.
         /// </summary>
-        public void RefreshCopyEdges()
+        /// <param name="onlyKey">
+        /// A registration passes its record's key and refreshes only that record's edges: a
+        /// parallel build may be mid-copy on other projects' outputs. A batch refreshes all.
+        /// </param>
+        public void RefreshCopyEdges(string? onlyKey = null)
         {
             var holders = this.projects.Values.Select(p => (Key: p.Key, Paths: (IEnumerable<string>)p.Inputs.References))
                 .Concat(this.bundles.Values.Select(b => (Key: b.Key, Paths: b.Reads)))
@@ -606,6 +615,11 @@ namespace NScript.Lib.Service
                     AssemblyStamp? outputStamp = null;
                     foreach (var (holderKey, paths) in holders)
                     {
+                        if (onlyKey != null && !Same(project.Key, onlyKey) && !Same(holderKey, onlyKey))
+                        {
+                            continue;
+                        }
+
                         foreach (var path in paths)
                         {
                             if (Same(path, output)
@@ -616,13 +630,24 @@ namespace NScript.Lib.Service
                             }
 
                             outputStamp ??= this.readStamp(output);
-                            var targetStamp = this.readStamp(path);
-                            if (outputStamp != null && targetStamp != null && outputStamp.Value.Mvid == targetStamp.Value.Mvid)
+                            if (outputStamp == null)
                             {
-                                this.copyEdges.Add(new CopyEdge(project.Key, output, path, holderKey)
+                                continue;
+                            }
+
+                            bool isRef = Same(output, project.Inputs.RefOut);
+                            var targetStamp = this.readStamp(path);
+                            bool unreadable = targetStamp == null
+                                && this.probe(path).State != FileProbeState.Missing
+                                && isRef == string.Equals(Path.GetFileName(Path.GetDirectoryName(path)), "ref", StringComparison.OrdinalIgnoreCase);
+                            if (unreadable || (targetStamp != null && outputStamp.Value.Mvid == targetStamp.Value.Mvid))
+                            {
+                                var edge = new CopyEdge(project.Key, output, path, holderKey) { IsRefAssembly = isRef };
+                                this.copyEdges.Add(edge);
+                                if (unreadable)
                                 {
-                                    IsRefAssembly = Same(output, project.Inputs.RefOut),
-                                });
+                                    this.copyPending.Add(edge);
+                                }
                             }
                         }
                     }

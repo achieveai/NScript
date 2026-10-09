@@ -1105,6 +1105,88 @@ namespace NScript.Utils.Test
             }
         }
 
+        /// <summary>
+        /// D-E3-1 (a): a bin copy held share-none from before the first save cannot be read,
+        /// so the batch found no copy edge: the bundle reading the copy was never planned and
+        /// the stop named nothing. Edges known from registration keep that bundle, and the
+        /// stop names it and the copy. As in a real build, the bundle registers after the
+        /// rescan batch that the first registration's watcher start runs.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Stop_FirstSaveWithCopyLockedShareNone_LogsReaderBundleAndCopyStale()
+        {
+            string first = typeof(BuildServiceTests).Assembly.Location;
+            string second = typeof(ServiceHost).Assembly.Location;
+            int compiles = 0;
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindCompile)
+                {
+                    var dll = Path.Combine(watch.Project, "obj", "A.dll");
+                    Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                    File.Copy(Interlocked.Increment(ref compiles) == 1 ? first : second, dll, overwrite: true);
+                }
+
+                return new ServiceResponse { ExitCode = 0, Stdout = string.Empty, Stderr = string.Empty };
+            }))
+            {
+                watch.Register("A.cs");
+                WaitForLogLines(1, "WatchChange");
+                var copy = Path.Combine(watch.Project, "bin", "A.dll");
+                Directory.CreateDirectory(Path.GetDirectoryName(copy));
+                File.Copy(first, copy);
+                watch.RegisterEmit("-outJs", "app.js", "-entryAssembly", @"bin\A.dll", "-references", first);
+                var watchLog = watch.Status()["WatchLog"];
+
+                using (new FileStream(copy, FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    watch.EditSource();
+                    WaitForLogLines(1, "WatchBatchEnd");
+                    watch.Host.RequestStop("test");
+                    Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon did not stop.");
+                }
+
+                var log = ReadShared(watchLog);
+                StringAssert.Contains(log, "KEPT    " + Path.Combine(watch.Project, "app.js"));
+                StringAssert.Contains(log, "STALE   " + Path.Combine(watch.Project, "app.js"));
+                StringAssert.Contains(log, "STALE   " + copy);
+            }
+        }
+
+        /// <summary>
+        /// D-E3-1 (b): a toolset change found by the first save stops before that batch finds
+        /// copy edges, and the only earlier batch (the rescan at watcher start) ran before the
+        /// bundle registered; so the stop named only bundles reading obj. Edges known from
+        /// registration make it name the bundle reading the bin copy too.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void WatchBatch_ToolsetChangedOnFirstSave_LogsCopyReaderStale()
+        {
+            string first = typeof(BuildServiceTests).Assembly.Location;
+            using (var watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }))
+            {
+                foreach (var dll in new[] { Path.Combine(watch.Project, "obj", "A.dll"), Path.Combine(watch.Project, "bin", "A.dll") })
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                    File.Copy(first, dll);
+                }
+
+                watch.Register("A.cs");
+                WaitForLogLines(1, "WatchChange");
+                watch.RegisterEmit("-outJs", "app.js", "-entryAssembly", @"bin\A.dll", "-references", first);
+                var watchLog = watch.Status()["WatchLog"];
+
+                watch.ToolsetHashNow = new string('f', 64);
+                watch.EditSource();
+
+                Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon kept running on a changed toolset.");
+                StringAssert.Contains(ReadShared(watchLog), "STALE   " + Path.Combine(watch.Project, "app.js"));
+            }
+        }
+
         private static void WaitFor(Func<bool> condition, string message)
         {
             var clock = Stopwatch.StartNew();
@@ -1218,7 +1300,7 @@ namespace NScript.Utils.Test
                 File.WriteAllText(Path.Combine(this.Dependent, "B.cs"), "class B : A { }");
                 var options = new ServiceHostOptions
                 {
-                    ToolsetHash = () => toolsetHash ?? this.Identity.ToolsetHash,
+                    ToolsetHash = () => this.ToolsetHashNow ?? toolsetHash ?? this.Identity.ToolsetHash,
                     RunRequest = run,
                     RunRequestInputs = request => string.Equals(request.Cwd, this.Dependent, StringComparison.OrdinalIgnoreCase)
                         ? Inputs(this.Dependent, "B", Path.Combine(this.Project, "obj", "A.dll"))
@@ -1236,6 +1318,9 @@ namespace NScript.Utils.Test
             }
 
             public ServiceIdentity Identity { get; }
+
+            /// <summary>When set, the toolset hash the daemon sees from now on.</summary>
+            public string ToolsetHashNow { get; set; }
 
             public string Project { get; }
 

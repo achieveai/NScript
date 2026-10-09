@@ -178,6 +178,84 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// D-E3-1: a same-named reference that cannot be read when edges are refreshed (a
+        /// share-none lock) still counts as MSBuild's copy: an edge whose copy is pending, so
+        /// its reader is planned and kept, never skipped. A missing file is no copy, and a
+        /// target in a ref folder pairs only with the reference assembly.
+        /// </summary>
+        [TestMethod]
+        public void CopyEdges_UnreadableTarget_IsPendingEdge_MissingIsNot()
+        {
+            var refint = P("A", "obj", "refint", "A.dll");
+            var copy = P("A", "bin", "A.dll");
+            var refCopy = P("A", "bin", "ref", "A.dll");
+            var missing = P("C", "bin", "A.dll");
+            this.disk[Src("A")] = "h0";
+            var a = this.registry.RegisterCompile(
+                P("A"),
+                new[] { "@A.rsp" },
+                new CompileInputs(Out("A"), null, refint, new[] { Src("A") }, Array.Empty<string>(), Array.Empty<string>(), new Dictionary<string, string> { [Src("A")] = "h0" }),
+                0,
+                null,
+                new[] { Src("A") },
+                new Dictionary<string, string>());
+            this.stamps[Out("A")] = Stamp(1);
+            this.stamps[refint] = Stamp(2);
+            this.locked.Add(copy);
+            this.locked.Add(refCopy);
+            var reader = this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "T.js"), P("T", "obj", "T.dll"), new[] { copy, refCopy, missing });
+
+            this.registry.RefreshCopyEdges();
+
+            CollectionAssert.AreEquivalent(
+                new[] { Out("A") + " -> " + copy, refint + " -> " + refCopy },
+                this.registry.CopyEdges.Select(e => e.Source + " -> " + e.Target).ToArray());
+            Assert.IsTrue(this.registry.CopyEdges.Single(e => e.Target == refCopy).IsRefAssembly);
+            CollectionAssert.AreEquivalent(new[] { copy, refCopy }, this.registry.CopyPending.Select(e => e.Target).ToArray());
+
+            this.disk[Src("A")] = "h1";
+            var plan = this.Change(Src("A"));
+            CollectionAssert.AreEqual(new[] { reader.Key }, plan.Bundles.Select(b => b.Key).ToArray());
+            this.Compiled(a);
+            StringAssert.Contains(this.registry.BundleBlockReason(reader), "copy pending");
+        }
+
+        /// <summary>
+        /// D-E3-1: edges are known from registration, before any batch. A registration refreshes
+        /// only its own record's edges: another project's copy that a parallel build is writing
+        /// right now (unreadable) is left alone until its reader registers or a batch runs.
+        /// </summary>
+        [TestMethod]
+        public void CopyEdges_FoundAtRegistration_OnlyForTheRegisteredRecord()
+        {
+            var copyA = P("A", "bin", "A.dll");
+            var copyB = P("B", "bin", "B.dll");
+            this.stamps[Out("A")] = Stamp(1);
+            this.stamps[copyA] = Stamp(1);
+            this.stamps[Out("B")] = Stamp(2);
+            this.Register("A");
+            this.Register("B");
+            var readerA = this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "A.js"), copyA, Array.Empty<string>());
+
+            // B.js registered while its copy of B was an older build; then MSBuild rewrites
+            // the copy (locked) while C registers.
+            this.stamps[copyB] = Stamp(9);
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "B.js"), P("T", "obj", "T.dll"), new[] { copyB });
+            this.stamps.Remove(copyB);
+            this.locked.Add(copyB);
+            this.Register("C");
+
+            Assert.AreEqual(copyA + " " + readerA.Key, string.Join(";", this.registry.CopyEdges.Select(e => e.Target + " " + e.HolderKey)));
+            Assert.AreEqual(0, this.registry.CopyPending.Count);
+
+            this.locked.Remove(copyB);
+            this.stamps[copyB] = Stamp(2);
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "B.js"), P("T", "obj", "T.dll"), new[] { copyB });
+            CollectionAssert.AreEquivalent(new[] { copyA, copyB }, this.registry.CopyEdges.Select(e => e.Target).ToArray());
+            Assert.AreEqual(0, this.registry.CopyPending.Count);
+        }
+
+        /// <summary>
         /// Contract 4: a failed compile is red: it blocks dependents and bundles until its
         /// obj DLL changes (somebody built it), not before.
         /// </summary>
