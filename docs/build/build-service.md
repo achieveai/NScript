@@ -51,6 +51,14 @@ Saves within a short debounce window form one batch.
 
 - A save that arrives mid-batch stops the batch early. The next batch picks up the rest (`superseded batch`).
 - A locked JS file is retried. Then it is `KEPT ... (stale: output in use ...)`. Save again.
+- A file added, or a build file edited, while the watch build itself runs is a change too: `NEEDS BUILD`.
+
+### When a file watcher fails
+
+- **Overflow** (too many changes at once): watch.log says `watcher overflow on <folder> (...); rescanning`. The daemon rechecks every input and build file and keeps watching.
+- **Any other watcher error** (a watched folder removed, a network share gone): watch.log says `watcher lost <folder> (...); watch stopped`.
+  - The daemon stops and deletes its markers. Edits in that folder would go unseen.
+  - The next `dotnet build` runs in full. Run `dotnet build -p:NScriptWatch=true` to watch again.
 
 ## `dotnet build` while watching
 
@@ -62,6 +70,15 @@ Saves within a short debounce window form one batch.
   - Message: `NScript watch: <App> current, skipped <N> project builds`.
 - **No** (exit 1), **busy** (exit 2) or no daemon: today's full build.
   - Message: `NScript watch: full build (<reason>)`.
+- **Other compile properties: not asked.** The daemon replays the watch build's compiler command line. So a build may sync only with the same compile-affecting properties.
+  - The list is `_NScriptWatchBuildProps` in Sdk.targets: `DefineConstants`, `TreatWarningsAsErrors`, `WarningsAsErrors`, `WarningsNotAsErrors`, `NoWarn`, `Optimize`, `LangVersion`, `Nullable`, `CheckForOverflowUnderflow`, `AllowUnsafeBlocks`, `DebugType`, `DebugSymbols`.
+  - The watch build records a hash of them in `obj/<Config>/<TFM>/nscript.watchprops`.
+  - A different value (`-p:DefineConstants=X`, `-p:TreatWarningsAsErrors=true`), or no record, builds in full: `NScript watch: full build (build properties differ from the watch build)`.
+- **An obj DLL another build rewrote** (such as that `-p:DefineConstants=X` build) is recompiled before the answer.
+  - At `--sync` the daemon compares each watched obj DLL with the one it last wrote.
+  - For each one that changed or is gone, watch.log says `sync <App>.dll: <Project>.dll rewritten outside watch; recompiling`.
+  - The daemon recompiles that project and the projects that use it, re-emits the bundles, then answers. Later syncs compile nothing.
+  - One-time cost: one batch, as for a `.cs` save in those projects. After a full build with other properties, that is every watched project.
 - `--sync` waits up to 30 s for a running batch, then answers busy.
 - Turn it off: `dotnet build -p:NScriptWatchSync=false`.
 - Never syncs: solution (`.sln`) builds, design-time builds, Release-style JS.
@@ -83,10 +100,10 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 
 - **watch.log**: one readable line per event.
   - Path: `%LOCALAPPDATA%\NScript\service\<key>\<hash16>.run\watch.log`. `--status` prints it as `WatchLog`.
-  - Lines start with words like `register`, `sync`, `change`, `compile`, `patch`, `emit`, `done`, `NEEDS BUILD`, `KEPT`, `STALE`.
+  - Lines start with words like `register`, `sync`, `change`, `compile`, `patch`, `emit`, `done`, `watcher`, `watch stopped`, `NEEDS BUILD`, `KEPT`, `STALE`.
 - **service.jsonl**: structured JSONL (Serilog compact format).
   - Path: `%LOCALAPPDATA%\NScript\service\<key>\service.jsonl`. `--status` prints it as `LogPath`.
-  - Events include `WatchChange`, `WatchStep`, `WatchBatchEnd`, `WatchStop`, `WatchStale`.
+  - Events include `WatchChange`, `WatchStep`, `WatchBatchEnd`, `WatchSync`, `WatchForeignOutput`, `WatchOverflow`, `WatchStop`, `WatchStale`.
   - Query it with DuckDB `read_json_auto`.
 - `<key>` is 16 hex characters from the toolset folder, the user and elevation.
 
@@ -118,7 +135,7 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 
 ## Known limits
 
-- **Skin or CSS save, then `dotnet build`:** the build still recompiles the app locally and writes normal (non-dev) JS. The patched DLL has no PDB link. The next build is current. Pending a decision.
+- **Skin or CSS save, then `dotnet build`:** the build still recompiles the app locally and writes normal (non-dev) JS. The patched DLL has no PDB link. The next build's sync finds the app's obj DLL rewritten outside watch. The daemon recompiles it once and writes dev JS again. Builds after that are current. Pending a decision.
 - **Dev-mode JS:** the daemon writes dev-mode JS; a local build writes normal JS. The file on disk is whichever wrote last.
 - **Solution builds skip the sync.** `dotnet build NScript_Full.sln` builds every project as before.
 - **A synced build skips the framework projects.** Their commit SHA stamp and the NuGet packages in `NScriptToolSet` are not refreshed. A full build fixes both.
