@@ -304,12 +304,22 @@
 	  are newer than CoreCompile's outputs and none is newer than the DLL. The daemon's yes vouches
 	  for the resources; a resource saved after the patch is newer than the DLL. Any other input
 	  newer than an output, or a missing output, still compiles.
+	  A patch also leaves every dependent's DLL older than the patched reference, and the daemon
+	  rightly did not recompile them. The yes vouches for those references too (the nscript-ref
+	  lines), so a vouched reference newer than the outputs skips csc as well. An unvouched one compiles.
 	  The lists are CoreCompile's Inputs and Outputs (Microsoft.CSharp.Core.targets, the same in
-	  SDK 8 to 11), split at @(_CoreCompileResourceInputs).
+	  SDK 8 to 11), split at @(_CoreCompileResourceInputs) and the vouched references.
 	-->
+	<Target Name="_NScriptWatchSyncedSplitReferences" Condition="'$(_NScriptWatchSynced)' == 'true'">
+		<ItemGroup>
+			<_NScriptWatchSyncedUnvouchedRef Include="@(ReferencePathWithRefAssemblies)" Exclude="@(_NScriptWatchSyncRef)" />
+			<_NScriptWatchSyncedVouchedRef Include="@(ReferencePathWithRefAssemblies)" Exclude="@(_NScriptWatchSyncedUnvouchedRef)" />
+		</ItemGroup>
+	</Target>
+
 	<Target Name="_NScriptWatchSyncedCompileCheck"
 	        Condition="'$(_NScriptWatchSynced)' == 'true'"
-	        Inputs="$(MSBuildAllProjects);@(Compile);$(ApplicationIcon);$(KeyOriginatorFile);@(ReferencePathWithRefAssemblies);@(CompiledLicenseFile);@(LinkResource);@(EmbeddedDocumentation);$(Win32Resource);$(Win32Manifest);@(CustomAdditionalCompileInputs);$(ResolvedCodeAnalysisRuleSet);@(AdditionalFiles);@(EmbeddedFiles);@(Analyzer);@(EditorConfigFiles);$(SourceLink)"
+	        Inputs="$(MSBuildAllProjects);@(Compile);$(ApplicationIcon);$(KeyOriginatorFile);@(_NScriptWatchSyncedUnvouchedRef);@(CompiledLicenseFile);@(LinkResource);@(EmbeddedDocumentation);$(Win32Resource);$(Win32Manifest);@(CustomAdditionalCompileInputs);$(ResolvedCodeAnalysisRuleSet);@(AdditionalFiles);@(EmbeddedFiles);@(Analyzer);@(EditorConfigFiles);$(SourceLink)"
 	        Outputs="@(DocFileItem);@(IntermediateAssembly);@(IntermediateRefAssembly);@(_DebugSymbolsIntermediatePath);$(NonExistentFile);@(CustomAdditionalCompileOutputs)">
 		<!-- ValueSetByTask: set only when the target really runs, not when MSBuild infers its outputs. -->
 		<CreateProperty Value="true">
@@ -335,17 +345,29 @@
 		</CreateProperty>
 	</Target>
 
+	<Target Name="_NScriptWatchSyncedVouchedRefCheck"
+	        Condition="'$(_NScriptWatchSynced)' == 'true'"
+	        Inputs="@(_NScriptWatchSyncedVouchedRef)"
+	        Outputs="@(DocFileItem);@(IntermediateAssembly);@(IntermediateRefAssembly);@(_DebugSymbolsIntermediatePath);$(NonExistentFile);@(CustomAdditionalCompileOutputs)">
+		<CreateProperty Value="true">
+			<Output TaskParameter="ValueSetByTask" PropertyName="_NScriptWatchSyncedVouchedNewer" />
+		</CreateProperty>
+	</Target>
+
 	<Target Name="_NScriptWatchSyncedSkipCsc"
 	        BeforeTargets="CoreCompile"
-	        DependsOnTargets="_NScriptWatchSyncedCompileCheck;_NScriptWatchSyncedResourceAfterPatchCheck;_NScriptWatchSyncedResourcePatchCheck"
+	        DependsOnTargets="_NScriptWatchSyncedSplitReferences;_NScriptWatchSyncedCompileCheck;_NScriptWatchSyncedResourceAfterPatchCheck;_NScriptWatchSyncedResourcePatchCheck;_NScriptWatchSyncedVouchedRefCheck"
 	        Condition="'$(_NScriptWatchSynced)' == 'true'">
-		<PropertyGroup Condition="'$(_NScriptWatchSyncedPatched)' == 'true' and '$(_NScriptWatchSyncedCompile)' != 'true'">
+		<PropertyGroup Condition="('$(_NScriptWatchSyncedPatched)' == 'true' or '$(_NScriptWatchSyncedVouchedNewer)' == 'true') and '$(_NScriptWatchSyncedCompile)' != 'true'">
 			<SkipCompilerExecution>true</SkipCompilerExecution>
 			<_NScriptWatchSyncedSkippedCsc>true</_NScriptWatchSyncedSkippedCsc>
 		</PropertyGroup>
 		<Message Importance="high"
-		         Condition="'$(_NScriptWatchSyncedSkippedCsc)' == 'true'"
+		         Condition="'$(_NScriptWatchSyncedSkippedCsc)' == 'true' and '$(_NScriptWatchSyncedPatched)' == 'true'"
 		         Text="NScript watch: $(AssemblyName) resources are in the watch's DLL; csc skipped" />
+		<Message Importance="high"
+		         Condition="'$(_NScriptWatchSyncedSkippedCsc)' == 'true' and '$(_NScriptWatchSyncedPatched)' != 'true'"
+		         Text="NScript watch: $(AssemblyName) vouched references are newer, its DLL is the watch's; csc skipped" />
 	</Target>
 
 	<!-- NScriptWatch=true: the stamp makes CoreCompile run, so an up-to-date project still registers with watch. -->

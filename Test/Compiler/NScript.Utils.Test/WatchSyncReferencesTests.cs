@@ -268,7 +268,11 @@ namespace NScript.Utils.Test
             string sdkTargets = tree.SdkDir + "Sdk.targets";
             XElement compileCheck = Target(sdkTargets, "_NScriptWatchSyncedCompileCheck");
             const string resources = "@(_CoreCompileResourceInputs)";
-            Assert.AreEqual(Items(coreCompile, "Inputs"), Items(compileCheck, "Inputs", resources), core + " vs " + sdkTargets);
+            // The references are split into unvouched (checked here) and vouched (_NScriptWatchSyncedVouchedRefCheck).
+            var joined = new XElement("Target", new XAttribute("Inputs", ((string)compileCheck.Attribute("Inputs")).Replace("@(_NScriptWatchSyncedUnvouchedRef)", "@(ReferencePathWithRefAssemblies)")));
+            Assert.AreEqual(Items(coreCompile, "Inputs"), Items(joined, "Inputs", resources), core + " vs " + sdkTargets);
+            Assert.AreEqual("@(_NScriptWatchSyncedVouchedRef)", Items(Target(sdkTargets, "_NScriptWatchSyncedVouchedRefCheck"), "Inputs"));
+            Assert.AreEqual(Items(coreCompile, "Outputs"), Items(Target(sdkTargets, "_NScriptWatchSyncedVouchedRefCheck"), "Outputs"));
             Assert.AreEqual(resources, Items(Target(sdkTargets, "_NScriptWatchSyncedResourceAfterPatchCheck"), "Inputs"));
             Assert.AreEqual(resources, Items(Target(sdkTargets, "_NScriptWatchSyncedResourcePatchCheck"), "Inputs"));
             Assert.AreEqual(Items(coreCompile, "Outputs"), Items(compileCheck, "Outputs"), core + " vs " + sdkTargets);
@@ -281,6 +285,66 @@ namespace NScript.Utils.Test
         /// <summary>An Inputs/Outputs list as sorted, trimmed items, one per line.</summary>
         private static string Items(XElement target, string attribute, params string[] extra)
             => string.Join("\n", ((string)target.Attribute(attribute)).Split(';').Select(i => i.Trim()).Where(i => i.Length > 0).Concat(extra).OrderBy(i => i, StringComparer.Ordinal));
+
+        /// <summary>
+        /// A patch rewrites the library's DLL after its dependents' last compile, and the daemon
+        /// does not recompile them for a resource. A synced build of a dependent then finds a
+        /// vouched reference newer than its outputs: it skips csc, or it would rewrite the DLL the
+        /// daemon serves (and its JS) and make the next sync recompile it. The same reference
+        /// unvouched, or no sync, still runs csc.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // One dotnet msbuild run (~5-10 s) with three builds against a stand-in csc.
+        public void SyncedBuild_VouchedReferenceNewer_SkipsCsc_UnvouchedCompiles()
+        {
+            DateTime outputs = DateTime.Now.AddHours(1);
+            static string Build(int step, string csc, string extra) =>
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Build\" Properties=\"SdkDir=$(SdkDir);Step=" + step +
+                ";CscToolExe=$(MSBuildThisFileDirectory)" + csc + ".cmd;BuildProjectReferences=false" + extra +
+                ";LanguageTargets=$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />\n";
+            string driver =
+                "<Project>\n" +
+                "  <Target Name=\"Run\">\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Restore\" Properties=\"SdkDir=$(SdkDir);Step=0\" />\n" +
+                "    <MSBuild Projects=\"Lib\\Lib.proj\" Targets=\"_NScriptWatchTargetPath\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true\" />\n" +
+                Build(2, "csc-vouched", string.Empty) +
+                // The daemon says yes but vouches for no reference.
+                Build(3, "csc-unvouched", ";NScriptExe=$(MSBuildThisFileDirectory)novouch-nscript.cmd") +
+                Build(4, "csc-off", ";NScriptWatchSync=false") +
+                "  </Target>\n" +
+                "</Project>\n";
+            using var tree = new SyncTree(driver);
+            string app = Path.Combine(tree.Dir, "App") + Path.DirectorySeparatorChar;
+            // Lib patched after App's last compile: both of its DLLs newer than App's outputs.
+            Directory.CreateDirectory(tree.LibObj + "ref");
+            Directory.CreateDirectory(Path.Combine(tree.LibDir, "bin", "Debug", "netstandard2.1"));
+            File.WriteAllText(tree.LibObj + @"ref\Lib.dll", "Lib's reference assembly");
+            File.WriteAllText(Path.Combine(tree.LibDir, "bin", "Debug", "netstandard2.1", "Lib.dll"), "Lib");
+            File.SetLastWriteTime(tree.LibObj + @"ref\Lib.dll", outputs.AddMinutes(10));
+            File.SetLastWriteTime(Path.Combine(tree.LibDir, "bin", "Debug", "netstandard2.1", "Lib.dll"), outputs.AddMinutes(10));
+            File.WriteAllText(app + "Class.cs", "class C { }\n");
+            File.WriteAllText(tree.AppObj + "App.pdb", "the watch compile's PDB");
+            File.SetLastWriteTime(tree.AppObj + "App.pdb", outputs);
+            File.WriteAllText(tree.AppObj + "App.dll", "the daemon's DLL");
+            File.SetLastWriteTime(tree.AppObj + "App.dll", outputs);
+            File.WriteAllText(app + "App.js", "the daemon's dev JS");
+            File.SetLastWriteTime(app + "App.js", outputs.AddMinutes(30));
+            File.WriteAllText(
+                Path.Combine(tree.Dir, "novouch-nscript.cmd"),
+                "@echo off\r\necho nscript service: sync yes App.dll (1 ms)\r\nexit /b 0\r\n");
+            foreach (string csc in new[] { "csc-vouched", "csc-unvouched", "csc-off" })
+            {
+                File.WriteAllText(Path.Combine(tree.Dir, csc + ".cmd"), "@echo off\r\necho %~n0>>\"%~dp0csc-ran.txt\"\r\nexit /b 0\r\n");
+            }
+
+            string output = tree.Run();
+
+            string ranFile = Path.Combine(tree.Dir, "csc-ran.txt");
+            string ran = File.Exists(ranFile) ? string.Join(",", File.ReadAllLines(ranFile).Select(l => l.Trim())) : string.Empty;
+            Assert.AreEqual("csc-unvouched,csc-off", ran, "only the vouched build skips csc\n" + output);
+            Assert.AreEqual(2, Count(output, "NScript watch: App current, skipped"), "control: steps 2-3 sync\n" + output);
+            Assert.AreEqual(1, Count(output, "NScript watch: App vouched references are newer, its DLL is the watch's; csc skipped"), output);
+        }
 
         private static int Count(string text, string part)
             => (text.Length - text.Replace(part, string.Empty).Length) / part.Length;

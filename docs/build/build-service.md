@@ -70,8 +70,11 @@ Saves within a short debounce window form one batch.
   - Message: `NScript watch: <App> current, skipped <N> project builds`.
   - After a skin or CSS save it also keeps the daemon's patched DLL. The patch leaves the PDB older than the resource, so MSBuild would recompile. The build skips csc instead (the `CoreCompile` target still runs).
     - Only when embedded resources alone are newer than the compile outputs, and none is newer than the DLL.
-    - Any other newer input (a `.cs` file, a reference, `.editorconfig`, an analyzer) or a missing output still compiles.
+    - Any other newer input (a `.cs` file, an unvouched reference, `.editorconfig`, an analyzer) or a missing output still compiles.
     - Message: `NScript watch: <App> resources are in the watch's DLL; csc skipped`.
+  - The patch also leaves every project that reads the patched DLL older than it. The daemon does not recompile them for a resource. So a reference the daemon vouched for (an `nscript-ref` line) that is newer than the outputs skips csc too.
+    - A reference it did not vouch for still compiles.
+    - Message: `NScript watch: <App> vouched references are newer, its DLL is the watch's; csc skipped`.
 - **No** (exit 1), **busy** (exit 2) or no daemon: today's full build.
   - Message: `NScript watch: full build (<reason>)`.
 - **Other compile properties: no.** The daemon replays the watch build's compiler command line. So a build may sync only with the same compile-affecting properties.
