@@ -8,11 +8,8 @@ namespace NScript.Utils.Test
     using NScript.Lib.Service;
 
     /// <summary>
-    /// Runs the real Sdk.targets watch sync against a stand-in nscript that answers yes and vouches
-    /// for one project reference. A synced build skips evaluating that reference, so it must hand
-    /// ResolveAssemblyReferences the item GetTargetPath would have returned: the implementation DLL
-    /// with the reference assembly in metadata. Passing the reference assembly itself compiled the
-    /// same C# but gave ScriptGenerate a DLL it cannot convert (S3 D-S3-4).
+    /// Runs the real Sdk.targets watch sync against a stand-in nscript (a .cmd script) in one
+    /// dotnet msbuild run per test: a driver project calls the targets step by step.
     /// </summary>
     [TestClass]
     public class WatchSyncReferencesTests
@@ -56,69 +53,132 @@ namespace NScript.Utils.Test
             "    <MSBuild Projects=\"Lib\\Lib.proj\" Targets=\"_NScriptWatchTargetPath;IncrementalClean\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true\" SkipNonexistentTargets=\"true\" />\n" +
             "    <MSBuild Projects=\"Lib\\Lib.proj\" Targets=\"IncrementalClean\" Properties=\"SdkDir=$(SdkDir);Step=5\" />\n" +
             "    <MSBuild Projects=\"App\\App.proj\" Targets=\"ResolveProjectReferences;Dump\" Properties=\"SdkDir=$(SdkDir);Step=2;NScriptWatchSync=false;BuildProjectReferences=false;DumpFile=$(MSBuildThisFileDirectory)off.txt\" />\n" +
+            // The app's own watch build records its compile properties (F-002).
+            "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchPropsRecord\" Properties=\"SdkDir=$(SdkDir);Step=6;NScriptWatch=true;NScriptWatchSync=false\" />\n" +
             "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;ResolveProjectReferences;Dump\" Properties=\"SdkDir=$(SdkDir);Step=3;DumpFile=$(MSBuildThisFileDirectory)synced.txt\" />\n" +
             "    <Delete Files=\"Lib\\obj\\Debug\\netstandard2.1\\nscript.targetpath\" />\n" +
             "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;ResolveProjectReferences;Dump\" Properties=\"SdkDir=$(SdkDir);Step=4;BuildProjectReferences=false;DumpFile=$(MSBuildThisFileDirectory)unrecorded.txt\" />\n" +
             "  </Target>\n" +
             "</Project>\n";
 
-        private static string GetRepoRoot()
-        {
-            // The test DLL lives at Test/Compiler/bin/<tfm>/; climb four levels to the worktree root.
-            string dir = Path.GetDirectoryName(typeof(WatchSyncReferencesTests).Assembly.Location);
-            for (int i = 0; i < 4; i++)
-            {
-                dir = Path.GetDirectoryName(dir);
-            }
-
-            return dir;
-        }
-
+        /// <summary>
+        /// S3 D-S3-4: a synced build skips evaluating the vouched reference, so it must hand
+        /// ResolveAssemblyReferences the item GetTargetPath would have returned: the implementation
+        /// DLL with the reference assembly in metadata. Passing the reference assembly itself
+        /// compiled the same C# but gave ScriptGenerate a DLL it cannot convert.
+        /// </summary>
         [TestMethod]
         [TestCategory("Integration")] // One dotnet msbuild run (~5-10 s); the only check of the synced reference swap's items.
         public void SyncedBuild_VouchedReference_IsGetTargetPathItem_UnrecordedKeepsReferences()
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                Assert.Inconclusive("The stand-in nscript is a .cmd script.");
-            }
+            using var tree = new SyncTree(Driver);
+            string output = tree.Run();
 
-            string sdkDir = Path.Combine(GetRepoRoot(), "Sources", "Compiler", "NScript.Sdk", "Sdk") + Path.DirectorySeparatorChar;
-            Assert.IsTrue(File.Exists(sdkDir + "Sdk.targets"), $"Expected SDK targets in {sdkDir}");
+            string off = File.ReadAllText(Path.Combine(tree.Dir, "off.txt")).Trim();
+            StringAssert.StartsWith(off, tree.LibDir + "bin", "control: GetTargetPath returns the implementation DLL");
+            StringAssert.Contains(off, "|" + tree.LibObj + "ref" + Path.DirectorySeparatorChar + "Lib.dll|", "control: with the reference assembly in metadata");
 
-            string dir = Path.Combine(Path.GetTempPath(), "nscript-syncrefs-" + Guid.NewGuid().ToString("N"));
-            try
+            // Synced: Lib is not evaluated, and its item equals GetTargetPath's.
+            StringAssert.Contains(output, "App reads 1 vouched references, evaluated no project references", output);
+            Assert.AreEqual(off, File.ReadAllText(Path.Combine(tree.Dir, "synced.txt")).Trim(), "synced vs GetTargetPath item");
+
+            // No recorded target path (Lib not built in watch mode since): today's references.
+            StringAssert.Contains(output, "project references kept", output);
+            Assert.AreEqual(off, File.ReadAllText(Path.Combine(tree.Dir, "unrecorded.txt")).Trim(), "unrecorded vs GetTargetPath item");
+        }
+
+        /// <summary>
+        /// F-002: the daemon replays the watch build's csc command line, so a build that asks with
+        /// other compile properties must build in full, never take the daemon's output. No record
+        /// (a watch build from before the record existed) counts as a difference.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // One dotnet msbuild run (~5-10 s).
+        public void SyncedBuild_CompilePropertiesDifferFromWatchBuild_BuildsInFull()
+        {
+            const string driver =
+                "<Project>\n" +
+                "  <Target Name=\"Run\">\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Restore\" Properties=\"SdkDir=$(SdkDir);Step=0\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchPropsRecord\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true;NScriptWatchSync=false\" SkipNonexistentTargets=\"true\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=2\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=3;TreatWarningsAsErrors=true\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=4;DefineConstants=X\" />\n" +
+                "    <Delete Files=\"App\\obj\\Debug\\netstandard2.1\\nscript.watchprops\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=5\" />\n" +
+                "  </Target>\n" +
+                "</Project>\n";
+            using var tree = new SyncTree(driver);
+            string output = tree.Run();
+
+            Assert.AreEqual(1, Count(output, "NScript watch: App current, skipped"), "control: the same properties sync\n" + output);
+            Assert.AreEqual(3, Count(output, "NScript watch: full build (build properties differ from the watch build)"), output);
+        }
+
+        private static int Count(string text, string part)
+            => (text.Length - text.Replace(part, string.Empty).Length) / part.Length;
+
+        /// <summary>
+        /// A Lib project and an App that references it, both on the repo's Sdk.targets, a watch
+        /// marker in App's obj, and a stand-in nscript that answers yes and vouches for Lib.
+        /// </summary>
+        private sealed class SyncTree : IDisposable
+        {
+            public SyncTree(string driver)
             {
-                string libDir = Path.Combine(dir, "Lib") + Path.DirectorySeparatorChar;
-                string libObj = Path.Combine(libDir, "obj", "Debug", "netstandard2.1") + Path.DirectorySeparatorChar;
-                string appObj = Path.Combine(dir, "App", "obj", "Debug", "netstandard2.1");
-                Directory.CreateDirectory(libObj);
-                Directory.CreateDirectory(appObj);
-                File.WriteAllText(Path.Combine(appObj, "nscript.watch"), "pipe=fake\n");
-                File.WriteAllText(Path.Combine(libDir, "Lib.proj"), LibProject);
-                File.WriteAllText(Path.Combine(dir, "App", "App.proj"), AppProject);
-                File.WriteAllText(Path.Combine(dir, "Driver.proj"), Driver);
+                if (!OperatingSystem.IsWindows())
+                {
+                    Assert.Inconclusive("The stand-in nscript is a .cmd script.");
+                }
+
+                this.SdkDir = Path.Combine(GetRepoRoot(), "Sources", "Compiler", "NScript.Sdk", "Sdk") + Path.DirectorySeparatorChar;
+                Assert.IsTrue(File.Exists(this.SdkDir + "Sdk.targets"), $"Expected SDK targets in {this.SdkDir}");
+
+                this.Dir = Path.Combine(Path.GetTempPath(), "nscript-syncrefs-" + Guid.NewGuid().ToString("N"));
+                this.LibDir = Path.Combine(this.Dir, "Lib") + Path.DirectorySeparatorChar;
+                this.LibObj = Path.Combine(this.LibDir, "obj", "Debug", "netstandard2.1") + Path.DirectorySeparatorChar;
+                this.AppObj = Path.Combine(this.Dir, "App", "obj", "Debug", "netstandard2.1") + Path.DirectorySeparatorChar;
+                Directory.CreateDirectory(this.LibObj);
+                Directory.CreateDirectory(this.AppObj);
+                File.WriteAllText(this.AppObj + "nscript.watch", "pipe=fake\n");
+                File.WriteAllText(Path.Combine(this.LibDir, "Lib.proj"), LibProject);
+                File.WriteAllText(Path.Combine(this.Dir, "App", "App.proj"), AppProject);
+                File.WriteAllText(Path.Combine(this.Dir, "Driver.proj"), driver);
 
                 // The daemon's yes: Lib's directory, the reference csc reads (the reference
                 // assembly) and Lib's intermediate directory, written by the daemon's own
                 // formatter (BuildServiceTests.Sync_Yes_ReplyListsForeignJsAndVouchedReference
                 // checks the daemon uses it), so the two sides cannot drift apart.
                 File.WriteAllText(
-                    Path.Combine(dir, "fake-nscript.cmd"),
+                    Path.Combine(this.Dir, "fake-nscript.cmd"),
                     "@echo off\r\n" +
                     "echo nscript service: sync yes App.dll (1 ms)\r\n" +
-                    "echo " + ServiceHost.SyncRefLine(libDir, libObj + @"ref\Lib.dll", libObj).Replace("|", "^|") + "\r\n" +
+                    "echo " + ServiceHost.SyncRefLine(this.LibDir, this.LibObj + @"ref\Lib.dll", this.LibObj).Replace("|", "^|") + "\r\n" +
                     "exit /b 0\r\n");
+            }
 
+            public string SdkDir { get; }
+
+            public string Dir { get; }
+
+            public string LibDir { get; }
+
+            public string LibObj { get; }
+
+            public string AppObj { get; }
+
+            /// <summary>Runs the driver's Run target; asserts MSBuild succeeded and returns its output.</summary>
+            public string Run()
+            {
                 var psi = new ProcessStartInfo("dotnet")
                 {
-                    WorkingDirectory = dir,
+                    WorkingDirectory = this.Dir,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
                 };
-                foreach (string arg in new[] { "msbuild", "Driver.proj", "-t:Run", "-nologo", "-nr:false", "-v:n", "-p:SdkDir=" + sdkDir })
+                foreach (string arg in new[] { "msbuild", "Driver.proj", "-t:Run", "-nologo", "-nr:false", "-v:n", "-p:SdkDir=" + this.SdkDir })
                 {
                     psi.ArgumentList.Add(arg);
                 }
@@ -135,22 +195,21 @@ namespace NScript.Utils.Test
                 Assert.IsTrue(process.WaitForExit(120_000), "dotnet msbuild did not finish in 120 s");
                 string output = stdout + stderr.Result;
                 Assert.AreEqual(0, process.ExitCode, output);
-
-                string off = File.ReadAllText(Path.Combine(dir, "off.txt")).Trim();
-                StringAssert.StartsWith(off, libDir + "bin", "control: GetTargetPath returns the implementation DLL");
-                StringAssert.Contains(off, "|" + libObj + "ref" + Path.DirectorySeparatorChar + "Lib.dll|", "control: with the reference assembly in metadata");
-
-                // Synced: Lib is not evaluated, and its item equals GetTargetPath's.
-                StringAssert.Contains(output, "App reads 1 vouched references, evaluated no project references", output);
-                Assert.AreEqual(off, File.ReadAllText(Path.Combine(dir, "synced.txt")).Trim(), "synced vs GetTargetPath item");
-
-                // No recorded target path (Lib not built in watch mode since): today's references.
-                StringAssert.Contains(output, "project references kept", output);
-                Assert.AreEqual(off, File.ReadAllText(Path.Combine(dir, "unrecorded.txt")).Trim(), "unrecorded vs GetTargetPath item");
+                return output;
             }
-            finally
+
+            public void Dispose() => Directory.Delete(this.Dir, recursive: true);
+
+            private static string GetRepoRoot()
             {
-                Directory.Delete(dir, recursive: true);
+                // The test DLL lives at Test/Compiler/bin/<tfm>/; climb four levels to the worktree root.
+                string dir = Path.GetDirectoryName(typeof(WatchSyncReferencesTests).Assembly.Location);
+                for (int i = 0; i < 4; i++)
+                {
+                    dir = Path.GetDirectoryName(dir);
+                }
+
+                return dir;
             }
         }
     }

@@ -307,16 +307,23 @@
 	  and its JS are current. On yes, the daemon already built them: the project references, the
 	  watch stamp and the jsmode re-emit are skipped. Any other answer (no, busy, no daemon) runs
 	  today's build unchanged. -p:NScriptWatchSync=false turns it off. Solution builds, design-time
-	  builds and Release-style JS (minify, uglify, optimize) never sync.
+	  builds and Release-style JS (minify, uglify, optimize) never sync. Nor does a build whose
+	  compile properties differ from the watch build's (_NScriptWatchBuildProps): it is not asked.
 	-->
 	<Target Name="_NScriptWatchSync"
 	        BeforeTargets="BeforeBuild"
+	        DependsOnTargets="_NScriptWatchBuildProps"
 	        Condition="'$(NScriptWatchSync)' != 'false' and $(GenerateJs) == True and '$(DesignTimeBuild)' != 'true' and '$(CurrentSolutionConfigurationContents)' == '' and '$(Minify)' != 'true' and '$(Uglify)' != 'true' and '$(JsOptimize)' != 'true' and Exists('$(IntermediateOutputPath)nscript.watch')">
 		<PropertyGroup>
 			<_NScriptWatchSyncKey>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', '$(TargetFileName)'))</_NScriptWatchSyncKey>
 		</PropertyGroup>
+		<PropertyGroup>
+			<_NScriptWatchPropsRecorded Condition="Exists('$(_NScriptWatchPropsFile)')">$([System.IO.File]::ReadAllText('$(_NScriptWatchPropsFile)').Trim())</_NScriptWatchPropsRecorded>
+			<_NScriptWatchSyncOutput Condition="'$(_NScriptWatchPropsRecorded)' != '$(_NScriptWatchPropsHash)'">build properties differ from the watch build</_NScriptWatchSyncOutput>
+		</PropertyGroup>
 		<!-- The answer is the exit code; its text is never read as an MSBuild error (it may contain "error"). -->
-		<Exec Command="&quot;$(NScriptExe)&quot; service --sync &quot;$(_NScriptWatchSyncKey)&quot;"
+		<Exec Condition="'$(_NScriptWatchPropsRecorded)' == '$(_NScriptWatchPropsHash)'"
+		      Command="&quot;$(NScriptExe)&quot; service --sync &quot;$(_NScriptWatchSyncKey)&quot;"
 		      IgnoreExitCode="true"
 		      IgnoreStandardErrorWarningFormat="true"
 		      ConsoleToMSBuild="true"
@@ -353,6 +360,35 @@
 		<Message Importance="high"
 		         Condition="'$(_NScriptWatchSynced)' != 'true'"
 		         Text="NScript watch: full build ($(_NScriptWatchSyncOutput))" />
+	</Target>
+
+	<!--
+	  The compile properties a build may only sync with when they equal the watch build's (F-002).
+	  The daemon replays the watch build's csc command line, so a build asking with other values
+	  (-p:DefineConstants=X, -p:TreatWarningsAsErrors=true) must build in full. This is the one
+	  list: add a property here when it changes what csc writes or whether it fails. Hashed, so
+	  values with ';' or line breaks compare whole. Computed at BeforeBuild in both builds.
+	-->
+	<Target Name="_NScriptWatchBuildProps">
+		<PropertyGroup>
+			<_NScriptWatchPropsFile>$(IntermediateOutputPath)nscript.watchprops</_NScriptWatchPropsFile>
+			<_NScriptWatchPropsHash>$([MSBuild]::StableStringHash('DefineConstants=$(DefineConstants)|TreatWarningsAsErrors=$(TreatWarningsAsErrors)|WarningsAsErrors=$(WarningsAsErrors)|WarningsNotAsErrors=$(WarningsNotAsErrors)|NoWarn=$(NoWarn)|Optimize=$(Optimize)|LangVersion=$(LangVersion)|Nullable=$(Nullable)|CheckForOverflowUnderflow=$(CheckForOverflowUnderflow)|AllowUnsafeBlocks=$(AllowUnsafeBlocks)|DebugType=$(DebugType)|DebugSymbols=$(DebugSymbols)'))</_NScriptWatchPropsHash>
+		</PropertyGroup>
+	</Target>
+
+	<!--
+	  A watch build that registers this project (not synced) records its compile properties for
+	  the builds that ask later. Not a FileWrites item, like nscript.targetpath below.
+	-->
+	<Target Name="_NScriptWatchPropsRecord"
+	        BeforeTargets="BeforeBuild"
+	        DependsOnTargets="_NScriptWatchSync;_NScriptWatchBuildProps"
+	        Condition="'$(NScriptWatch)' == 'true' and $(GenerateJs) == True">
+		<WriteLinesToFile Condition="'$(_NScriptWatchSynced)' != 'true'"
+		                  File="$(_NScriptWatchPropsFile)"
+		                  Lines="$(_NScriptWatchPropsHash)"
+		                  Overwrite="true"
+		                  WriteOnlyWhenDifferent="true" />
 	</Target>
 
 	<!--
