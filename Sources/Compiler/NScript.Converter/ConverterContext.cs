@@ -109,15 +109,6 @@ namespace NScript.Converter
         /// <summary>
         /// .
         /// </summary>
-        private static readonly bool ParseCacheOff =
-            string.Equals(Environment.GetEnvironmentVariable("NSCRIPT_PARSE_CACHE"), "off", StringComparison.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Parsed method bodies kept for the session (dev mode only).
-        /// </summary>
-        private readonly Dictionary<MethodDefinition, Tuple<TopLevelBlock, BlockKind>> parsedMethodAsts =
-            new(MemberReferenceComparer.Instance);
-
         private readonly Dictionary<MethodDefinition, Func<Tuple<TopLevelBlock, BlockKind>>> methodAstMapping
             = new(MemberReferenceComparer.Instance);
 
@@ -469,25 +460,9 @@ namespace NScript.Converter
                 return false;
             }
 
-            // Dev mode keeps each parsed body for the session (this context lives as long as
-            // its inputs are unchanged), so a warm build does not re-read the serialized AST.
-            Tuple<TopLevelBlock, BlockKind> parsed;
-            if (!this.DevMode || ParseCacheOff || !this.parsedMethodAsts.TryGetValue(method, out parsed))
-            {
-                long parseStart = System.Diagnostics.Stopwatch.GetTimestamp();
-                parsed = func != null ? func() : null;
-                TypeSystemConverter.TypeConverter.ProbeParseTicks += System.Diagnostics.Stopwatch.GetTimestamp() - parseStart;
-                if (this.DevMode && !ParseCacheOff)
-                {
-                    this.parsedMethodAsts[method] = parsed;
-                }
-            }
-            else
-            {
-                TypeSystemConverter.TypeConverter.ProbeParseHits++;
-            }
-
-            var (topLevelBlock, blockKind) = parsed;
+            long parseStart = System.Diagnostics.Stopwatch.GetTimestamp();
+            var (topLevelBlock, blockKind) = func != null ? func() : null;
+            TypeSystemConverter.TypeConverter.ProbeParseTicks += System.Diagnostics.Stopwatch.GetTimestamp() - parseStart;
             rootBlock = topLevelBlock != null
                 ? topLevelBlock.RootBlock
                 : null;

@@ -441,7 +441,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// Static is safe: stage-2 builds never overlap in one process (the service lock).
         /// </summary>
         internal static long ProbeMethodConvertTicks, ProbeMaxMethodConvertTicks, ProbeParseTicks;
-        internal static int ProbeMethodsConverted, ProbeNestedConverts, ProbeDepth, ProbeParseHits;
+        internal static int ProbeMethodsConverted, ProbeNestedConverts, ProbeDepth;
 
         /// <summary>
         /// Adds the field to implementation.
