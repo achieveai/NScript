@@ -96,8 +96,9 @@ namespace NScript.Lib.Service
     /// stages for one toolset build. Requests are serialized by a global lock and each runs
     /// today's code path with fresh per-request objects; under the lock the daemon swaps the
     /// process-global state those paths rely on (cwd, Console.Out/Error, the Logger and the
-    /// Cecil comparer cache). Nothing is incremental: the process is only warm. Requests sent
-    /// with <c>Watch</c> are also recorded and replayed on file changes (ServiceHost.Watch.cs).
+    /// Cecil comparer cache). Stage 1 compiles from scratch on a warm process; stage 2 reuses a
+    /// dev-mode JS session per output (<see cref="BuilderSessions"/>). Requests sent with
+    /// <c>Watch</c> are also recorded and replayed on file changes (ServiceHost.Watch.cs).
     /// </summary>
     public sealed partial class ServiceHost
     {
