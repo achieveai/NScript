@@ -1396,6 +1396,52 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// F-001: what the project folder holds is recorded before the registering compile, so a
+        /// source file added or a csproj edited while that compile runs is a change (needs
+        /// dotnet build), not part of the baseline that sync would vouch for.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // Two real daemons on named pipes with file watchers: 2-3 s.
+        public void Register_FilesChangedDuringTheCompile_NeedBuild()
+        {
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindCompile && watch.Registered == 0)
+                {
+                    File.WriteAllText(Path.Combine(watch.Project, "New.cs"), "class N { }");
+                }
+
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                watch.Register("A.cs");
+                var added = watch.Sync(Path.Combine(watch.Project, "obj", "A.dll"));
+                Assert.AreEqual(ServiceHost.SyncExitNo, added.ExitCode, added.Message);
+                StringAssert.Contains(added.Message, "needs dotnet build -p:NScriptWatch=true: new file New.cs");
+            }
+
+            string csproj = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindCompile && watch.Registered == 0)
+                {
+                    File.WriteAllText(csproj, "<Project Sdk=\"Microsoft.NET.Sdk\"><!-- edited --></Project>");
+                }
+
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                csproj = Path.Combine(watch.Project, "A.csproj");
+                File.WriteAllText(csproj, "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+                watch.Register("A.cs");
+                var edited = watch.Sync(Path.Combine(watch.Project, "obj", "A.dll"));
+                Assert.AreEqual(ServiceHost.SyncExitNo, edited.ExitCode, edited.Message);
+                StringAssert.Contains(edited.Message, "needs dotnet build -p:NScriptWatch=true: build file changed: A.csproj");
+            }
+        }
+
+        /// <summary>
         /// F-003: a watcher error other than overflow stops that watcher for good (Windows
         /// FileSystemWatcher turns EnableRaisingEvents off), so edits under its root would go
         /// unseen and sync would vouch for stale output. The watch stops and its markers go, so

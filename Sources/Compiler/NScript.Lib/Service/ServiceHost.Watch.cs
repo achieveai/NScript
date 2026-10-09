@@ -267,6 +267,11 @@ namespace NScript.Lib.Service
                     Watch = true,
                     WatchSdkDir = request.WatchSdkDir,
                 };
+
+                // The baseline is taken before the compile (F-001): a file added or a build file
+                // edited while it runs is then a change, never part of what sync vouches for.
+                var existing = EnumerateSourceFiles(request.Cwd);
+                var buildFiles = HashBuildFiles(request.Cwd, request.WatchSdkDir);
                 var response = this.ExecuteLocked(replay, "client", queueWaitMs, out var inputs, out _);
                 if (inputs == null || response.InternalError)
                 {
@@ -274,8 +279,6 @@ namespace NScript.Lib.Service
                     return response;
                 }
 
-                var existing = EnumerateSourceFiles(request.Cwd);
-                var buildFiles = HashBuildFiles(request.Cwd, request.WatchSdkDir);
                 ProjectRecord record;
                 lock (this.watchGate)
                 {
@@ -514,14 +517,23 @@ namespace NScript.Lib.Service
                         this.watchers.Select(w => (w.Value.IncludeSubdirectories ? "r " : "f ") + w.Key).ToList());
 
                     // Edits between the registration hashes and the watcher start are found by a rescan.
-                    foreach (var input in this.registry.AllInputs())
-                    {
-                        this.pendingPaths.Add(input);
-                    }
-
-                    this.MarkEvent();
+                    this.QueueRescan();
                 }
             }
+        }
+
+        /// <summary>
+        /// Queues every input and recorded build file, so changes no event reported (before a
+        /// watcher started, or lost in an overflow) are classified. Call under <see cref="watchGate"/>.
+        /// </summary>
+        private void QueueRescan()
+        {
+            foreach (var path in this.registry.AllInputs().Concat(this.registry.Projects.SelectMany(p => p.BuildFiles.Keys)))
+            {
+                this.pendingPaths.Add(path);
+            }
+
+            this.MarkEvent();
         }
 
         private void OnFileEvent(string path, string? oldPath)
@@ -595,12 +607,7 @@ namespace NScript.Lib.Service
                 this.WatchLog("watcher overflow on {0} ({1}); rescanning", root, ex.Message);
                 lock (this.watchGate)
                 {
-                    foreach (var input in this.registry.AllInputs())
-                    {
-                        this.pendingPaths.Add(input);
-                    }
-
-                    this.MarkEvent();
+                    this.QueueRescan();
                 }
             }
             catch (Exception fatal)
