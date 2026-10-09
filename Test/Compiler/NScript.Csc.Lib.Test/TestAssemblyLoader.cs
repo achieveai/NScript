@@ -49,7 +49,6 @@
                 return;
             }
 
-            TestAssemblyLoader.IsLoaded = true;
             TestAssemblyLoader.DllBuilder = new DllBuilder();
 
             if (isRoslyn)
@@ -69,10 +68,27 @@
                 TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.dll"));
                 TestAssemblyLoader.Context.LoadAssembly(System.IO.Path.GetFullPath(@"realScript.Debug.dll"));
             }
+
+            // Set only after a complete load, so a failed load fails every test that needs it
+            // instead of leaving the next tests a half-loaded context.
+            TestAssemblyLoader.IsLoaded = true;
         }
 
         public static void LoadRoslynAssemblies(string basePath)
         {
+            // Framework assemblies, in load order, to enable WrapPromiseMethod resolution for
+            // testing await wrapping of external/imported type calls.
+            // System.Web is needed because CallContext's static constructor references
+            // XMLHttpRequest (for the OnBeforeSend hook).
+            // System.Web.Html must load BEFORE Sunlight.Framework: LayoutBatcher in
+            // Sunlight.Framework references Element from System.Web.Html at its static ctor
+            // (Element.AsyncReadDouble / AsyncReadClientRect hooks), so Cecil needs the module
+            // available when deserializing Framework.
+            string[] frameworkPaths = GetReleaseFrameworkPaths(
+                "System.Web.dll",
+                "System.Web.Html.dll",
+                "Sunlight.Framework.dll");
+
             Csc.Lib.Test.TestResources.CompileAll();
             TestAssemblyLoader.Context = new ClrContext();
             TestAssemblyLoader.DllBuilder.LoadAst(Path.Combine(basePath, @"mscorlib.dll"));
@@ -84,37 +100,38 @@
             TestAssemblyLoader.DllBuilder.LoadAst(Path.Combine(basePath, @"realScript.Debug.dll"));
             TestAssemblyLoader.Context.LoadAssembly(Path.Combine(basePath, @"realScript.Debug.dll"));
 
-            // Load framework assemblies to enable WrapPromiseMethod resolution
-            // for testing await wrapping of external/imported type calls.
-            // System.Web is needed because CallContext's static constructor
-            // references XMLHttpRequest (for the OnBeforeSend hook).
-            string repoRoot = Path.GetFullPath(Path.Combine(
-                Path.GetDirectoryName(typeof(TestAssemblyLoader).Assembly.Location),
-                @"..\..\..\..\"));
-            string systemWebPath = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release\System.Web.dll");
-            if (File.Exists(systemWebPath))
-            {
-                TestAssemblyLoader.DllBuilder.LoadAst(systemWebPath);
-                TestAssemblyLoader.Context.LoadAssembly(systemWebPath);
-            }
-
-            // System.Web.Html must load BEFORE Sunlight.Framework: LayoutBatcher in
-            // Sunlight.Framework references Element from System.Web.Html at its
-            // static ctor (Element.AsyncReadDouble / AsyncReadClientRect hooks),
-            // so Cecil needs the module available when deserializing Framework.
-            string systemWebHtmlPath = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release\System.Web.Html.dll");
-            if (File.Exists(systemWebHtmlPath))
-            {
-                TestAssemblyLoader.DllBuilder.LoadAst(systemWebHtmlPath);
-                TestAssemblyLoader.Context.LoadAssembly(systemWebHtmlPath);
-            }
-
-            string frameworkPath = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release\Sunlight.Framework.dll");
-            if (File.Exists(frameworkPath))
+            foreach (string frameworkPath in frameworkPaths)
             {
                 TestAssemblyLoader.DllBuilder.LoadAst(frameworkPath);
                 TestAssemblyLoader.Context.LoadAssembly(frameworkPath);
             }
+        }
+
+        /// <summary>
+        /// Gets the paths of framework assemblies in NScriptToolSet\lib\Release. That folder is
+        /// build output (gitignored), so a fresh checkout lacks it. Without it, tests that need
+        /// the framework failed with wrong JS (for example a missing CallContext.WrapPromise)
+        /// instead of saying what was missing.
+        /// </summary>
+        /// <exception cref="FileNotFoundException">One or more of the assemblies is missing.</exception>
+        private static string[] GetReleaseFrameworkPaths(params string[] fileNames)
+        {
+            string repoRoot = Path.GetFullPath(Path.Combine(
+                Path.GetDirectoryName(typeof(TestAssemblyLoader).Assembly.Location),
+                @"..\..\..\..\"));
+            string libDir = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release");
+            string[] paths = Array.ConvertAll(fileNames, fileName => Path.Combine(libDir, fileName));
+            string[] missing = Array.FindAll(paths, path => !File.Exists(path));
+            if (missing.Length > 0)
+            {
+                throw new FileNotFoundException(
+                    "These tests need the Release framework build, which is missing: "
+                    + string.Join(", ", missing)
+                    + ". Build it from the repo root with: dotnet build NScript_Full.sln -c Release",
+                    missing[0]);
+            }
+
+            return paths;
         }
 
         /// <summary>
