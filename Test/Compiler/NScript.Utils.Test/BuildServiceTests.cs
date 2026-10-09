@@ -1487,6 +1487,60 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// D-F001 (tester-m2): the inputs are fixed when MSBuild evaluates the project, before
+        /// the compile request. A file added or a build file written after that evaluation,
+        /// whose NeedsBuild batch ran before the registration, must stay NEEDS BUILD, not be
+        /// cleared by a registration that never saw it. A watch build evaluated after those
+        /// edits clears them; a non-input file that was there at evaluation never counts.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // Two real daemons on named pipes with file watchers: 2-3 s.
+        public void Register_FilesChangedAfterEvaluation_StayNeedsBuild_UntilAWatchBuildEvaluatedAfterThem()
+        {
+            WatchHost watch;
+            using (watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                File.WriteAllText(Path.Combine(watch.Project, "Excluded.cs"), "class E { }");
+                watch.Register("A.cs");
+                // File times are coarse; the daemon's slack covers that, so 'evaluated' may be
+                // a little after New.cs's stamp. The controls below evaluate a second later.
+                var evaluated = DateTime.UtcNow;
+                File.WriteAllText(Path.Combine(watch.Project, "New.cs"), "class N { }");
+                WaitForLog("WatchNeedsBuild", 1);
+
+                watch.RegisterEvaluatedAt(watch.Project, evaluated, "A.cs");
+                var added = watch.Sync(key);
+                Assert.AreEqual(ServiceHost.SyncExitNo, added.ExitCode, added.Message);
+                StringAssert.Contains(added.Message, "needs dotnet build -p:NScriptWatch=true: new file New.cs");
+
+                File.Delete(Path.Combine(watch.Project, "New.cs"));
+                watch.RegisterEvaluatedAt(watch.Project, DateTime.UtcNow + TimeSpan.FromSeconds(1), "A.cs");
+                var control = watch.Sync(key);
+                Assert.AreEqual(ServiceHost.SyncExitYes, control.ExitCode, "control: evaluated after the edits; Excluded.cs was there at evaluation: " + control.Message);
+            }
+
+            using (watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                var csproj = Path.Combine(watch.Project, "A.csproj");
+                File.WriteAllText(csproj, "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+                watch.Register("A.cs");
+                var evaluated = DateTime.UtcNow;
+                File.WriteAllText(csproj, "<Project Sdk=\"Microsoft.NET.Sdk\"><!-- edited --></Project>");
+                WaitForLog("WatchNeedsBuild", 2);
+
+                watch.RegisterEvaluatedAt(watch.Project, evaluated, "A.cs");
+                var edited = watch.Sync(key);
+                Assert.AreEqual(ServiceHost.SyncExitNo, edited.ExitCode, edited.Message);
+                StringAssert.Contains(edited.Message, "needs dotnet build -p:NScriptWatch=true: build file changed: A.csproj");
+
+                watch.RegisterEvaluatedAt(watch.Project, DateTime.UtcNow + TimeSpan.FromSeconds(1), "A.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(key).ExitCode, "control: evaluated after the edit");
+            }
+        }
+
+        /// <summary>
         /// F-003: a watcher error other than overflow stops that watcher for good (Windows
         /// FileSystemWatcher turns EnableRaisingEvents off), so edits under its root would go
         /// unseen and sync would vouch for stale output. The watch stops and its markers go, so
@@ -1873,7 +1927,10 @@ namespace NScript.Utils.Test
 
             public void Register(params string[] args) => this.RegisterIn(this.Project, args);
 
-            public void RegisterIn(string cwd, params string[] args)
+            public void RegisterIn(string cwd, params string[] args) => this.RegisterEvaluatedAt(cwd, null, args);
+
+            /// <summary>A registration whose MSBuild evaluation ran at <paramref name="evaluatedUtc"/> (null: an SDK that does not say).</summary>
+            public void RegisterEvaluatedAt(string cwd, DateTime? evaluatedUtc, params string[] args)
             {
                 var response = Send(this.pipeName, new ServiceRequest
                 {
@@ -1882,6 +1939,7 @@ namespace NScript.Utils.Test
                     Cwd = cwd,
                     Args = args,
                     Watch = true,
+                    WatchEvaluatedUtcTicks = evaluatedUtc?.Ticks,
                 });
                 Assert.AreEqual(0, response.ExitCode, response.Message);
                 this.Registered++;

@@ -39,6 +39,13 @@ namespace NScript.Csc.Lib.Service
         /// project imports. Edits there make the daemon ask for a <c>dotnet build</c>.
         /// </summary>
         public string WatchSdkDir { get; set; }
+
+        /// <summary>
+        /// Compile requests in watch mode: when MSBuild evaluated the project (UTC ticks), so
+        /// before it listed the inputs. A file added or a build file written since is a change
+        /// the registration must not vouch for. Null from an SDK that does not send it.
+        /// </summary>
+        public long? WatchEvaluatedUtcTicks { get; set; }
     }
 
     /// <summary>

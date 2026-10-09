@@ -371,6 +371,53 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// D-F001: a registration re-raises what changed after MSBuild evaluated the project. A
+        /// file added since is "new", never "there at registration" (so its edits are not
+        /// NotInputs forever); a build file written since and an input gone since need a build.
+        /// Without an evaluation time (an older SDK) every reason clears, as before.
+        /// </summary>
+        [TestMethod]
+        public void RegisterCompile_ChangedSinceEvaluation_StaysNeedsBuild_NullClearsAll()
+        {
+            var csproj = P("A", "A.csproj");
+            var late = Src("A", "Late.cs");
+            this.disk[late] = "h0";
+            this.Register("A", buildFiles: new[] { csproj }, otherFiles: new[] { late });
+            CollectionAssert.Contains(this.registry.Projects.Single().PreexistingNonInputs.ToArray(), late, "control: no evaluation time");
+
+            var gone = Src("A", "Gone.cs");
+            var a = this.registry.RegisterCompile(
+                P("A"),
+                new[] { "@A.rsp" },
+                this.Inputs("A", new[] { Src("A"), gone }),
+                0,
+                null,
+                new[] { Src("A"), late },
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [csproj] = "h0" },
+                new ChangedSinceEvaluation(new[] { late, Src("A") }, new[] { csproj }));
+
+            CollectionAssert.DoesNotContain(a.PreexistingNonInputs.ToArray(), late);
+            StringAssert.Contains(this.registry.SyncBlocker(a.Key), "deleted " + gone);
+            this.disk.Remove(late);
+            this.Change(late);
+            StringAssert.Contains(this.registry.SyncBlocker(a.Key), "deleted " + gone, "a vanished new file drops only its own reason");
+
+            this.registry.RegisterCompile(
+                P("A"),
+                new[] { "@A.rsp" },
+                this.Inputs("A", new[] { Src("A") }),
+                0,
+                null,
+                new[] { Src("A") },
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [csproj] = "h0" },
+                new ChangedSinceEvaluation(Array.Empty<string>(), new[] { csproj }));
+            StringAssert.Contains(this.registry.SyncBlocker(a.Key), "build file changed: " + csproj);
+
+            this.Register("A");
+            Assert.IsNull(this.registry.SyncBlocker(a.Key), "no evaluation time: every reason clears");
+        }
+
+        /// <summary>
         /// Contract 6: every compile attempt refreshes the recorded hashes, so H0 -> H1 -> H0
         /// is two compiles ending at H0, also when the H1 compile failed. A project blocked
         /// behind a red dependency stays dirty.

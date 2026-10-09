@@ -51,7 +51,7 @@ Saves within a short debounce window form one batch.
 
 - A save that arrives mid-batch stops the batch early. The next batch picks up the rest (`superseded batch`).
 - A locked JS file is retried. Then it is `KEPT ... (stale: output in use ...)`. Save again.
-- A file added, or a build file edited, while the watch build itself runs is a change too: `NEEDS BUILD`.
+- A file added, or a build file edited, while the watch build itself runs (from the moment MSBuild reads the project) is a change too: `NEEDS BUILD`. Run the watch build again.
 
 ### When a file watcher fails
 
@@ -117,6 +117,7 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 | `NSCRIPT_SERVICE` | unset | `1` or `true`: csc goes through the service. | Set by Sdk.targets; don't set |
 | `NSCRIPT_WATCH` | unset | `1` or `true`: register with the watch. Implies the service. | Set by Sdk.targets and `Sources/Framework/Directory.Build.props`; don't set |
 | `NSCRIPT_WATCH_SDKDIR` | unset | The NScript.Sdk folder to watch for `Sdk.props` / `Sdk.targets` edits. | Set by Sdk.targets; don't set |
+| `NSCRIPT_WATCH_EVALUATED_UTC_TICKS` | unset | When MSBuild evaluated the project. A file added or a build file written after it stays `NEEDS BUILD`. | Set by Sdk.targets and `Sources/Framework/Directory.Build.props`; don't set |
 | `NSCRIPT_SERVICE_IDLE_SECONDS` | `600` | Idle exit, not watching. Positive whole seconds. | Setting |
 | `NSCRIPT_WATCH_IDLE_SECONDS` | `28800` (8 h) | Idle exit while watching. Positive whole seconds. | Setting |
 | `NSCRIPT_SERVICE_REQUEST_TIMEOUT` | `600` | Per-request watchdog. Positive whole seconds. | Setting |

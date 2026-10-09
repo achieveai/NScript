@@ -29,6 +29,26 @@ namespace NScript.Csc.Lib.Service
         /// <summary>Environment variable naming the NScript.Sdk folder (watched for props/targets edits).</summary>
         public const string WatchSdkDirEnvVar = "NSCRIPT_WATCH_SDKDIR";
 
+        /// <summary>Environment variable with the project's MSBuild evaluation time in UTC ticks (D-F001).</summary>
+        public const string WatchEvaluatedUtcTicksEnvVar = "NSCRIPT_WATCH_EVALUATED_UTC_TICKS";
+
+        /// <summary>
+        /// The evaluation time Sdk.targets passes, or null when absent (an older SDK). A value
+        /// that is not a whole number of ticks fails: only the SDK writes it.
+        /// </summary>
+        public static long? ReadWatchEvaluatedUtcTicks()
+        {
+            string value = Environment.GetEnvironmentVariable(WatchEvaluatedUtcTicksEnvVar);
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            return long.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out long ticks)
+                ? ticks
+                : throw new ArgumentException($"{WatchEvaluatedUtcTicksEnvVar} must be UTC ticks, got '{value}'");
+        }
+
         private static readonly string[] ReleaseFlags = { "-minify", "-uglify", "-optimize" };
 
         /// <summary>

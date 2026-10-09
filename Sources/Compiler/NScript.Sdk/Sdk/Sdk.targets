@@ -19,7 +19,9 @@
 		<!-- NScriptWatch=true implies the service and registers this build with its watch (M5). -->
 		<NScriptService Condition="'$(NScriptWatch)' == 'true'">true</NScriptService>
 		<_NScriptUseService Condition="'$(NScriptService)' == 'true' and '$(Minify)' != 'true' and '$(Uglify)' != 'true' and '$(JsOptimize)' != 'true'">true</_NScriptUseService>
-		<CscEnvironment Condition="'$(_NScriptUseService)' == 'true'">$(CscEnvironment);NSCRIPT_SERVICE=1;NSCRIPT_WATCH=$(NScriptWatch);NSCRIPT_WATCH_SDKDIR=$(MSBuildThisFileDirectory)</CscEnvironment>
+		<!-- NSCRIPT_WATCH_EVALUATED_UTC_TICKS: when this evaluation ran, before the inputs were listed. A file
+		     added or a build file written since is a change the watch must not vouch for (D-F001). -->
+		<CscEnvironment Condition="'$(_NScriptUseService)' == 'true'">$(CscEnvironment);NSCRIPT_SERVICE=1;NSCRIPT_WATCH=$(NScriptWatch);NSCRIPT_WATCH_SDKDIR=$(MSBuildThisFileDirectory);NSCRIPT_WATCH_EVALUATED_UTC_TICKS=$([System.DateTime]::UtcNow.Ticks)</CscEnvironment>
 	</PropertyGroup>
 
 	<Target Name="AfterCompile" DependsOnTargets="$(CoreCompile)" >

@@ -33,8 +33,9 @@ namespace NScript.Csc.Lib.Service
         /// <param name="toolName">Origin printed in the NSS001 warning (<c>csc</c> or <c>nscript</c>).</param>
         /// <param name="watch">Ask the daemon to record this request for watch mode.</param>
         /// <param name="watchSdkDir">Compile only: the NScript.Sdk folder the project imports.</param>
+        /// <param name="watchEvaluatedUtcTicks">Compile only: when MSBuild evaluated the project (null: not known).</param>
         /// <returns>The daemon's exit code, or null when the caller must compile locally.</returns>
-        public static int? TryRun(string kind, string[] args, string toolName, bool watch = false, string watchSdkDir = null)
+        public static int? TryRun(string kind, string[] args, string toolName, bool watch = false, string watchSdkDir = null, long? watchEvaluatedUtcTicks = null)
         {
             var log = CompilerLog.ForComponent("ServiceClient");
             var total = Stopwatch.StartNew();
@@ -96,6 +97,7 @@ namespace NScript.Csc.Lib.Service
                         Args = args,
                         Watch = watch,
                         WatchSdkDir = watchSdkDir,
+                        WatchEvaluatedUtcTicks = watchEvaluatedUtcTicks,
                     });
 
                     var response = ServiceProtocol.ReadMessage<ServiceResponse>(pipe);

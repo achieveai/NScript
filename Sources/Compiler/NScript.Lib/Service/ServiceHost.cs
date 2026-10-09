@@ -102,6 +102,9 @@ namespace NScript.Lib.Service
     /// </summary>
     public sealed partial class ServiceHost
     {
+        /// <summary>Margin for the coarse file-system clock against MSBuild's evaluation time (D-F001).</summary>
+        internal static readonly TimeSpan EvaluationClockSlack = TimeSpan.FromMilliseconds(50);
+
         /// <summary>Environment variable overriding the idle timeout in seconds.</summary>
         public const string IdleSecondsEnvVar = "NSCRIPT_SERVICE_IDLE_SECONDS";
 

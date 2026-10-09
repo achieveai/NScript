@@ -279,24 +279,31 @@ namespace NScript.Lib.Service
                     return response;
                 }
 
+                // MSBuild fixed the inputs at evaluation, before the request (D-F001). Read after
+                // the compile, so a change while it ran counts too.
+                DateTime? evaluated = request.WatchEvaluatedUtcTicks is long ticks ? new DateTime(ticks, DateTimeKind.Utc) : null;
+                var sinceEvaluation = evaluated == null ? null : ChangedSince(evaluated.Value, request.Cwd, request.WatchSdkDir);
                 ProjectRecord record;
                 lock (this.watchGate)
                 {
-                    record = this.registry.RegisterCompile(request.Cwd, replayArgs, inputs, response.ExitCode, request.WatchSdkDir, existing, buildFiles);
+                    record = this.registry.RegisterCompile(request.Cwd, replayArgs, inputs, response.ExitCode, request.WatchSdkDir, existing, buildFiles, sinceEvaluation);
                 }
 
                 // Kept while watching, red included (--sync answers that); deleted when watch stops.
                 this.WriteWatchMarker(record.Key);
 
                 log.Information(
-                    "WatchRegister Kind={Kind} Key={Key} Inputs={Inputs} Outputs={Outputs} References={References} BuildFiles={BuildFiles} ExitCode={ExitCode}",
+                    "WatchRegister Kind={Kind} Key={Key} Inputs={Inputs} Outputs={Outputs} References={References} BuildFiles={BuildFiles} ExitCode={ExitCode} EvaluatedUtc={EvaluatedUtc} NewSinceEvaluation={NewSinceEvaluation} BuildFilesSinceEvaluation={BuildFilesSinceEvaluation}",
                     request.Kind,
                     record.Key,
                     record.Inputs.Sources.Count + record.Inputs.Resources.Count,
                     new[] { inputs.Output, inputs.RefOut },
                     inputs.References.Count,
                     buildFiles.Keys,
-                    response.ExitCode);
+                    response.ExitCode,
+                    evaluated,
+                    sinceEvaluation?.SourceFiles,
+                    sinceEvaluation?.BuildFiles);
                 this.WatchLog("register compile {0} ({1} inputs, exit {2})", record.Name, record.Inputs.Sources.Count + record.Inputs.Resources.Count, response.ExitCode);
                 this.UpdateWatchers();
                 this.ArmBatchIfStillDirty(record.Name);
@@ -426,6 +433,43 @@ namespace NScript.Lib.Service
         /// </summary>
         private static Dictionary<string, string> HashBuildFiles(string projectDir, string? sdkDir)
         {
+            var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var file in BuildFileDirs(projectDir, sdkDir).SelectMany(d => Directory.EnumerateFiles(d).Where(WatchRegistry.IsBuildFile)))
+            {
+                var hash = CompileInputs.HashFile(file);
+                if (hash != null)
+                {
+                    hashes[file] = hash;
+                }
+            }
+
+            return hashes;
+        }
+
+        /// <summary>
+        /// The source-kind files of the project folder created or written at or after
+        /// <paramref name="evaluated"/>, and the build files (<see cref="HashBuildFiles"/>)
+        /// written then. A file that tunnels an older creation time still has a new write time.
+        /// File times come from the coarse system clock (one tick is ~15.6 ms), MSBuild's
+        /// evaluation time from the precise one, so the cut is <see cref="EvaluationClockSlack"/>
+        /// earlier: an edit that close before evaluation counts as after (a needless NEEDS BUILD),
+        /// never the other way round (a wrong yes).
+        /// </summary>
+        private static ChangedSinceEvaluation ChangedSince(DateTime evaluated, string projectDir, string? sdkDir)
+        {
+            var cut = evaluated - EvaluationClockSlack;
+            bool Since(string f) => File.GetLastWriteTimeUtc(f) >= cut || File.GetCreationTimeUtc(f) >= cut;
+            return new ChangedSinceEvaluation(
+                EnumerateSourceFiles(projectDir).Where(Since).ToList(),
+                BuildFileDirs(projectDir, sdkDir).SelectMany(d => Directory.EnumerateFiles(d).Where(WatchRegistry.IsBuildFile)).Where(f => File.GetLastWriteTimeUtc(f) >= cut).ToList());
+        }
+
+        /// <summary>
+        /// The folders whose csproj/props/targets define a project: its own, each ancestor with
+        /// a Directory.Build.props or .targets, and the NScript.Sdk folder.
+        /// </summary>
+        private static List<string> BuildFileDirs(string projectDir, string? sdkDir)
+        {
             var dirs = new List<string> { Path.GetFullPath(projectDir) };
             for (var dir = Directory.GetParent(Path.GetFullPath(projectDir)); dir != null; dir = dir.Parent)
             {
@@ -440,20 +484,7 @@ namespace NScript.Lib.Service
                 dirs.Add(Path.GetFullPath(sdkDir));
             }
 
-            var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var dir in dirs)
-            {
-                foreach (var file in Directory.EnumerateFiles(dir).Where(WatchRegistry.IsBuildFile))
-                {
-                    var hash = CompileInputs.HashFile(file);
-                    if (hash != null)
-                    {
-                        hashes[file] = hash;
-                    }
-                }
-            }
-
-            return hashes;
+            return dirs;
         }
 
         /// <summary>Creates watchers for new roots and disposes the ones no longer needed.</summary>

@@ -49,7 +49,8 @@ namespace NScript.Csc.Lib
                         strippedArgs,
                         "csc",
                         watch,
-                        watch ? Environment.GetEnvironmentVariable(ServiceArgs.WatchSdkDirEnvVar) : null);
+                        watch ? Environment.GetEnvironmentVariable(ServiceArgs.WatchSdkDirEnvVar) : null,
+                        watch ? ServiceArgs.ReadWatchEvaluatedUtcTicks() : null);
                     if (serviceExitCode.HasValue)
                     {
                         return serviceExitCode.Value;

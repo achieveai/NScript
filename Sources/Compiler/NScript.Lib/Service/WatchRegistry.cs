@@ -149,6 +149,13 @@ namespace NScript.Lib.Service
     }
 
     /// <summary>The ordered work of one batch.</summary>
+    /// <summary>
+    /// What changed in a registering project after MSBuild evaluated it (D-F001): source-kind
+    /// files in its folder created or written since, and its build files written since. The
+    /// compile could not have read them, so the registration must not vouch for them.
+    /// </summary>
+    public sealed record ChangedSinceEvaluation(IReadOnlyCollection<string> SourceFiles, IReadOnlyCollection<string> BuildFiles);
+
     public sealed record WatchPlan(IReadOnlyList<ProjectRecord> Compiles, IReadOnlyList<BundleRecord> Bundles);
 
     /// <summary>
@@ -240,6 +247,10 @@ namespace NScript.Lib.Service
         /// <summary>
         /// Records a compile request (MSBuild-driven, Watch=true), whatever its exit code, so a
         /// session that starts red still recovers. Replaces an earlier record for the same output.
+        /// It clears the project's NEEDS BUILD reasons, then raises again whatever
+        /// <paramref name="sinceEvaluation"/> shows the compile could not have seen: a new
+        /// non-input file, an edited build file, a missing input. Null (an SDK that does not
+        /// send the evaluation time): every reason clears.
         /// </summary>
         public ProjectRecord RegisterCompile(
             string cwd,
@@ -248,12 +259,16 @@ namespace NScript.Lib.Service
             int exitCode,
             string? sdkDir,
             IEnumerable<string> existingSourceFiles,
-            IReadOnlyDictionary<string, string> buildFiles)
+            IReadOnlyDictionary<string, string> buildFiles,
+            ChangedSinceEvaluation? sinceEvaluation = null)
         {
             var record = new ProjectRecord(cwd, replayArgs, inputs, sdkDir, ++this.seq);
+            var late = new HashSet<string>(sinceEvaluation?.SourceFiles ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            late.ExceptWith(record.InputSet);
             foreach (var file in existingSourceFiles)
             {
-                if (!record.InputSet.Contains(file))
+                // A file added after evaluation is new, never "there at registration".
+                if (!record.InputSet.Contains(file) && !late.Contains(file))
                 {
                     record.PreexistingNonInputs.Add(file);
                 }
@@ -268,6 +283,18 @@ namespace NScript.Lib.Service
             this.copyEdges.RemoveAll(e => Same(e.ProjectKey, record.Key) || Same(e.HolderKey, record.Key));
             this.copyPending.RemoveWhere(e => Same(e.ProjectKey, record.Key) || Same(e.HolderKey, record.Key));
             this.needsBuild.Remove(record.Key);
+            if (sinceEvaluation != null)
+            {
+                var reasons = late.OrderBy(f => f, StringComparer.OrdinalIgnoreCase).Select(f => ("new file " + f, (string?)f))
+                    .Concat(sinceEvaluation.BuildFiles.OrderBy(f => f, StringComparer.OrdinalIgnoreCase).Select(f => ("build file changed: " + f, (string?)null)))
+                    .Concat(record.InputSet.Where(f => this.probe(f).State == FileProbeState.Missing).OrderBy(f => f, StringComparer.OrdinalIgnoreCase).Select(f => ("deleted " + f, (string?)null)))
+                    .ToList();
+                if (reasons.Count > 0)
+                {
+                    this.needsBuild[record.Key] = reasons;
+                }
+            }
+
             this.dirty.Remove(record.Key);
             this.compileDirty.Remove(record.Key);
             this.SetResult(record.Key, exitCode);

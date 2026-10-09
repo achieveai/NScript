@@ -46,7 +46,8 @@
     The stamp makes CoreCompile run, so an up-to-date project still registers.
   -->
   <PropertyGroup Condition="'$(NScriptWatch)' == 'true'">
-    <CscEnvironment>$(CscEnvironment);NSCRIPT_WATCH=true</CscEnvironment>
+    <!-- The evaluation time: as NSCRIPT_WATCH_EVALUATED_UTC_TICKS in NScript.Sdk's Sdk.targets. -->
+    <CscEnvironment>$(CscEnvironment);NSCRIPT_WATCH=true;NSCRIPT_WATCH_EVALUATED_UTC_TICKS=$([System.DateTime]::UtcNow.Ticks)</CscEnvironment>
   </PropertyGroup>
 
   <Target Name="NScriptWatchStamp" BeforeTargets="CoreCompile" Condition="'$(NScriptWatch)' == 'true'">
