@@ -2,6 +2,7 @@ using System;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NScript.RazorSkin;
+using NScript.Utils;
 
 namespace RazorSkinParser.Test
 {

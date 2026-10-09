@@ -8,6 +8,7 @@ using NScript.CLR;
 using NScript.Converter;
 using NScript.Converter.TypeSystemConverter;
 using NScript.JST;
+using NScript.Utils;
 using NScript.RazorSkin.CodeGen;
 using NScript.RazorSkin.TemplateIR;
 using Serilog;

@@ -1,4 +1,4 @@
-namespace NScript.RazorSkin
+namespace NScript.Utils
 {
     using System;
     using System.Collections.Generic;
@@ -9,12 +9,13 @@ namespace NScript.RazorSkin
     /// Process-wide, least-recently-used cache keyed by the content of its inputs (slice 2,
     /// Inc 4a-1). Holds only build-independent data: no ClrContext, RuntimeScopeManager or
     /// ConverterContext, so a warm build service can keep it across builds while plugins are
-    /// still created per build. <c>NSCRIPT_RAZOR_CACHE=off</c> disables every instance.
+    /// still created per build. Razor and XWML parse caches use it. <c>NSCRIPT_RAZOR_CACHE=off</c>
+    /// disables every instance (the name predates XWML's use).
     /// </summary>
-    internal sealed class ContentCache<T>
+    public sealed class ContentCache<T>
         where T : class
     {
-        internal static readonly bool Off =
+        public static readonly bool Off =
             string.Equals(Environment.GetEnvironmentVariable("NSCRIPT_RAZOR_CACHE"), "off", StringComparison.OrdinalIgnoreCase);
 
         private readonly int capacity;
@@ -114,7 +115,7 @@ namespace NScript.RazorSkin
         }
 
         /// <summary>For tests.</summary>
-        internal void Clear()
+        public void Clear()
         {
             lock (this.gate)
             {
