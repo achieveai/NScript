@@ -27,6 +27,26 @@ dotnet test Test/Compiler/NScriptTest/NScriptTest.csproj --filter "FullyQualifie
 
 **NuGet package generation**: Set `<GenerateNScriptPackages>true</GenerateNScriptPackages>` in root `Directory.Build.props`, then build Release. Packages output to `NScriptToolSet/`.
 
+### Build service
+
+Details: `docs/build/build-service.md`.
+
+```bash
+# Watch an app: a save rebuilds its JS (dev-mode JS)
+dotnet build Test/Framework/TodoApp/TodoApp.csproj -p:NScriptWatch=true
+
+# While watching, a plain build asks the daemon first; opt out per build
+dotnet build Test/Framework/TodoApp/TodoApp.csproj -p:NScriptWatchSync=false
+
+# Status (log paths, watched projects) and stop
+NScriptToolSet/bin/Debug/net8.0/nscript.exe service --status
+NScriptToolSet/bin/Debug/net8.0/nscript.exe service --stop
+```
+
+- Logs: `watch.log` (readable) and `service.jsonl` (structured); `--status` prints both paths.
+- Solution builds and Release-style builds (minify/uglify/optimize) never sync.
+- `NSCRIPT_WATCH_DROP_EVENTS` is a test hook; never set it outside tests.
+
 ## Validation After Any Change (REQUIRED)
 
 Framework and compiler changes are only done when the browser suites and the demo apps still work. Build Debug first, then from `Test/Framework/TestWebApplication/`:
