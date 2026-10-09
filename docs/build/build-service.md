@@ -148,6 +148,8 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 - **Solution builds skip the sync.** `dotnet build NScript_Full.sln` builds every project as before.
 - **A synced build skips the framework projects.** Their commit SHA stamp and the NuGet packages in `NScriptToolSet` are not refreshed. A full build fixes both.
 - **Files that arrive with old times:** a file moved in from the same volume, or copied with its times kept, after MSBuild evaluated the project can be missed. The sync may then answer yes without it. Touch the file or run a watch build.
+- **A new non-source resource with an old time:** a resource such as a `.png` or `.json` added through a glob, copied with its times kept, can be missed by a synced build after a skin or CSS save. This happens when its time falls between the last watch compile and the patch. Touch the file or run a watch build.
+- **After another watch registration:** registering again rewrites the toolset's `lib` DLLs. The next synced build of an app that was already registered then compiles locally once and writes normal JS. The sync after that heals it.
 - **Two builds with different properties at once:** the property check runs when `--sync` starts. A watch build with other `-p:` values that registers a referenced project during the sync's wait is not seen by that sync.
 - **Windows Defender:** the first read of a freshly written DLL takes about 80 ms under real-time scanning. The second read takes about 2 ms. The service and batch builds both pay it. NScript does not change scan settings.
 

@@ -43,14 +43,12 @@
 **Owner rulings (Gautam)**
 - Convert phase: accepted as tracked debt D1. To be revisited for speed.
 - The `dotnet build` trigger plan: approved.
+- After a skin or CSS save, a synced build skips the local compile. It keeps the daemon's patched DLL and dev JS. Cost: no C# symbols in a .NET debugger until the next `.cs` save or unsynced build.
 
 **Lead decisions (open to owner review)**
 - Surface hashing: deferred. A `.cs` change recompiles every dependent.
 - Slice 6 (Roslyn fork change, shared framework JST): not built. Its own condition ("only if slice 1's measurements demand it") did not trigger.
 - Synced `dotnet build` keeps the daemon's dev-mode JS.
-
-**Open**
-- After a skin or CSS save, a synced build still recompiles the app locally and writes non-dev JS. Pending Gautam's decision.
 
 ---
 
@@ -243,7 +241,7 @@ flowchart TB
 - **Model changes reach skins through the same Dependency Index.** A skin records the TypeKeys and MemberKeys it binds. A surface change on a view model evicts the skin like any other caller.
 - **CSS.** Razor's CSS-literal replacement makes method bodies depend on the global CSS class map. Methods and skins record the class keys they use; a CSS edit evicts only those.
 - **XWML** follows the same path through `XwmlTemplatingPlugin`: its global CSS-name compression is recomputed from the cached per-template results, not re-parsed.
-- **DLL consistency.** The resource patch keeps `obj/.../X.dll` truthful, so a later MSBuild-driven build sees nothing to do. (Superseded: after a skin or CSS save, a synced `dotnet build` still recompiles the app locally. Open owner decision.) A failed template compile keeps the last-good skin output and reports the template diagnostics, the same rule as C#.
+- **DLL consistency.** The resource patch keeps `obj/.../X.dll` truthful, so a later MSBuild-driven build sees nothing to do. (A synced `dotnet build` after a skin or CSS save skips csc: the patch leaves the PDB older than the resource, and `Sdk.targets` sets `SkipCompilerExecution` when only patched resources are newer.) A failed template compile keeps the last-good skin output and reports the template diagnostics, the same rule as C#.
 
 ## 7. Two traces through the same names
 
@@ -318,7 +316,7 @@ Validation for every slice: the four browser suites and the benchmark check from
 - **Dev-mode output:** Gautam's rule that service builds need not match Release is adopted as the basis for stable naming and the chunked writer (section 5.1). Release stays batch.
 - **Roslyn fork:** changes for this work are allowed when measurements justify them (section 4, slice 6).
 
-Superseded: one decision is open (skin or CSS save, then synced build). See "Status and rulings".
+No decision is open. See "Status and rulings".
 
 ## 11. Material risks
 

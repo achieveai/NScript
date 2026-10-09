@@ -41,7 +41,7 @@ flowchart TD
 - Solution (`.sln`) builds skip the trigger: the framework builds alongside them.
 - A synced build's project-reference items lack 12 metadata names that only MSBuild's evaluation of the referenced project adds (TargetFrameworks, AdditionalPropertiesFromProject, ...). Nothing after reference resolution reads them: csc, nscript and JS are equal. Listed in a comment next to the injecting target.
 - The injected reference comes from `obj/nscript.targetpath`, which a watch build writes. One writer target, `NScript.Sdk/Sdk/NScript.WatchTargetPath.targets`, is imported by `Sdk.targets` and by `Sources/Framework/Directory.Build.props`. No record means today's project references.
-- After a skin save, a synced build still recompiles the app locally (the patched DLL has no PDB link) and writes non-dev JS. Open question to you.
+- After a skin or CSS save, a synced build skips csc (your ruling). The bin DLL then has no PDB link, so a .NET debugger shows no C# symbols until the next `.cs` save or unsynced build.
 
 ## Moved to backlog (your side-task rule)
 - B20: replace the 24 git calls with values .NET already computes. Saves an estimated 1.5–2 s on every non-watch build, but it changes the metadata packed into the NuGet packages, so it is a separate task.
