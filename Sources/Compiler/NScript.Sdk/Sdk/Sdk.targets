@@ -391,22 +391,8 @@
 		                  WriteOnlyWhenDifferent="true" />
 	</Target>
 
-	<!--
-	  A watch build records this project's GetTargetPath item for synced builds of the projects that
-	  reference it, one line: path|ReferenceAssembly|TargetPlatformMoniker|TargetPlatformIdentifier|
-	  TargetFrameworkIdentifier|TargetFrameworkVersion|CopyUpToDateMarker. Not a FileWrites item:
-	  the next plain build of this project (IncrementalClean) would delete it. Framework projects
-	  carry the same target (Sources/Framework/Directory.Build.props).
-	-->
-	<Target Name="_NScriptWatchTargetPath"
-	        AfterTargets="CoreCompile"
-	        DependsOnTargets="GetTargetPathWithTargetPlatformMoniker"
-	        Condition="'$(NScriptWatch)' == 'true'">
-		<WriteLinesToFile File="$(IntermediateOutputPath)nscript.targetpath"
-		                  Lines="@(TargetPathWithTargetPlatformMoniker->'%(Identity)|%(ReferenceAssembly)|%(TargetPlatformMoniker)|%(TargetPlatformIdentifier)|%(TargetFrameworkIdentifier)|%(TargetFrameworkVersion)|%(CopyUpToDateMarker)')"
-		                  Overwrite="true"
-		                  WriteOnlyWhenDifferent="true" />
-	</Target>
+	<!-- _NScriptWatchTargetPath: the one writer of nscript.targetpath, shared with Sources/Framework (F-013). -->
+	<Import Project="$(MSBuildThisFileDirectory)NScript.WatchTargetPath.targets" />
 
 	<!--
 	  Synced: MSBuild would still evaluate every project reference (direct and transitive) to ask
