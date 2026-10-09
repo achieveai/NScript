@@ -94,6 +94,8 @@ Saves within a short debounce window form one batch.
 
 Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framework projects use `NScriptToolSet/bin/Debug/net8.0/nscript.exe`.
 
+With the NuGet packages, the toolset is the `Mcqdb.NScript.Cs2Jsc` tool, and its `Cs2Jsc` hosts the daemon. Run the commands as `dotnet Cs2Jsc cs2jsc service --status` (or `--stop`), from the folder whose tool manifest pins that version.
+
 | Command | Does | Exit code |
 |---|---|---|
 | `nscript service --status` | Prints pid, toolset, `LogPath`, `WatchLog`, watched projects and bundles, red projects, `WatchNeedsBuild`, last batch. Resets the idle timer. | 0; 1 = no daemon |

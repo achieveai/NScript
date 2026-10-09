@@ -27,8 +27,8 @@ namespace NScript.Csc.Lib.Service
         /// <summary>Held open (no sharing) by a daemon for the life of its shadow copy.</summary>
         public const string DaemonLockFile = ".daemon.lock";
 
-        private const string ExeName = "NScript.exe";
-        private const string DllName = "NScript.dll";
+        // The repo toolset hosts the daemon in NScript; the NuGet tool layout in Cs2Jsc.
+        private static readonly string[] HostNames = { "NScript", "Cs2Jsc" };
 
         /// <summary>
         /// Copies the runtime closure into <see cref="ServiceIdentity.ShadowDir"/> unless a
@@ -69,19 +69,24 @@ namespace NScript.Csc.Lib.Service
         }
 
         /// <summary>
-        /// Returns why this toolset cannot host a daemon (the NuGet Cs2Jsc layout ships no
-        /// NScript executable), or null when it can.
+        /// Returns why this toolset cannot host a daemon (no NScript or Cs2Jsc host), or null
+        /// when it can.
         /// </summary>
         public static string MissingDaemonReason(ServiceIdentity identity)
+            => HostPath(identity.ToolsetDir) == null ? "no " + string.Join(" or ", HostFileNames()) + " in " + identity.ToolsetDir : null;
+
+        /// <summary>The daemon host in <paramref name="dir"/>: an .exe on Windows, else a .dll; null when none.</summary>
+        public static string HostPath(string dir)
+            => HostFileNames().Select(name => Path.Combine(dir, name)).FirstOrDefault(File.Exists);
+
+        private static string[] HostFileNames()
         {
-            var name = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ExeName : DllName;
-            return File.Exists(Path.Combine(identity.ToolsetDir, name))
-                ? null
-                : "no " + name + " in " + identity.ToolsetDir;
+            var ext = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : ".dll";
+            return HostNames.Select(name => name + ext).ToArray();
         }
 
         /// <summary>
-        /// Starts <c>NScript.exe service</c> from <paramref name="shadowDir"/> for
+        /// Starts <c>NScript.exe service</c> (or <c>Cs2Jsc.exe service</c>) from <paramref name="shadowDir"/> for
         /// <paramref name="identity"/>. Returns the failure reason, or null on success.
         /// </summary>
         public static string Launch(ServiceIdentity identity, string shadowDir)
@@ -92,10 +97,10 @@ namespace NScript.Csc.Lib.Service
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var exe = Path.Combine(shadowDir, ExeName);
-                if (!File.Exists(exe))
+                var exe = HostPath(shadowDir);
+                if (exe == null)
                 {
-                    return "no " + ExeName + " in " + shadowDir;
+                    return "no " + string.Join(" or ", HostFileNames()) + " in " + shadowDir;
                 }
 
                 // Same recipe as Roslyn's VBCSCompiler launch (BuildServerConnection): no std
@@ -131,10 +136,10 @@ namespace NScript.Csc.Lib.Service
                 return null;
             }
 
-            var dll = Path.Combine(shadowDir, DllName);
-            if (!File.Exists(dll))
+            var dll = HostPath(shadowDir);
+            if (dll == null)
             {
-                return "no " + DllName + " in " + shadowDir;
+                return "no " + string.Join(" or ", HostFileNames()) + " in " + shadowDir;
             }
 
             var psi = new ProcessStartInfo

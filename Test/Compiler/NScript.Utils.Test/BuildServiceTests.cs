@@ -226,6 +226,30 @@ namespace NScript.Utils.Test
             }
         }
 
+        /// <summary>The NuGet tool layout ships Cs2Jsc and no NScript; it must still host a daemon.</summary>
+        [TestMethod]
+        public void DaemonHost_IsNScriptElseTheNuGetToolsCs2Jsc()
+        {
+            var ext = OperatingSystem.IsWindows() ? ".exe" : ".dll";
+            var dir = NewTempDir();
+            try
+            {
+                Assert.IsNull(ServiceLauncher.HostPath(dir));
+                StringAssert.Contains(ServiceLauncher.MissingDaemonReason(ServiceIdentity.FromKnown(dir, new string('0', 64))), "Cs2Jsc" + ext);
+
+                File.WriteAllText(Path.Combine(dir, "Cs2Jsc" + ext), string.Empty);
+                Assert.AreEqual(Path.Combine(dir, "Cs2Jsc" + ext), ServiceLauncher.HostPath(dir));
+                Assert.IsNull(ServiceLauncher.MissingDaemonReason(ServiceIdentity.FromKnown(dir, new string('0', 64))));
+
+                File.WriteAllText(Path.Combine(dir, "NScript" + ext), string.Empty);
+                Assert.AreEqual(Path.Combine(dir, "NScript" + ext), ServiceLauncher.HostPath(dir));
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
         [TestMethod]
         public void StaleShadowCleanup_DeletesOnlyOldUnlockedCopiesOfOtherBuilds()
         {
