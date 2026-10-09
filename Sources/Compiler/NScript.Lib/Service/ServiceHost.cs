@@ -248,7 +248,7 @@ namespace NScript.Lib.Service
         public static int Run(string[] args)
         {
             bool foreground = false, status = false, stop = false, force = false;
-            string? toolsetDir = null, toolsetHash = null, syncPath = null;
+            string? toolsetDir = null, toolsetHash = null, syncPath = null, buildProps = null;
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i].ToLowerInvariant())
@@ -258,11 +258,12 @@ namespace NScript.Lib.Service
                     case "--stop": stop = true; break;
                     case "--force": force = true; break;
                     case "--sync" when i + 1 < args.Length: syncPath = args[++i]; break;
+                    case "--build-props" when i + 1 < args.Length: buildProps = args[++i]; break;
                     case "--toolset-dir" when i + 1 < args.Length: toolsetDir = args[++i]; break;
                     case "--toolset-hash" when i + 1 < args.Length: toolsetHash = args[++i]; break;
                     default:
                         Console.Error.WriteLine("nscript service: unknown argument '{0}'", args[i]);
-                        Console.Error.WriteLine("Usage: nscript service [--foreground] | --status | --stop [--force] | --sync <obj dll>");
+                        Console.Error.WriteLine("Usage: nscript service [--foreground] | --status | --stop [--force] | --sync <obj dll> --build-props <hash>");
                         return 1;
                 }
             }
@@ -312,7 +313,7 @@ namespace NScript.Lib.Service
                     ServiceProtocol.KindSync,
                     reply,
                     wait + SyncReplyMargin,
-                    new[] { key, ((int)wait.TotalSeconds).ToString(CultureInfo.InvariantCulture) },
+                    new[] { key, ((int)wait.TotalSeconds).ToString(CultureInfo.InvariantCulture) }.Concat(buildProps == null ? Array.Empty<string>() : new[] { buildProps }).ToArray(),
                     noDaemon: () => DeleteDeadMarker(key, marker, identity.PipeName));
 
                 // The first line is the daemon's answer (it keeps it to file names) or this

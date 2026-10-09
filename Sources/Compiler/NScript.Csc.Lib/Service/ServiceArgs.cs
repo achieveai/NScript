@@ -32,6 +32,9 @@ namespace NScript.Csc.Lib.Service
         /// <summary>Environment variable with the project's MSBuild evaluation time in UTC ticks (D-F001).</summary>
         public const string WatchEvaluatedUtcTicksEnvVar = "NSCRIPT_WATCH_EVALUATED_UTC_TICKS";
 
+        /// <summary>Environment variable with the hash of the build's compile properties (F-017).</summary>
+        public const string WatchPropsHashEnvVar = "NSCRIPT_WATCH_PROPS_HASH";
+
         /// <summary>
         /// The evaluation time Sdk.targets passes, or null when absent (an older SDK). A value
         /// that is not a whole number of ticks fails: only the SDK writes it.

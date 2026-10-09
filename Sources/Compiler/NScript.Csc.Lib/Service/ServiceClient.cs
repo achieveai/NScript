@@ -32,11 +32,10 @@ namespace NScript.Csc.Lib.Service
         /// <param name="args">Args with the service flag already stripped.</param>
         /// <param name="toolName">Origin printed in the NSS001 warning (<c>csc</c> or <c>nscript</c>).</param>
         /// <param name="watch">Ask the daemon to record this request for watch mode.</param>
-        /// <param name="watchSdkDir">Compile only: the NScript.Sdk folder the project imports.</param>
-        /// <param name="watchEvaluatedUtcTicks">Compile only: when MSBuild evaluated the project (null: not known).</param>
         /// <returns>The daemon's exit code, or null when the caller must compile locally.</returns>
-        public static int? TryRun(string kind, string[] args, string toolName, bool watch = false, string watchSdkDir = null, long? watchEvaluatedUtcTicks = null)
+        public static int? TryRun(string kind, string[] args, string toolName, bool watch = false)
         {
+            var request = NewRequest(kind, args, watch);
             var log = CompilerLog.ForComponent("ServiceClient");
             var total = Stopwatch.StartNew();
             string reason;
@@ -89,16 +88,7 @@ namespace NScript.Csc.Lib.Service
                 }
                 else
                 {
-                    ServiceProtocol.WriteMessage(pipe, new ServiceRequest
-                    {
-                        Kind = kind,
-                        ClientPid = Environment.ProcessId,
-                        Cwd = Directory.GetCurrentDirectory(),
-                        Args = args,
-                        Watch = watch,
-                        WatchSdkDir = watchSdkDir,
-                        WatchEvaluatedUtcTicks = watchEvaluatedUtcTicks,
-                    });
+                    ServiceProtocol.WriteMessage(pipe, request);
 
                     var response = ServiceProtocol.ReadMessage<ServiceResponse>(pipe);
                     if (response == null)
@@ -141,6 +131,28 @@ namespace NScript.Csc.Lib.Service
                 "ServiceClient.Result {Mode} {Kind} Reason={Reason} HashMs={HashMs} ConnectMs={ConnectMs} ShadowCopyMs={ShadowCopyMs} LaunchMs={LaunchMs} TotalMs={TotalMs}",
                 "fallback", kind, reason, hashMs, connectMs, shadowCopyMs, launchMs, total.ElapsedMilliseconds);
             return null;
+        }
+
+        /// <summary>
+        /// The request <see cref="TryRun"/> sends. A watch compile also carries what Sdk.targets
+        /// put in csc's environment: the NScript.Sdk folder, the evaluation time and the
+        /// compile properties hash.
+        /// </summary>
+        public static ServiceRequest NewRequest(string kind, string[] args, bool watch)
+        {
+            bool watchCompile = watch && kind == ServiceProtocol.KindCompile;
+            string propsHash = watchCompile ? Environment.GetEnvironmentVariable(ServiceArgs.WatchPropsHashEnvVar) : null;
+            return new ServiceRequest
+            {
+                Kind = kind,
+                ClientPid = Environment.ProcessId,
+                Cwd = Directory.GetCurrentDirectory(),
+                Args = args,
+                Watch = watch,
+                WatchSdkDir = watchCompile ? Environment.GetEnvironmentVariable(ServiceArgs.WatchSdkDirEnvVar) : null,
+                WatchEvaluatedUtcTicks = watchCompile ? ServiceArgs.ReadWatchEvaluatedUtcTicks() : null,
+                WatchPropsHash = string.IsNullOrEmpty(propsHash) ? null : propsHash,
+            };
         }
 
         /// <summary>

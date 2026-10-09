@@ -334,6 +334,85 @@ namespace NScript.Utils.Test
             }
         }
 
+        /// <summary>
+        /// F-018: Sdk.targets passes the evaluation time as UTC ticks. Unset or empty is an SDK
+        /// that does not send it; anything else fails loudly, since only the SDK writes it.
+        /// </summary>
+        [TestMethod]
+        public void WatchEvaluatedUtcTicks_SetUnsetOrMalformed()
+        {
+            var saved = Environment.GetEnvironmentVariable(ServiceArgs.WatchEvaluatedUtcTicksEnvVar);
+            try
+            {
+                Environment.SetEnvironmentVariable(ServiceArgs.WatchEvaluatedUtcTicksEnvVar, "638000000000000000");
+                Assert.AreEqual(638000000000000000L, ServiceArgs.ReadWatchEvaluatedUtcTicks());
+
+                foreach (var unset in new[] { null, "" })
+                {
+                    Environment.SetEnvironmentVariable(ServiceArgs.WatchEvaluatedUtcTicksEnvVar, unset);
+                    Assert.IsNull(ServiceArgs.ReadWatchEvaluatedUtcTicks(), unset ?? "<unset>");
+                }
+
+                foreach (var bad in new[] { "soon", "-5", "1.5", " 7", "99999999999999999999" })
+                {
+                    Environment.SetEnvironmentVariable(ServiceArgs.WatchEvaluatedUtcTicksEnvVar, bad);
+                    var error = Assert.ThrowsException<ArgumentException>(() => ServiceArgs.ReadWatchEvaluatedUtcTicks(), bad);
+                    StringAssert.Contains(error.Message, "'" + bad + "'");
+                }
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(ServiceArgs.WatchEvaluatedUtcTicksEnvVar, saved);
+            }
+        }
+
+        /// <summary>
+        /// F-017, F-018: a watch compile request carries what Sdk.targets put in csc's environment:
+        /// the SDK folder, the evaluation time and the compile properties hash. Other requests
+        /// carry none, and an unset hash is sent as none (the daemon then never answers yes).
+        /// </summary>
+        [TestMethod]
+        public void NewRequest_WatchCompile_CarriesSdkDirEvaluationTicksAndPropsHash()
+        {
+            var names = new[] { ServiceArgs.WatchSdkDirEnvVar, ServiceArgs.WatchEvaluatedUtcTicksEnvVar, ServiceArgs.WatchPropsHashEnvVar };
+            var saved = names.Select(Environment.GetEnvironmentVariable).ToArray();
+            try
+            {
+                Environment.SetEnvironmentVariable(ServiceArgs.WatchSdkDirEnvVar, @"C:\sdk");
+                Environment.SetEnvironmentVariable(ServiceArgs.WatchEvaluatedUtcTicksEnvVar, "638000000000000000");
+                Environment.SetEnvironmentVariable(ServiceArgs.WatchPropsHashEnvVar, "-1234");
+                var args = new[] { "a.cs" };
+
+                var compile = ServiceClient.NewRequest(ServiceProtocol.KindCompile, args, watch: true);
+                Assert.IsTrue(compile.Watch);
+                CollectionAssert.AreEqual(args, compile.Args);
+                Assert.AreEqual(@"C:\sdk", compile.WatchSdkDir);
+                Assert.AreEqual(638000000000000000L, compile.WatchEvaluatedUtcTicks);
+                Assert.AreEqual("-1234", compile.WatchPropsHash);
+
+                foreach (var (name, other) in new[]
+                {
+                    ("not watch", ServiceClient.NewRequest(ServiceProtocol.KindCompile, args, watch: false)),
+                    ("emit", ServiceClient.NewRequest(ServiceProtocol.KindEmitJs, args, watch: true)),
+                })
+                {
+                    Assert.IsNull(other.WatchSdkDir, name);
+                    Assert.IsNull(other.WatchEvaluatedUtcTicks, name);
+                    Assert.IsNull(other.WatchPropsHash, name);
+                }
+
+                Environment.SetEnvironmentVariable(ServiceArgs.WatchPropsHashEnvVar, null);
+                Assert.IsNull(ServiceClient.NewRequest(ServiceProtocol.KindCompile, args, watch: true).WatchPropsHash, "unset");
+            }
+            finally
+            {
+                for (int i = 0; i < names.Length; i++)
+                {
+                    Environment.SetEnvironmentVariable(names[i], saved[i]);
+                }
+            }
+        }
+
         [TestMethod]
         public void Daemon_InternalError_IsReported_StateRestored_AndKeepsServing()
         {
@@ -534,6 +613,24 @@ namespace NScript.Utils.Test
             CollectionAssert.AreEqual(new[] { key, "30" }, seen.Args);
         }
 
+        /// <summary>F-017: <c>--build-props</c> (Sdk.targets' compile properties hash) reaches the daemon as the third argument.</summary>
+        [TestMethod]
+        [Timeout(5000)]
+        public void SyncClient_BuildProps_IsTheThirdArgument()
+        {
+            var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
+            var key = Path.Combine(NewTempDir(), "obj", "A.dll");
+            ServiceRequest seen = null;
+            RunSyncClient(identity, key, server =>
+            {
+                seen = ServiceProtocol.ReadMessage<ServiceRequest>(server);
+                ServiceProtocol.WriteMessage(server, new ServiceResponse { ExitCode = ServiceHost.SyncExitNo, Message = "nscript service: sync no A.dll" });
+            }, out int exitCode, "--build-props", "-1234");
+
+            Assert.AreEqual(ServiceHost.SyncExitNo, exitCode);
+            CollectionAssert.AreEqual(new[] { key, "30", "-1234" }, seen.Args);
+        }
+
         /// <summary>S2: a daemon that hangs up without a reply is a no (exit 1) with one line saying so.</summary>
         [TestMethod]
         [Timeout(5000)]
@@ -635,7 +732,7 @@ namespace NScript.Utils.Test
         /// and returns what it printed. With <paramref name="daemon"/>, a fake daemon on the
         /// identity's pipe serves the one connection.
         /// </summary>
-        private static string RunSyncClient(ServiceIdentity identity, string key, Action<Stream> daemon, out int exitCode)
+        private static string RunSyncClient(ServiceIdentity identity, string key, Action<Stream> daemon, out int exitCode, params string[] extraArgs)
         {
             System.Threading.Tasks.Task served = System.Threading.Tasks.Task.CompletedTask;
             System.IO.Pipes.NamedPipeServerStream server = null;
@@ -661,7 +758,7 @@ namespace NScript.Utils.Test
             Console.SetOut(output);
             try
             {
-                exitCode = ServiceHost.Run(new[] { "--sync", key, "--toolset-dir", identity.ToolsetDir, "--toolset-hash", identity.ToolsetHash });
+                exitCode = ServiceHost.Run(new[] { "--sync", key, "--toolset-dir", identity.ToolsetDir, "--toolset-hash", identity.ToolsetHash }.Concat(extraArgs).ToArray());
             }
             finally
             {
@@ -1388,6 +1485,83 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// F-017: the daemon replays the command line of the watch build that registered a
+        /// project, so a sync from a build with other compile properties, or none, answers no.
+        /// The sequence: a watch build with -p:DefineConstants=X whose compile never registers
+        /// (an internal error, so csc compiled locally), then plain X builds, the first of which
+        /// rewrote the obj DLL. Each must build in full, never take the old properties' DLL.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Sync_BuildPropsDifferFromTheRegisteredWatchBuild_AnswersNo()
+        {
+            string daemons = typeof(BuildServiceTests).Assembly.Location;
+            string anotherBuilds = typeof(Assert).Assembly.Location;
+            int failCompile = 0;
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (Volatile.Read(ref failCompile) == 1)
+                {
+                    return new ServiceResponse { InternalError = true, Message = "injected" };
+                }
+
+                var dll = Path.Combine(request.Cwd, "obj", "A.dll");
+                Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                File.Copy(daemons, dll, overwrite: true);
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                watch.Register("A.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(key).ExitCode, "control: the watch build's properties");
+
+                Volatile.Write(ref failCompile, 1);
+                watch.RegisterWithProps(watch.Project, "props-X", "A.cs");
+                Volatile.Write(ref failCompile, 0);
+                foreach (var step in new[] { "first X build", "X build after it rewrote the obj DLL" })
+                {
+                    var plainX = watch.SyncWithProps(key, "props-X");
+                    Assert.AreEqual(ServiceHost.SyncExitNo, plainX.ExitCode, step + ": " + plainX.Message);
+                    StringAssert.Contains(plainX.Message, "sync no A.dll: build properties differ from the watch build (", step);
+                    File.Copy(anotherBuilds, key, overwrite: true);
+                }
+
+                var none = watch.SyncArgs(key, "10");
+                Assert.AreEqual(ServiceHost.SyncExitNo, none.ExitCode, "no hash: " + none.Message);
+                StringAssert.Contains(none.Message, "build properties differ from the watch build");
+
+                watch.RegisterWithProps(watch.Project, "props-X", "A.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.SyncWithProps(key, "props-X").ExitCode, "control: an X watch build registered");
+                Assert.AreEqual(ServiceHost.SyncExitNo, watch.Sync(key).ExitCode, "the old properties now differ");
+            }
+        }
+
+        /// <summary>
+        /// F-017: a yes also vouches for the daemon's outputs of the projects the key reads, so
+        /// one registered again by a watch build with other properties (that build stopped
+        /// before the key's compile) answers no until the key registers again.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Sync_ReadProjectRegisteredAgainWithOtherProps_AnswersNo()
+        {
+            using var watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 });
+            var bKey = Path.Combine(watch.Dependent, "obj", "B.dll");
+            watch.Register("A.cs");
+            watch.RegisterIn(watch.Dependent, "B.cs");
+            Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(bKey).ExitCode, "control: one watch build");
+
+            watch.RegisterWithProps(watch.Project, "props-X", "A.cs");
+            var answer = watch.Sync(bKey);
+            Assert.AreEqual(ServiceHost.SyncExitNo, answer.ExitCode, answer.Message);
+            StringAssert.Contains(answer.Message, "sync no B.dll: build properties differ from the watch build: A.dll was registered again with other properties (");
+
+            watch.Register("A.cs");
+            Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(bKey).ExitCode, "control: A registered again with B's properties");
+        }
+
+        /// <summary>
         /// S2: sync answers no, never yes, for a key it does not watch (with the watched key
         /// when only the folder is wrong, in full: the path is the hint) and for bad arguments.
         /// With the watcher's .cs events lost, a new source file and a deleted input are still
@@ -1656,7 +1830,7 @@ namespace NScript.Utils.Test
                         Kind = ServiceProtocol.KindSync,
                         ClientPid = Environment.ProcessId,
                         Cwd = watch.Project,
-                        Args = new[] { key, "10" },
+                        Args = new[] { key, "10", WatchHost.Props },
                     });
                     watch.Host.RequestStop("test");
                     var stopping = ServiceProtocol.ReadMessage<ServiceResponse>(pipe);
@@ -1880,6 +2054,9 @@ namespace NScript.Utils.Test
         /// </summary>
         private sealed class WatchHost : IDisposable
         {
+            /// <summary>The compile properties hash <see cref="Register"/> and <see cref="Sync"/> send.</summary>
+            public const string Props = "props-hash";
+
             private readonly string pipeName = "nscript-test-" + Guid.NewGuid().ToString("N");
 
             public WatchHost(Func<ServiceRequest, ServiceResponse> run, string toolsetHash = null, TimeSpan? registrationQuiet = null, string[] dropWatchEvents = null)
@@ -1930,7 +2107,12 @@ namespace NScript.Utils.Test
             public void RegisterIn(string cwd, params string[] args) => this.RegisterEvaluatedAt(cwd, null, args);
 
             /// <summary>A registration whose MSBuild evaluation ran at <paramref name="evaluatedUtc"/> (null: an SDK that does not say).</summary>
-            public void RegisterEvaluatedAt(string cwd, DateTime? evaluatedUtc, params string[] args)
+            public void RegisterEvaluatedAt(string cwd, DateTime? evaluatedUtc, params string[] args) => this.RegisterCore(cwd, evaluatedUtc, Props, args);
+
+            /// <summary>A registration from a watch build whose compile properties hash to <paramref name="props"/> (null: not sent).</summary>
+            public void RegisterWithProps(string cwd, string props, params string[] args) => this.RegisterCore(cwd, null, props, args);
+
+            private void RegisterCore(string cwd, DateTime? evaluatedUtc, string props, string[] args)
             {
                 var response = Send(this.pipeName, new ServiceRequest
                 {
@@ -1940,6 +2122,7 @@ namespace NScript.Utils.Test
                     Args = args,
                     Watch = true,
                     WatchEvaluatedUtcTicks = evaluatedUtc?.Ticks,
+                    WatchPropsHash = props,
                 });
                 Assert.AreEqual(0, response.ExitCode, response.Message);
                 this.Registered++;
@@ -1965,7 +2148,10 @@ namespace NScript.Utils.Test
             public string PipeName => this.pipeName;
 
             /// <summary>The <c>--sync</c> request for the obj DLL <paramref name="key"/>, waiting at most <paramref name="waitSeconds"/>.</summary>
-            public ServiceResponse Sync(string key, string waitSeconds = "10") => this.SyncArgs(key, waitSeconds);
+            public ServiceResponse Sync(string key, string waitSeconds = "10") => this.SyncArgs(key, waitSeconds, Props);
+
+            /// <summary>The <c>--sync</c> request of a build whose compile properties hash to <paramref name="props"/>.</summary>
+            public ServiceResponse SyncWithProps(string key, string props) => this.SyncArgs(key, "10", props);
 
             /// <summary>A <c>--sync</c> request with exactly <paramref name="args"/>.</summary>
             public ServiceResponse SyncArgs(params string[] args) => Send(this.pipeName, ServiceProtocol.KindSync, this.Project, args);

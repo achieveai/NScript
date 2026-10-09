@@ -1,0 +1,29 @@
+﻿<Project>
+	<!--
+	  The compile properties of a watch build (F-002, F-017). The daemon replays the csc command line of
+	  the watch build that registered a project, so a build may take the daemon's outputs only when the
+	  properties that change what csc writes, or whether it fails, are the same (-p:DefineConstants=X,
+	  -p:TreatWarningsAsErrors=true are not). This is the one list: add a property here when it changes
+	  what csc writes or whether it fails. Hashed, so values with ';' or line breaks compare whole.
+	  The watch compile sends the hash (NSCRIPT_WATCH_PROPS_HASH) and the daemon keeps it on the
+	  registration; _NScriptWatchSync (Sdk.targets) asks with it (its build-props argument). The daemon
+	  answers no when it differs from the key's, or a project the key reads was registered again with
+	  another. Sdk.targets and Sources/Framework/Directory.Build.props both import this file.
+	  Evaluated where imported, never in a target: targets such as PrepareForBuild add the implicit
+	  DefineConstants between the sync (BeforeBuild) and the compile, so a target would hash other values
+	  in the two. Sdk.targets imports it after the project body. The framework imports it from its
+	  Directory.Build.props, before the body: the hash misses the body's own values (edits to them are
+	  build-file changes anyway) but holds every -p: value.
+	-->
+	<PropertyGroup>
+		<_NScriptWatchPropsHash>$([MSBuild]::StableStringHash('DefineConstants=$(DefineConstants)|TreatWarningsAsErrors=$(TreatWarningsAsErrors)|WarningsAsErrors=$(WarningsAsErrors)|WarningsNotAsErrors=$(WarningsNotAsErrors)|NoWarn=$(NoWarn)|Optimize=$(Optimize)|LangVersion=$(LangVersion)|Nullable=$(Nullable)|CheckForOverflowUnderflow=$(CheckForOverflowUnderflow)|AllowUnsafeBlocks=$(AllowUnsafeBlocks)|DebugType=$(DebugType)|DebugSymbols=$(DebugSymbols)'))</_NScriptWatchPropsHash>
+	</PropertyGroup>
+
+	<Target Name="_NScriptWatchPropsEnvironment"
+	        BeforeTargets="CoreCompile"
+	        Condition="'$(NScriptWatch)' == 'true'">
+		<PropertyGroup>
+			<CscEnvironment>$(CscEnvironment);NSCRIPT_WATCH_PROPS_HASH=$(_NScriptWatchPropsHash)</CscEnvironment>
+		</PropertyGroup>
+	</Target>
+</Project>

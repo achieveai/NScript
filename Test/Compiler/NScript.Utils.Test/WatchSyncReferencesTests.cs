@@ -4,7 +4,9 @@ namespace NScript.Utils.Test
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NScript.Csc.Lib.Service;
     using NScript.Lib.Service;
 
     /// <summary>
@@ -41,6 +43,9 @@ namespace NScript.Utils.Test
             "  <Target Name=\"Dump\">\n" +
             "    <WriteLinesToFile File=\"$(DumpFile)\" Lines=\"@(_ResolvedProjectReferencePaths->'" + Fields + "')\" Overwrite=\"true\" />\n" +
             "  </Target>\n" +
+            "  <Target Name=\"DumpEnvironment\">\n" +
+            "    <WriteLinesToFile File=\"$(DumpFile)\" Lines=\"$(CscEnvironment)\" Overwrite=\"true\" />\n" +
+            "  </Target>\n" +
             "</Project>\n";
 
         // Distinct global properties per step give each step a fresh evaluation in one MSBuild run.
@@ -53,8 +58,6 @@ namespace NScript.Utils.Test
             "    <MSBuild Projects=\"Lib\\Lib.proj\" Targets=\"_NScriptWatchTargetPath;IncrementalClean\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true\" SkipNonexistentTargets=\"true\" />\n" +
             "    <MSBuild Projects=\"Lib\\Lib.proj\" Targets=\"IncrementalClean\" Properties=\"SdkDir=$(SdkDir);Step=5\" />\n" +
             "    <MSBuild Projects=\"App\\App.proj\" Targets=\"ResolveProjectReferences;Dump\" Properties=\"SdkDir=$(SdkDir);Step=2;NScriptWatchSync=false;BuildProjectReferences=false;DumpFile=$(MSBuildThisFileDirectory)off.txt\" />\n" +
-            // The app's own watch build records its compile properties (F-002).
-            "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchPropsRecord\" Properties=\"SdkDir=$(SdkDir);Step=6;NScriptWatch=true;NScriptWatchSync=false\" />\n" +
             "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;ResolveProjectReferences;Dump\" Properties=\"SdkDir=$(SdkDir);Step=3;DumpFile=$(MSBuildThisFileDirectory)synced.txt\" />\n" +
             "    <Delete Files=\"Lib\\obj\\Debug\\netstandard2.1\\nscript.targetpath\" />\n" +
             "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;ResolveProjectReferences;Dump\" Properties=\"SdkDir=$(SdkDir);Step=4;BuildProjectReferences=false;DumpFile=$(MSBuildThisFileDirectory)unrecorded.txt\" />\n" +
@@ -88,31 +91,49 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
-        /// F-002: the daemon replays the watch build's csc command line, so a build that asks with
-        /// other compile properties must build in full, never take the daemon's output. No record
-        /// (a watch build from before the record existed) counts as a difference.
+        /// F-002, F-017, F-018: the daemon replays the watch build's csc command line and answers
+        /// no to a sync whose compile properties hash differs from the one the watch compile
+        /// sent. So the hash a watch compile sends (csc's environment) must equal the hash a build
+        /// with the same properties syncs with, and differ for -p:TreatWarningsAsErrors=true and
+        /// -p:DefineConstants=X. The watch compile also gets its evaluation time in UTC ticks.
         /// </summary>
         [TestMethod]
         [TestCategory("Integration")] // One dotnet msbuild run (~5-10 s).
-        public void SyncedBuild_CompilePropertiesDifferFromWatchBuild_BuildsInFull()
+        public void WatchCompileAndSync_SendTheSameBuildPropsHash_OtherPropertiesDiffer()
         {
+            // The watch steps run PrepareForBuild first, as a real build does before CoreCompile. It
+            // adds the implicit DefineConstants (NETSTANDARD2_1, ...) after the sync has asked.
             const string driver =
                 "<Project>\n" +
                 "  <Target Name=\"Run\">\n" +
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Restore\" Properties=\"SdkDir=$(SdkDir);Step=0\" />\n" +
-                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchPropsRecord\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true;NScriptWatchSync=false\" SkipNonexistentTargets=\"true\" />\n" +
-                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=2\" />\n" +
-                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=3;TreatWarningsAsErrors=true\" />\n" +
-                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=4;DefineConstants=X\" />\n" +
-                "    <Delete Files=\"App\\obj\\Debug\\netstandard2.1\\nscript.watchprops\" />\n" +
-                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=5\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"PrepareForBuild;_NScriptWatchPropsEnvironment;DumpEnvironment\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true;DumpFile=$(MSBuildThisFileDirectory)watch.txt\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=2;NScriptExe=$(MSBuildThisFileDirectory)props-nscript.cmd\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=3;NScriptExe=$(MSBuildThisFileDirectory)props-nscript.cmd;TreatWarningsAsErrors=true\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=4;NScriptExe=$(MSBuildThisFileDirectory)props-nscript.cmd;DefineConstants=X\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"PrepareForBuild;_NScriptWatchPropsEnvironment;DumpEnvironment\" Properties=\"SdkDir=$(SdkDir);Step=5;NScriptWatch=true;DefineConstants=X;DumpFile=$(MSBuildThisFileDirectory)watchX.txt\" />\n" +
                 "  </Target>\n" +
                 "</Project>\n";
             using var tree = new SyncTree(driver);
+            File.WriteAllText(
+                Path.Combine(tree.Dir, "props-nscript.cmd"),
+                "@echo off\r\necho nscript service: sync no App.dll: props=%~5\r\nexit /b 1\r\n");
             string output = tree.Run();
 
-            Assert.AreEqual(1, Count(output, "NScript watch: App current, skipped"), "control: the same properties sync\n" + output);
-            Assert.AreEqual(3, Count(output, "NScript watch: full build (build properties differ from the watch build)"), output);
+            string[] synced = Regex.Matches(output, @"NScript watch: full build \(nscript service: sync no App\.dll: props=(-?\d+)\)")
+                .Select(m => m.Groups[1].Value)
+                .ToArray();
+            Assert.AreEqual(3, synced.Length, output);
+            string[] watch = File.ReadAllLines(Path.Combine(tree.Dir, "watch.txt"));
+            Assert.AreEqual(1, watch.Count(l => l == ServiceArgs.WatchPropsHashEnvVar + "=" + synced[0]), "the same properties: one hash\n" + string.Join("\n", watch));
+            Assert.AreNotEqual(synced[0], synced[1], "TreatWarningsAsErrors=true");
+            Assert.AreNotEqual(synced[0], synced[2], "DefineConstants=X");
+            Assert.AreNotEqual(synced[1], synced[2]);
+            Assert.AreEqual(1, File.ReadAllLines(Path.Combine(tree.Dir, "watchX.txt")).Count(l => l == ServiceArgs.WatchPropsHashEnvVar + "=" + synced[2]), "an X watch compile sends the X hash");
+
+            string ticks = watch.Single(l => l.StartsWith(ServiceArgs.WatchEvaluatedUtcTicksEnvVar + "=", StringComparison.Ordinal)).Split('=')[1];
+            var evaluated = new DateTime(long.Parse(ticks, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture), DateTimeKind.Utc);
+            Assert.IsTrue((DateTime.UtcNow - evaluated).Duration() < TimeSpan.FromMinutes(5), "evaluation time in UTC ticks: " + evaluated.ToString("o"));
         }
 
         /// <summary>
@@ -129,7 +150,6 @@ namespace NScript.Utils.Test
                 "<Project>\n" +
                 "  <Target Name=\"Run\">\n" +
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Restore\" Properties=\"SdkDir=$(SdkDir);Step=0\" />\n" +
-                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchPropsRecord\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true;NScriptWatchSync=false\" SkipNonexistentTargets=\"true\" />\n" +
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=2;NScriptExe=$(MSBuildThisFileDirectory)busy-nscript.cmd\" />\n" +
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;_NScriptCheckJsMode\" Properties=\"SdkDir=$(SdkDir);Step=3\" />\n" +
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;_NScriptCheckJsMode\" Properties=\"SdkDir=$(SdkDir);Step=4;NScriptExe=$(MSBuildThisFileDirectory)foreign-nscript.cmd\" />\n" +

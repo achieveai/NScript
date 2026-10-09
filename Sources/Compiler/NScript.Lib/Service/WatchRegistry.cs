@@ -35,8 +35,9 @@ namespace NScript.Lib.Service
     /// <summary>A stage-1 compile recorded for watch mode, keyed by its full output path.</summary>
     public sealed class ProjectRecord
     {
-        internal ProjectRecord(string cwd, string[] args, CompileInputs inputs, string? sdkDir, long seq)
+        internal ProjectRecord(string cwd, string[] args, CompileInputs inputs, string? sdkDir, long seq, string? propsHash)
         {
+            this.PropsHash = propsHash;
             this.Cwd = Path.TrimEndingDirectorySeparator(Path.GetFullPath(cwd));
             this.Args = args;
             this.Inputs = inputs;
@@ -61,6 +62,12 @@ namespace NScript.Lib.Service
         public string? SdkDir { get; }
 
         public long Seq { get; }
+
+        /// <summary>The compile properties hash of the watch build that registered this project (null: not sent).</summary>
+        public string? PropsHash { get; }
+
+        /// <summary>At registration: the <see cref="PropsHash"/> of each registered project this one reads, by key.</summary>
+        public IReadOnlyDictionary<string, string?> ReadPropsHashes { get; internal set; } = new Dictionary<string, string?>();
 
         /// <summary>Content hashes the latest compile attempt saw (refreshed after every attempt).</summary>
         public Dictionary<string, string> Hashes { get; private set; }
@@ -260,9 +267,10 @@ namespace NScript.Lib.Service
             string? sdkDir,
             IEnumerable<string> existingSourceFiles,
             IReadOnlyDictionary<string, string> buildFiles,
-            ChangedSinceEvaluation? sinceEvaluation = null)
+            ChangedSinceEvaluation? sinceEvaluation = null,
+            string? propsHash = null)
         {
-            var record = new ProjectRecord(cwd, replayArgs, inputs, sdkDir, ++this.seq);
+            var record = new ProjectRecord(cwd, replayArgs, inputs, sdkDir, ++this.seq, propsHash);
             var late = new HashSet<string>(sinceEvaluation?.SourceFiles ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             late.ExceptWith(record.InputSet);
             foreach (var file in existingSourceFiles)
@@ -300,7 +308,41 @@ namespace NScript.Lib.Service
             this.SetResult(record.Key, exitCode);
             this.RecordWritten(record.Key);
             this.RefreshCopyEdges(record.Key);
+            record.ReadPropsHashes = this.DependenciesOf(record).ToDictionary(p => p.Key, p => p.PropsHash, StringComparer.OrdinalIgnoreCase);
             return record;
+        }
+
+        /// <summary>
+        /// Why a build whose compile properties hash to <paramref name="propsHash"/> must not
+        /// take the daemon's outputs for <paramref name="projectKey"/>, or null when it may (F-017).
+        /// The daemon replays each watch build's command line, so the key must have registered
+        /// with that hash, and every project it reads must still have the hash it had then: a
+        /// watch build with other properties that stopped before the key registered them again.
+        /// A missing hash on either side is a difference.
+        /// </summary>
+        public string? PropsBlocker(string projectKey, string? propsHash)
+        {
+            if (!this.projects.TryGetValue(projectKey, out var project))
+            {
+                return "not watched";
+            }
+
+            if (string.IsNullOrEmpty(propsHash) || project.PropsHash != propsHash)
+            {
+                return "build properties differ from the watch build";
+            }
+
+            foreach (var dependency in this.DependenciesOf(project).OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                if (dependency.PropsHash == null
+                    || !project.ReadPropsHashes.TryGetValue(dependency.Key, out var seen)
+                    || seen != dependency.PropsHash)
+                {
+                    return $"build properties differ from the watch build: {dependency.Name} was registered again with other properties";
+                }
+            }
+
+            return null;
         }
 
         /// <summary>Records an emit request (Watch=true). Replaces an earlier record for the same -outJs.</summary>

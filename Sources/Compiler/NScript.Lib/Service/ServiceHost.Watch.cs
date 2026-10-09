@@ -286,14 +286,14 @@ namespace NScript.Lib.Service
                 ProjectRecord record;
                 lock (this.watchGate)
                 {
-                    record = this.registry.RegisterCompile(request.Cwd, replayArgs, inputs, response.ExitCode, request.WatchSdkDir, existing, buildFiles, sinceEvaluation);
+                    record = this.registry.RegisterCompile(request.Cwd, replayArgs, inputs, response.ExitCode, request.WatchSdkDir, existing, buildFiles, sinceEvaluation, request.WatchPropsHash);
                 }
 
                 // Kept while watching, red included (--sync answers that); deleted when watch stops.
                 this.WriteWatchMarker(record.Key);
 
                 log.Information(
-                    "WatchRegister Kind={Kind} Key={Key} Inputs={Inputs} Outputs={Outputs} References={References} BuildFiles={BuildFiles} ExitCode={ExitCode} EvaluatedUtc={EvaluatedUtc} NewSinceEvaluation={NewSinceEvaluation} BuildFilesSinceEvaluation={BuildFilesSinceEvaluation}",
+                    "WatchRegister Kind={Kind} Key={Key} Inputs={Inputs} Outputs={Outputs} References={References} BuildFiles={BuildFiles} ExitCode={ExitCode} EvaluatedUtc={EvaluatedUtc} NewSinceEvaluation={NewSinceEvaluation} BuildFilesSinceEvaluation={BuildFilesSinceEvaluation} PropsHash={PropsHash}",
                     request.Kind,
                     record.Key,
                     record.Inputs.Sources.Count + record.Inputs.Resources.Count,
@@ -303,7 +303,8 @@ namespace NScript.Lib.Service
                     response.ExitCode,
                     evaluated,
                     sinceEvaluation?.SourceFiles,
-                    sinceEvaluation?.BuildFiles);
+                    sinceEvaluation?.BuildFiles,
+                    request.WatchPropsHash);
                 this.WatchLog("register compile {0} ({1} inputs, exit {2})", record.Name, record.Inputs.Sources.Count + record.Inputs.Resources.Count, response.ExitCode);
                 this.UpdateWatchers();
                 this.ArmBatchIfStillDirty(record.Name);
@@ -452,8 +453,11 @@ namespace NScript.Lib.Service
         /// written then. A file that tunnels an older creation time still has a new write time.
         /// File times come from the coarse system clock (one tick is ~15.6 ms), MSBuild's
         /// evaluation time from the precise one, so the cut is <see cref="EvaluationClockSlack"/>
-        /// earlier: an edit that close before evaluation counts as after (a needless NEEDS BUILD),
-        /// never the other way round (a wrong yes).
+        /// earlier: an edit that close before evaluation counts as after (a needless NEEDS BUILD).
+        /// Known gap, a wrong yes: a file moved in from the same volume, or copied with its times
+        /// kept, after evaluation carries both times from before it. It counts as there at
+        /// evaluation, so the registration vouches for a build that never saw it, until the file
+        /// is written again.
         /// </summary>
         private static ChangedSinceEvaluation ChangedSince(DateTime evaluated, string projectDir, string? sdkDir)
         {
@@ -1389,7 +1393,8 @@ namespace NScript.Lib.Service
 
         /// <summary>
         /// <c>--sync</c>: whether the project whose obj DLL is <c>Args[0]</c>, the projects it
-        /// reads and the bundles that include it are current. Files in their project folders
+        /// reads and the bundles that include it are current, for a build whose compile
+        /// properties hash to <c>Args[2]</c> (<see cref="WatchRegistry.PropsBlocker"/>; absent: no). Files in their project folders
         /// the watch has not seen (new source files, deleted inputs) are queued like watcher
         /// events, and the answer waits, at most <c>Args[1]</c> seconds, until the watch loop
         /// has run everything queued, including the recompile of an obj DLL another build
@@ -1400,7 +1405,7 @@ namespace NScript.Lib.Service
         private ServiceResponse Sync(ServiceRequest request)
         {
             var clock = Stopwatch.StartNew();
-            if (request.Args == null || request.Args.Length != 2
+            if (request.Args == null || request.Args.Length < 2 || request.Args.Length > 3
                 || !int.TryParse(request.Args[1], out int waitSeconds) || waitSeconds <= 0)
             {
                 return SyncResponse(SyncExitNo, "nscript service: sync needs <obj dll> <wait seconds>");
@@ -1408,10 +1413,11 @@ namespace NScript.Lib.Service
 
             string key = Path.GetFullPath(request.Args[0], string.IsNullOrEmpty(request.Cwd) ? Directory.GetCurrentDirectory() : request.Cwd);
             List<ProjectRecord>? closure;
-            string? sameName;
+            string? sameName, propsBlocker;
             lock (this.watchGate)
             {
                 closure = this.registry.SyncClosure(key)?.ToList();
+                propsBlocker = closure == null ? null : this.registry.PropsBlocker(key, request.Args.Length == 3 ? request.Args[2] : null);
                 sameName = this.registry.Projects
                     .FirstOrDefault(p => string.Equals(p.Name, Path.GetFileName(key), StringComparison.OrdinalIgnoreCase))?.Key;
             }
@@ -1425,6 +1431,11 @@ namespace NScript.Lib.Service
                 (exitCode, reason) = (SyncExitNo, sameName == null
                     ? "not watched (pass the obj DLL csc writes)"
                     : "not watched; the watched key for that name is " + sameName);
+            }
+            else if (propsBlocker != null)
+            {
+                // Before any wait: the daemon's outputs are another command line's, current or not.
+                (exitCode, reason) = (SyncExitNo, propsBlocker);
             }
             else if (!TryFindUnseenFiles(closure, unseen, out var listFailure))
             {

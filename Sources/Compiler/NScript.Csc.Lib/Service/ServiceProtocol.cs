@@ -46,6 +46,14 @@ namespace NScript.Csc.Lib.Service
         /// the registration must not vouch for. Null from an SDK that does not send it.
         /// </summary>
         public long? WatchEvaluatedUtcTicks { get; set; }
+
+        /// <summary>
+        /// Compile requests in watch mode: the hash of the compile properties the build ran
+        /// with (Sdk.targets <c>_NScriptWatchPropsHash</c>). A sync must ask with the same hash,
+        /// since the daemon replays this request's command line. Null from an SDK that does
+        /// not send it; such a registration never answers a sync yes.
+        /// </summary>
+        public string WatchPropsHash { get; set; }
     }
 
     /// <summary>

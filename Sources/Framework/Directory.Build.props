@@ -59,6 +59,8 @@
 
   <!-- This project's GetTargetPath item, for synced builds of its readers: the SDK's one writer. -->
   <Import Project="$(MSBuildThisFileDirectory)../Compiler/NScript.Sdk/Sdk/NScript.WatchTargetPath.targets" />
+  <!-- The compile properties hash a watch compile sends; a project reading this one syncs only while it is unchanged. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Compiler/NScript.Sdk/Sdk/NScript.WatchProps.targets" />
 
   <Target Name="EnsureNScriptToolsetBuilt"
           BeforeTargets="CoreCompile"

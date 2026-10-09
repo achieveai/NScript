@@ -63,17 +63,19 @@ Saves within a short debounce window form one batch.
 ## `dotnet build` while watching
 
 - The daemon keeps a marker, `nscript.watch`, next to each watched project's obj DLL (`obj/<Config>/<TFM>/`).
-- A build that finds the marker runs `nscript service --sync <obj dll>` before `BeforeBuild`.
+- A build that finds the marker runs `nscript service --sync <obj dll> --build-props <hash>` before `BeforeBuild`.
 - **Yes** (exit 0): the daemon built this project, its references and its JS.
   - MSBuild skips the project-reference builds and reads the references the daemon vouched for.
   - It keeps the daemon's JS, unless another build rewrote it.
   - Message: `NScript watch: <App> current, skipped <N> project builds`.
 - **No** (exit 1), **busy** (exit 2) or no daemon: today's full build.
   - Message: `NScript watch: full build (<reason>)`.
-- **Other compile properties: not asked.** The daemon replays the watch build's compiler command line. So a build may sync only with the same compile-affecting properties.
-  - The list is `_NScriptWatchBuildProps` in Sdk.targets: `DefineConstants`, `TreatWarningsAsErrors`, `WarningsAsErrors`, `WarningsNotAsErrors`, `NoWarn`, `Optimize`, `LangVersion`, `Nullable`, `CheckForOverflowUnderflow`, `AllowUnsafeBlocks`, `DebugType`, `DebugSymbols`.
-  - The watch build records a hash of them in `obj/<Config>/<TFM>/nscript.watchprops`.
-  - A different value (`-p:DefineConstants=X`, `-p:TreatWarningsAsErrors=true`), or no record, builds in full: `NScript watch: full build (build properties differ from the watch build)`.
+- **Other compile properties: no.** The daemon replays the watch build's compiler command line. So a build may sync only with the same compile-affecting properties.
+  - The list is `_NScriptWatchPropsHash` in `NScript.WatchProps.targets` (next to Sdk.targets): `DefineConstants`, `TreatWarningsAsErrors`, `WarningsAsErrors`, `WarningsNotAsErrors`, `NoWarn`, `Optimize`, `LangVersion`, `Nullable`, `CheckForOverflowUnderflow`, `AllowUnsafeBlocks`, `DebugType`, `DebugSymbols`.
+  - The watch compile sends a hash of them with its request. The daemon keeps it on that project's registration.
+  - `--sync` asks with the build's own hash. The daemon answers no when it differs, or is missing: `NScript watch: full build (nscript service: sync no <App>.dll: build properties differ from the watch build ...)`.
+  - It also answers no when a project the key reads was registered again with another hash since the key was: `... <Lib>.dll was registered again with other properties`. Example: a `-p:DefineConstants=X` watch build that failed before reaching the app.
+  - Examples that build in full: `-p:DefineConstants=X`, `-p:TreatWarningsAsErrors=true`. The next watch build with those values registers them; syncs with them then answer yes.
 - **An obj DLL another build rewrote** (such as that `-p:DefineConstants=X` build) is recompiled before the answer.
   - At `--sync` the daemon compares each watched obj DLL with the one it last wrote.
   - For each one that changed or is gone, watch.log says `sync <App>.dll: <Project>.dll rewritten outside watch; recompiling`.
@@ -93,7 +95,7 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 | `nscript service --status` | Prints pid, toolset, `LogPath`, `WatchLog`, watched projects and bundles, red projects, `WatchNeedsBuild`, last batch. Resets the idle timer. | 0; 1 = no daemon |
 | `nscript service --stop` | Stops after in-flight requests. Deletes the markers. watch.log names each output left `STALE`. | 0; 1 = no daemon |
 | `nscript service --stop --force` | Kills a wedged daemon. Only when its lock is held and the pid and start time match. | 0 = killed; 1 = no live daemon |
-| `nscript service --sync <obj dll>` | What `dotnet build` runs. Prints the answer, then `nscript-ref` and `nscript-jsforeign` lines. | 0 yes; 1 no; 2 busy |
+| `nscript service --sync <obj dll> --build-props <hash>` | What `dotnet build` runs. Without `--build-props` the answer is no. Prints the answer, then `nscript-ref` and `nscript-jsforeign` lines. | 0 yes; 1 no; 2 busy |
 | `nscript service --foreground` | Runs a daemon in this console. For debugging. | 0 when it stops |
 
 ## Logs
@@ -118,6 +120,7 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 | `NSCRIPT_WATCH` | unset | `1` or `true`: register with the watch. Implies the service. | Set by Sdk.targets and `Sources/Framework/Directory.Build.props`; don't set |
 | `NSCRIPT_WATCH_SDKDIR` | unset | The NScript.Sdk folder to watch for `Sdk.props` / `Sdk.targets` edits. | Set by Sdk.targets; don't set |
 | `NSCRIPT_WATCH_EVALUATED_UTC_TICKS` | unset | When MSBuild evaluated the project. A file added or a build file written after it stays `NEEDS BUILD`. | Set by Sdk.targets and `Sources/Framework/Directory.Build.props`; don't set |
+| `NSCRIPT_WATCH_PROPS_HASH` | unset | The hash of the compile properties (`NScript.WatchProps.targets`). Kept on the registration; `--sync` must match it. Unset: syncs answer no. | Set by `NScript.WatchProps.targets` (imported by Sdk.targets and `Sources/Framework/Directory.Build.props`); don't set |
 | `NSCRIPT_SERVICE_IDLE_SECONDS` | `600` | Idle exit, not watching. Positive whole seconds. | Setting |
 | `NSCRIPT_WATCH_IDLE_SECONDS` | `28800` (8 h) | Idle exit while watching. Positive whole seconds. | Setting |
 | `NSCRIPT_SERVICE_REQUEST_TIMEOUT` | `600` | Per-request watchdog. Positive whole seconds. | Setting |

@@ -44,13 +44,7 @@ namespace NScript.Csc.Lib
             {
                 if (useService)
                 {
-                    int? serviceExitCode = ServiceClient.TryRun(
-                        ServiceProtocol.KindCompile,
-                        strippedArgs,
-                        "csc",
-                        watch,
-                        watch ? Environment.GetEnvironmentVariable(ServiceArgs.WatchSdkDirEnvVar) : null,
-                        watch ? ServiceArgs.ReadWatchEvaluatedUtcTicks() : null);
+                    int? serviceExitCode = ServiceClient.TryRun(ServiceProtocol.KindCompile, strippedArgs, "csc", watch);
                     if (serviceExitCode.HasValue)
                     {
                         return serviceExitCode.Value;
