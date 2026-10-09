@@ -115,6 +115,42 @@ namespace NScript.Utils.Test
             Assert.AreEqual(3, Count(output, "NScript watch: full build (build properties differ from the watch build)"), output);
         }
 
+        /// <summary>
+        /// F-004: only exit code 0 is a yes; a busy daemon (exit 2) builds in full. And a synced
+        /// build keeps the watch's JS only while the daemon wrote it last: a JS file the reply
+        /// lists as foreign (another configuration rewrote it) is regenerated, while a synced
+        /// build without that line keeps the JS although its jsmode stamp does not match.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // One dotnet msbuild run (~5-10 s).
+        public void SyncedBuild_OnlyExitZeroSyncs_ForeignJsIsRegenerated()
+        {
+            const string driver =
+                "<Project>\n" +
+                "  <Target Name=\"Run\">\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Restore\" Properties=\"SdkDir=$(SdkDir);Step=0\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchPropsRecord\" Properties=\"SdkDir=$(SdkDir);Step=1;NScriptWatch=true;NScriptWatchSync=false\" SkipNonexistentTargets=\"true\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=2;NScriptExe=$(MSBuildThisFileDirectory)busy-nscript.cmd\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;_NScriptCheckJsMode\" Properties=\"SdkDir=$(SdkDir);Step=3\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync;_NScriptCheckJsMode\" Properties=\"SdkDir=$(SdkDir);Step=4;NScriptExe=$(MSBuildThisFileDirectory)foreign-nscript.cmd\" />\n" +
+                "  </Target>\n" +
+                "</Project>\n";
+            using var tree = new SyncTree(driver);
+            string appJs = Path.Combine(tree.Dir, "App", "App.js");
+            File.WriteAllText(appJs, "another configuration's JS");
+            File.WriteAllText(
+                Path.Combine(tree.Dir, "busy-nscript.cmd"),
+                "@echo off\r\necho nscript service: sync busy App.dll: a batch still running after 1 s\r\nexit /b 2\r\n");
+            File.WriteAllText(
+                Path.Combine(tree.Dir, "foreign-nscript.cmd"),
+                "@echo off\r\necho nscript service: sync yes App.dll (1 ms)\r\necho " + ServiceHost.SyncJsForeignPrefix + appJs + "\r\nexit /b 0\r\n");
+            string output = tree.Run();
+
+            Assert.AreEqual(1, Count(output, "NScript watch: full build (nscript service: sync busy"), "busy is not a yes\n" + output);
+            Assert.AreEqual(2, Count(output, "NScript watch: App current, skipped"), "control: steps 3 and 4 sync\n" + output);
+            Assert.AreEqual(1, Count(output, "NScript: " + appJs + " was not written by this configuration"), "only the foreign JS is regenerated\n" + output);
+        }
+
         private static int Count(string text, string part)
             => (text.Length - text.Replace(part, string.Empty).Length) / part.Length;
 
