@@ -643,7 +643,8 @@ namespace NScript.Lib.Service
 
         /// <summary>
         /// Clears red marks whose obj DLL changed since the failure: somebody built it (for
-        /// example a plain <c>dotnet build</c>). Returns the cleared project keys.
+        /// example a plain <c>dotnet build</c>). A DLL that cannot be read (deleted by a clean,
+        /// locked mid-write) is not a rebuild and keeps red. Returns the cleared project keys.
         /// </summary>
         public IReadOnlyList<string> RefreshRed()
         {
@@ -651,7 +652,7 @@ namespace NScript.Lib.Service
             foreach (var pair in this.red.ToList())
             {
                 var now = this.readStamp(pair.Key);
-                if (!Nullable.Equals(now, pair.Value))
+                if (now != null && !Nullable.Equals(now, pair.Value))
                 {
                     this.red.Remove(pair.Key);
                     cleared.Add(pair.Key);

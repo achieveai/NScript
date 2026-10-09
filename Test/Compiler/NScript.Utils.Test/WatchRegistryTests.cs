@@ -203,6 +203,45 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// Critic F1: an obj DLL that cannot be read (deleted by a clean, locked mid-write)
+        /// is not "rebuilt outside watch". Clearing red there let the bundle emit from
+        /// whatever DLL turned up next. Red clears only on a readable DLL that differs.
+        /// </summary>
+        [TestMethod]
+        public void Red_ObjUnreadable_StaysRed_ClearsOnReadableNewObj()
+        {
+            var a = this.Register("A");
+            this.stamps[Out("A")] = Stamp(1);
+            this.disk[Src("A")] = "h1";
+            this.Change(Src("A"));
+            this.Compiled(a, exitCode: 1);
+
+            this.stamps.Remove(Out("A"));
+            Assert.AreEqual(0, this.registry.RefreshRed().Count, "An unreadable obj DLL cleared red.");
+            CollectionAssert.AreEqual(new[] { a.Key }, this.registry.Red.ToArray());
+
+            this.stamps[Out("A")] = Stamp(2);
+            CollectionAssert.AreEqual(new[] { a.Key }, this.registry.RefreshRed().ToArray());
+        }
+
+        /// <summary>
+        /// The other side of F1: a compile that failed before any obj DLL existed is red with
+        /// no stamp; the first readable DLL (somebody built it) clears it.
+        /// </summary>
+        [TestMethod]
+        public void Red_NoObjAtFailure_ClearsWhenObjAppears()
+        {
+            var a = this.Register("A");
+            this.disk[Src("A")] = "h1";
+            this.Change(Src("A"));
+            this.Compiled(a, exitCode: 1);
+            Assert.AreEqual(0, this.registry.RefreshRed().Count, "Still no obj DLL: still red.");
+
+            this.stamps[Out("A")] = Stamp(1);
+            CollectionAssert.AreEqual(new[] { a.Key }, this.registry.RefreshRed().ToArray());
+        }
+
+        /// <summary>
         /// Contract 6: every compile attempt refreshes the recorded hashes, so H0 -> H1 -> H0
         /// is two compiles ending at H0, also when the H1 compile failed. A project blocked
         /// behind a red dependency stays dirty.

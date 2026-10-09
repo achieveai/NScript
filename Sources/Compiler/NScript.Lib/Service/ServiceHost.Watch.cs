@@ -180,6 +180,31 @@ namespace NScript.Lib.Service
             {
                 CompilerLog.ForComponent("Watch").Information(ex, "WatchStop Reason={Reason}", reason);
                 this.WatchLog("watch stopped: {0}{1}", reason, ex == null ? string.Empty : " " + ex);
+                this.LogStale(reason);
+            }
+        }
+
+        /// <summary>
+        /// Names in watch.log every output a stop leaves behind its sources: bundles not
+        /// emitted since their inputs changed (red, blocked, superseded, or waiting for a
+        /// retry) and bin copies not refreshed since their project compiled.
+        /// </summary>
+        private void LogStale(string reason)
+        {
+            List<string> stale;
+            lock (this.watchGate)
+            {
+                stale = this.registry.DirtyBundles
+                    .Concat(this.registry.CopyPending.Select(e => e.Target))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+
+            foreach (var path in stale)
+            {
+                CompilerLog.ForComponent("Watch").Information("WatchStale Reason={Reason} Path={Path}", reason, path);
+                this.WatchLog("STALE   {0} (not updated before watch stopped; run dotnet build)", path);
             }
         }
 
@@ -679,6 +704,15 @@ namespace NScript.Lib.Service
                 this.WatchLog("compiler rebuilt; run dotnet build -p:NScriptWatch=true");
                 this.Echo("compiler rebuilt; watch stopped, daemon exiting");
                 Interlocked.Exchange(ref this.watchStopped, 1);
+
+                // This stop skips WatchStopped. Fold in the save that found the new toolset, so
+                // the bundles it leaves stale are named too; nothing runs on the registry after.
+                lock (this.watchGate)
+                {
+                    this.registry.Apply(this.registry.Classify(paths));
+                }
+
+                this.LogStale("toolsetChanged");
                 this.RequestStop("toolsetChanged");
                 return;
             }

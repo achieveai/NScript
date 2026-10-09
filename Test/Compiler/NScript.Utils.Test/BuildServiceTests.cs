@@ -828,6 +828,112 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// Trace B: a signature change in A breaks its dependent B. B goes red; app.js (reads A
+        /// and B) keeps its last good bytes and write time without running the emit, obj\B.dll
+        /// is untouched, and watch.log names the error, while ctl.js (reads only A) is emitted
+        /// with the change. While red, another edit of A recompiles B and reports the error
+        /// again. Fixing B clears red and emits app.js in the same batch. The faked compile of
+        /// A copies A.cs into obj\A.dll; the faked compile of B fails while obj\A.dll says Sig2
+        /// and B.cs does not, else copies B.cs into obj\B.dll (Roslyn writes no DLL on errors);
+        /// the faked emit writes the DLLs its bundle reads. Both bundles write outside the
+        /// watched folders, so their writes start no batch.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Watch_TraceB_DependentRedKeepsBundle_FixEmits()
+        {
+            int appEmits = 0;
+            int controlEmits = 0;
+            var web = NewTempDir();
+            var appJs = Path.Combine(web, "app.js");
+            var controlJs = Path.Combine(web, "ctl.js");
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                var aDll = Path.Combine(watch.Project, "obj", "A.dll");
+                var bDll = Path.Combine(watch.Dependent, "obj", "B.dll");
+                if (request.Kind != ServiceProtocol.KindCompile)
+                {
+                    if (string.Equals(request.Cwd, watch.Project, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Interlocked.Increment(ref controlEmits);
+                        File.WriteAllText(controlJs, "js:" + File.ReadAllText(aDll));
+                    }
+                    else
+                    {
+                        Interlocked.Increment(ref appEmits);
+                        File.WriteAllText(appJs, "js:" + File.ReadAllText(aDll) + "|" + File.ReadAllText(bDll));
+                    }
+
+                    return new ServiceResponse { ExitCode = 0 };
+                }
+
+                bool dependent = string.Equals(request.Cwd, watch.Dependent, StringComparison.OrdinalIgnoreCase);
+                var text = File.ReadAllText(dependent ? Path.Combine(watch.Dependent, "B.cs") : Path.Combine(watch.Project, "A.cs"));
+                if (dependent
+                    && File.ReadAllText(aDll).Contains("Sig2", StringComparison.Ordinal)
+                    && !text.Contains("Sig2", StringComparison.Ordinal))
+                {
+                    return new ServiceResponse { ExitCode = 1, Stdout = "B.cs(1,17): error CS7036: no argument for b", Stderr = string.Empty };
+                }
+
+                var dll = dependent ? bDll : aDll;
+                Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                File.WriteAllText(dll, text);
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                var bDll = Path.Combine(watch.Dependent, "obj", "B.dll");
+                watch.Register("A.cs");
+                watch.RegisterIn(watch.Dependent, "B.cs");
+                watch.RegisterEmit("-outJs", controlJs, "-entryAssembly", @"obj\A.dll", "-references", typeof(BuildServiceTests).Assembly.Location);
+                watch.RegisterEmitIn(watch.Dependent, "-outJs", appJs, "-entryAssembly", @"obj\B.dll", "-references", Path.Combine(watch.Project, "obj", "A.dll"));
+                var goodJs = File.ReadAllBytes(appJs);
+                var goodJsTime = File.GetLastWriteTimeUtc(appJs);
+                var goodDll = File.ReadAllBytes(bDll);
+                var goodDllTime = File.GetLastWriteTimeUtc(bDll);
+                Assert.AreEqual(1, Volatile.Read(ref appEmits));
+                var watchLog = watch.Status()["WatchLog"];
+
+                void AssertLastGoodKept(string when)
+                {
+                    Assert.AreEqual(1, Volatile.Read(ref appEmits), when + ": app.js was emitted although it reads a red project.");
+                    CollectionAssert.AreEqual(goodJs, File.ReadAllBytes(appJs), when + ": app.js changed.");
+                    Assert.AreEqual(goodJsTime, File.GetLastWriteTimeUtc(appJs), when + ": app.js was rewritten.");
+                    CollectionAssert.AreEqual(goodDll, File.ReadAllBytes(bDll), when + ": obj\\B.dll changed.");
+                    Assert.AreEqual(goodDllTime, File.GetLastWriteTimeUtc(bDll), when + ": obj\\B.dll was rewritten.");
+                    Assert.AreEqual("B.dll", watch.Status()["WatchRed"], when);
+                }
+
+                // B1: the signature change. A compiles and ctl.js gets it; B fails; app.js is kept.
+                var sig2 = "class A { void M(int a, int b) { } } // Sig2";
+                File.WriteAllText(Path.Combine(watch.Project, "A.cs"), sig2);
+                this.WaitForLogLines(1, "WatchBatchEnd", "\"Result\":\"failed\"");
+                AssertLastGoodKept("B1");
+                Assert.AreEqual(2, Volatile.Read(ref controlEmits), "B1: ctl.js, which reads only A, was not emitted.");
+                Assert.AreEqual("js:" + sig2, File.ReadAllText(controlJs));
+                Assert.AreEqual(1, CountOf(ReadShared(watchLog), "error CS7036"), "watch.log does not name the error once.");
+
+                // B2: another edit of A while B is red recompiles B; it fails again; still kept.
+                var sig2y = "class A { void M(int a, int b) { } int y; } // Sig2";
+                File.WriteAllText(Path.Combine(watch.Project, "A.cs"), sig2y);
+                this.WaitForLogLines(2, "WatchBatchEnd", "\"Result\":\"failed\"");
+                AssertLastGoodKept("B2");
+                Assert.AreEqual(2, CountOf(ReadShared(watchLog), "error CS7036"), "The red re-entry did not report the error again.");
+
+                // B5: the fix. B compiles, red clears, app.js is emitted once, in that batch.
+                var fixedB = "class B : A { } // Sig2";
+                File.WriteAllText(Path.Combine(watch.Dependent, "B.cs"), fixedB);
+                this.WaitForLogLines(1, "WatchBatchEnd", "\"Result\":\"ok\"");
+                Assert.AreEqual(2, Volatile.Read(ref appEmits));
+                Assert.AreEqual("js:" + sig2y + "|" + fixedB, File.ReadAllText(appJs));
+                Assert.AreEqual(string.Empty, watch.Status()["WatchRed"]);
+            }
+
+            Directory.Delete(web, recursive: true);
+        }
+
+        /// <summary>
         /// P14: a slow checkout trickles files in while a batch runs. A save that lands
         /// mid-batch supersedes the batch's remaining steps; they stay dirty and the next batch
         /// runs them, so a storm does not rebuild the whole chain once per batch.
@@ -931,6 +1037,74 @@ namespace NScript.Utils.Test
             }
         }
 
+        /// <summary>
+        /// P12: a stop that leaves a bundle kept and a bin copy pending (its holder still has it
+        /// open) left both stale with nothing in watch.log naming them. The stop must list each
+        /// one. Setup as in <see cref="Watch_CopyTargetLocked_PendingThenTimedRetryCopies"/>.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Stop_WithPendingCopyAndKeptBundle_LogsBothStale()
+        {
+            string first = typeof(BuildServiceTests).Assembly.Location;
+            string second = typeof(ServiceHost).Assembly.Location;
+            int compiles = 0;
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindCompile)
+                {
+                    var dll = Path.Combine(watch.Project, "obj", "A.dll");
+                    Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                    File.Copy(Interlocked.Increment(ref compiles) == 1 ? first : second, dll, overwrite: true);
+                }
+
+                return new ServiceResponse { ExitCode = 0, Stdout = string.Empty, Stderr = string.Empty };
+            }))
+            {
+                watch.Register("A.cs");
+                var copy = Path.Combine(watch.Project, "bin", "A.dll");
+                Directory.CreateDirectory(Path.GetDirectoryName(copy));
+                File.Copy(first, copy);
+                watch.RegisterEmit("-outJs", "app.js", "-entryAssembly", @"bin\A.dll", "-references", first);
+                var watchLog = watch.Status()["WatchLog"];
+
+                using (new FileStream(copy, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    watch.EditSource();
+                    WaitForLog("\"Result\":\"kept\"", 1);
+                    watch.Host.RequestStop("test");
+                    Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon did not stop.");
+                }
+
+                var log = ReadShared(watchLog);
+                StringAssert.Contains(log, "STALE   " + Path.Combine(watch.Project, "app.js"));
+                StringAssert.Contains(log, "STALE   " + copy);
+            }
+        }
+
+        /// <summary>
+        /// Critic F8: the toolset-change stop is the likeliest stop and bypassed the stop path.
+        /// It must name the bundle the save that found the new toolset leaves stale.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void WatchBatch_ToolsetChanged_LogsStaleBundle()
+        {
+            WatchHost watch = null;
+            using (watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }, toolsetHash: new string('f', 64)))
+            {
+                watch.Register("A.cs");
+                watch.RegisterEmit("-outJs", "app.js", "-entryAssembly", @"obj\A.dll", "-references", typeof(BuildServiceTests).Assembly.Location);
+                var watchLog = watch.Status()["WatchLog"];
+
+                watch.EditSource();
+
+                Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon kept running on a changed toolset.");
+                StringAssert.Contains(ReadShared(watchLog), "STALE   " + Path.Combine(watch.Project, "app.js"));
+            }
+        }
+
         private static void WaitFor(Func<bool> condition, string message)
         {
             var clock = Stopwatch.StartNew();
@@ -997,6 +1171,35 @@ namespace NScript.Utils.Test
             }
         }
 
+        /// <summary>Waits until <paramref name="count"/> lines of the JSONL log each contain every one of <paramref name="parts"/>.</summary>
+        private void WaitForLogLines(int count, params string[] parts)
+        {
+            var clock = Stopwatch.StartNew();
+            while (ReadShared(this.logPath).Split('\n').Count(line => parts.All(p => line.Contains(p, StringComparison.Ordinal))) < count)
+            {
+                Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(5), "Timed out waiting for " + count + " log lines with " + string.Join(" + ", parts));
+                Thread.Sleep(20);
+            }
+        }
+
+        private static string ReadShared(string path)
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
+        }
+
+        private static int CountOf(string text, string value)
+        {
+            int found = 0;
+            for (int at = text.IndexOf(value, StringComparison.Ordinal); at >= 0; at = text.IndexOf(value, at + 1, StringComparison.Ordinal))
+            {
+                found++;
+            }
+
+            return found;
+        }
+
         /// <summary>
         /// A daemon watching two projects whose compiles are faked by <c>run</c>: A.cs in
         /// <see cref="Project"/>, and B.cs in <see cref="Dependent"/>, which references A's
@@ -1061,13 +1264,15 @@ namespace NScript.Utils.Test
                 this.Registered++;
             }
 
-            public void RegisterEmit(params string[] args)
+            public void RegisterEmit(params string[] args) => this.RegisterEmitIn(this.Project, args);
+
+            public void RegisterEmitIn(string cwd, params string[] args)
             {
                 var response = Send(this.pipeName, new ServiceRequest
                 {
                     Kind = ServiceProtocol.KindEmitJs,
                     ClientPid = Environment.ProcessId,
-                    Cwd = this.Project,
+                    Cwd = cwd,
                     Args = args,
                     Watch = true,
                 });
