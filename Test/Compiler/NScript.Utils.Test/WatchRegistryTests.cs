@@ -346,5 +346,151 @@ namespace NScript.Utils.Test
             Assert.AreEqual(project.Key, this.registry.Plan().Compiles.Single().Key);
             Assert.IsNull(this.registry.CompileBlockReason(project));
         }
+
+        /// <summary>
+        /// M3-1: a skin-only change patches its owner instead of compiling it, dependents are
+        /// not touched, and the bundle is still emitted. NSCRIPT_RESOURCE_PATCH=off compiles.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_ResourceOnlyChange_PatchesOwner_UnlessPatchingIsOff()
+        {
+            var skin = P("A", "Shell.skin.cshtml");
+            var a = this.Register("A", resources: new[] { skin });
+            this.Register("B", references: new[] { Out("A") });
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "A.js"), Out("A"), Array.Empty<string>());
+
+            this.disk[skin] = "h1";
+            var plan = this.Change(skin);
+            var steps = this.registry.Schedule(plan);
+
+            CollectionAssert.AreEqual(new[] { a.Key, P("web", "A.js") }, steps.Select(s => s.Compile?.Key ?? s.Emit.Key).ToArray());
+            Assert.IsTrue(steps[0].Patch);
+
+            this.registry.ResourcePatchEnabled = false;
+            Assert.IsFalse(this.registry.Schedule(plan)[0].Patch);
+            CollectionAssert.Contains(this.registry.StatusFields().ToArray(), new KeyValuePair<string, string>("WatchResourcePatch", "off"));
+        }
+
+        /// <summary>M3-8: a .cs and a skin of one project saved in one window compile; a compile embeds the skin too.</summary>
+        [TestMethod]
+        public void Schedule_CsAndSkinInOneWindow_Compiles()
+        {
+            var skin = P("A", "Shell.skin.cshtml");
+            var a = this.Register("A", resources: new[] { skin });
+
+            this.disk[skin] = "h1";
+            this.disk[Src("A")] = "h1";
+            var step = this.registry.Schedule(this.Change(skin, Src("A"))).Single();
+
+            Assert.AreEqual(a.Key, step.Compile.Key);
+            Assert.IsFalse(step.Patch);
+        }
+
+        /// <summary>
+        /// Pin (architect-m4): a red project is never patched. Its last compile failed, so only
+        /// a compile can prove its sources; a skin change plans a compile.
+        /// </summary>
+        [TestMethod]
+        public void Red_SkinChange_PlansCompileNotPatch()
+        {
+            var skin = P("A", "Shell.skin.cshtml");
+            var a = this.Register("A", resources: new[] { skin });
+            this.disk[Src("A")] = "h1";
+            this.Change(Src("A"));
+            this.Compiled(a, exitCode: 1);
+            CollectionAssert.Contains(this.registry.Red.ToArray(), a.Key);
+
+            this.disk[skin] = "h1";
+            var step = this.registry.Schedule(this.Change(skin)).Single();
+
+            Assert.AreEqual(a.Key, step.Compile.Key);
+            Assert.IsFalse(step.Patch);
+        }
+
+        /// <summary>
+        /// A patch is demoted to a compile by a C# change in the project or in a dependency,
+        /// also one from an earlier window: the dependent stays compile-dirty while it is
+        /// blocked behind its red dependency.
+        /// </summary>
+        [TestMethod]
+        public void PatchOnly_DemotedByCsChange_InProjectOrDependency_AcrossWindows()
+        {
+            var skinA = P("A", "Shell.skin.cshtml");
+            var skinB = P("B", "Page.skin.cshtml");
+            var a = this.Register("A", resources: new[] { skinA });
+            var b = this.Register("B", references: new[] { Out("A") }, resources: new[] { skinB });
+
+            this.disk[skinA] = "h1";
+            this.Change(skinA);
+            Assert.IsTrue(this.registry.IsPatchOnly(a));
+
+            // The batch has not run yet; a C# save in A lands in the next window.
+            this.disk[Src("A")] = "h1";
+            this.Change(Src("A"));
+            Assert.IsFalse(this.registry.IsPatchOnly(a));
+            Assert.IsFalse(this.registry.IsPatchOnly(b), "B is a dependent of A's C# change.");
+
+            this.Compiled(a, exitCode: 1);
+            this.disk[skinB] = "h1";
+            this.Change(skinB);
+
+            Assert.IsNotNull(this.registry.CompileBlockReason(b));
+            Assert.IsFalse(this.registry.IsPatchOnly(b), "A's C# change still has to reach B.");
+        }
+
+        /// <summary>
+        /// Critic F5, ordering: a skin edit in a library (patch) and a .cs edit in its reader
+        /// (compile) in one window. The library is patched first, the reader compiles against
+        /// the patched DLL's copy (a patch keeps the MVID, so the copy edge holds), then the
+        /// bundle is emitted.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_LibrarySkinAndReaderCs_PatchThenCompileThenEmit()
+        {
+            var skin = P("Controls", "Button.skin.cshtml");
+            var copy = P("View", "bin", "Controls.dll");
+            var controls = this.Register("Controls", resources: new[] { skin });
+            var view = this.Register("View", references: new[] { copy });
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "View.js"), Out("View"), new[] { copy });
+            this.stamps[Out("Controls")] = Stamp(1);
+            this.stamps[copy] = Stamp(1);
+            this.registry.RefreshCopyEdges();
+
+            this.disk[skin] = "h1";
+            this.disk[Src("View")] = "h1";
+            var steps = this.registry.Schedule(this.Change(Src("View"), skin));
+
+            CollectionAssert.AreEqual(new[] { controls.Key, view.Key, P("web", "View.js") }, steps.Select(s => s.Compile?.Key ?? s.Emit.Key).ToArray());
+            CollectionAssert.AreEqual(new[] { true, false, false }, steps.Select(s => s.Patch).ToArray());
+            Assert.AreEqual(copy, this.registry.CopiesOf(controls.Key).Single().Target);
+        }
+
+        /// <summary>
+        /// Critic F5, bookkeeping: patch and compile record the same kind of hash, so the
+        /// sequence patch v2, compile v3 (M3-8), revert to v2 is a change again, and a
+        /// same-content save after a patch is not.
+        /// </summary>
+        [TestMethod]
+        public void RecordPatch_ThenCompile_ThenRevert_IsAChangeAgain()
+        {
+            var skin = P("A", "Shell.skin.cshtml");
+            var a = this.Register("A", resources: new[] { skin });
+
+            this.disk[skin] = "v2";
+            Assert.IsTrue(this.registry.Schedule(this.Change(skin)).Single().Patch);
+            this.registry.RecordPatch(a.Key, new Dictionary<string, string> { [skin] = "v2" });
+            Assert.AreEqual(0, this.registry.Dirty.Count);
+            Assert.AreEqual(0, this.Change(skin).Compiles.Count, "Same content as the patch embedded.");
+
+            this.disk[skin] = "v3";
+            this.disk[Src("A")] = "h1";
+            Assert.IsFalse(this.registry.Schedule(this.Change(skin, Src("A"))).Single().Patch);
+            this.Compiled(a);
+
+            this.disk[skin] = "v2";
+            var step = this.registry.Schedule(this.Change(skin)).Single();
+            Assert.AreEqual(a.Key, step.Compile.Key);
+            Assert.IsTrue(step.Patch);
+        }
     }
 }

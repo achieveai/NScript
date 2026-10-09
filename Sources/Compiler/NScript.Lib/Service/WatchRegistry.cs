@@ -148,8 +148,12 @@ namespace NScript.Lib.Service
     /// <summary>The ordered work of one batch.</summary>
     public sealed record WatchPlan(IReadOnlyList<ProjectRecord> Compiles, IReadOnlyList<BundleRecord> Bundles);
 
-    /// <summary>One step of a batch: a compile (<see cref="Compile"/>) or an emit (<see cref="Emit"/>).</summary>
-    public sealed record WatchStep(ProjectRecord? Compile, BundleRecord? Emit);
+    /// <summary>
+    /// One step of a batch: a compile (<see cref="Compile"/>) or an emit (<see cref="Emit"/>).
+    /// A compile step with <see cref="Patch"/> set only had resources change: patch them into
+    /// the DLL instead of running Roslyn.
+    /// </summary>
+    public sealed record WatchStep(ProjectRecord? Compile, BundleRecord? Emit, bool Patch = false);
 
     /// <summary>
     /// Watch-mode state: the compile and emit requests built with <c>NScriptWatch=true</c>,
@@ -168,6 +172,10 @@ namespace NScript.Lib.Service
         private readonly Dictionary<string, ProjectRecord> projects = new Dictionary<string, ProjectRecord>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, BundleRecord> bundles = new Dictionary<string, BundleRecord>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> dirty = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Dirty projects a resource patch cannot bring up to date: a C# input changed, or a
+        // dependency's did. Cleared only by a compile attempt or a new registration.
+        private readonly HashSet<string> compileDirty = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> dirtyBundles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, AssemblyStamp?> red = new Dictionary<string, AssemblyStamp?>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> needsBuild = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -199,6 +207,12 @@ namespace NScript.Lib.Service
         public IReadOnlyList<CopyEdge> CopyEdges => this.copyEdges;
 
         public IReadOnlyCollection<CopyEdge> CopyPending => this.copyPending;
+
+        /// <summary>
+        /// False forces every dirty project through a Roslyn compile, even when only its
+        /// resources changed (<c>NSCRIPT_RESOURCE_PATCH=off</c>, read at daemon start).
+        /// </summary>
+        public bool ResourcePatchEnabled { get; set; } = true;
 
         /// <summary>
         /// True when <paramref name="extension"/> (with dot) is a kind a compile can read:
@@ -242,6 +256,7 @@ namespace NScript.Lib.Service
             this.copyPending.RemoveWhere(e => Same(e.ProjectKey, record.Key) || Same(e.HolderKey, record.Key));
             this.needsBuild.Remove(record.Key);
             this.dirty.Remove(record.Key);
+            this.compileDirty.Remove(record.Key);
             this.SetResult(record.Key, exitCode);
             return record;
         }
@@ -280,7 +295,36 @@ namespace NScript.Lib.Service
             }
 
             this.dirty.Remove(projectKey);
+            this.compileDirty.Remove(projectKey);
             this.SetResult(projectKey, exitCode);
+        }
+
+        /// <summary>
+        /// True when <paramref name="project"/> is dirty only because resource files changed,
+        /// so patching them into its DLL equals a compile: no C# change in it or in a
+        /// dependency, not red (its sources failed; a compile must prove them again) and not
+        /// waiting for a <c>dotnet build</c>.
+        /// </summary>
+        public bool IsPatchOnly(ProjectRecord project)
+            => this.ResourcePatchEnabled
+                && this.dirty.Contains(project.Key)
+                && !this.compileDirty.Contains(project.Key)
+                && !this.red.ContainsKey(project.Key)
+                && !this.needsBuild.ContainsKey(project.Key);
+
+        /// <summary>
+        /// A resource patch made the DLL embed the files with <paramref name="hashes"/>: record
+        /// them as seen, like a compile does for every input, and the project is clean.
+        /// </summary>
+        public void RecordPatch(string projectKey, IReadOnlyDictionary<string, string> hashes)
+        {
+            var record = this.projects[projectKey];
+            foreach (var pair in hashes)
+            {
+                record.Hashes[pair.Key] = pair.Value;
+            }
+
+            this.dirty.Remove(projectKey);
         }
 
         /// <summary>
@@ -403,6 +447,7 @@ namespace NScript.Lib.Service
 
             var queue = new Queue<string>(changes.CsOwners);
             var seen = new HashSet<string>(changes.CsOwners, StringComparer.OrdinalIgnoreCase);
+            this.compileDirty.UnionWith(changes.CsOwners);
             while (queue.Count > 0)
             {
                 var key = queue.Dequeue();
@@ -411,6 +456,7 @@ namespace NScript.Lib.Service
                     if (seen.Add(dependent.Key))
                     {
                         this.dirty.Add(dependent.Key);
+                        this.compileDirty.Add(dependent.Key);
                         queue.Enqueue(dependent.Key);
                     }
                 }
@@ -487,7 +533,7 @@ namespace NScript.Lib.Service
 
                 foreach (var project in plan.Compiles.Where(p => needed.Contains(p.Key) && scheduled.Add(p.Key)))
                 {
-                    steps.Add(new WatchStep(project, null));
+                    steps.Add(new WatchStep(project, null, this.IsPatchOnly(project)));
                 }
 
                 steps.Add(new WatchStep(null, bundle));
@@ -495,7 +541,7 @@ namespace NScript.Lib.Service
 
             foreach (var project in plan.Compiles.Where(p => scheduled.Add(p.Key)))
             {
-                steps.Add(new WatchStep(project, null));
+                steps.Add(new WatchStep(project, null, this.IsPatchOnly(project)));
             }
 
             return steps;
@@ -665,6 +711,7 @@ namespace NScript.Lib.Service
             yield return new KeyValuePair<string, string>(
                 "WatchCopyPending",
                 string.Join(";", this.copyPending.Select(e => e.Target)));
+            yield return new KeyValuePair<string, string>("WatchResourcePatch", this.ResourcePatchEnabled ? "on" : "off");
         }
 
         internal static IReadOnlyList<string> MinimalCover(IEnumerable<string> dirs)

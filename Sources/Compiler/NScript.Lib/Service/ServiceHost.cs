@@ -45,6 +45,13 @@ namespace NScript.Lib.Service
         /// </summary>
         public TimeSpan SessionIdleTimeout { get; set; } = ServiceHost.DefaultSessionIdleTimeout;
 
+        /// <summary>
+        /// Watch patches changed skins, CSS and XWML into the DLL instead of recompiling
+        /// (<see cref="ServiceHost.ResourcePatchEnvVar"/>). False is dev-only: the compile-path
+        /// reference for comparing outputs, and an escape hatch.
+        /// </summary>
+        public bool ResourcePatch { get; set; } = true;
+
         /// <summary>A setting that could not be read and fell back to its default; logged once at start.</summary>
         public string? StartupWarning { get; set; }
 
@@ -101,6 +108,12 @@ namespace NScript.Lib.Service
         /// </summary>
         public const string SessionIdleSecondsEnvVar = "NSCRIPT_SESSION_IDLE_SECONDS";
 
+        /// <summary>
+        /// Environment variable: <c>off</c> makes watch recompile a project whose only change is
+        /// a resource (skin, CSS, XWML) instead of patching its DLL. Dev-only; default on.
+        /// </summary>
+        public const string ResourcePatchEnvVar = "NSCRIPT_RESOURCE_PATCH";
+
         /// <summary>How long an unused build session is kept by default.</summary>
         public static readonly TimeSpan DefaultSessionIdleTimeout = TimeSpan.FromMinutes(30);
 
@@ -134,6 +147,7 @@ namespace NScript.Lib.Service
         private readonly TextWriter consoleOut = Console.Out;
 
         private long requestCounter;
+        private long roslynEmits;
         private int inFlight;
         private long lastActivityMs;
         private string stopReason = "unknown";
@@ -215,6 +229,7 @@ namespace NScript.Lib.Service
                 WatchIdleTimeout = ReadSeconds(WatchIdleSecondsEnvVar, TimeSpan.FromHours(8)),
                 SessionIdleTimeout = ParseSessionIdleTimeout(Environment.GetEnvironmentVariable(SessionIdleSecondsEnvVar), out var sessionIdleWarning),
                 StartupWarning = sessionIdleWarning,
+                ResourcePatch = !string.Equals(Environment.GetEnvironmentVariable(ResourcePatchEnvVar), "off", StringComparison.OrdinalIgnoreCase),
             };
             return new ServiceHost(identity, identity.PipeName, ReadSeconds(IdleSecondsEnvVar, TimeSpan.FromSeconds(DefaultIdleSeconds)), foreground, options).Serve();
         }
@@ -766,6 +781,11 @@ namespace NScript.Lib.Service
                     this.Echo("request {0} {1} start (queued {2}ms)", requestId, request.Kind, queueWaitMs);
 
                     ServiceResponse response;
+                    if (request.Kind == ServiceProtocol.KindCompile)
+                    {
+                        Interlocked.Increment(ref this.roslynEmits);
+                    }
+
                     if (this.options.RunRequest != null)
                     {
                         response = this.options.RunRequest(request);
@@ -885,6 +905,7 @@ namespace NScript.Lib.Service
                 ["Pid"] = Environment.ProcessId.ToString(),
                 ["UptimeSec"] = ((long)this.uptime.Elapsed.TotalSeconds).ToString(),
                 ["Requests"] = Interlocked.Read(ref this.requestCounter).ToString(),
+                ["RoslynEmits"] = Interlocked.Read(ref this.roslynEmits).ToString(),
                 ["CurrentRequest"] = running == null
                     ? "none"
                     : $"{running.Id} {running.Kind} {running.Elapsed.ElapsedMilliseconds}ms",

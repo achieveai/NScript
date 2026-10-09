@@ -130,7 +130,7 @@ namespace NScript.Lib.Service
 
         private void InitializeWatch()
         {
-            this.registry = new WatchRegistry(ProbeFile, ReadStamp);
+            this.registry = new WatchRegistry(ProbeFile, ReadStamp) { ResourcePatchEnabled = this.options.ResourcePatch };
         }
 
         private void StartWatch()
@@ -759,16 +759,20 @@ namespace NScript.Lib.Service
                     return;
                 }
 
+                var patchNames = steps.Where(s => s.Patch).Select(s => s.Compile!.Name).ToList();
+                var compileNames = steps.Where(s => s.Compile != null && !s.Patch).Select(s => s.Compile!.Name).ToList();
                 log.Information(
-                    "WatchBatchStart BatchId={BatchId} Compiles={Compiles} Bundles={Bundles} CopyRetries={CopyRetries}",
+                    "WatchBatchStart BatchId={BatchId} Compiles={Compiles} Patches={Patches} Bundles={Bundles} CopyRetries={CopyRetries}",
                     batchId,
-                    plan.Compiles.Select(p => p.Name).ToList(),
+                    compileNames,
+                    patchNames,
                     plan.Bundles.Select(b => b.Name).ToList(),
                     retryCopies.Select(c => c.Target).ToList());
-                this.Echo("batch {0}: compile [{1}] emit [{2}]", batchId, string.Join(", ", plan.Compiles.Select(p => p.Name)), string.Join(", ", plan.Bundles.Select(b => b.Name)));
+                this.Echo("batch {0}: compile [{1}] patch [{2}] emit [{3}]", batchId, string.Join(", ", compileNames), string.Join(", ", patchNames), string.Join(", ", plan.Bundles.Select(b => b.Name)));
 
                 string result = "ok";
                 long firstBundleMs = -1;
+                int compiles = 0, patches = 0, emits = 0;
                 foreach (var edge in retryCopies)
                 {
                     if (!this.RunCopy(batchId, edge))
@@ -798,7 +802,7 @@ namespace NScript.Lib.Service
 
                     if (work.Compile == null)
                     {
-                        result = this.RunEmitStep(batchId, work.Emit!, result, batchClock, debounceMs, ref firstBundleMs);
+                        result = this.RunEmitStep(batchId, work.Emit!, result, batchClock, debounceMs, ref firstBundleMs, ref emits);
                         continue;
                     }
 
@@ -817,43 +821,61 @@ namespace NScript.Lib.Service
                         continue;
                     }
 
-                    var step = Stopwatch.StartNew();
-                    var response = this.ExecuteLocked(
-                        new ServiceRequest { Kind = ServiceProtocol.KindCompile, Cwd = project.Cwd, Args = project.Args },
-                        "watch",
-                        0,
-                        out var inputs,
-                        out _);
-                    int exitCode = response.InternalError ? -1 : response.ExitCode;
-                    bool ok = exitCode == 0;
-                    var diagnostics = ok ? new List<string>() : DiagnosticLines(response.Stdout + response.Stderr).Take(20).ToList();
-                    bool referenceUnreadable = !ok && diagnostics.Any(d => ReferenceUnreadableLine.IsMatch(d));
-                    lock (this.watchGate)
+                    var patched = work.Patch ? this.RunPatch(batchId, project) : (ResourcePatchOutcome?)null;
+                    if (patched == ResourcePatchOutcome.IoFailed)
                     {
-                        this.registry.RecordCompileAttempt(project.Key, inputs, exitCode, referenceUnreadable);
+                        // The DLL is unchanged and the project stays dirty: its bundles keep
+                        // their last good output until the next save patches again.
+                        result = "failed";
+                        continue;
                     }
 
-                    log.Information(
-                        "WatchStep BatchId={BatchId} Step={Step} Key={Key} ExitCode={ExitCode} ElapsedMs={ElapsedMs} RequestId={RequestId} Result={Result} Message={Message} Diagnostics={Diagnostics}",
-                        batchId, "compile", project.Key, exitCode, step.ElapsedMilliseconds, response.RequestId, ok ? "ok" : referenceUnreadable ? "referenceUnreadable" : "failed", response.Message, diagnostics);
-                    this.WatchLog("compile {0} {1} {2} ms", project.Name, ok ? "ok" : "FAILED", step.ElapsedMilliseconds);
-                    if (ok)
+                    if (patched == ResourcePatchOutcome.Ok)
                     {
-                        lock (this.watchGate)
-                        {
-                            this.referenceRetries.Succeeded(project.Key);
-                        }
+                        patches++;
                     }
                     else
                     {
-                        result = "failed";
-                        this.WatchLogDiagnostics(response);
-                        if (referenceUnreadable)
+                        // A compile step, or a patch that fell back: compile in the same step.
+                        compiles++;
+                        var step = Stopwatch.StartNew();
+                        var response = this.ExecuteLocked(
+                            new ServiceRequest { Kind = ServiceProtocol.KindCompile, Cwd = project.Cwd, Args = project.Args },
+                            "watch",
+                            0,
+                            out var inputs,
+                            out _);
+                        int exitCode = response.InternalError ? -1 : response.ExitCode;
+                        bool ok = exitCode == 0;
+                        var diagnostics = ok ? new List<string>() : DiagnosticLines(response.Stdout + response.Stderr).Take(20).ToList();
+                        bool referenceUnreadable = !ok && diagnostics.Any(d => ReferenceUnreadableLine.IsMatch(d));
+                        lock (this.watchGate)
                         {
-                            this.RetryUnreadableReference(project);
+                            this.registry.RecordCompileAttempt(project.Key, inputs, exitCode, referenceUnreadable);
                         }
 
-                        continue;
+                        log.Information(
+                            "WatchStep BatchId={BatchId} Step={Step} Key={Key} ExitCode={ExitCode} ElapsedMs={ElapsedMs} RequestId={RequestId} Result={Result} Message={Message} Diagnostics={Diagnostics}",
+                            batchId, "compile", project.Key, exitCode, step.ElapsedMilliseconds, response.RequestId, ok ? "ok" : referenceUnreadable ? "referenceUnreadable" : "failed", response.Message, diagnostics);
+                        this.WatchLog("compile {0} {1} {2} ms", project.Name, ok ? "ok" : "FAILED", step.ElapsedMilliseconds);
+                        if (ok)
+                        {
+                            lock (this.watchGate)
+                            {
+                                this.referenceRetries.Succeeded(project.Key);
+                            }
+                        }
+                        else
+                        {
+                            result = "failed";
+                            this.WatchLogDiagnostics(response);
+                            if (referenceUnreadable)
+                            {
+                                this.RetryUnreadableReference(project);
+                            }
+
+                            continue;
+                        }
                     }
 
                     List<CopyEdge> copies;
@@ -873,8 +895,8 @@ namespace NScript.Lib.Service
 
                 long totalMs = batchClock.ElapsedMilliseconds + debounceMs;
                 log.Information(
-                    "WatchBatchEnd BatchId={BatchId} Result={Result} ElapsedMs={ElapsedMs} FirstBundleMs={FirstBundleMs} DebounceMs={DebounceMs}",
-                    batchId, result, totalMs, firstBundleMs, debounceMs);
+                    "WatchBatchEnd BatchId={BatchId} Result={Result} ElapsedMs={ElapsedMs} FirstBundleMs={FirstBundleMs} DebounceMs={DebounceMs} Compiles={Compiles} Patches={Patches} Emits={Emits} RoslynEmits={RoslynEmits}",
+                    batchId, result, totalMs, firstBundleMs, debounceMs, compiles, patches, emits, Interlocked.Read(ref this.roslynEmits));
                 this.WatchLog("done    batch {0} {1} {2} ms (from first event)", batchId, result, totalMs);
                 this.Echo("batch {0} {1} {2}ms", batchId, result, totalMs);
                 this.lastBatchResult = result;
@@ -891,7 +913,7 @@ namespace NScript.Lib.Service
         /// is blocked, red or not rebuilt. Returns the batch result after this step. Must be
         /// called under <see cref="requestLock"/>.
         /// </summary>
-        private string RunEmitStep(long batchId, BundleRecord bundle, string result, Stopwatch batchClock, long debounceMs, ref long firstBundleMs)
+        private string RunEmitStep(long batchId, BundleRecord bundle, string result, Stopwatch batchClock, long debounceMs, ref long firstBundleMs, ref int emits)
         {
             var log = CompilerLog.ForComponent("Watch");
             string? kept;
@@ -907,6 +929,7 @@ namespace NScript.Lib.Service
                 return result == "ok" ? "kept" : result;
             }
 
+            emits++;
             var step = Stopwatch.StartNew();
             var response = this.ExecuteLocked(
                 new ServiceRequest { Kind = ServiceProtocol.KindEmitJs, Cwd = bundle.Cwd, Args = bundle.Args },
@@ -942,6 +965,57 @@ namespace NScript.Lib.Service
             this.WatchLogDiagnostics(response);
             this.RetryIfOutputInUse(bundle, response);
             return "failed";
+        }
+
+        /// <summary>
+        /// Patches the changed resources of <paramref name="project"/> into its DLL and records
+        /// the embedded bytes as seen. <see cref="ResourcePatchOutcome.Fallback"/> means the
+        /// caller compiles instead. Must be called under <see cref="requestLock"/>.
+        /// </summary>
+        private ResourcePatchOutcome RunPatch(long batchId, ProjectRecord project)
+        {
+            var log = CompilerLog.ForComponent("Watch");
+            var clock = Stopwatch.StartNew();
+            ResourcePatchResult patch;
+            try
+            {
+                patch = ResourcePatcher.Patch(project.Inputs.Output, project.Inputs.Resources);
+            }
+            catch (Exception ex)
+            {
+                // A Cecil failure nobody foresaw: logged as an error; the compile path still
+                // produces the right DLL.
+                log.Error(ex, "ResourcePatchFailed BatchId={BatchId} Project={Project} Outcome={Outcome} Error={Error}", batchId, project.Key, ResourcePatchOutcome.Fallback, ex.GetType().Name + ": " + ex.Message);
+                this.WatchLog("patch   {0} not possible ({1}); compiling", project.Name, ex.Message);
+                return ResourcePatchOutcome.Fallback;
+            }
+
+            if (patch.Outcome != ResourcePatchOutcome.Ok)
+            {
+                log.Warning("ResourcePatchFailed BatchId={BatchId} Project={Project} Outcome={Outcome} Error={Error} ElapsedMs={ElapsedMs}", batchId, project.Key, patch.Outcome, patch.Reason, clock.ElapsedMilliseconds);
+                this.WatchLog(
+                    patch.Outcome == ResourcePatchOutcome.Fallback ? "patch   {0} not possible ({1}); compiling" : "patch   {0} FAILED: {1}",
+                    project.Name,
+                    patch.Reason!);
+                return patch.Outcome;
+            }
+
+            lock (this.watchGate)
+            {
+                this.registry.RecordPatch(project.Key, patch.Hashes);
+            }
+
+            log.Information(
+                "ResourcePatch BatchId={BatchId} Project={Project} Resource={Resource} Bytes={Bytes} ElapsedMs={ElapsedMs} MvidBefore={MvidBefore} MvidAfter={MvidAfter}",
+                batchId,
+                project.Key,
+                patch.Replaced.Select(r => r.Name).ToList(),
+                patch.Replaced.Sum(r => r.Bytes),
+                clock.ElapsedMilliseconds,
+                patch.MvidBefore,
+                patch.MvidAfter);
+            this.WatchLog("patch   {0} [{1}] {2} ms", project.Name, string.Join(", ", patch.Replaced.Select(r => r.Name)), clock.ElapsedMilliseconds);
+            return ResourcePatchOutcome.Ok;
         }
 
         /// <summary>

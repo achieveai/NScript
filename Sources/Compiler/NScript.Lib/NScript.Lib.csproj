@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\NScript.Converter\NScript.Converter.csproj" />
     <ProjectReference Include="..\NScript.JST\NScript.JS.AST.csproj" />
     <ProjectReference Include="..\NScript.Utils\NScript.Utils.csproj" />
