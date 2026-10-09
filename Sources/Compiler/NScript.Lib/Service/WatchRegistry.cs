@@ -441,7 +441,11 @@ namespace NScript.Lib.Service
                 this.needsBuild[projectKey] = reason;
             }
 
-            this.lastOwners = new HashSet<string>(changes.ChangedOwners, StringComparer.OrdinalIgnoreCase);
+            // An owner stays "changed" while a bundle whose entry it built is still dirty: a
+            // superseded batch carries its emits over, and the next window may change nothing.
+            this.lastOwners.RemoveWhere(o => !this.projects.TryGetValue(o, out var owner)
+                || !this.dirtyBundles.Any(b => this.Owned(owner).Contains(this.bundles[b].Entry)));
+            this.lastOwners.UnionWith(changes.ChangedOwners);
             foreach (var owner in changes.ChangedOwners)
             {
                 this.dirty.Add(owner);
@@ -475,9 +479,9 @@ namespace NScript.Lib.Service
 
         /// <summary>
         /// The batch's work: dirty compiles in dependency order (ties by registration order),
-        /// then dirty bundles: those whose entry project changed this window first, in
-        /// registration order; then the rest, most recently registered first (the app the
-        /// user built last).
+        /// then dirty bundles: those whose entry project changed (this window, or an earlier
+        /// one whose bundle is still dirty, as after a supersede) first, in registration
+        /// order; then the rest, most recently registered first (the app the user built last).
         /// </summary>
         public WatchPlan Plan()
         {

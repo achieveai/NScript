@@ -125,6 +125,32 @@ namespace NScript.Utils.Test
                 steps.Select(s => s.Compile?.Key ?? s.Emit.Key).ToArray());
         }
 
+        /// <summary>
+        /// B18: a superseded batch carries its emits to the next one, whose window may change
+        /// nothing (the last save was already patched). The bundle of the project that changed
+        /// still goes first: the app, not the test bundle registered after it.
+        /// </summary>
+        [TestMethod]
+        public void Plan_AfterSupersede_ChangedOwnerBundleStillFirst()
+        {
+            var skin = P("A", "Shell.skin.cshtml");
+            var a = this.Register("A", resources: new[] { skin });
+            this.Register("T", references: new[] { Out("A") });
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "A.js"), Out("A"), Array.Empty<string>());
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "T.js"), Out("T"), new[] { Out("A") });
+            var appFirst = new[] { P("web", "A.js"), P("web", "T.js") };
+
+            this.disk[skin] = "v1";
+            CollectionAssert.AreEqual(appFirst, this.Change(skin).Bundles.Select(b => b.Key).ToArray());
+
+            // The patch ran, then a save superseded the batch before either emit; that save's
+            // content is what the patch embedded, so the next window changes nothing.
+            this.registry.RecordPatch(a.Key, new Dictionary<string, string> { [skin] = "v1" });
+            var carried = this.Change(skin);
+
+            CollectionAssert.AreEqual(appFirst, carried.Bundles.Select(b => b.Key).ToArray());
+        }
+
         /// <summary>Contract 2: a resource-only change (a skin) recompiles only its owner.</summary>
         [TestMethod]
         public void Plan_ResourceOnlyChange_CompilesOnlyOwner()
