@@ -39,6 +39,15 @@ namespace NScript.Lib.Service
         /// </summary>
         public TimeSpan RegistrationQuiet { get; set; } = TimeSpan.FromSeconds(3);
 
+        /// <summary>
+        /// A build session not used for this long is released (a bundle watched but not
+        /// edited). <see cref="TimeSpan.Zero"/> turns the sweep off.
+        /// </summary>
+        public TimeSpan SessionIdleTimeout { get; set; } = ServiceHost.DefaultSessionIdleTimeout;
+
+        /// <summary>A setting that could not be read and fell back to its default; logged once at start.</summary>
+        public string? StartupWarning { get; set; }
+
         /// <summary>Recomputes the toolset hash before each batch. Null: <see cref="ServiceIdentity.ComputeToolsetHash"/>.</summary>
         public Func<string>? ToolsetHash { get; set; }
 
@@ -85,6 +94,15 @@ namespace NScript.Lib.Service
 
         /// <summary>Environment variable overriding the idle timeout in seconds while watching (default 8 h).</summary>
         public const string WatchIdleSecondsEnvVar = "NSCRIPT_WATCH_IDLE_SECONDS";
+
+        /// <summary>
+        /// Environment variable overriding how long an unused build session is kept, in whole
+        /// seconds (default 1800); 0 keeps sessions until the daemon exits.
+        /// </summary>
+        public const string SessionIdleSecondsEnvVar = "NSCRIPT_SESSION_IDLE_SECONDS";
+
+        /// <summary>How long an unused build session is kept by default.</summary>
+        public static readonly TimeSpan DefaultSessionIdleTimeout = TimeSpan.FromMinutes(30);
 
         /// <summary>Pid file in the run dir: line 1 pid, line 2 process start time as UTC ticks.</summary>
         public const string PidFileName = "daemon.pid";
@@ -195,6 +213,8 @@ namespace NScript.Lib.Service
             {
                 RequestTimeout = ReadSeconds(RequestTimeoutEnvVar, TimeSpan.FromSeconds(600)),
                 WatchIdleTimeout = ReadSeconds(WatchIdleSecondsEnvVar, TimeSpan.FromHours(8)),
+                SessionIdleTimeout = ParseSessionIdleTimeout(Environment.GetEnvironmentVariable(SessionIdleSecondsEnvVar), out var sessionIdleWarning),
+                StartupWarning = sessionIdleWarning,
             };
             return new ServiceHost(identity, identity.PipeName, ReadSeconds(IdleSecondsEnvVar, TimeSpan.FromSeconds(DefaultIdleSeconds)), foreground, options).Serve();
         }
@@ -357,9 +377,18 @@ namespace NScript.Lib.Service
                     Environment.ProcessId,
                     this.pipeName,
                     this.identity.LogPath);
+                if (this.options.StartupWarning != null)
+                {
+                    log.Warning("ServiceConfigWarning Message={Message}", this.options.StartupWarning);
+                    this.consoleOut.WriteLine("nscript service: warning: {0}", this.options.StartupWarning);
+                }
 
                 var watchdog = new Thread(this.WatchdogLoop) { IsBackground = true, Name = "nscript-watchdog" };
                 watchdog.Start();
+                if (this.options.SessionIdleTimeout > TimeSpan.Zero)
+                {
+                    new Thread(this.SweepLoop) { IsBackground = true, Name = "nscript-sweep" }.Start();
+                }
 
                 this.Touch();
                 this.AcceptLoop();
@@ -533,6 +562,28 @@ namespace NScript.Lib.Service
             }
 
             return level;
+        }
+
+        /// <summary>
+        /// Reads <see cref="SessionIdleSecondsEnvVar"/>: unset gives the default, 0 turns the
+        /// sweep off, a positive whole number of seconds sets it. Anything else gives the default
+        /// and a <paramref name="warning"/> naming the variable, rather than a daemon that cannot start.
+        /// </summary>
+        public static TimeSpan ParseSessionIdleTimeout(string? value, out string? warning)
+        {
+            warning = null;
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return DefaultSessionIdleTimeout;
+            }
+
+            if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int seconds))
+            {
+                return TimeSpan.FromSeconds(seconds);
+            }
+
+            warning = $"{SessionIdleSecondsEnvVar}='{value}' is not a whole number of seconds (0 = off); using {(int)DefaultSessionIdleTimeout.TotalSeconds}";
+            return DefaultSessionIdleTimeout;
         }
 
         private static TimeSpan ReadSeconds(string envVar, TimeSpan defaultValue)
@@ -845,6 +896,10 @@ namespace NScript.Lib.Service
                 ["LogPath"] = this.identity.LogPath,
                 ["IdleTimeoutSec"] = ((int)this.idleTimeout.TotalSeconds).ToString(),
                 ["WatchIdleTimeoutSec"] = ((int)this.options.WatchIdleTimeout.TotalSeconds).ToString(),
+                ["SessionIdleTimeoutSec"] = this.options.SessionIdleTimeout > TimeSpan.Zero
+                    ? ((int)this.options.SessionIdleTimeout.TotalSeconds).ToString()
+                    : "off",
+                ["Sessions"] = BuilderSessions.Count.ToString(),
                 ["RequestTimeoutSec"] = ((int)this.options.RequestTimeout.TotalSeconds).ToString(),
                 ["WorkingSetMb"] = (process.WorkingSet64 / (1024 * 1024)).ToString(),
                 ["PeakWorkingSetMb"] = (process.PeakWorkingSet64 / (1024 * 1024)).ToString(),
@@ -897,6 +952,46 @@ namespace NScript.Lib.Service
                 this.Echo("watchdog fired on request {0}; exiting", running.Id);
                 (this.options.ExitProcess ?? DefaultExit)("watchdog");
                 return;
+            }
+        }
+
+        /// <summary>
+        /// Releases build sessions unused for <see cref="ServiceHostOptions.SessionIdleTimeout"/>
+        /// (a bundle watched all day but not edited). The sweep runs only when the request lock
+        /// is free without waiting and no connection is open, so it never runs during a request
+        /// or a watch batch, and a request never waits on more than one dictionary pass.
+        /// </summary>
+        private void SweepLoop()
+        {
+            var timeout = this.options.SessionIdleTimeout;
+            var poll = TimeSpan.FromMilliseconds(Math.Clamp(timeout.TotalMilliseconds / 4, 10, 1000));
+            while (!this.stopSource.IsCancellationRequested)
+            {
+                Thread.Sleep(poll);
+                if (Volatile.Read(ref this.inFlight) > 0 || !this.requestLock.Wait(0))
+                {
+                    continue;
+                }
+
+                int dropped;
+                try
+                {
+                    dropped = BuilderSessions.DropIdle(timeout);
+                }
+                finally
+                {
+                    this.requestLock.Release();
+                }
+
+                if (dropped > 0)
+                {
+                    CompilerLog.ForComponent("ServiceHost").Information(
+                        "SessionsDropped Count={Count} IdleSec={IdleSec} Left={Left}",
+                        dropped,
+                        (int)timeout.TotalSeconds,
+                        BuilderSessions.Count);
+                    this.Echo("dropped {0} build session(s) unused for {1} s", dropped, (int)timeout.TotalSeconds);
+                }
             }
         }
 

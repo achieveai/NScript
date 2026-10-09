@@ -4,6 +4,7 @@ namespace NScript.Lib
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading;
     using NScript.Converter;
 
     /// <summary>
@@ -19,8 +20,18 @@ namespace NScript.Lib
         /// Keyed by the lower-cased full output path; each entry keeps the options key it was
         /// made with.
         /// </summary>
-        private static readonly Dictionary<string, (string optionsKey, Builder builder)> Sessions =
-            new Dictionary<string, (string optionsKey, Builder builder)>();
+        private static readonly Dictionary<string, Entry> Sessions = new Dictionary<string, Entry>();
+
+        // Sessions.Count, kept apart so --status can read it while a build holds Gate.
+        private static int count;
+
+        /// <summary>
+        /// Milliseconds on a monotonic clock, stamped when a build of a session ends. Tests replace it.
+        /// </summary>
+        public static Func<long> Clock { get; set; } = () => Environment.TickCount64;
+
+        /// <summary>How many outputs have a session entry. Does not wait for a running build.</summary>
+        public static int Count => Volatile.Read(ref count);
 
         /// <summary>
         /// Builds through the output file's session, making a new one when there is none or
@@ -32,14 +43,51 @@ namespace NScript.Lib
             var optionsKey = OptionsKey(options);
             lock (Gate)
             {
-                if (!Sessions.TryGetValue(outputKey, out var entry) || entry.optionsKey != optionsKey)
+                if (!Sessions.TryGetValue(outputKey, out var entry) || entry.OptionsKey != optionsKey)
                 {
-                    entry.builder?.Dispose();
-                    entry = (optionsKey, createBuilder());
+                    entry?.Builder.Dispose();
+                    entry = new Entry(optionsKey, createBuilder());
                     Sessions[outputKey] = entry;
+                    Volatile.Write(ref count, Sessions.Count);
                 }
 
-                return entry.builder.Execute(plugins);
+                try
+                {
+                    return entry.Builder.Execute(plugins);
+                }
+                finally
+                {
+                    // Stamped at the end, so a build longer than the sweep timeout is not
+                    // released as soon as it finishes.
+                    entry.LastUsedMs = Clock();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Releases the sessions of outputs not built for <paramref name="maxIdle"/> (a bundle
+        /// watched all day but not edited), so their modules can be collected. The next build
+        /// of such an output is cold.
+        /// </summary>
+        /// <returns>How many sessions were dropped.</returns>
+        public static int DropIdle(TimeSpan maxIdle)
+        {
+            lock (Gate)
+            {
+                long now = Clock();
+                var idle = Sessions
+                    .Where(pair => now - pair.Value.LastUsedMs >= maxIdle.TotalMilliseconds)
+                    .Select(pair => pair.Key)
+                    .ToList();
+                foreach (var key in idle)
+                {
+                    Sessions[key].Builder.Dispose();
+                    Sessions.Remove(key);
+                }
+
+                Volatile.Write(ref count, Sessions.Count);
+
+                return idle.Count;
             }
         }
 
@@ -69,5 +117,20 @@ namespace NScript.Lib
                 .Concat(options.ReferenceDlls.Select(path => "r:" + Path.GetFullPath(path)))
                 .Concat(options.ReferencePath.Select(path => "rh:" + Path.GetFullPath(path)))
                 .Concat(options.PluginHintPaths.Select(path => "ph:" + Path.GetFullPath(path))));
+
+        private sealed class Entry
+        {
+            public Entry(string optionsKey, Builder builder)
+            {
+                this.OptionsKey = optionsKey;
+                this.Builder = builder;
+            }
+
+            public string OptionsKey { get; }
+
+            public Builder Builder { get; }
+
+            public long LastUsedMs { get; set; }
+        }
     }
 }
