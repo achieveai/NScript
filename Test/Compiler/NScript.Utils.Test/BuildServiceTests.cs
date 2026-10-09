@@ -1085,19 +1085,23 @@ namespace NScript.Utils.Test
 
         /// <summary>
         /// Critic F8: the toolset-change stop is the likeliest stop and bypassed the stop path.
-        /// It must name the bundle the save that found the new toolset leaves stale.
+        /// It must name the bundle the save that found the new toolset leaves stale. The
+        /// toolset changes only after the watcher-start rescan batch: a batch that finds it
+        /// earlier stops the daemon before the save.
         /// </summary>
         [TestMethod]
         [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
         public void WatchBatch_ToolsetChanged_LogsStaleBundle()
         {
             WatchHost watch = null;
-            using (watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }, toolsetHash: new string('f', 64)))
+            using (watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }))
             {
                 watch.Register("A.cs");
+                WaitForLogLines(1, "WatchChange");
                 watch.RegisterEmit("-outJs", "app.js", "-entryAssembly", @"obj\A.dll", "-references", typeof(BuildServiceTests).Assembly.Location);
                 var watchLog = watch.Status()["WatchLog"];
 
+                watch.ToolsetHashNow = new string('f', 64);
                 watch.EditSource();
 
                 Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon kept running on a changed toolset.");
