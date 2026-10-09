@@ -556,7 +556,11 @@ namespace NScript.JST
 
             if (jsFileName != null)
             {
-                writer.Write("(function(){");
+                // Columns count from after the wrapper, which shares the first line with
+                // the first token when newlines are optimized away.
+                const string wrapperStart = "(function(){";
+                writer.Write(wrapperStart);
+                state.Column = wrapperStart.Length;
             }
 
             var sink = new SourceMapSink(sourceMapping, jsFileName);
@@ -657,6 +661,12 @@ namespace NScript.JST
 
             if (token.Type == TokenType.Newline)
             {
+                // An optimized newline writes nothing, so the position does not move.
+                if (str.Length == 0)
+                {
+                    return;
+                }
+
                 state.Line++;
                 state.Column = str.Length - 2;
                 state.LastLocation = null;

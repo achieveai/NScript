@@ -169,6 +169,53 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// B4: under uglify a writer newline writes nothing, so it must not move the
+        /// generated line or column. Each identifier's mapping must land on that
+        /// identifier in the emitted JS, and no mapping may point past the output.
+        /// </summary>
+        [TestMethod]
+        public void WriteWithMap_Optimized_MappingsPointAtTheEmittedTokens()
+        {
+            var writer = new JSWriter(isIndented: false, isOptimized: true);
+            string[] names = { "alpha", "beta", "gamma" };
+            int[] sourceLines = { 3, 7, 11 };
+            for (int i = 0; i < names.Length; i++)
+            {
+                writer.EnterLocation(new Location("Program.cs", sourceLines[i], 5, sourceLines[i] + 1, 9));
+                writer.WriteIdentifier(names[i]);
+                writer.Write(Symbols.SemiColon);
+                writer.LeaveLocation();
+                writer.WriteNewLine();
+            }
+
+            using var stringWriter = new StringWriter();
+            var map = writer.WriteWithMap(stringWriter, "out.js");
+            string js = stringWriter.ToString();
+            string[] jsLines = js.Split("\r\n");
+            var decoded = DecodedMap.Parse(map.ToString());
+            string context = "\nJS:\n" + js + "\nMap:\n" + map;
+
+            foreach (var m in decoded.Mappings)
+            {
+                Assert.IsTrue(
+                    m.GeneratedLine < jsLines.Length
+                        && m.GeneratedColumn >= 0
+                        && m.GeneratedColumn <= jsLines[m.GeneratedLine].Length,
+                    $"Mapping at {m.GeneratedLine}:{m.GeneratedColumn} is outside the output." + context);
+            }
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                var m = decoded.Mappings.Find(x => x.SourceLine == sourceLines[i] - 1 && x.SourceColumn == 4);
+                Assert.IsNotNull(m, $"No mapping for Program.cs line {sourceLines[i]}." + context);
+                string at = jsLines[m.GeneratedLine].Substring(m.GeneratedColumn);
+                Assert.IsTrue(
+                    at.StartsWith(names[i], System.StringComparison.Ordinal),
+                    $"Program.cs line {sourceLines[i]} maps to '{at}', not '{names[i]}'." + context);
+            }
+        }
+
+        /// <summary>
         /// Minimal decoded-map representation used by integration tests.
         /// Parses the V3 mappings string into absolute-coordinate mappings so tests can
         /// assert on logical positions without reasoning about VLQ deltas.
