@@ -14,7 +14,8 @@ Plain `dotnet build` can't reach 1 s. Restore alone takes ~2 s (measured: 9265 �
 1. **Measure first, no code.** tester-m2 times the real path (save → the service writes the JS → `dotnet build`), a build with the framework referenced as plain DLLs, and the service round trip.
    - **Stop rule:** if the best proxy's `--no-restore` p50 is over 2 s, I report back before writing service code.
 2. **`nscript service --sync <project>`.** It asks the service: "is this project and everything it uses current?" If not, the service queues the work, waits for its normal batch, and answers. It never runs a second batch. It waits at most 30 s, then says "no".
-3. **MSBuild trigger.** One small target before the build calls `--sync`. On "yes", MSBuild skips rebuilding the 8 framework projects (`BuildProjectReferences=false`). On anything else, today's build runs unchanged.
+3. **MSBuild trigger.** A target before the build calls `--sync`. On "yes", MSBuild skips rebuilding the 8 framework projects (`BuildProjectReferences=false`). On anything else, today's build runs unchanged.
+   - Built as several small targets in `Sdk.targets`, not one (superseded: "one small target"). `_NScriptWatchSync` asks the service. `_NScriptWatchSyncSkipReferences` and `_NScriptWatchSyncReferencePaths` swap the project references for recorded DLL paths. `_NScriptWatchTargetPath` (in `NScript.WatchTargetPath.targets`, also imported by framework projects) writes that record. `_NScriptWatchBuildProps` fingerprints 12 compile-affecting properties; a build whose fingerprint differs from the watch build's never syncs. `_NScriptCheckJsMode` keeps the watch's JS unless another build rewrote it.
    - It arms with no extra flag when the service is watching this project, so plain `dotnet build` is the trigger. MSBuild detects this with an `Exists` check on a marker file the service writes in the project's `obj` folder when it starts watching and deletes when it stops: no process start, ~0 ms.
    - `-p:NScriptWatchSync=false` turns it off.
 4. **New and deleted files are caught.** `--sync` compares each project's source file list with what the service last saw. Any difference means "no", so a git checkout can't leave a stale build.
@@ -39,7 +40,7 @@ flowchart TD
 - A build that skips the framework projects doesn't refresh their commit SHA stamp or the NuGet packages in `NScriptToolSet`. Listed as known gaps; a full build fixes both.
 - Solution (`.sln`) builds skip the trigger: the framework builds alongside them.
 - A synced build's project-reference items lack 12 metadata names that only MSBuild's evaluation of the referenced project adds (TargetFrameworks, AdditionalPropertiesFromProject, ...). Nothing after reference resolution reads them: csc, nscript and JS are equal. Listed in a comment next to the injecting target.
-- The injected reference comes from `obj/nscript.targetpath`, which a watch build writes. Framework projects get the same 8-line target in `Sources/Framework/Directory.Build.props`. No record means today's project references.
+- The injected reference comes from `obj/nscript.targetpath`, which a watch build writes. One writer target, `NScript.Sdk/Sdk/NScript.WatchTargetPath.targets`, is imported by `Sdk.targets` and by `Sources/Framework/Directory.Build.props`. No record means today's project references.
 - After a skin save, a synced build still recompiles the app locally (the patched DLL has no PDB link) and writes non-dev JS. Open question to you.
 
 ## Moved to backlog (your side-task rule)

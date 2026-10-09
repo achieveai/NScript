@@ -1,8 +1,8 @@
 # Plan: NScript build service — edit to JavaScript in under a second
 
-**Status:** Revision 2, after Gautam's line review of revision 1. Nothing here is implemented.
+**Status:** Revision 2, after Gautam's line review of revision 1. Slices 0-5 and the `dotnet build` trigger are built on branch `build-service-slice0`. Some parts were built differently from this design; see "Status and rulings" below. User guide: [docs/build/build-service.md](../build/build-service.md).
 
-**Outcome:** `dotnet build -p:NScriptService=true` routes every project through one long-lived NScript service. After the first warm build, a method-body edit produces updated JavaScript in under 1 s, a skin edit faster still, and a signature change in a few seconds. A breaking change leaves the last good JavaScript untouched and reports errors until the sources compile again. Service output is a **dev-mode** build: Release builds stay batch and are unchanged.
+**Outcome:** `dotnet build -p:NScriptService=true` routes every app project through one long-lived NScript service (framework projects join under `NScriptWatch=true`). After the first warm build, a method-body edit produces updated JavaScript in under 1 s, a skin edit faster still, and a signature change in a few seconds. A breaking change leaves the last good JavaScript untouched and reports errors until the sources compile again. Service output is a **dev-mode** build: Release builds stay batch. (Superseded: "Release unchanged". Two side fixes changed Release output on purpose; see "Status and rulings".)
 
 **Done when:**
 - Body edit in TodoApp, then `dotnet build -p:NScriptService=true`: stage 2 finishes in under 1 s with conversion under 100 ms, and the emitted `TodoApp.js` is identical to a batch dev-mode build of the same sources.
@@ -10,7 +10,47 @@
 - Signature change that breaks a caller: errors reported, `TodoApp.js` untouched. Fix the caller: next build rewrites the JavaScript correctly.
 - Watch mode (`NScriptWatch=true`): saving a file updates the JavaScript with no MSBuild run.
 - Service resident memory for all five demo bundles stays under 500 MB (measured in slice 1 before slice 2 commits to the cache design).
-- The only change an app project sees is one MSBuild property, which turns into one flag on `csc.exe` and one on `nscript.exe`.
+- No app project file changes. Builds opt in with MSBuild properties: `NScriptService`, `NScriptWatch`, and `NScriptWatchSync=false` to turn the trigger off. `csc.exe` opts in through the `NSCRIPT_SERVICE` environment variable (set via `CscEnvironment`; the Csc task has no free-form argument). `nscript.exe` gets `-service` (and `-watch`). (Superseded: "one property, one flag on each tool".)
+
+## Status and rulings (2026-10-09)
+
+**Built**
+- Slice 0: no framework recompiles on an app edit.
+- Slices 1 and 5: service, clients, warm sessions, watch mode.
+- Slice 2, in part: stable dev-mode names, chunked writer, Razor and CSS caches. No Method Cache.
+- Slice 3: skin and CSS saves patch the DLL with Cecil, no Roslyn emit.
+- Slice 4: red projects keep the last-good JS; dependents recompile in full.
+- `dotnet build` trigger: see [2026-10-08-dotnet-build-trigger.md](2026-10-08-dotnet-build-trigger.md).
+
+**Built differently from this design**
+- Stage 1 runs a full in-process Roslyn compile per request. No live `CSharpCompilation`, no `ReplaceSyntaxTree`.
+- No body or surface change sets. A `.cs` change recompiles every dependent project.
+- Stage 2 keeps a warm session per bundle but converts every method each build. No Method Cache, Dependency Index or Pending Invalidations.
+
+**Measured (TodoApp)**
+- Watch save to JS: ~0.84-0.9 s. Convert is ~320 ms, not the <100 ms target.
+- Skin save 681 ms, CSS save 535 ms (p50). The <500 ms target was **not met**.
+- Framework body edit to JS: ~2.6 s.
+- Memory, five bundles warm: 450 MB peak. Under the 500 MB gate.
+- `dotnet build --no-restore`, service watching: 1174 ms p50. Plain `dotnet build`: 3134 ms p50.
+
+**Release output changed on purpose**
+- Each referenced type is emitted once per bundle. Duplicate type blocks are gone, and minified suffix letters shift in non-dev Debug and Release.
+- Release source maps now point at the emitted code. Release JS is unchanged.
+- JS is regenerated when another mode or configuration wrote it. This changes when Release regenerates JS, not its bytes.
+- No Release output change: `[Script]` body comments and escapes (no framework body uses them); the `Deterministic` property spelling fix (the SDK default was already true).
+
+**Owner rulings (Gautam)**
+- Convert phase: accepted as tracked debt D1. To be revisited for speed.
+- The `dotnet build` trigger plan: approved.
+
+**Lead decisions (open to owner review)**
+- Surface hashing: deferred. A `.cs` change recompiles every dependent.
+- Slice 6 (Roslyn fork change, shared framework JST): not built. Its own condition ("only if slice 1's measurements demand it") did not trigger.
+- Synced `dotnet build` keeps the daemon's dev-mode JS.
+
+**Open**
+- After a skin or CSS save, a synced build still recompiles the app locally and writes non-dev JS. Pending Gautam's decision.
 
 ---
 
@@ -58,7 +98,7 @@ flowchart TB
 - **Build Client** lives inside the existing `csc.exe` and `nscript.exe`. With the flag it finds the service over a named pipe, launches it if missing, forwards the exact command line, and prints the returned diagnostics in the normal MSBuild format. Without the flag nothing changes.
 - **NScript Service** is `nscript.exe service`. Same binaries, same plugins, same Roslyn fork. One instance per toolset directory and user, keyed by a hash of the toolset path. It exits after an idle timeout unless watching.
 - **Project Registry** learns the project graph from the command lines it receives: references are DLL paths, and a DLL path produced by one request is a reference in another. No project-file parsing. It also classifies each changed file: C# source, skin template, CSS, or other resource. C# changes go to the Stage-1 Host for a Roslyn emit; skin and CSS changes go to the Stage-1 Host only for a Cecil resource patch, never a Roslyn emit.
-- **Stage-1 Host** keeps one `CSharpCompilation` per project and replaces only changed syntax trees. It re-attaches the `OnBoundExpressionGenerated` hook before each emit, because the fork does not copy it across `ReplaceSyntaxTree`.
+- **Stage-1 Host** keeps one `CSharpCompilation` per project and replaces only changed syntax trees. It re-attaches the `OnBoundExpressionGenerated` hook before each emit, because the fork does not copy it across `ReplaceSyntaxTree`. (Superseded: the built host runs a full in-process compile per request; see "Status and rulings".)
 - **Bundle Session** is the incremental version of today's `Builder.Execute`: one per output bundle, holding the converter state across builds.
 - **Watcher** is the same pipeline triggered by file events instead of MSBuild. It only exists in watch mode.
 
@@ -88,6 +128,8 @@ sequenceDiagram
     C-->>M: diagnostics on stdout, exit code
 ```
 
+(Superseded: there is no Hello or Restart message. The pipe name holds the toolset hash, so a changed toolset gets its own daemon.)
+
 MSBuild still decides what to build and in which order. The service only makes each step fast. Because it writes the same artifacts to the same paths, MSBuild's own up-to-date checks keep working, which is what lets watch mode and MSBuild coexist.
 
 Fallback: if the service cannot be reached after one relaunch, the client compiles locally exactly as today and prints a warning. The build never fails because the service is missing.
@@ -112,6 +154,8 @@ flowchart TB
     PATCH --> CS
 ```
 
+(Superseded: body and surface change sets were not built. Surface hashing is deferred; a `.cs` change recompiles every dependent.)
+
 **Change sets are the handoff to stage 2.** After a successful emit the host compares the new assembly with the last good one and produces three sets, keyed by stable names, never by the per-compilation integer ids inside `$$BstInfo$$`:
 
 - **Body changes:** per method, a content hash of its serialized body with every symbol id replaced by its name-based spec. Different hash → that method changed.
@@ -125,6 +169,8 @@ A body-only change in project P never recompiles projects that reference P. A su
 ## 5. Stage 2: the Bundle Session
 
 This is the part Gautam called the hard part: keeping the graph in memory. The session state is deliberately small, and section 5.2 sets its memory budget.
+
+(Superseded: the Method Cache, Type Cache, Dependency Index and Pending Invalidations were not built. The warm session keeps loaded modules, Razor and CSS caches, and converts every method each build. Convert time is tracked debt D1.)
 
 ```mermaid
 flowchart LR
@@ -166,7 +212,7 @@ flowchart TB
 
 **Dev-mode output makes the writer incremental too.** Gautam's rule: service output does not have to match a Release build, only work. So in service mode the session does not run usage-ordered minification or the optimize passes. Every identifier gets a stable name derived from its identity (type and member name, local slot), which means a function's JavaScript text never changes unless its own body or a callee's surface changes. The writer therefore keeps each function's emitted text and source-map segment in the Method Cache and only re-serializes misses. Assembly is concatenation plus re-basing of source-map line offsets. Naming cost is already 25 ms; this removes most of the 0.5 s writer cost as well.
 
-**The oracle survives.** Batch `nscript.exe` gets the same `-devMode` switch (stable names, no optimize). A batch dev-mode build of the same sources must be byte-identical to the service output, so every slice is still testable by diff. Release output is produced only by batch builds and is untouched by this plan.
+**The oracle survives.** Batch `nscript.exe` gets the same `-devMode` switch (stable names, no optimize). A batch dev-mode build of the same sources must be byte-identical to the service output, so every slice is still testable by diff. Release output is produced only by batch builds. (Superseded: "untouched by this plan". Two side fixes changed Release output on purpose; see "Status and rulings".)
 
 ### 5.2 Memory budget
 
@@ -197,7 +243,7 @@ flowchart TB
 - **Model changes reach skins through the same Dependency Index.** A skin records the TypeKeys and MemberKeys it binds. A surface change on a view model evicts the skin like any other caller.
 - **CSS.** Razor's CSS-literal replacement makes method bodies depend on the global CSS class map. Methods and skins record the class keys they use; a CSS edit evicts only those.
 - **XWML** follows the same path through `XwmlTemplatingPlugin`: its global CSS-name compression is recomputed from the cached per-template results, not re-parsed.
-- **DLL consistency.** The resource patch keeps `obj/.../X.dll` truthful, so a later MSBuild-driven build sees nothing to do. A failed template compile keeps the last-good skin output and reports the template diagnostics, the same rule as C#.
+- **DLL consistency.** The resource patch keeps `obj/.../X.dll` truthful, so a later MSBuild-driven build sees nothing to do. (Superseded: after a skin or CSS save, a synced `dotnet build` still recompiles the app locally. Open owner decision.) A failed template compile keeps the last-good skin output and reports the template diagnostics, the same rule as C#.
 
 ## 7. Two traces through the same names
 
@@ -244,7 +290,7 @@ flowchart TB
     S2 --> OUT[DLLs and JS on disk<br/>same paths as MSBuild]
 ```
 
-`NScriptWatch=true` implies the service flag and asks the service to watch every source file, template and CSS file it has been given. The first MSBuild run registers the projects; after that, saves rebuild without MSBuild. A later `dotnet build` finds artifacts newer than sources and skips, or round-trips to the service and gets a cached answer. Watch mode never writes to paths MSBuild did not already write to.
+`NScriptWatch=true` implies the service flag and asks the service to watch every source file, template and CSS file it has been given. The first MSBuild run registers the projects; after that, saves rebuild without MSBuild. A later `dotnet build` finds artifacts newer than sources and skips, or round-trips to the service and gets a cached answer. Watch mode never writes to paths MSBuild did not already write to. (Superseded: a later `dotnet build` asks the service with `--sync`, per the trigger plan. The service also writes an `obj/nscript.watch` marker while it watches a project.)
 
 ## 9. How to build it
 
@@ -252,19 +298,19 @@ Each slice is end to end and measurable. The byte comparison against a batch dev
 
 0. **Prerequisite, approved by Gautam on 2026-10-07.** Add `WriteOnlyWhenDifferent="true"` to the two `WriteLinesToFile` calls in `Sources/Framework/NScript.PackageMetadata.targets`. **Done:** rebuild after a TodoApp edit runs CoreCompile only for TodoApp; wall time drops from ~50 s to roughly 15 s (basis: 36 s of the measured 50 s is framework recompiles). **Status 2026-10-07: done.** The `Encoding="utf-8"` attribute also had to go, because MSBuild skips the content comparison when it is set. Measured: TodoApp edit build 53 s to 17 s, Csc calls 9 to 1; no-op solution build runs 0 Csc calls.
 
-1. **Thin slice: service, client, flag, warm but not incremental.** New `nscript.exe service` host with the pipe protocol, discovery, launch, idle exit, toolset-hash restart. `csc.exe /service` and `nscript.exe -service` clients with local fallback. `Sdk.targets` forwards both flags when `NScriptService=true`: two conditional lines in the existing targets, approved with slice 0. Stage 1 hosted in-process with a live `CSharpCompilation` per project and `ReplaceSyntaxTree`; stage 2 runs today's `Builder` in-process in the daemon, with a stream-based `ClrContext.LoadAssembly` and module replacement. Add `-devMode` to batch `nscript.exe` (stable names, no optimize) so the oracle exists from day one. Reuse: `SerializationHelper.InjectIntoCompilation`, `Builder`, the existing JSONL log. Build a fresh `$$ResInfo$$` per emit instead of reusing the shared stream in `Csc.GetResourceFilePaths`. **Done:** second build after a body edit completes with no new processes; warm timings for every stage-2 phase and warm Roslyn emit are logged; resident memory for the five demo bundles is reported; output identical to batch dev-mode.
+1. **Thin slice: service, client, flag, warm but not incremental.** New `nscript.exe service` host with the pipe protocol, discovery, launch, idle exit, toolset-hash restart. `csc.exe /service` and `nscript.exe -service` clients with local fallback. `Sdk.targets` forwards both flags when `NScriptService=true`: two conditional lines in the existing targets, approved with slice 0. Stage 1 hosted in-process with a live `CSharpCompilation` per project and `ReplaceSyntaxTree`; stage 2 runs today's `Builder` in-process in the daemon, with a stream-based `ClrContext.LoadAssembly` and module replacement. Add `-devMode` to batch `nscript.exe` (stable names, no optimize) so the oracle exists from day one. Reuse: `SerializationHelper.InjectIntoCompilation`, `Builder`, the existing JSONL log. Build a fresh `$$ResInfo$$` per emit instead of reusing the shared stream in `Csc.GetResourceFilePaths`. **Done:** second build after a body edit completes with no new processes; warm timings for every stage-2 phase and warm Roslyn emit are logged; resident memory for the five demo bundles is reported; output identical to batch dev-mode. **Status: built,** but stage 1 is a full in-process compile per request, not `ReplaceSyntaxTree`.
 
-2. **Method Cache, memoized walk, chunked writer.** Interned keys, `deps` recording inside `RuntimeScopeManager.Resolve*`, cache-hit path in `ProcessMembers`, scope detachment for evicted methods, per-session comparer, per-assembly reset of `DependencyAnalyzer` entries on module swap, stable identity-based naming, per-function text and source-map segments. Body-hash change sets from stage 1. **Done:** Trace A scenario; stage 2 under 1 s on TodoApp with conversion under 100 ms; a swap-module test asserts no cache or ordering entry still holds an old Cecil object; memory within budget; output identical to batch dev-mode.
+2. **Method Cache, memoized walk, chunked writer.** Interned keys, `deps` recording inside `RuntimeScopeManager.Resolve*`, cache-hit path in `ProcessMembers`, scope detachment for evicted methods, per-session comparer, per-assembly reset of `DependencyAnalyzer` entries on module swap, stable identity-based naming, per-function text and source-map segments. Body-hash change sets from stage 1. **Done:** Trace A scenario; stage 2 under 1 s on TodoApp with conversion under 100 ms; a swap-module test asserts no cache or ordering entry still holds an old Cecil object; memory within budget; output identical to batch dev-mode. **Status: closed in part.** Stable names and the chunked writer are built. No Method Cache or memoized walk. Convert ~320 ms, accepted as debt D1.
 
-3. **Skins.** Resource classification in the Registry, Cecil resource patch in the Stage-1 Host, Skin Cache with per-template recompile for Razor and XWML, CSS key dependencies, skin roots through the Dependency Index. **Done:** edit `AppShell.skin.cshtml`, an XWML template and `AppShell.css` in turn; each updates the JavaScript in under 500 ms with the Roslyn emit counter unchanged; e2e TodoApp suite passes.
+3. **Skins.** Resource classification in the Registry, Cecil resource patch in the Stage-1 Host, Skin Cache with per-template recompile for Razor and XWML, CSS key dependencies, skin roots through the Dependency Index. **Done:** edit `AppShell.skin.cshtml`, an XWML template and `AppShell.css` in turn; each updates the JavaScript in under 500 ms with the Roslyn emit counter unchanged; e2e TodoApp suite passes. **Status: built.** No Roslyn emit on skin or CSS saves. Time target not met: skin 681 ms, CSS 535 ms (D1).
 
-4. **Surface change sets, cascade, last-good semantics.** Surface hashing in the Stage-1 Host, reference swap and dependent recompile in the Registry, Dependency Index eviction, Pending Invalidations and the green gate. **Done:** Trace B scenario passes as a scripted test; `TodoApp.js` mtime unchanged while red.
+4. **Surface change sets, cascade, last-good semantics.** Surface hashing in the Stage-1 Host, reference swap and dependent recompile in the Registry, Dependency Index eviction, Pending Invalidations and the green gate. **Done:** Trace B scenario passes as a scripted test; `TodoApp.js` mtime unchanged while red. **Status: built** without surface hashing (deferred). Dependents recompile in full.
 
-5. **Watch mode.** `FileSystemWatcher` over registered sources, templates and CSS, debounce, kind classification, graph-ordered rebuild, `NScriptWatch=true`. **Done:** save a `.cs` and a `.skin.cshtml`; JS updates with no MSBuild; e2e TodoApp suite passes against watch-produced output.
+5. **Watch mode.** `FileSystemWatcher` over registered sources, templates and CSS, debounce, kind classification, graph-ordered rebuild, `NScriptWatch=true`. **Done:** save a `.cs` and a `.skin.cshtml`; JS updates with no MSBuild; e2e TodoApp suite passes against watch-produced output. **Status: built.**
 
-6. **Only if slice 1's measurements demand it.** Fork change for per-method Roslyn emit (`filterOpt` or a skip-unchanged hook, new ADR); shared immutable framework JST across sessions.
+6. **Only if slice 1's measurements demand it.** Fork change for per-method Roslyn emit (`filterOpt` or a skip-unchanged hook, new ADR); shared immutable framework JST across sessions. **Status: not built**; its condition did not trigger.
 
-Validation for every slice: the four browser suites and the benchmark check from `CLAUDE.md`, run against service-produced output, plus a byte comparison with batch dev-mode output. Release output is built in batch and compared against its own baseline, unchanged.
+Validation for every slice: the four browser suites and the benchmark check from `CLAUDE.md`, run against service-produced output, plus a byte comparison with batch dev-mode output. Release output is built in batch and compared against its own baseline. (Superseded: "unchanged". Release output changed in two deliberate side fixes; see "Status and rulings".)
 
 ## 10. Decisions taken
 
@@ -272,7 +318,7 @@ Validation for every slice: the four browser suites and the benchmark check from
 - **Dev-mode output:** Gautam's rule that service builds need not match Release is adopted as the basis for stable naming and the chunked writer (section 5.1). Release stays batch.
 - **Roslyn fork:** changes for this work are allowed when measurements justify them (section 4, slice 6).
 
-No open decisions remain.
+Superseded: one decision is open (skin or CSS save, then synced build). See "Status and rulings".
 
 ## 11. Material risks
 
@@ -280,11 +326,11 @@ No open decisions remain.
 - **Hidden body dependencies.** Call-site shape depends on callee declaration, with known exceptions: constructor IL shape, Razor CSS-literal encapsulation. Each is folded into the surface hash or into recorded CSS keys. Any missed case shows up as a diff against batch dev-mode output, which is why the oracle is non-negotiable.
 - **Stable names collide.** Identity-based names must be unique per scope without the global minifier. Compiler-generated members and overloads need a deterministic suffix rule; the diff oracle catches any collision as a behavioural failure in the browser suites.
 - **Compiler-generated names shift.** Adding a lambda renames sibling `<M>b__3_1` methods. This causes extra invalidations, never missed ones.
-- **Emit cost in stage 1.** Roslyn rebinds every body per emit. Not measured warm yet; slice 1 measures it before slice 2 assumes it, and the fork is the fallback.
-- **Memory.** The 500 MB budget is an estimate. Slice 1 measures it; shared framework JST is the fallback.
+- **Emit cost in stage 1.** Roslyn rebinds every body per emit. Not measured warm yet; slice 1 measures it before slice 2 assumes it, and the fork is the fallback. (Measured: ~0.23 s warm for a TodoApp body edit. The fork was not needed.)
+- **Memory.** The 500 MB budget is an estimate. Slice 1 measures it; shared framework JST is the fallback. (Measured: 450 MB peak for five bundles. Fallback not needed.)
 - **Parallel MSBuild nodes.** Requests for independent projects arrive concurrently. The service serializes per project and per bundle session, and compiles independent projects in parallel.
 
-**Now / next:** review this revision. If approved, slice 0 is a one-line change that pays off immediately; slice 1 is the first real service work.
+**Now / next:** (Superseded: built; see "Status and rulings".) Review this revision. If approved, slice 0 is a one-line change that pays off immediately; slice 1 is the first real service work.
 
 ---
 
@@ -314,4 +360,4 @@ No open decisions remain.
 → {"type":"shutdown"}
 ```
 
-The copied Roslyn `BuildClient`/`BuildServerConnection` is not reused: its protocol is binary, assumes `VBCSCompiler`, and hard-codes `isRunningOnCoreClr = false`. The new protocol is about 200 lines.
+The copied Roslyn `BuildClient`/`BuildServerConnection` is not reused: its protocol is binary, assumes `VBCSCompiler`, and hard-codes `isRunningOnCoreClr = false`. The new protocol is about 200 lines. (Superseded: the built protocol is `NScript.Csc.Lib/Service/ServiceProtocol.cs`, about 300 lines. Request kinds: `compile`, `emitJs`, `status`, `stop`, `sync`. No `hello`, `watch` or `shutdown` messages; watch is a per-request flag.)
