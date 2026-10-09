@@ -170,6 +170,17 @@ namespace XwmlParser
         Queue<TemplateParser> templatesToParse = new Queue<TemplateParser>();
 
         /// <summary>
+        /// HTML documents and template parsers read this build (Probe.XwmlInit). Nothing is
+        /// cached across builds, so every document is a miss.
+        /// </summary>
+        internal int ProbeDocuments;
+
+        internal int ProbeTemplatesParsed;
+
+        /// <summary>Style sheets parsed this build (Probe.XwmlInit).</summary>
+        internal int ProbeStyleSheets => this.styleSheet.Count;
+
+        /// <summary>
         /// The resource map.
         /// </summary>
         Dictionary<string, Tuple<EmbeddedResource, string>> resourceMap =
@@ -406,6 +417,7 @@ namespace XwmlParser
                     this.parserContext.RegisterHtmlParser(
                         templateNameSplits[0],
                         htmlParser);
+                    this.ProbeDocuments++;
                 }
 
                 if (htmlParser == null)
@@ -535,6 +547,7 @@ namespace XwmlParser
                     this.templatesToParse.Dequeue();
 
                 templateParser.Parse();
+                this.ProbeTemplatesParsed++;
 
                 if (templateParser.SkinNodeInfo != null)
                 {
