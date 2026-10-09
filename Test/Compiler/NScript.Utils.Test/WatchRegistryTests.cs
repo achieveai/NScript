@@ -346,6 +346,31 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// An obj DLL another build rewrote is a C# save of its project: it and its dependents
+        /// compile. A compile that fails records the DLL it left, so a red project is not
+        /// recompiled at every sync; a later rewrite (somebody built it) is foreign again.
+        /// </summary>
+        [TestMethod]
+        public void RefreshForeignOutputs_RewrittenObj_DirtiesItAndDependents_RedDoesNotLoop()
+        {
+            this.stamps[Out("A")] = Stamp(1);
+            var a = this.Register("A");
+            var b = this.Register("B", references: new[] { Out("A") });
+            Assert.AreEqual(0, this.registry.RefreshForeignOutputs().Count, "untouched");
+
+            this.stamps[Out("A")] = Stamp(2);
+            CollectionAssert.AreEqual(new[] { a.Key }, this.registry.RefreshForeignOutputs().ToArray());
+            CollectionAssert.AreEqual(new[] { a.Key, b.Key }, this.registry.Plan().Compiles.Select(p => p.Key).ToArray());
+
+            this.Compiled(a, exitCode: 1);
+            Assert.AreEqual(0, this.registry.RefreshForeignOutputs().Count, "red recompiled at every sync");
+
+            this.stamps[Out("A")] = Stamp(3);
+            CollectionAssert.AreEqual(new[] { a.Key }, this.registry.RefreshRed().ToArray());
+            CollectionAssert.AreEqual(new[] { a.Key }, this.registry.RefreshForeignOutputs().ToArray());
+        }
+
+        /// <summary>
         /// Contract 6: every compile attempt refreshes the recorded hashes, so H0 -> H1 -> H0
         /// is two compiles ending at H0, also when the H1 compile failed. A project blocked
         /// behind a red dependency stays dirty.

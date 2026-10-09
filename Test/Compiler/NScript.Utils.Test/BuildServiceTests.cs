@@ -1343,6 +1343,51 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// F-002 hand run: a build with other compile properties (-p:DefineConstants=X) rewrote
+        /// the watched obj DLLs, and the next plain build's sync vouched for them. Sync must
+        /// find an obj DLL the daemon did not write last, recompile it and what reads it, as
+        /// for a C# save, and answer from that compile. An untouched DLL compiles nothing.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Sync_ObjDllRewrittenByAnotherBuild_RecompilesThenYes_UntouchedCompilesNothing()
+        {
+            string daemons = typeof(BuildServiceTests).Assembly.Location;
+            string anotherBuilds = typeof(Assert).Assembly.Location;
+            int compiles = 0;
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindCompile)
+                {
+                    Interlocked.Increment(ref compiles);
+                    var dll = Path.Combine(request.Cwd, "obj", request.Cwd == watch.Project ? "A.dll" : "B.dll");
+                    Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                    File.Copy(daemons, dll, overwrite: true);
+                }
+
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                var aDll = Path.Combine(watch.Project, "obj", "A.dll");
+                var bDll = Path.Combine(watch.Dependent, "obj", "B.dll");
+                watch.Register("A.cs");
+                watch.RegisterIn(watch.Dependent, "B.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(bDll).ExitCode, "control: nothing changed");
+                int before = Volatile.Read(ref compiles);
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(bDll).ExitCode, "control: nothing changed");
+                Assert.AreEqual(before, Volatile.Read(ref compiles), "an untouched obj DLL compiles nothing");
+
+                File.Copy(anotherBuilds, aDll, overwrite: true);
+                var answer = watch.Sync(bDll);
+
+                Assert.AreEqual(ServiceHost.SyncExitYes, answer.ExitCode, answer.Message);
+                Assert.AreEqual(before + 2, Volatile.Read(ref compiles), "A recompiled, then B, which reads it: " + answer.Message);
+                Assert.AreEqual(ServiceHost.ReadStamp(daemons)?.Mvid, ServiceHost.ReadStamp(aDll)?.Mvid, "A.dll is the daemon's again");
+            }
+        }
+
+        /// <summary>
         /// S2: sync answers no, never yes, for a key it does not watch (with the watched key
         /// when only the folder is wrong, in full: the path is the hint) and for bad arguments.
         /// With the watcher's .cs events lost, a new source file and a deleted input are still

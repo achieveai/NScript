@@ -186,6 +186,10 @@ namespace NScript.Lib.Service
 
         // Hash of the JS each bundle's last successful daemon emit left on disk (D-S3-1).
         private readonly Dictionary<string, string> emittedJs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        // Stamp of each obj DLL as the daemon last left it (registration, compile attempt or
+        // patch); another stamp at sync means another build rewrote it (RefreshForeignOutputs).
+        private readonly Dictionary<string, AssemblyStamp> written = new Dictionary<string, AssemblyStamp>(StringComparer.OrdinalIgnoreCase);
         private readonly List<CopyEdge> copyEdges = new List<CopyEdge>();
         private readonly HashSet<CopyEdge> copyPending = new HashSet<CopyEdge>();
         private HashSet<string> lastOwners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -267,6 +271,7 @@ namespace NScript.Lib.Service
             this.dirty.Remove(record.Key);
             this.compileDirty.Remove(record.Key);
             this.SetResult(record.Key, exitCode);
+            this.RecordWritten(record.Key);
             this.RefreshCopyEdges(record.Key);
             return record;
         }
@@ -308,6 +313,7 @@ namespace NScript.Lib.Service
             this.dirty.Remove(projectKey);
             this.compileDirty.Remove(projectKey);
             this.SetResult(projectKey, exitCode);
+            this.RecordWritten(projectKey);
         }
 
         /// <summary>
@@ -336,6 +342,7 @@ namespace NScript.Lib.Service
             }
 
             this.dirty.Remove(projectKey);
+            this.RecordWritten(projectKey);
         }
 
         /// <summary>
@@ -881,6 +888,35 @@ namespace NScript.Lib.Service
             return cleared;
         }
 
+        /// <summary>
+        /// Marks for a compile the projects whose obj DLL another build rewrote or deleted
+        /// since the daemon last left it (a <c>-p:DefineConstants=X</c> build compiles other
+        /// code into it), with their dependents and bundles, as for a C# save. The batch that
+        /// runs them answers the sync, never a standing no. A failed compile records the DLL
+        /// it left too, so red never recompiles in a loop. A locked DLL waits for the next
+        /// sync. Returns the marked project keys.
+        /// </summary>
+        public IReadOnlyList<string> RefreshForeignOutputs()
+        {
+            var changes = new WatchChanges();
+            foreach (var pair in this.written)
+            {
+                var now = this.readStamp(pair.Key);
+                if (now != null ? now.Value != pair.Value : this.probe(pair.Key).State == FileProbeState.Missing)
+                {
+                    changes.ChangedOwners.Add(pair.Key);
+                    changes.CsOwners.Add(pair.Key);
+                }
+            }
+
+            if (changes.CsOwners.Count > 0)
+            {
+                this.Apply(changes);
+            }
+
+            return changes.CsOwners.ToList();
+        }
+
         /// <summary>Every input of every project, for a rescan after a watcher overflow.</summary>
         public IEnumerable<string> AllInputs() => this.projects.Values.SelectMany(p => p.InputSet).Distinct(StringComparer.OrdinalIgnoreCase);
 
@@ -1103,6 +1139,18 @@ namespace NScript.Lib.Service
             }
 
             return lapsed;
+        }
+
+        private void RecordWritten(string projectKey)
+        {
+            if (this.readStamp(projectKey) is AssemblyStamp stamp)
+            {
+                this.written[projectKey] = stamp;
+            }
+            else
+            {
+                this.written.Remove(projectKey);
+            }
         }
 
         private void SetResult(string projectKey, int exitCode)

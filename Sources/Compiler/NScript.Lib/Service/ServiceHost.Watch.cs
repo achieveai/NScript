@@ -1361,7 +1361,8 @@ namespace NScript.Lib.Service
         /// reads and the bundles that include it are current. Files in their project folders
         /// the watch has not seen (new source files, deleted inputs) are queued like watcher
         /// events, and the answer waits, at most <c>Args[1]</c> seconds, until the watch loop
-        /// has run everything queued. Runs outside <see cref="requestLock"/>, so the watch loop
+        /// has run everything queued, including the recompile of an obj DLL another build
+        /// rewrote (<see cref="WatchRegistry.RefreshForeignOutputs"/>). Runs outside <see cref="requestLock"/>, so the watch loop
         /// stays the only batch runner. Exit code: <see cref="SyncExitYes"/>,
         /// <see cref="SyncExitNo"/> or <see cref="SyncExitBusy"/>.
         /// </summary>
@@ -1507,10 +1508,16 @@ namespace NScript.Lib.Service
                     {
                         this.registry.RefreshRed();
                         this.registry.RefreshCopyPending();
+                        foreach (var foreign in this.registry.RefreshForeignOutputs())
+                        {
+                            CompilerLog.ForComponent("Watch").Information("WatchForeignOutput Key={Key} Reason={Reason}", foreign, "obj DLL rewritten or deleted outside watch");
+                            this.WatchLog("sync    {0}: {1} rewritten outside watch; recompiling", Path.GetFileName(key), Path.GetFileName(foreign));
+                        }
 
                         // A copy a full build refreshed clears only here, so what it kept is
-                        // still dirty with nothing keeping it: run that batch and wait for it,
-                        // once per sync, rather than answer no for work the daemon can do now.
+                        // still dirty with nothing keeping it; an obj DLL another build rewrote
+                        // is dirty from here: run that batch and wait for it, once per sync,
+                        // rather than answer no for work the daemon can do now.
                         if (!kicked && this.registrationKickMs < 0 && this.registry.HasRunnableWork())
                         {
                             kicked = true;
