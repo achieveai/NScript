@@ -295,6 +295,59 @@
 		         Condition="'$(NScriptSecondarySourceMapRoot)' != ''" />
 	</Target>
 
+	<!--
+	  Synced after a skin or CSS save (D1): the daemon patched the resource into the obj DLL
+	  (ResourcePatcher) and re-emitted the JS, but CoreCompile's other outputs (PDB, reference
+	  assembly) keep the watch compile's time. CoreCompile sees the resource newer than them and
+	  would run csc, rewrite the DLL the daemon serves and make the next sync recompile it.
+	  So a synced build skips csc (the CoreCompile target still runs) when only embedded resources
+	  are newer than CoreCompile's outputs and none is newer than the DLL. The daemon's yes vouches
+	  for the resources; a resource saved after the patch is newer than the DLL. Any other input
+	  newer than an output, or a missing output, still compiles.
+	  The lists are CoreCompile's Inputs and Outputs (Microsoft.CSharp.Core.targets, the same in
+	  SDK 8 to 11), split at @(_CoreCompileResourceInputs).
+	-->
+	<Target Name="_NScriptWatchSyncedCompileCheck"
+	        Condition="'$(_NScriptWatchSynced)' == 'true'"
+	        Inputs="$(MSBuildAllProjects);@(Compile);$(ApplicationIcon);$(KeyOriginatorFile);@(ReferencePathWithRefAssemblies);@(CompiledLicenseFile);@(LinkResource);@(EmbeddedDocumentation);$(Win32Resource);$(Win32Manifest);@(CustomAdditionalCompileInputs);$(ResolvedCodeAnalysisRuleSet);@(AdditionalFiles);@(EmbeddedFiles);@(Analyzer);@(EditorConfigFiles);$(SourceLink)"
+	        Outputs="@(DocFileItem);@(IntermediateAssembly);@(IntermediateRefAssembly);@(_DebugSymbolsIntermediatePath);$(NonExistentFile);@(CustomAdditionalCompileOutputs)">
+		<!-- ValueSetByTask: set only when the target really runs, not when MSBuild infers its outputs. -->
+		<CreateProperty Value="true">
+			<Output TaskParameter="ValueSetByTask" PropertyName="_NScriptWatchSyncedCompile" />
+		</CreateProperty>
+	</Target>
+
+	<Target Name="_NScriptWatchSyncedResourceAfterPatchCheck"
+	        Condition="'$(_NScriptWatchSynced)' == 'true'"
+	        Inputs="@(_CoreCompileResourceInputs)"
+	        Outputs="@(IntermediateAssembly)">
+		<CreateProperty Value="true">
+			<Output TaskParameter="ValueSetByTask" PropertyName="_NScriptWatchSyncedCompile" />
+		</CreateProperty>
+	</Target>
+
+	<Target Name="_NScriptWatchSyncedResourcePatchCheck"
+	        Condition="'$(_NScriptWatchSynced)' == 'true'"
+	        Inputs="@(_CoreCompileResourceInputs)"
+	        Outputs="@(DocFileItem);@(IntermediateAssembly);@(IntermediateRefAssembly);@(_DebugSymbolsIntermediatePath);$(NonExistentFile);@(CustomAdditionalCompileOutputs)">
+		<CreateProperty Value="true">
+			<Output TaskParameter="ValueSetByTask" PropertyName="_NScriptWatchSyncedPatched" />
+		</CreateProperty>
+	</Target>
+
+	<Target Name="_NScriptWatchSyncedSkipCsc"
+	        BeforeTargets="CoreCompile"
+	        DependsOnTargets="_NScriptWatchSyncedCompileCheck;_NScriptWatchSyncedResourceAfterPatchCheck;_NScriptWatchSyncedResourcePatchCheck"
+	        Condition="'$(_NScriptWatchSynced)' == 'true'">
+		<PropertyGroup Condition="'$(_NScriptWatchSyncedPatched)' == 'true' and '$(_NScriptWatchSyncedCompile)' != 'true'">
+			<SkipCompilerExecution>true</SkipCompilerExecution>
+			<_NScriptWatchSyncedSkippedCsc>true</_NScriptWatchSyncedSkippedCsc>
+		</PropertyGroup>
+		<Message Importance="high"
+		         Condition="'$(_NScriptWatchSyncedSkippedCsc)' == 'true'"
+		         Text="NScript watch: $(AssemblyName) resources are in the watch's DLL; csc skipped" />
+	</Target>
+
 	<!-- NScriptWatch=true: the stamp makes CoreCompile run, so an up-to-date project still registers with watch. -->
 	<Target Name="NScriptWatchStamp" BeforeTargets="CoreCompile" Condition="'$(NScriptWatch)' == 'true' and '$(_NScriptWatchSynced)' != 'true'">
 		<Touch Files="$(IntermediateOutputPath)nscript.watch.stamp" AlwaysCreate="true" />

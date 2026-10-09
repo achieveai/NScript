@@ -65,8 +65,9 @@ namespace NScript.Lib.Service
     /// The patched DLL claims no PDB: Cecil renumbers method rows (nested types move next to
     /// their parent), so the old PDB no longer describes it, and Cecil 0.10.1's portable PDB
     /// writer drops the #Pdb stream name, so a new PDB would be unreadable. The old PDB stays
-    /// on disk, older than the inputs, so the next MSBuild build recompiles the pair. Stage 2
-    /// never reads symbols.
+    /// on disk, older than the inputs. A build the daemon syncs keeps the patched DLL and skips
+    /// csc (Sdk.targets, _NScriptWatchSyncedSkipCsc); any other MSBuild build recompiles the
+    /// pair. Stage 2 never reads symbols.
     /// </summary>
     public static class ResourcePatcher
     {

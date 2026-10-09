@@ -68,6 +68,10 @@ Saves within a short debounce window form one batch.
   - MSBuild skips the project-reference builds and reads the references the daemon vouched for.
   - It keeps the daemon's JS, unless another build rewrote it.
   - Message: `NScript watch: <App> current, skipped <N> project builds`.
+  - After a skin or CSS save it also keeps the daemon's patched DLL. The patch leaves the PDB older than the resource, so MSBuild would recompile. The build skips csc instead (the `CoreCompile` target still runs).
+    - Only when embedded resources alone are newer than the compile outputs, and none is newer than the DLL.
+    - Any other newer input (a `.cs` file, a reference, `.editorconfig`, an analyzer) or a missing output still compiles.
+    - Message: `NScript watch: <App> resources are in the watch's DLL; csc skipped`.
 - **No** (exit 1), **busy** (exit 2) or no daemon: today's full build.
   - Message: `NScript watch: full build (<reason>)`.
 - **Other compile properties: no.** The daemon replays the watch build's compiler command line. So a build may sync only with the same compile-affecting properties.
@@ -139,7 +143,7 @@ Use the `nscript.exe` of the toolset your build used. In this repo, Test/Framewo
 
 ## Known limits
 
-- **Skin or CSS save, then `dotnet build`:** the build still recompiles the app locally and writes normal (non-dev) JS. The patched DLL has no PDB link. The next build's sync finds the app's obj DLL rewritten outside watch. The daemon recompiles it once and writes dev JS again. Builds after that are current. Pending a decision.
+- **No C# symbols after a skin or CSS save.** The patched DLL names no PDB (no CodeView entry), so a .NET debugger loads no symbols for it. The old PDB stays in `obj` and `bin`. The JS and its source maps are unaffected. The next `.cs` save, or any build that is not synced, writes a matching DLL and PDB again.
 - **Dev-mode JS:** the daemon writes dev-mode JS; a local build writes normal JS. The file on disk is whichever wrote last.
 - **Solution builds skip the sync.** `dotnet build NScript_Full.sln` builds every project as before.
 - **A synced build skips the framework projects.** Their commit SHA stamp and the NuGet packages in `NScriptToolSet` are not refreshed. A full build fixes both.

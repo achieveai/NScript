@@ -38,6 +38,7 @@ namespace NScript.Utils.Test
             "  </PropertyGroup>\n" +
             "  <ItemGroup>\n" +
             "    <ProjectReference Include=\"..\\Lib\\Lib.proj\" />\n" +
+            "    <EmbeddedResource Include=\"*.skin\" />\n" +
             "  </ItemGroup>\n" +
             "  <Import Project=\"$(SdkDir)Sdk.targets\" />\n" +
             "  <Target Name=\"Dump\">\n" +
@@ -169,6 +170,76 @@ namespace NScript.Utils.Test
             Assert.AreEqual(1, Count(output, "NScript watch: full build (nscript service: sync busy"), "busy is not a yes\n" + output);
             Assert.AreEqual(2, Count(output, "NScript watch: App current, skipped"), "control: steps 3 and 4 sync\n" + output);
             Assert.AreEqual(1, Count(output, "NScript: " + appJs + " was not written by this configuration"), "only the foreign JS is regenerated\n" + output);
+        }
+
+        /// <summary>
+        /// D1: a skin or CSS save is patched into the obj DLL by the daemon, which leaves the PDB
+        /// older than the resource. A synced build then skips csc, so it keeps the daemon's DLL and
+        /// JS, and the next sync does not find a DLL rewritten outside the watch. Any other input
+        /// newer than an output, a resource newer than the DLL, or no sync still runs csc.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // One dotnet msbuild run (~5-10 s) with four builds against a stand-in csc.
+        public void SyncedBuild_ResourcePatchedDll_SkipsCsc_OtherInputsStillCompile()
+        {
+            // Outputs in the future, so every SDK, repo and generated input is older than them.
+            DateTime pdb = DateTime.Now.AddHours(1);
+            DateTime skin = pdb.AddMinutes(10);
+            DateTime patched = pdb.AddMinutes(20);
+            DateTime late = pdb.AddMinutes(25);
+            DateTime js = pdb.AddMinutes(30);
+            static string At(DateTime time) => time.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+            static string Build(int step, string csc, string extra) =>
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Build\" Properties=\"SdkDir=$(SdkDir);Step=" + step +
+                ";CscToolExe=$(MSBuildThisFileDirectory)" + csc + ".cmd;BuildProjectReferences=false" + extra +
+                ";LanguageTargets=$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />\n"; // A .proj gets no C# targets by default.
+            string driver =
+                "<Project>\n" +
+                "  <Target Name=\"Run\">\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"Restore\" Properties=\"SdkDir=$(SdkDir);Step=0\" />\n" +
+                // The daemon patched the skin into the DLL: skin newer than the PDB, older than the DLL.
+                Build(1, "csc-patched", string.Empty) +
+                // The skin saved again after the patch: newer than the DLL.
+                "    <Touch Files=\"App\\Title.skin\" Time=\"" + At(late) + "\" />\n" +
+                Build(2, "csc-late", string.Empty) +
+                // A .cs input newer than the PDB.
+                "    <Touch Files=\"App\\Title.skin\" Time=\"" + At(skin) + "\" />\n" +
+                "    <Touch Files=\"App\\Class.cs\" Time=\"" + At(pdb.AddMinutes(5)) + "\" />\n" +
+                Build(3, "csc-cs", string.Empty) +
+                // No sync: today's build.
+                "    <Touch Files=\"App\\Class.cs\" />\n" +
+                Build(4, "csc-off", ";NScriptWatchSync=false") +
+                "  </Target>\n" +
+                "</Project>\n";
+            using var tree = new SyncTree(driver);
+            string app = Path.Combine(tree.Dir, "App") + Path.DirectorySeparatorChar;
+            // Lib as its last build left it (older than App's outputs).
+            Directory.CreateDirectory(tree.LibObj + "ref");
+            Directory.CreateDirectory(Path.Combine(tree.LibDir, "bin", "Debug", "netstandard2.1"));
+            File.WriteAllText(tree.LibObj + @"ref\Lib.dll", "Lib's reference assembly");
+            File.WriteAllText(Path.Combine(tree.LibDir, "bin", "Debug", "netstandard2.1", "Lib.dll"), "Lib");
+            File.WriteAllText(app + "Class.cs", "class C { }\n");
+            File.WriteAllText(app + "Title.skin", "<div>title</div>\n");
+            File.SetLastWriteTime(app + "Title.skin", skin);
+            File.WriteAllText(tree.AppObj + "App.pdb", "the watch compile's PDB");
+            File.SetLastWriteTime(tree.AppObj + "App.pdb", pdb);
+            File.WriteAllText(tree.AppObj + "App.dll", "the daemon's patched DLL");
+            File.SetLastWriteTime(tree.AppObj + "App.dll", patched);
+            File.WriteAllText(app + "App.js", "the daemon's dev JS");
+            File.SetLastWriteTime(app + "App.js", js);
+            foreach (string csc in new[] { "csc-patched", "csc-late", "csc-cs", "csc-off" })
+            {
+                File.WriteAllText(Path.Combine(tree.Dir, csc + ".cmd"), "@echo off\r\necho %~n0>>\"%~dp0csc-ran.txt\"\r\nexit /b 0\r\n");
+            }
+
+            string output = tree.Run();
+
+            string ranFile = Path.Combine(tree.Dir, "csc-ran.txt");
+            string ran = File.Exists(ranFile) ? string.Join(",", File.ReadAllLines(ranFile).Select(l => l.Trim())) : string.Empty;
+            Assert.AreEqual("csc-late,csc-cs,csc-off", ran, "only the patched build skips csc\n" + output);
+            Assert.AreEqual(3, Count(output, "NScript watch: App current, skipped"), "control: steps 1-3 sync\n" + output);
+            Assert.AreEqual(1, Count(output, "NScript watch: App resources are in the watch's DLL; csc skipped"), output);
+            Assert.AreEqual("the daemon's patched DLL", File.ReadAllText(Path.Combine(app, "bin", "Debug", "netstandard2.1", "App.dll")), "bin gets the patched DLL");
         }
 
         private static int Count(string text, string part)
