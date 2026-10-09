@@ -56,6 +56,17 @@
     </ItemGroup>
   </Target>
 
+  <!-- As _NScriptWatchTargetPath in NScript.Sdk's Sdk.targets: this project's GetTargetPath item, for synced builds of its readers. -->
+  <Target Name="NScriptWatchTargetPath"
+          AfterTargets="CoreCompile"
+          DependsOnTargets="GetTargetPathWithTargetPlatformMoniker"
+          Condition="'$(NScriptWatch)' == 'true'">
+    <WriteLinesToFile File="$(IntermediateOutputPath)nscript.targetpath"
+                      Lines="@(TargetPathWithTargetPlatformMoniker->'%(Identity)|%(ReferenceAssembly)|%(TargetPlatformMoniker)|%(TargetPlatformIdentifier)|%(TargetFrameworkIdentifier)|%(TargetFrameworkVersion)|%(CopyUpToDateMarker)')"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
   <Target Name="EnsureNScriptToolsetBuilt"
           BeforeTargets="CoreCompile"
           Condition="!Exists('$(CscToolPath)$(CscToolExe)') or !Exists('$(NScriptToolsetBinDir)$(NScriptEmitterToolFileName)')">

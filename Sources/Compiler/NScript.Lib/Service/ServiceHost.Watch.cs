@@ -8,6 +8,7 @@ namespace NScript.Lib.Service
     using System.Reflection.Metadata;
     using System.Reflection.PortableExecutable;
     using System.Security.Cryptography;
+    using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading;
     using NScript.Csc.Lib.Service;
@@ -54,6 +55,13 @@ namespace NScript.Lib.Service
         private long firstEventMs = -1;
         private long lastEventMs;
         private long batchCounter;
+
+        // Batches the watch loop took and finished, both under watchGate; --sync waits until they match.
+        private long batchesTaken;
+        private long batchesDone;
+
+        // How often a waiting --sync wakes without a finished batch (to see a stop).
+        private static readonly TimeSpan SyncPoll = TimeSpan.FromMilliseconds(250);
         private readonly RetryBudget bundleRetries = new RetryBudget(MaxBundleRetries);
         private string lastBatch = "none";
 
@@ -151,6 +159,10 @@ namespace NScript.Lib.Service
                     retainedFileCountLimit: 2)
                 .CreateLogger();
             this.WatchLog("daemon pid {0} started (toolset {1}); {2}", Environment.ProcessId, this.identity.ToolsetHash.Substring(0, 16), WatchNote);
+            if (this.options.DropWatchEvents.Count > 0)
+            {
+                this.WatchLog("TEST HOOK {0}={1}: watcher events for these extensions are ignored", DropWatchEventsEnvVar, string.Join(";", this.options.DropWatchEvents));
+            }
             this.watchThread = new Thread(this.WatchLoop) { IsBackground = true, Name = "nscript-watch" };
             this.watchThread.Start();
         }
@@ -169,6 +181,8 @@ namespace NScript.Lib.Service
             {
                 return;
             }
+
+            this.DeleteWatchMarkers();
 
             bool watching;
             lock (this.watchGate)
@@ -268,6 +282,9 @@ namespace NScript.Lib.Service
                     record = this.registry.RegisterCompile(request.Cwd, replayArgs, inputs, response.ExitCode, request.WatchSdkDir, existing, buildFiles);
                 }
 
+                // Kept while watching, red included (--sync answers that); deleted when watch stops.
+                this.WriteWatchMarker(record.Key);
+
                 log.Information(
                     "WatchRegister Kind={Kind} Key={Key} Inputs={Inputs} Outputs={Outputs} References={References} BuildFiles={BuildFiles} ExitCode={ExitCode}",
                     request.Kind,
@@ -294,6 +311,9 @@ namespace NScript.Lib.Service
             lock (this.watchGate)
             {
                 bundle = this.registry.RegisterBundle(request.Cwd, request.Args, options.JsFileName, options.EntryAssembly, options.ReferenceDlls);
+
+                // The registering build's emit ran here: its JS is the daemon's (D-S3-1).
+                this.registry.RecordBundleRun(bundle.Key, !emitResponse.InternalError && emitResponse.ExitCode == 0);
             }
 
             log.Information(
@@ -513,6 +533,11 @@ namespace NScript.Lib.Service
                     bool any = false;
                     foreach (var candidate in oldPath == null ? new[] { path } : new[] { path, oldPath })
                     {
+                        if (this.options.DropWatchEvents.Contains(Path.GetExtension(candidate), StringComparer.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
                         if (!this.registry.IsIgnored(candidate))
                         {
                             this.pendingPaths.Add(candidate);
@@ -652,6 +677,10 @@ namespace NScript.Lib.Service
                         this.pendingPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         this.pendingEvents = 0;
                         this.firstEventMs = -1;
+                        if (paths.Count > 0)
+                        {
+                            this.batchesTaken++;
+                        }
                     }
 
                     if (paths.Count == 0)
@@ -672,6 +701,12 @@ namespace NScript.Lib.Service
                     }
                     finally
                     {
+                        lock (this.watchGate)
+                        {
+                            this.batchesDone++;
+                            Monitor.PulseAll(this.watchGate);
+                        }
+
                         this.Touch();
                         Interlocked.Decrement(ref this.inFlight);
                     }
@@ -772,7 +807,7 @@ namespace NScript.Lib.Service
                     changes.NeedsBuild.Select(n => Path.GetFileName(n.ProjectKey) + ": " + n.Reason).ToList(),
                     events,
                     debounceMs);
-                foreach (var (projectKey, reason) in changes.NeedsBuild)
+                foreach (var (projectKey, reason, _) in changes.NeedsBuild)
                 {
                     log.Warning("WatchNeedsBuild BatchId={BatchId} Key={Key} Reason={Reason}", batchId, projectKey, reason);
                     this.WatchLog("NEEDS BUILD {0}: {1}; run dotnet build -p:NScriptWatch=true", Path.GetFileName(projectKey), reason);
@@ -1285,6 +1320,237 @@ namespace NScript.Lib.Service
                 || (response.Message ?? string.Empty).Contains("BadImageFormat", StringComparison.Ordinal))
             {
                 this.WatchLog("an input assembly is damaged; {0}", RebuildHint);
+            }
+        }
+
+        /// <summary>
+        /// <c>--sync</c>: whether the project whose obj DLL is <c>Args[0]</c>, the projects it
+        /// reads and the bundles that include it are current. Files in their project folders
+        /// the watch has not seen (new source files, deleted inputs) are queued like watcher
+        /// events, and the answer waits, at most <c>Args[1]</c> seconds, until the watch loop
+        /// has run everything queued. Runs outside <see cref="requestLock"/>, so the watch loop
+        /// stays the only batch runner. Exit code: <see cref="SyncExitYes"/>,
+        /// <see cref="SyncExitNo"/> or <see cref="SyncExitBusy"/>.
+        /// </summary>
+        private ServiceResponse Sync(ServiceRequest request)
+        {
+            var clock = Stopwatch.StartNew();
+            if (request.Args == null || request.Args.Length != 2
+                || !int.TryParse(request.Args[1], out int waitSeconds) || waitSeconds <= 0)
+            {
+                return SyncResponse(SyncExitNo, "nscript service: sync needs <obj dll> <wait seconds>");
+            }
+
+            string key = Path.GetFullPath(request.Args[0], string.IsNullOrEmpty(request.Cwd) ? Directory.GetCurrentDirectory() : request.Cwd);
+            List<ProjectRecord>? closure;
+            string? sameName;
+            lock (this.watchGate)
+            {
+                closure = this.registry.SyncClosure(key)?.ToList();
+                sameName = this.registry.Projects
+                    .FirstOrDefault(p => string.Equals(p.Name, Path.GetFileName(key), StringComparison.OrdinalIgnoreCase))?.Key;
+            }
+
+            int exitCode;
+            string? reason;
+            var unseen = new List<string>();
+            if (closure == null)
+            {
+                // The key is the DLL csc writes (obj), not MSBuild's bin copy.
+                (exitCode, reason) = (SyncExitNo, sameName == null
+                    ? "not watched (pass the obj DLL csc writes)"
+                    : "not watched; the watched key for that name is " + sameName);
+            }
+            else if (!TryFindUnseenFiles(closure, unseen, out var listFailure))
+            {
+                (exitCode, reason) = (SyncExitNo, listFailure);
+            }
+            else
+            {
+                (exitCode, reason) = this.WaitForSettled(key, unseen, TimeSpan.FromSeconds(waitSeconds), clock);
+            }
+
+            // On yes, the references Sdk.targets passes instead of evaluating project references.
+            var references = new StringBuilder();
+            if (exitCode == SyncExitYes)
+            {
+                IReadOnlyList<(string ProjectDir, string Reference, string IntermediateDir)>? vouched;
+                IReadOnlyList<string> foreignJs;
+                lock (this.watchGate)
+                {
+                    vouched = this.registry.SyncReferences(key);
+                    foreignJs = this.registry.ForeignJs(key);
+                }
+
+                foreach (var js in foreignJs)
+                {
+                    references.Append('\n').Append(SyncJsForeignPrefix).Append(js);
+                }
+
+                foreach (var (projectDir, reference, intermediateDir) in vouched ?? Array.Empty<(string, string, string)>())
+                {
+                    references.Append('\n').Append(SyncRefLine(projectDir, reference, intermediateDir));
+                }
+            }
+
+            string word = exitCode == SyncExitYes ? "yes" : exitCode == SyncExitBusy ? "busy" : "no";
+            string name = Path.GetFileName(key);
+            CompilerLog.ForComponent("Watch").Information(
+                "WatchSync Key={Key} Answer={Answer} Reason={Reason} Unseen={Unseen} WaitMs={WaitMs}",
+                key, word, reason, unseen.Count, clock.ElapsedMilliseconds);
+            this.WatchLog("sync    {0} {1}{2} {3} ms", name, word, reason == null ? "" : " (" + reason + ")", clock.ElapsedMilliseconds);
+            // The answer line is shown in every build log: file names only (the reason in
+            // watch.log keeps paths), except the not-watched hint, whose path is the point.
+            string shown = reason == null ? "" : ": " + (closure == null ? reason : ShortPaths(reason));
+            return SyncResponse(exitCode, $"nscript service: sync {word} {name}{shown} ({clock.ElapsedMilliseconds} ms){references}");
+        }
+
+        /// <summary>
+        /// Replaces every absolute path in <paramref name="text"/> with its file name. Folder
+        /// names may hold spaces; a segment never crosses a colon, a parenthesis or a line end.
+        /// </summary>
+        internal static string ShortPaths(string text)
+            => Regex.Replace(text, @"(?:\b[A-Za-z]:|\\\\[^\\\s]+)\\(?:[^\\:;|()\r\n]+\\)*", string.Empty);
+
+        private static ServiceResponse SyncResponse(int exitCode, string message)
+            => new ServiceResponse { DaemonPid = Environment.ProcessId, ExitCode = exitCode, Message = message };
+
+        /// <summary>
+        /// Adds to <paramref name="unseen"/> the files of <paramref name="closure"/> the watch
+        /// has not seen: source files in a project folder that are neither inputs nor were there
+        /// at registration (a watcher overflow can lose their events), and inputs that are gone.
+        /// </summary>
+        private static bool TryFindUnseenFiles(IReadOnlyList<ProjectRecord> closure, List<string> unseen, out string? failure)
+        {
+            foreach (var project in closure)
+            {
+                try
+                {
+                    unseen.AddRange(EnumerateSourceFiles(project.Cwd)
+                        .Where(f => !project.InputSet.Contains(f) && !project.PreexistingNonInputs.Contains(f)));
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    failure = $"cannot list {project.Cwd}: {ex.Message}";
+                    return false;
+                }
+
+                unseen.AddRange(project.InputSet.Where(f => !File.Exists(f)));
+            }
+
+            failure = null;
+            return true;
+        }
+
+        /// <summary>
+        /// Queues <paramref name="unseen"/> and waits until nothing is queued and no batch runs,
+        /// then asks the registry. A registration's replay kick is not waited for: whatever it
+        /// would replay is dirty, so the answer is no anyway. Outside that window, work that
+        /// nothing keeps any more is run first (<see cref="WatchRegistry.HasRunnableWork"/>).
+        /// </summary>
+        private (int ExitCode, string? Reason) WaitForSettled(string key, List<string> unseen, TimeSpan wait, Stopwatch clock)
+        {
+            lock (this.watchGate)
+            {
+                foreach (var path in unseen)
+                {
+                    this.pendingPaths.Add(path);
+                }
+
+                if (unseen.Count > 0)
+                {
+                    this.MarkEvent();
+                }
+
+                bool kicked = false;
+                while (true)
+                {
+                    if (this.stopSource.IsCancellationRequested)
+                    {
+                        return (SyncExitBusy, "daemon stopping");
+                    }
+
+                    if (this.pendingPaths.Count == 0 && this.batchesTaken == this.batchesDone)
+                    {
+                        this.registry.RefreshRed();
+                        this.registry.RefreshCopyPending();
+
+                        // A copy a full build refreshed clears only here, so what it kept is
+                        // still dirty with nothing keeping it: run that batch and wait for it,
+                        // once per sync, rather than answer no for work the daemon can do now.
+                        if (!kicked && this.registrationKickMs < 0 && this.registry.HasRunnableWork())
+                        {
+                            kicked = true;
+                            this.pendingPaths.Add(Path.Combine(this.identity.RunDir, "sync"));
+                            this.MarkEvent();
+                            this.WatchLog("sync    {0}: running what a cleared copy kept", Path.GetFileName(key));
+                            continue;
+                        }
+
+                        var blocker = this.registry.SyncBlocker(key);
+                        return blocker == null ? (SyncExitYes, null) : (SyncExitNo, blocker);
+                    }
+
+                    var left = wait - clock.Elapsed;
+                    if (left <= TimeSpan.Zero)
+                    {
+                        return (SyncExitBusy, this.batchesTaken != this.batchesDone
+                            ? $"a batch still running after {wait.TotalSeconds:0} s"
+                            : $"{this.pendingPaths.Count} change(s) still queued after {wait.TotalSeconds:0} s");
+                    }
+
+                    Monitor.Wait(this.watchGate, left < SyncPoll ? left : SyncPoll);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The file Sdk.targets (<c>_NScriptWatchSync</c>) checks before asking <c>--sync</c>:
+        /// next to the project's obj DLL, so MSBuild finds it as <c>$(IntermediateOutputPath)</c>.
+        /// </summary>
+        public static string WatchMarkerPath(string projectKey)
+            => Path.Combine(Path.GetDirectoryName(projectKey)!, WatchMarkerFileName);
+
+        private string WatchMarkerText
+            => $"pipe={this.pipeName}\ntoolset={this.identity.ToolsetHash}\npid={Environment.ProcessId}\n";
+
+        private void WriteWatchMarker(string projectKey)
+        {
+            var path = WatchMarkerPath(projectKey);
+            try
+            {
+                File.WriteAllText(path, this.WatchMarkerText);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                CompilerLog.ForComponent("Watch").Warning(ex, "WatchMarkerWriteFailed Path={Path}", path);
+                this.WatchLog("marker  {0} not written ({1}); dotnet build runs in full", path, ex.Message);
+            }
+        }
+
+        /// <summary>Deletes the markers this daemon wrote; a marker another daemon rewrote since is left.</summary>
+        private void DeleteWatchMarkers()
+        {
+            List<string> keys;
+            lock (this.watchGate)
+            {
+                keys = this.registry.Projects.Select(p => p.Key).ToList();
+            }
+
+            foreach (var path in keys.Select(WatchMarkerPath))
+            {
+                try
+                {
+                    if (File.Exists(path) && File.ReadAllText(path) == this.WatchMarkerText)
+                    {
+                        File.Delete(path);
+                    }
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    CompilerLog.ForComponent("Watch").Warning(ex, "WatchMarkerDeleteFailed Path={Path}", path);
+                    this.WatchLog("marker  {0} not deleted ({1}); dotnet build will ask a stopped daemon and run in full", path, ex.Message);
+                }
             }
         }
 

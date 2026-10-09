@@ -635,5 +635,199 @@ namespace NScript.Utils.Test
             Assert.AreEqual(a.Key, step.Compile.Key);
             Assert.IsTrue(step.Patch);
         }
+
+        /// <summary>
+        /// S2 R8, defence in depth: with no copy edge (A is not even a dependency of T), sync
+        /// for T answers no while a copy T reads of A's obj DLL is stale (a patch keeps the
+        /// MVID, so the write time decides) or unreadable, and yes once it matches. A
+        /// reference-assembly copy matches A's /refout by MVID alone.
+        /// </summary>
+        [TestMethod]
+        public void SyncBlocker_StaleOrUnreadableCopyOfRegisteredOutput_IsNo_WithoutCopyEdge()
+        {
+            var refOut = P("A", "obj", "refint", "A.dll");
+            var refCopy = P("A", "obj", "ref", "A.dll");
+            var binCopy = P("T", "bin", "A.dll");
+            this.disk[Src("A")] = "h0";
+            this.registry.RegisterCompile(P("A"), new[] { "@A.rsp" }, this.Inputs("A", new[] { Src("A") }) with { RefOut = refOut }, 0, null, new[] { Src("A") }, new Dictionary<string, string>());
+            var t = this.Register("T", references: new[] { refCopy });
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, P("web", "T.js"), Out("T"), new[] { binCopy });
+            var built = Stamp(1);
+            var patched = new AssemblyStamp(built.Mvid, built.MtimeUtc.AddMinutes(1));
+            this.stamps[Out("A")] = patched;
+            this.stamps[refOut] = Stamp(10);
+            this.stamps[refCopy] = new AssemblyStamp(Stamp(10).Mvid, Stamp(10).MtimeUtc.AddMinutes(-5));
+            this.stamps[binCopy] = built;
+
+            StringAssert.Contains(this.registry.SyncBlocker(t.Key) ?? "yes", binCopy + " stale");
+
+            this.stamps.Remove(binCopy);
+            StringAssert.Contains(this.registry.SyncBlocker(t.Key) ?? "yes", binCopy + " unreadable");
+
+            this.stamps[binCopy] = patched;
+            Assert.IsNull(this.registry.SyncBlocker(t.Key));
+
+            this.stamps[refCopy] = Stamp(11);
+            StringAssert.Contains(this.registry.SyncBlocker(t.Key) ?? "yes", refCopy + " stale");
+        }
+
+        /// <summary>
+        /// S3 D-S3-1: the JS a bundle's last successful emit wrote is the daemon's; once another
+        /// build rewrites it (another configuration or mode) or deletes it, it is foreign, so a
+        /// synced build runs its own jsmode check. A new emit makes it the daemon's again.
+        /// </summary>
+        [TestMethod]
+        public void ForeignJs_RewrittenOrDeletedAfterEmit_IsForeign_UntilNextEmit()
+        {
+            var js = P("web", "A.js");
+            var a = this.Register("A");
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, js, Out("A"), Array.Empty<string>());
+            this.disk[js] = "dev1";
+            this.registry.RecordBundleRun(js, succeeded: true);
+            Assert.AreEqual(0, this.registry.ForeignJs(a.Key).Count);
+
+            this.disk[js] = "minified";
+            CollectionAssert.AreEqual(new[] { js }, this.registry.ForeignJs(a.Key).ToArray());
+
+            this.disk[js] = "dev2";
+            this.registry.RecordBundleRun(js, succeeded: false);
+            CollectionAssert.AreEqual(new[] { js }, this.registry.ForeignJs(a.Key).ToArray(), "A failed emit wrote nothing.");
+            this.registry.RecordBundleRun(js, succeeded: true);
+            Assert.AreEqual(0, this.registry.ForeignJs(a.Key).Count);
+
+            this.disk.Remove(js);
+            CollectionAssert.AreEqual(new[] { js }, this.registry.ForeignJs(a.Key).ToArray());
+        }
+
+        /// <summary>
+        /// S3 D-S3-2: a new source file needs a dotnet build only while it exists. Deleted again,
+        /// its reason goes and a reason that is not a new file stays. A plain build may have
+        /// compiled the file in meanwhile, so the project recompiles before it is current again.
+        /// </summary>
+        [TestMethod]
+        public void NeedsBuild_NewFileDeletedAgain_ClearsOnlyThatReason()
+        {
+            var csproj = P("A", "A.csproj");
+            var added = P("A", "SyncError.cs");
+            this.Register("A", buildFiles: new[] { csproj });
+            this.Register("B");
+
+            this.disk[added] = "h0";
+            this.disk[P("B", "New.cs")] = "h0";
+            this.Change(added, P("B", "New.cs"));
+            this.disk[csproj] = "h1";
+            this.Change(csproj);
+            Assert.AreEqual(2, this.registry.NeedsBuild.Count);
+
+            this.disk.Remove(added);
+            this.disk.Remove(P("B", "New.cs"));
+            this.Change(added, P("B", "New.cs"));
+
+            CollectionAssert.AreEqual(new[] { Out("A") }, this.registry.NeedsBuild.Keys.ToArray(), "B's only reason was the new file; A's csproj change stays.");
+            StringAssert.Contains(this.registry.CompileBlockReason(this.registry.Projects.First(p => p.Key == Out("A"))), "build file changed");
+            StringAssert.Contains(this.registry.SyncBlocker(Out("A")) ?? "yes", "build file changed", "The sync reason names why.");
+
+            var b = this.registry.Projects.First(p => p.Key == Out("B"));
+            CollectionAssert.AreEqual(new[] { Out("A"), b.Key }, this.registry.Plan().Compiles.Select(p => p.Key).ToArray(), "Both lapsed a new file; A stays blocked by its csproj.");
+            StringAssert.Contains(this.registry.SyncBlocker(b.Key) ?? "yes", "not rebuilt");
+            this.Compiled(b);
+            Assert.IsNull(this.registry.SyncBlocker(b.Key));
+        }
+
+        /// <summary>
+        /// S2: a project compiled by the watch is not current for sync until every bundle
+        /// including it is emitted again; a failed emit keeps it "not emitted".
+        /// </summary>
+        [TestMethod]
+        public void SyncBlocker_BundleNotYetEmitted_IsNo_UntilEmitSucceeds()
+        {
+            var a = this.Register("A");
+            var js = P("web", "A.js");
+            this.registry.RegisterBundle(P("web"), new[] { "-outJs" }, js, Out("A"), Array.Empty<string>());
+            Assert.IsNull(this.registry.SyncBlocker(a.Key), "control");
+
+            this.disk[Src("A")] = "h1";
+            this.Change(Src("A"));
+            this.Compiled(a);
+            Assert.AreEqual("A.js not emitted", this.registry.SyncBlocker(a.Key));
+
+            this.registry.RecordBundleRun(js, succeeded: false);
+            Assert.AreEqual("A.js not emitted", this.registry.SyncBlocker(a.Key));
+            this.registry.RecordBundleRun(js, succeeded: true);
+            Assert.IsNull(this.registry.SyncBlocker(a.Key));
+        }
+
+        /// <summary>
+        /// S3 D-S3-4: the references a synced build passes instead of evaluating its project
+        /// references: each csc reference that is a registered project's output or a copy of
+        /// one (same file name), with that project's directory and intermediate directory (where
+        /// its GetTargetPath item is recorded). Other references are not listed. A name two
+        /// registered projects share is ambiguous: null, so the build keeps its references.
+        /// </summary>
+        [TestMethod]
+        public void SyncReferences_RegisteredOutputsOrCopies_AmbiguousNameIsNull()
+        {
+            var framework = P("lib", "mscorlib.dll");
+            var bCopy = P("A", "bin", "B.dll");
+            this.Register("B");
+            this.Register("C");
+            var a = this.Register("A", references: new[] { framework, bCopy, Out("C") });
+
+            CollectionAssert.AreEqual(
+                new[] { (P("B"), bCopy, P("B", "obj")), (P("C"), Out("C"), P("C", "obj")) },
+                this.registry.SyncReferences(a.Key).ToArray());
+            Assert.IsNull(this.registry.SyncReferences(P("X", "obj", "X.dll")), "not registered");
+
+            this.disk[Src("B2")] = "h0";
+            this.registry.RegisterCompile(P("B2"), new[] { "@B2.rsp" }, this.Inputs("B2", new[] { Src("B2") }) with { Output = P("B2", "obj", "B.dll") }, 0, null, new[] { Src("B2") }, new Dictionary<string, string>());
+            Assert.IsNull(this.registry.SyncReferences(a.Key), "two registered B.dll");
+        }
+
+        /// <summary>
+        /// S3 D-S3-3: a copy left pending (the target was locked) clears at sync once the target
+        /// equals its source (obj DLL: MVID and mtime; reference assembly: MVID), as after the
+        /// full build that copied it. A copy that is still stale or unreadable stays pending.
+        /// </summary>
+        [TestMethod]
+        public void RefreshCopyPending_TargetNowMatchesSource_Clears_StaleOrLockedStays()
+        {
+            var refint = P("A", "obj", "refint", "A.dll");
+            var copy = P("B", "bin", "A.dll");
+            var refCopy = P("B", "obj", "ref", "A.dll");
+            this.disk[Src("A")] = "h0";
+            var a = this.registry.RegisterCompile(P("A"), new[] { "@A.rsp" }, this.Inputs("A", new[] { Src("A") }) with { RefOut = refint }, 0, null, new[] { Src("A") }, new Dictionary<string, string>());
+            var b = this.Register("B", references: new[] { copy, refCopy });
+            this.stamps[Out("A")] = Stamp(1);
+            this.stamps[copy] = Stamp(1);
+            this.stamps[refint] = Stamp(5);
+            this.stamps[refCopy] = Stamp(5);
+            this.registry.RefreshCopyEdges();
+            foreach (var edge in this.registry.CopiesOf(a.Key))
+            {
+                this.registry.MarkCopyPending(edge);
+            }
+
+            // The watch compiled A again; both copies failed (locked) and are one edit behind.
+            this.stamps[Out("A")] = Stamp(2);
+            this.stamps[refint] = Stamp(6);
+            this.locked.Add(copy);
+            this.stamps.Remove(copy);
+            this.registry.RefreshCopyPending();
+            Assert.AreEqual(2, this.registry.CopyPending.Count, "Locked and stale copies stay pending.");
+            StringAssert.Contains(this.registry.SyncBlocker(b.Key) ?? "yes", "copy pending");
+
+            // Unlocked but the same MVID with an older mtime (not MSBuild's copy of this build): stale.
+            this.locked.Remove(copy);
+            this.stamps[copy] = new AssemblyStamp(Stamp(2).Mvid, Stamp(2).MtimeUtc.AddMinutes(-1));
+            this.registry.RefreshCopyPending();
+            Assert.AreEqual(2, this.registry.CopyPending.Count);
+
+            // A full build copied both: the DLL equals the obj DLL, the ref copy has refint's MVID.
+            this.stamps[copy] = Stamp(2);
+            this.stamps[refCopy] = new AssemblyStamp(Stamp(6).Mvid, Stamp(6).MtimeUtc.AddMinutes(1));
+            this.registry.RefreshCopyPending();
+            Assert.AreEqual(0, this.registry.CopyPending.Count);
+            Assert.IsNull(this.registry.SyncBlocker(b.Key));
+        }
     }
 }

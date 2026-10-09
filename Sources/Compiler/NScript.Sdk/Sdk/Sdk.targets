@@ -294,10 +294,149 @@
 	</Target>
 
 	<!-- NScriptWatch=true: the stamp makes CoreCompile run, so an up-to-date project still registers with watch. -->
-	<Target Name="NScriptWatchStamp" BeforeTargets="CoreCompile" Condition="'$(NScriptWatch)' == 'true'">
+	<Target Name="NScriptWatchStamp" BeforeTargets="CoreCompile" Condition="'$(NScriptWatch)' == 'true' and '$(_NScriptWatchSynced)' != 'true'">
 		<Touch Files="$(IntermediateOutputPath)nscript.watch.stamp" AlwaysCreate="true" />
 		<ItemGroup>
 			<CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)nscript.watch.stamp" />
+		</ItemGroup>
+	</Target>
+
+	<!--
+	  Watch sync: while the build service watches this project it keeps $(IntermediateOutputPath)nscript.watch.
+	  The build then asks it (the service sync request) whether this project, the projects it reads
+	  and its JS are current. On yes, the daemon already built them: the project references, the
+	  watch stamp and the jsmode re-emit are skipped. Any other answer (no, busy, no daemon) runs
+	  today's build unchanged. -p:NScriptWatchSync=false turns it off. Solution builds, design-time
+	  builds and Release-style JS (minify, uglify, optimize) never sync.
+	-->
+	<Target Name="_NScriptWatchSync"
+	        BeforeTargets="BeforeBuild"
+	        Condition="'$(NScriptWatchSync)' != 'false' and $(GenerateJs) == True and '$(DesignTimeBuild)' != 'true' and '$(CurrentSolutionConfigurationContents)' == '' and '$(Minify)' != 'true' and '$(Uglify)' != 'true' and '$(JsOptimize)' != 'true' and Exists('$(IntermediateOutputPath)nscript.watch')">
+		<PropertyGroup>
+			<_NScriptWatchSyncKey>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', '$(TargetFileName)'))</_NScriptWatchSyncKey>
+		</PropertyGroup>
+		<!-- The answer is the exit code; its text is never read as an MSBuild error (it may contain "error"). -->
+		<Exec Command="&quot;$(NScriptExe)&quot; service --sync &quot;$(_NScriptWatchSyncKey)&quot;"
+		      IgnoreExitCode="true"
+		      IgnoreStandardErrorWarningFormat="true"
+		      ConsoleToMSBuild="true"
+		      EchoOff="true"
+		      StandardOutputImportance="low"
+		      StandardErrorImportance="low">
+			<Output TaskParameter="ExitCode" PropertyName="_NScriptWatchSyncExit" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="_NScriptWatchSyncOutput" />
+			<Output TaskParameter="ConsoleOutput" ItemName="_NScriptWatchSyncLine" />
+		</Exec>
+		<PropertyGroup Condition="'$(_NScriptWatchSyncExit)' == '0'">
+			<BuildProjectReferences>false</BuildProjectReferences>
+			<_NScriptWatchSynced>true</_NScriptWatchSynced>
+		</PropertyGroup>
+		<!--
+		  The vouched references: "nscript-ref <project dir>|<path csc reads>|<its intermediate dir>"
+		  lines (ServiceHost.SyncRefPrefix). The intermediate dir holds what that project's
+		  GetTargetPath returned at its last watch build (_NScriptWatchTargetPath).
+		-->
+		<ItemGroup Condition="'$(_NScriptWatchSynced)' == 'true'">
+			<_NScriptWatchSyncRef Include="$([System.Text.RegularExpressions.Regex]::Replace('%(_NScriptWatchSyncLine.Identity)', '^nscript-ref [^|]*\|([^|]*)\|.*$', '$1'))"
+			                      ProjectDir="$([System.Text.RegularExpressions.Regex]::Replace('%(_NScriptWatchSyncLine.Identity)', '^nscript-ref ([^|]*)\|.*$', '$1'))"
+			                      TargetPathFile="$([System.Text.RegularExpressions.Regex]::Replace('%(_NScriptWatchSyncLine.Identity)', '^nscript-ref [^|]*\|[^|]*\|(.*)$', '$1'))nscript.targetpath"
+			                      Condition="$([System.String]::Copy('%(_NScriptWatchSyncLine.Identity)').StartsWith('nscript-ref '))" />
+			<_NScriptWatchSyncRef TargetPathLine="$([System.IO.File]::ReadAllText('%(TargetPathFile)').Trim())" Condition="Exists('%(TargetPathFile)')" />
+			<_NScriptWatchSyncRefDir Include="@(_NScriptWatchSyncRef->'%(ProjectDir)')" />
+			<!-- JS the daemon did not write last ("nscript-jsforeign <path>", ServiceHost.SyncJsForeignPrefix). -->
+			<_NScriptWatchSyncJsForeign Include="$([System.String]::Copy('%(_NScriptWatchSyncLine.Identity)').Substring(18))"
+			                            Condition="$([System.String]::Copy('%(_NScriptWatchSyncLine.Identity)').StartsWith('nscript-jsforeign '))" />
+		</ItemGroup>
+		<Message Importance="high"
+		         Condition="'$(_NScriptWatchSynced)' == 'true'"
+		         Text="NScript watch: $(AssemblyName) current, skipped @(ProjectReference->Count()) project builds" />
+		<Message Importance="high"
+		         Condition="'$(_NScriptWatchSynced)' != 'true'"
+		         Text="NScript watch: full build ($(_NScriptWatchSyncOutput))" />
+	</Target>
+
+	<!--
+	  A watch build records this project's GetTargetPath item for synced builds of the projects that
+	  reference it, one line: path|ReferenceAssembly|TargetPlatformMoniker|TargetPlatformIdentifier|
+	  TargetFrameworkIdentifier|TargetFrameworkVersion|CopyUpToDateMarker. Not a FileWrites item:
+	  the next plain build of this project (IncrementalClean) would delete it. Framework projects
+	  carry the same target (Sources/Framework/Directory.Build.props).
+	-->
+	<Target Name="_NScriptWatchTargetPath"
+	        AfterTargets="CoreCompile"
+	        DependsOnTargets="GetTargetPathWithTargetPlatformMoniker"
+	        Condition="'$(NScriptWatch)' == 'true'">
+		<WriteLinesToFile File="$(IntermediateOutputPath)nscript.targetpath"
+		                  Lines="@(TargetPathWithTargetPlatformMoniker->'%(Identity)|%(ReferenceAssembly)|%(TargetPlatformMoniker)|%(TargetPlatformIdentifier)|%(TargetFrameworkIdentifier)|%(TargetFrameworkVersion)|%(CopyUpToDateMarker)')"
+		                  Overwrite="true"
+		                  WriteOnlyWhenDifferent="true" />
+	</Target>
+
+	<!--
+	  Synced: MSBuild would still evaluate every project reference (direct and transitive) to ask
+	  for its frameworks and target path, with BuildProjectReferences=false too. When the daemon's
+	  vouched references name exactly the referenced project directories, and each has a recorded
+	  GetTargetPath item, drop the references after their configuration is assigned and hand
+	  ResolveAssemblyReferences those items instead, so no referenced project is evaluated.
+	  Otherwise the references stay as they are. The record and the daemon's registration come
+	  from the same watch build, so the record is not checked against the vouched path.
+	-->
+	<Target Name="_NScriptWatchSyncSkipReferences"
+	        AfterTargets="AssignProjectConfiguration"
+	        Condition="'$(_NScriptWatchSynced)' == 'true' and '@(_NScriptWatchSyncRef)' != ''">
+		<ItemGroup>
+			<!-- The references as configured, with their metadata, for the items that replace them. -->
+			<_NScriptWatchSyncPrItem Include="@(ProjectReferenceWithConfiguration)" ProjectDir="%(RootDir)%(Directory)" />
+			<_NScriptWatchSyncPrDir Include="@(_NScriptWatchSyncPrItem->'%(ProjectDir)')" />
+			<_NScriptWatchSyncPrUnknown Include="@(_NScriptWatchSyncPrDir)" Exclude="@(_NScriptWatchSyncRefDir)" />
+			<_NScriptWatchSyncRefUnused Include="@(_NScriptWatchSyncRefDir)" Exclude="@(_NScriptWatchSyncPrDir)" />
+			<_NScriptWatchSyncRefUnrecorded Include="@(_NScriptWatchSyncRef)" Condition="'%(_NScriptWatchSyncRef.TargetPathLine)' == ''" />
+		</ItemGroup>
+		<PropertyGroup Condition="'@(_NScriptWatchSyncPrUnknown)' == '' and '@(_NScriptWatchSyncRefUnused)' == '' and '@(_NScriptWatchSyncRefUnrecorded)' == ''">
+			<_NScriptWatchSyncRefsSwapped>true</_NScriptWatchSyncRefsSwapped>
+		</PropertyGroup>
+		<ItemGroup Condition="'$(_NScriptWatchSyncRefsSwapped)' == 'true'">
+			<ProjectReferenceWithConfiguration Remove="@(ProjectReferenceWithConfiguration)" />
+			<ProjectReference Remove="@(ProjectReference)" />
+		</ItemGroup>
+		<Message Importance="high"
+		         Condition="'$(_NScriptWatchSyncRefsSwapped)' == 'true'"
+		         Text="NScript watch: $(AssemblyName) reads @(_NScriptWatchSyncRef->Count()) vouched references, evaluated no project references" />
+		<Message Importance="high"
+		         Condition="'$(_NScriptWatchSyncRefsSwapped)' != 'true'"
+		         Text="NScript watch: project references kept (not vouched: @(_NScriptWatchSyncPrUnknown); not referenced: @(_NScriptWatchSyncRefUnused); no recorded target path: @(_NScriptWatchSyncRefUnrecorded))" />
+	</Target>
+
+	<Target Name="_NScriptWatchSyncReferencePaths"
+	        AfterTargets="ResolveProjectReferences"
+	        Condition="'$(_NScriptWatchSyncRefsSwapped)' == 'true'">
+		<!--
+		  The item ResolveProjectReferences would get from GetTargetPath: the recorded target path,
+		  with the recorded GetTargetPath metadata and the project reference's own metadata. Pairs
+		  each reference with its recorded line by directory (batching on ProjectDir).
+		  Deliberately missing (S3 D-S3-4 ruling): the GetTargetFrameworks annotations that
+		  evaluating the referenced project adds: AdditionalPropertiesFromProject,
+		  HasSingleTargetFramework, IsRidAgnostic, MSBuildSourceTargetName, NearestTargetFramework,
+		  OriginalProjectReferenceItemSpec, Platform, Platforms, TargetFrameworkMonikers,
+		  TargetFrameworks, TargetPlatformMonikers, UndefineProperties. They only drive that
+		  evaluation, which a synced build skips; csc, nscript, the JS and bin are the same without them.
+		-->
+		<ItemGroup>
+			<_NScriptWatchSyncResolved Include="@(_NScriptWatchSyncPrItem)"
+			                           NScriptSyncLine="@(_NScriptWatchSyncRef->'%(TargetPathLine)')"
+			                           Condition="'%(ProjectDir)' != ''" />
+			<_NScriptWatchSyncResolved NScriptSyncTargetPath="$([System.Text.RegularExpressions.Regex]::Replace('%(NScriptSyncLine)', '^([^|]*)\|.*$', '$1'))"
+			                           NScriptSyncReferenceAssembly="$([System.Text.RegularExpressions.Regex]::Replace('%(NScriptSyncLine)', '^[^|]*\|([^|]*)\|.*$', '$1'))"
+			                           TargetPlatformMoniker="$([System.Text.RegularExpressions.Regex]::Replace('%(NScriptSyncLine)', '^(?:[^|]*\|){2}([^|]*)\|.*$', '$1'))"
+			                           TargetPlatformIdentifier="$([System.Text.RegularExpressions.Regex]::Replace('%(NScriptSyncLine)', '^(?:[^|]*\|){3}([^|]*)\|.*$', '$1'))"
+			                           TargetFrameworkIdentifier="$([System.Text.RegularExpressions.Regex]::Replace('%(NScriptSyncLine)', '^(?:[^|]*\|){4}([^|]*)\|.*$', '$1'))"
+			                           TargetFrameworkVersion="$([System.Text.RegularExpressions.Regex]::Replace('%(NScriptSyncLine)', '^(?:[^|]*\|){5}([^|]*)\|.*$', '$1'))"
+			                           CopyUpToDateMarker="$([System.Text.RegularExpressions.Regex]::Replace('%(NScriptSyncLine)', '^(?:[^|]*\|){6}(.*)$', '$1'))"
+			                           MSBuildSourceProjectFile="%(FullPath)"
+			                           OriginalItemSpec="%(Identity)"
+			                           ReferenceSourceTarget="ProjectReference" />
+			<_NScriptWatchSyncResolved ReferenceAssembly="%(NScriptSyncReferenceAssembly)" Condition="'%(NScriptSyncReferenceAssembly)' != ''" />
+			<_ResolvedProjectReferencePaths Include="@(_NScriptWatchSyncResolved->'%(NScriptSyncTargetPath)')" RemoveMetadata="NScriptSyncLine;NScriptSyncTargetPath;NScriptSyncReferenceAssembly;ProjectDir" />
 		</ItemGroup>
 	</Target>
 
@@ -318,7 +457,13 @@
 			<_NScriptJsModeKey>minify=$(Minify),uglify=$(Uglify),optimize=$(JsOptimize),devMode=$([MSBuild]::ValueOrDefault('$(_NScriptUseService)', 'false')),maps=$([MSBuild]::StableStringHash('$(SourceMapRoot)|$(NScriptRepoRoot)|$(NScriptSecondarySourceMapRoot)|$(NScriptSecondaryRepoRoot)'))</_NScriptJsModeKey>
 			<_NScriptJsModeWant>$(_NScriptJsModeKey)|$([System.IO.File]::GetLastWriteTime('$(_NScriptJsFile)').Ticks)</_NScriptJsModeWant>
 			<_NScriptJsModeHave Condition="Exists('$(_NScriptJsModeFile)')">$([System.IO.File]::ReadAllText('$(_NScriptJsModeFile)').Trim())</_NScriptJsModeHave>
-			<_NScriptJsModeForce Condition="'$(_NScriptJsModeHave)' != '$(_NScriptJsModeWant)'">$(_NScriptJsModeFile).mismatch</_NScriptJsModeForce>
+		</PropertyGroup>
+		<ItemGroup>
+			<_NScriptJsForeignHit Include="@(_NScriptWatchSyncJsForeign)" Condition="'%(Identity)' == '$(_NScriptJsFile)'" />
+		</ItemGroup>
+		<PropertyGroup>
+			<!-- A synced build keeps the watch's JS, unless another build rewrote or deleted it since (jsforeign). -->
+			<_NScriptJsModeForce Condition="'$(_NScriptJsModeHave)' != '$(_NScriptJsModeWant)' and ('$(_NScriptWatchSynced)' != 'true' or '@(_NScriptJsForeignHit)' != '')">$(_NScriptJsModeFile).mismatch</_NScriptJsModeForce>
 		</PropertyGroup>
 		<Message Importance="high"
 		         Condition="'$(_NScriptJsModeForce)' != '' and Exists('$(_NScriptJsFile)')"

@@ -506,6 +506,144 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// S2: the --sync client prints the answer line and only the reference and JS lines
+        /// after it (Sdk.targets reads every line it prints), asks with the obj DLL's full path
+        /// and the default 30 s wait, and passes the answer through as its exit code.
+        /// </summary>
+        [TestMethod]
+        [Timeout(5000)]
+        public void SyncClient_PrintsAnswerAndReferenceLinesOnly()
+        {
+            var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
+            var key = Path.Combine(NewTempDir(), "obj", "A.dll");
+            ServiceRequest seen = null;
+            var output = RunSyncClient(identity, key, server =>
+            {
+                seen = ServiceProtocol.ReadMessage<ServiceRequest>(server);
+                ServiceProtocol.WriteMessage(server, new ServiceResponse
+                {
+                    ExitCode = ServiceHost.SyncExitYes,
+                    Message = "nscript service: sync yes A.dll (1 ms)\nnoise\r\nnscript-ref C:\\p\\|C:\\p\\obj\\ref\\P.dll|C:\\p\\obj\\\nnscript-jsforeign C:\\web\\a.js",
+                });
+            }, out int exitCode);
+
+            Assert.AreEqual(ServiceHost.SyncExitYes, exitCode, output);
+            Assert.AreEqual(
+                "nscript service: sync yes A.dll (1 ms)\nnscript-ref C:\\p\\|C:\\p\\obj\\ref\\P.dll|C:\\p\\obj\\\nnscript-jsforeign C:\\web\\a.js\n",
+                output.Replace("\r\n", "\n"));
+            CollectionAssert.AreEqual(new[] { key, "30" }, seen.Args);
+        }
+
+        /// <summary>S2: a daemon that hangs up without a reply is a no (exit 1) with one line saying so.</summary>
+        [TestMethod]
+        [Timeout(5000)]
+        public void SyncClient_DaemonClosesWithoutReply_AnswersNo()
+        {
+            var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
+            var output = RunSyncClient(identity, Path.Combine(NewTempDir(), "A.dll"), server => ServiceProtocol.ReadMessage<ServiceRequest>(server), out int exitCode);
+
+            Assert.AreEqual(ServiceHost.SyncExitNo, exitCode, output);
+            Assert.AreEqual("nscript service: the daemon closed the connection without replying\n", output.Replace("\r\n", "\n"));
+        }
+
+        /// <summary>
+        /// S3 P4: an unreadable NSCRIPT_SYNC_WAIT_SECONDS is one line and exit 1 (MSBuild shows
+        /// it and builds as today), not a stack trace; no daemon is asked.
+        /// </summary>
+        [TestMethod]
+        public void SyncClient_BadWaitSetting_OneLineNo()
+        {
+            var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
+            var saved = Environment.GetEnvironmentVariable(ServiceHost.SyncWaitSecondsEnvVar);
+            try
+            {
+                foreach (var value in new[] { "soon", "0" })
+                {
+                    Environment.SetEnvironmentVariable(ServiceHost.SyncWaitSecondsEnvVar, value);
+                    var output = RunSyncClient(identity, Path.Combine(NewTempDir(), "A.dll"), null, out int exitCode);
+
+                    Assert.AreEqual(1, exitCode, output);
+                    Assert.AreEqual(
+                        "nscript service: " + ServiceHost.SyncWaitSecondsEnvVar + " must be a positive integer, got '" + value + "'\n",
+                        output.Replace("\r\n", "\n"));
+                }
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(ServiceHost.SyncWaitSecondsEnvVar, saved);
+            }
+        }
+
+        /// <summary>
+        /// S2 P2: a killed daemon leaves its marker, and every build would pay the connect
+        /// timeout. With no daemon, the client deletes a marker naming its own pipe, and keeps
+        /// one naming another daemon's pipe.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // Waits out the 1 s pipe connect timeout twice.
+        public void SyncClient_NoDaemon_DeletesOnlyItsOwnDeadMarker()
+        {
+            var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
+            var key = Path.Combine(NewTempDir(), "A.dll");
+            var marker = ServiceHost.WatchMarkerPath(key);
+
+            File.WriteAllText(marker, "pipe=another-daemon\n");
+            var kept = RunSyncClient(identity, key, null, out int keptExit);
+            Assert.AreEqual(ServiceHost.SyncExitNo, keptExit, kept);
+            Assert.IsTrue(File.Exists(marker), "Another daemon's marker was deleted.");
+            StringAssert.Contains(kept, "no daemon running");
+
+            File.WriteAllText(marker, "pipe=" + identity.PipeName + "\npid=1\n");
+            var deleted = RunSyncClient(identity, key, null, out int deletedExit);
+            Assert.AreEqual(ServiceHost.SyncExitNo, deletedExit, deleted);
+            Assert.IsFalse(File.Exists(marker), "The dead daemon's marker was kept.");
+            StringAssert.StartsWith(deleted, "nscript service: deleted nscript.watch: its daemon is gone");
+        }
+
+        /// <summary>
+        /// Runs <c>nscript service --sync <paramref name="key"/></c> for <paramref name="identity"/>
+        /// and returns what it printed. With <paramref name="daemon"/>, a fake daemon on the
+        /// identity's pipe serves the one connection.
+        /// </summary>
+        private static string RunSyncClient(ServiceIdentity identity, string key, Action<Stream> daemon, out int exitCode)
+        {
+            System.Threading.Tasks.Task served = System.Threading.Tasks.Task.CompletedTask;
+            System.IO.Pipes.NamedPipeServerStream server = null;
+            if (daemon != null)
+            {
+                server = new System.IO.Pipes.NamedPipeServerStream(
+                    identity.PipeName,
+                    System.IO.Pipes.PipeDirection.InOut,
+                    1,
+                    System.IO.Pipes.PipeTransmissionMode.Byte,
+                    System.IO.Pipes.PipeOptions.Asynchronous);
+                served = server.WaitForConnectionAsync().ContinueWith(_ =>
+                {
+                    using (server)
+                    {
+                        daemon(server);
+                    }
+                });
+            }
+
+            var output = new StringWriter();
+            var saved = Console.Out;
+            Console.SetOut(output);
+            try
+            {
+                exitCode = ServiceHost.Run(new[] { "--sync", key, "--toolset-dir", identity.ToolsetDir, "--toolset-hash", identity.ToolsetHash });
+            }
+            finally
+            {
+                Console.SetOut(saved);
+                server?.Dispose();
+            }
+
+            served.Wait(TimeSpan.FromSeconds(2));
+            return output.ToString();
+        }
+
+        /// <summary>
         /// Ruling (M5.1): a plain --stop that connects to a hung daemon waited for a reply
         /// forever. It must give up after <see cref="ServiceHost.StopReplyTimeout"/> and point
         /// to --stop --force.
@@ -1084,6 +1222,206 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// S3 D-S3-3: a bundle kept for a pending copy, whose copy a full build then refreshed
+        /// (here: the copy already equals the obj DLL while it is held open), has no blocker
+        /// left once sync clears the copy. Sync must emit it and answer yes, not "not emitted".
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Sync_CopyPendingClearedAtSync_EmitsKeptBundle_AnswersYes()
+        {
+            string first = typeof(BuildServiceTests).Assembly.Location;
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindCompile)
+                {
+                    // Same bytes and write time every compile: bin\A.dll equals obj\A.dll throughout.
+                    var dll = Path.Combine(watch.Project, "obj", "A.dll");
+                    Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                    File.Copy(first, dll, overwrite: true);
+                }
+
+                return new ServiceResponse { ExitCode = 0, Stdout = string.Empty, Stderr = string.Empty };
+            }))
+            {
+                watch.Register("A.cs");
+                var copy = Path.Combine(watch.Project, "bin", "A.dll");
+                Directory.CreateDirectory(Path.GetDirectoryName(copy));
+                File.Copy(first, copy);
+                watch.RegisterEmit("-outJs", "app.js", "-entryAssembly", @"bin\A.dll", "-references", first);
+
+                using (new FileStream(copy, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    watch.EditSource();
+                    WaitForLog("\"Result\":\"kept\"", 1);
+
+                    var answer = watch.Sync(Path.Combine(watch.Project, "obj", "A.dll"));
+                    Assert.AreEqual(ServiceHost.SyncExitYes, answer.ExitCode, answer.Message);
+                    Assert.AreEqual(string.Empty, watch.Status()["WatchCopyPending"]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// S2/S3: a yes lists, after the answer line, each JS file of the project's bundles the
+        /// daemon did not write last (here rewritten by another build) and each vouched
+        /// reference as "project dir|path csc reads|its intermediate dir". Sdk.targets parses
+        /// exactly this text.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Sync_Yes_ReplyListsForeignJsAndVouchedReference()
+        {
+            var appJs = Path.Combine(NewTempDir(), "app.js");
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindEmitJs)
+                {
+                    File.WriteAllText(appJs, "daemon");
+                }
+                else
+                {
+                    // The emit's options name the obj DLLs, so they must exist.
+                    var dll = Path.Combine(request.Cwd, "obj", request.Cwd == watch.Project ? "A.dll" : "B.dll");
+                    Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                    File.WriteAllText(dll, "dll");
+                }
+
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                var aDll = Path.Combine(watch.Project, "obj", "A.dll");
+                watch.Register("A.cs");
+                watch.RegisterIn(watch.Dependent, "B.cs");
+                watch.RegisterEmitIn(watch.Dependent, "-outJs", appJs, "-entryAssembly", @"obj\B.dll", "-references", aDll);
+                File.WriteAllText(appJs, "another build");
+
+                var answer = watch.Sync(Path.Combine(watch.Dependent, "obj", "B.dll"));
+
+                Assert.AreEqual(ServiceHost.SyncExitYes, answer.ExitCode, answer.Message);
+                Assert.AreEqual(
+                    "nscript service: sync yes B.dll (N ms)\n"
+                        + ServiceHost.SyncJsForeignPrefix + appJs + "\n"
+                        + ServiceHost.SyncRefPrefix + watch.Project + @"\|" + aDll + "|" + Path.Combine(watch.Project, "obj") + @"\",
+                    System.Text.RegularExpressions.Regex.Replace(answer.Message, @"\(\d+ ms\)", "(N ms)"));
+
+                // WatchSyncReferencesTests feeds Sdk.targets this formatter's line.
+                StringAssert.EndsWith(answer.Message, "\n" + ServiceHost.SyncRefLine(watch.Project, aDll, Path.Combine(watch.Project, "obj")));
+            }
+        }
+
+        /// <summary>
+        /// S2: sync answers no, never yes, for a key it does not watch (with the watched key
+        /// when only the folder is wrong, in full: the path is the hint) and for bad arguments.
+        /// With the watcher's .cs events lost, a new source file and a deleted input are still
+        /// found by sync's own scan and answer no. A reason naming a file keeps only its name,
+        /// folders with spaces included (P5).
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Sync_UnwatchedBadArgsOrUnseenFile_AnswersNo()
+        {
+            WatchHost watch = null;
+            using (watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }, dropWatchEvents: new[] { ".cs" }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                watch.Register("A.cs");
+
+                var binCopy = watch.Sync(Path.Combine(watch.Project, "bin", "A.dll"));
+                Assert.AreEqual(ServiceHost.SyncExitNo, binCopy.ExitCode);
+                StringAssert.Contains(binCopy.Message, "not watched; the watched key for that name is " + key + " (");
+
+                var other = watch.Sync(Path.Combine(watch.Project, "obj", "Other.dll"));
+                Assert.AreEqual(ServiceHost.SyncExitNo, other.ExitCode);
+                StringAssert.Contains(other.Message, "Other.dll: not watched (pass the obj DLL csc writes)");
+
+                foreach (var args in new[] { new[] { key }, new[] { key, "0" }, new[] { key, "x" } })
+                {
+                    var bad = watch.SyncArgs(args);
+                    Assert.AreEqual(ServiceHost.SyncExitNo, bad.ExitCode, string.Join(" ", args));
+                    Assert.AreEqual("nscript service: sync needs <obj dll> <wait seconds>", bad.Message);
+                }
+
+                var bKey = Path.Combine(watch.Dependent, "obj", "B.dll");
+                watch.RegisterIn(watch.Dependent, "B.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(bKey).ExitCode, "control: nothing changed");
+
+                // A deleted input (B reads A, which stays current).
+                File.Delete(Path.Combine(watch.Dependent, "B.cs"));
+                var deleted = watch.Sync(bKey);
+                Assert.AreEqual(ServiceHost.SyncExitNo, deleted.ExitCode, deleted.Message);
+                StringAssert.Contains(deleted.Message, "sync no B.dll: B.dll needs dotnet build -p:NScriptWatch=true: deleted B.cs (");
+
+                // A new source file in the project folder: csc must be told by a dotnet build.
+                File.WriteAllText(Path.Combine(watch.Project, "New.cs"), "class N { }");
+                var newFile = watch.Sync(key);
+                Assert.AreEqual(ServiceHost.SyncExitNo, newFile.ExitCode, newFile.Message);
+                Assert.AreEqual(
+                    "nscript service: sync no A.dll: A.dll needs dotnet build -p:NScriptWatch=true: new file New.cs (N ms)",
+                    System.Text.RegularExpressions.Regex.Replace(newFile.Message, @"\(\d+ ms\)", "(N ms)"));
+
+            }
+        }
+
+        /// <summary>
+        /// S2: while a batch runs, sync waits for it and answers busy when its wait runs out;
+        /// a sync waiting when the daemon stops answers busy at once (MSBuild then builds as
+        /// today), not yes or no.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe; waits out a 1 s sync wait.
+        public void Sync_BatchRunning_BusyAfterWait_BusyWhenStopping()
+        {
+            using var hold = new ManualResetEventSlim(false);
+            using var held = new ManualResetEventSlim(false);
+            using var release = new ManualResetEventSlim(false);
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindCompile && hold.IsSet)
+                {
+                    held.Set();
+                    release.Wait(TimeSpan.FromSeconds(10));
+                }
+
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                watch.Register("A.cs");
+                hold.Set();
+                watch.EditSource();
+                Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(5)), "The batch never compiled the save.");
+                try
+                {
+                    var busy = watch.Sync(key, "1");
+                    Assert.AreEqual(ServiceHost.SyncExitBusy, busy.ExitCode, busy.Message);
+                    StringAssert.Contains(busy.Message, "a batch still running after 1 s");
+
+                    // Connected and asked before the stop: the daemon still answers it.
+                    using var pipe = ServiceClient.TryConnect(watch.PipeName, 5000);
+                    ServiceProtocol.WriteMessage(pipe, new ServiceRequest
+                    {
+                        Kind = ServiceProtocol.KindSync,
+                        ClientPid = Environment.ProcessId,
+                        Cwd = watch.Project,
+                        Args = new[] { key, "10" },
+                    });
+                    watch.Host.RequestStop("test");
+                    var stopping = ServiceProtocol.ReadMessage<ServiceResponse>(pipe);
+                    Assert.AreEqual(ServiceHost.SyncExitBusy, stopping.ExitCode, stopping.Message);
+                    StringAssert.Contains(stopping.Message, "daemon stopping");
+                }
+                finally
+                {
+                    release.Set();
+                }
+            }
+        }
+
+        /// <summary>
         /// Critic F8: the toolset-change stop is the likeliest stop and bypassed the stop path.
         /// It must name the bundle the save that found the new toolset leaves stale. The
         /// toolset changes only after the watcher-start rescan batch: a batch that finds it
@@ -1295,7 +1633,7 @@ namespace NScript.Utils.Test
         {
             private readonly string pipeName = "nscript-test-" + Guid.NewGuid().ToString("N");
 
-            public WatchHost(Func<ServiceRequest, ServiceResponse> run, string toolsetHash = null, TimeSpan? registrationQuiet = null)
+            public WatchHost(Func<ServiceRequest, ServiceResponse> run, string toolsetHash = null, TimeSpan? registrationQuiet = null, string[] dropWatchEvents = null)
             {
                 this.Identity = ServiceIdentity.FromKnown(NewTempDir(), new string('0', 64));
                 this.Project = NewTempDir();
@@ -1310,6 +1648,7 @@ namespace NScript.Utils.Test
                         ? Inputs(this.Dependent, "B", Path.Combine(this.Project, "obj", "A.dll"))
                         : Inputs(this.Project, "A"),
                     RunRequestEmitOptions = request => ParseOptions.ParseArgs(request.Args),
+                    DropWatchEvents = dropWatchEvents ?? Array.Empty<string>(),
                 };
                 if (registrationQuiet != null)
                 {
@@ -1369,6 +1708,14 @@ namespace NScript.Utils.Test
             }
 
             public IDictionary<string, string> Status() => Send(this.pipeName, ServiceProtocol.KindStatus, this.Project).Status;
+
+            public string PipeName => this.pipeName;
+
+            /// <summary>The <c>--sync</c> request for the obj DLL <paramref name="key"/>, waiting at most <paramref name="waitSeconds"/>.</summary>
+            public ServiceResponse Sync(string key, string waitSeconds = "10") => this.SyncArgs(key, waitSeconds);
+
+            /// <summary>A <c>--sync</c> request with exactly <paramref name="args"/>.</summary>
+            public ServiceResponse SyncArgs(params string[] args) => Send(this.pipeName, ServiceProtocol.KindSync, this.Project, args);
 
             public void EditSource() => File.WriteAllText(Path.Combine(this.Project, "A.cs"), "class A { int x; }");
 

@@ -6,6 +6,7 @@ namespace NScript.Lib.Service
     using System.Globalization;
     using System.IO;
     using System.IO.Pipes;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using NScript.Converter;
@@ -51,6 +52,13 @@ namespace NScript.Lib.Service
         /// reference for comparing outputs, and an escape hatch.
         /// </summary>
         public bool ResourcePatch { get; set; } = true;
+
+        /// <summary>
+        /// Test hook (<see cref="ServiceHost.DropWatchEventsEnvVar"/>): file extensions, with dot,
+        /// whose watcher events are ignored, so a hand test can stand in for a lost event (a
+        /// watcher overflow). Empty in normal use.
+        /// </summary>
+        public IReadOnlyList<string> DropWatchEvents { get; set; } = Array.Empty<string>();
 
         /// <summary>A setting that could not be read and fell back to its default; logged once at start.</summary>
         public string? StartupWarning { get; set; }
@@ -113,6 +121,56 @@ namespace NScript.Lib.Service
         /// a resource (skin, CSS, XWML) instead of patching its DLL. Dev-only; default on.
         /// </summary>
         public const string ResourcePatchEnvVar = "NSCRIPT_RESOURCE_PATCH";
+
+        /// <summary>
+        /// Environment variable for <c>--sync</c>: how long it waits for the watch to settle, in
+        /// whole seconds (default 30), before it answers busy.
+        /// </summary>
+        public const string SyncWaitSecondsEnvVar = "NSCRIPT_SYNC_WAIT_SECONDS";
+
+        /// <summary>
+        /// Test-only environment variable: <c>;</c>-separated extensions (e.g. <c>.cs</c>) whose
+        /// watcher events the daemon ignores, to test what a lost event does. Read at daemon start.
+        /// </summary>
+        public const string DropWatchEventsEnvVar = "NSCRIPT_WATCH_DROP_EVENTS";
+
+        /// <summary>
+        /// Marker a watching daemon keeps next to each registered project's obj DLL; its
+        /// presence makes <c>dotnet build</c> ask <c>--sync</c> first (Sdk.targets).
+        /// </summary>
+        public const string WatchMarkerFileName = "nscript.watch";
+
+        /// <summary>
+        /// Line prefix after a <c>--sync</c> yes, one line per vouched reference:
+        /// <c>nscript-ref &lt;project dir&gt;\|&lt;reference path&gt;|&lt;its intermediate dir&gt;\</c>.
+        /// Sdk.targets (<c>_NScriptWatchSync</c>) reads them.
+        /// </summary>
+        public const string SyncRefPrefix = "nscript-ref ";
+
+        /// <summary>One <see cref="SyncRefPrefix"/> line, as the daemon writes it and Sdk.targets parses it.</summary>
+        public static string SyncRefLine(string projectDir, string reference, string intermediateDir)
+            => SyncRefPrefix
+                + Path.TrimEndingDirectorySeparator(projectDir) + Path.DirectorySeparatorChar
+                + "|" + reference
+                + "|" + Path.TrimEndingDirectorySeparator(intermediateDir) + Path.DirectorySeparatorChar;
+
+        /// <summary>
+        /// Line prefix after a <c>--sync</c> yes: a JS file of the project's bundles the daemon did
+        /// not write last. Sdk.targets then runs its normal jsmode check for that file.
+        /// </summary>
+        public const string SyncJsForeignPrefix = "nscript-jsforeign ";
+
+        /// <summary><c>--sync</c> exit code: the project and everything it reads are current.</summary>
+        public const int SyncExitYes = 0;
+
+        /// <summary><c>--sync</c> exit code: not current, not watched, or no daemon answered.</summary>
+        public const int SyncExitNo = 1;
+
+        /// <summary><c>--sync</c> exit code: the watch had not settled when the wait ran out.</summary>
+        public const int SyncExitBusy = 2;
+
+        /// <summary>How long a <c>--sync</c> client waits beyond the sync wait for the reply itself.</summary>
+        public static readonly TimeSpan SyncReplyMargin = TimeSpan.FromSeconds(5);
 
         /// <summary>How long an unused build session is kept by default.</summary>
         public static readonly TimeSpan DefaultSessionIdleTimeout = TimeSpan.FromMinutes(30);
@@ -183,7 +241,7 @@ namespace NScript.Lib.Service
         public static int Run(string[] args)
         {
             bool foreground = false, status = false, stop = false, force = false;
-            string? toolsetDir = null, toolsetHash = null;
+            string? toolsetDir = null, toolsetHash = null, syncPath = null;
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i].ToLowerInvariant())
@@ -192,11 +250,12 @@ namespace NScript.Lib.Service
                     case "--status": status = true; break;
                     case "--stop": stop = true; break;
                     case "--force": force = true; break;
+                    case "--sync" when i + 1 < args.Length: syncPath = args[++i]; break;
                     case "--toolset-dir" when i + 1 < args.Length: toolsetDir = args[++i]; break;
                     case "--toolset-hash" when i + 1 < args.Length: toolsetHash = args[++i]; break;
                     default:
                         Console.Error.WriteLine("nscript service: unknown argument '{0}'", args[i]);
-                        Console.Error.WriteLine("Usage: nscript service [--foreground] | --status | --stop [--force]");
+                        Console.Error.WriteLine("Usage: nscript service [--foreground] | --status | --stop [--force] | --sync <obj dll>");
                         return 1;
                 }
             }
@@ -223,6 +282,50 @@ namespace NScript.Lib.Service
                 return SendControl(identity, stop ? ServiceProtocol.KindStop : ServiceProtocol.KindStatus, Console.Out, stop ? StopReplyTimeout : StatusReplyTimeout);
             }
 
+            if (syncPath != null)
+            {
+                // The client picks the wait, so it bounds its own reply timeout by the same number.
+                TimeSpan wait;
+                try
+                {
+                    wait = ReadSeconds(SyncWaitSecondsEnvVar, TimeSpan.FromSeconds(30));
+                }
+                catch (ArgumentException e)
+                {
+                    // MSBuild shows this line and builds as today; a stack trace says no more.
+                    Console.Out.WriteLine("nscript service: " + e.Message);
+                    return 1;
+                }
+
+                string key = Path.GetFullPath(syncPath);
+                string? marker = ReadMarker(key);
+                var reply = new StringWriter();
+                int rc = SendControl(
+                    identity,
+                    ServiceProtocol.KindSync,
+                    reply,
+                    wait + SyncReplyMargin,
+                    new[] { key, ((int)wait.TotalSeconds).ToString(CultureInfo.InvariantCulture) },
+                    noDaemon: () => DeleteDeadMarker(key, marker, identity.PipeName));
+
+                // The first line is the daemon's answer (it keeps it to file names) or this
+                // client's own no-daemon line; then only the daemon's reference and JS lines.
+                var lines = reply.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(l => l.TrimEnd('\r')).ToList();
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        Console.Out.WriteLine(lines[i]);
+                    }
+                    else if (lines[i].StartsWith(SyncRefPrefix, StringComparison.Ordinal) || lines[i].StartsWith(SyncJsForeignPrefix, StringComparison.Ordinal))
+                    {
+                        Console.Out.WriteLine(lines[i]);
+                    }
+                }
+
+                return rc;
+            }
+
             var options = new ServiceHostOptions
             {
                 RequestTimeout = ReadSeconds(RequestTimeoutEnvVar, TimeSpan.FromSeconds(600)),
@@ -230,6 +333,8 @@ namespace NScript.Lib.Service
                 SessionIdleTimeout = ParseSessionIdleTimeout(Environment.GetEnvironmentVariable(SessionIdleSecondsEnvVar), out var sessionIdleWarning),
                 StartupWarning = sessionIdleWarning,
                 ResourcePatch = !string.Equals(Environment.GetEnvironmentVariable(ResourcePatchEnvVar), "off", StringComparison.OrdinalIgnoreCase),
+                DropWatchEvents = (Environment.GetEnvironmentVariable(DropWatchEventsEnvVar) ?? "")
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
             };
             return new ServiceHost(identity, identity.PipeName, ReadSeconds(IdleSecondsEnvVar, TimeSpan.FromSeconds(DefaultIdleSeconds)), foreground, options).Serve();
         }
@@ -487,9 +592,51 @@ namespace NScript.Lib.Service
         /// <summary>
         /// Sends <c>--status</c> or <c>--stop</c> and prints the reply. <paramref name="replyTimeout"/>
         /// bounds the wait for a daemon that accepts but does not answer (<c>--stop</c> waits for
-        /// a running batch, so it passes an infinite timeout).
+        /// a running batch, so it passes an infinite timeout). <paramref name="args"/> goes in the
+        /// request (<c>--sync</c>: the obj DLL and the wait).
         /// </summary>
-        public static int SendControl(ServiceIdentity identity, string kind, TextWriter output, TimeSpan replyTimeout)
+        /// <summary>The watch marker next to <paramref name="projectKey"/>, or null when there is none or it cannot be read.</summary>
+        private static string? ReadMarker(string projectKey)
+        {
+            try
+            {
+                var path = WatchMarkerPath(projectKey);
+                return File.Exists(path) ? File.ReadAllText(path) : null;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// A killed daemon leaves its marker, and every build would pay the connect timeout:
+        /// delete it when it names the pipe nobody listens on (no daemon, no lock held) and still
+        /// holds what was read before connecting, so a new daemon's marker is never deleted.
+        /// </summary>
+        private static void DeleteDeadMarker(string projectKey, string? marker, string pipeName)
+        {
+            if (marker == null || !marker.Split('\n').Any(l => l.TrimEnd('\r') == "pipe=" + pipeName))
+            {
+                return;
+            }
+
+            var path = WatchMarkerPath(projectKey);
+            try
+            {
+                if (File.ReadAllText(path) == marker)
+                {
+                    File.Delete(path);
+                    Console.Out.WriteLine("nscript service: deleted {0}: its daemon is gone", WatchMarkerFileName);
+                }
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                // Left for the next build: a marker that cannot be read or deleted only costs a timeout.
+            }
+        }
+
+        public static int SendControl(ServiceIdentity identity, string kind, TextWriter output, TimeSpan replyTimeout, string[]? args = null, Action? noDaemon = null)
         {
             using var pipe = ServiceClient.TryConnect(identity.PipeName, 1000);
             if (pipe == null && IsLockHeld(Path.Combine(identity.RunDir, ServiceLauncher.DaemonLockFile)))
@@ -506,6 +653,7 @@ namespace NScript.Lib.Service
 
             if (pipe == null)
             {
+                noDaemon?.Invoke();
                 output.WriteLine("nscript service: no daemon running for {0} (pipe {1})", identity.ToolsetDir, identity.PipeName);
                 output.WriteLine("Log: {0}", identity.LogPath);
                 return 1;
@@ -518,7 +666,7 @@ namespace NScript.Lib.Service
                     Kind = kind,
                     ClientPid = Environment.ProcessId,
                     Cwd = Directory.GetCurrentDirectory(),
-                    Args = Array.Empty<string>(),
+                    Args = args ?? Array.Empty<string>(),
                 });
                 return ServiceProtocol.ReadMessage<ServiceResponse>(pipe);
             });
@@ -701,6 +849,9 @@ namespace NScript.Lib.Service
                                 Message = $"nscript service: pid={Environment.ProcessId} stopping after in-flight requests",
                             };
                             this.RequestStop("shutdown");
+                            break;
+                        case ServiceProtocol.KindSync:
+                            response = this.Sync(request);
                             break;
                         case ServiceProtocol.KindEmitJs:
                         case ServiceProtocol.KindCompile:

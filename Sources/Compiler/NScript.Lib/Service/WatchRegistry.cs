@@ -137,8 +137,11 @@ namespace NScript.Lib.Service
         /// <summary>Paths still locked after the retries; they go to the next window.</summary>
         public List<string> Pending { get; } = new List<string>();
 
-        /// <summary>Projects that need a <c>dotnet build</c> before watch can rebuild them, with the reason.</summary>
-        public List<(string ProjectKey, string Reason)> NeedsBuild { get; } = new List<(string, string)>();
+        /// <summary>
+        /// Projects that need a <c>dotnet build</c> before watch can rebuild them, with the reason
+        /// and, for a new source file, that file (the reason lapses when it is gone again).
+        /// </summary>
+        public List<(string ProjectKey, string Reason, string? AddedFile)> NeedsBuild { get; } = new List<(string, string, string?)>();
 
         internal HashSet<string> ChangedOwners { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -178,7 +181,11 @@ namespace NScript.Lib.Service
         private readonly HashSet<string> compileDirty = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> dirtyBundles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, AssemblyStamp?> red = new Dictionary<string, AssemblyStamp?>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, string> needsBuild = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        // Every reason a project needs a dotnet build, latest last; AddedFile is set for "new file".
+        private readonly Dictionary<string, List<(string Reason, string? AddedFile)>> needsBuild = new Dictionary<string, List<(string, string?)>>(StringComparer.OrdinalIgnoreCase);
+
+        // Hash of the JS each bundle's last successful daemon emit left on disk (D-S3-1).
+        private readonly Dictionary<string, string> emittedJs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly List<CopyEdge> copyEdges = new List<CopyEdge>();
         private readonly HashSet<CopyEdge> copyPending = new HashSet<CopyEdge>();
         private HashSet<string> lastOwners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -200,7 +207,9 @@ namespace NScript.Lib.Service
 
         public IReadOnlyCollection<string> DirtyBundles => this.dirtyBundles;
 
-        public IReadOnlyDictionary<string, string> NeedsBuild => this.needsBuild;
+        /// <summary>Projects that need a <c>dotnet build</c>, each with its latest reason.</summary>
+        public IReadOnlyDictionary<string, string> NeedsBuild
+            => this.needsBuild.ToDictionary(p => p.Key, p => p.Value[^1].Reason, StringComparer.OrdinalIgnoreCase);
 
         public IReadOnlyCollection<string> Red => this.red.Keys;
 
@@ -338,6 +347,15 @@ namespace NScript.Lib.Service
             if (succeeded)
             {
                 this.dirtyBundles.Remove(bundleKey);
+                var written = this.probe(bundleKey);
+                if (written.State == FileProbeState.Present)
+                {
+                    this.emittedJs[bundleKey] = written.Hash!;
+                }
+                else
+                {
+                    this.emittedJs.Remove(bundleKey);
+                }
             }
         }
 
@@ -436,10 +454,18 @@ namespace NScript.Lib.Service
         /// </summary>
         public void Apply(WatchChanges changes)
         {
-            foreach (var (projectKey, reason) in changes.NeedsBuild)
+            foreach (var (projectKey, reason, addedFile) in changes.NeedsBuild)
             {
-                this.needsBuild[projectKey] = reason;
+                if (!this.needsBuild.TryGetValue(projectKey, out var reasons))
+                {
+                    this.needsBuild[projectKey] = reasons = new List<(string, string?)>();
+                }
+
+                reasons.RemoveAll(r => r.Reason == reason);
+                reasons.Add((reason, addedFile));
             }
+
+            var lapsed = this.DropVanishedAddedFiles();
 
             // An owner stays "changed" while a bundle whose entry it built is still dirty: a
             // superseded batch carries its emits over, and the next window may change nothing.
@@ -451,9 +477,11 @@ namespace NScript.Lib.Service
                 this.dirty.Add(owner);
             }
 
-            var queue = new Queue<string>(changes.CsOwners);
-            var seen = new HashSet<string>(changes.CsOwners, StringComparer.OrdinalIgnoreCase);
-            this.compileDirty.UnionWith(changes.CsOwners);
+            this.dirty.UnionWith(lapsed);
+            var recompile = changes.CsOwners.Concat(lapsed).ToList();
+            var queue = new Queue<string>(recompile);
+            var seen = new HashSet<string>(recompile, StringComparer.OrdinalIgnoreCase);
+            this.compileDirty.UnionWith(recompile);
             while (queue.Count > 0)
             {
                 var key = queue.Dequeue();
@@ -556,9 +584,9 @@ namespace NScript.Lib.Service
         /// <summary>Why <paramref name="project"/> must not compile now, or null.</summary>
         public string? CompileBlockReason(ProjectRecord project)
         {
-            if (this.needsBuild.TryGetValue(project.Key, out var reason))
+            if (this.NeedsBuildReason(project.Key) is string reason)
             {
-                return "needs dotnet build: " + reason;
+                return "needs dotnet build -p:NScriptWatch=true: " + reason;
             }
 
             foreach (var dependency in this.DependenciesOf(project))
@@ -578,9 +606,9 @@ namespace NScript.Lib.Service
         {
             foreach (var project in this.projects.Values.Where(p => this.Includes(bundle, p)))
             {
-                if (this.needsBuild.TryGetValue(project.Key, out var reason))
+                if (this.NeedsBuildReason(project.Key) is string reason)
                 {
-                    return project.Name + " needs dotnet build: " + reason;
+                    return project.Name + " needs dotnet build -p:NScriptWatch=true: " + reason;
                 }
 
                 var blocked = this.ProjectBlocker(project, bundle.Reads);
@@ -588,6 +616,151 @@ namespace NScript.Lib.Service
                 {
                     return blocked;
                 }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// True when a dirty compile or bundle has nothing keeping it now, so a batch would run
+        /// it: what a copy that just cleared (<see cref="RefreshCopyPending"/>) was keeping.
+        /// </summary>
+        public bool HasRunnableWork()
+            => this.dirty.Any(k => this.CompileBlockReason(this.projects[k]) == null)
+                || this.dirtyBundles.Any(b => this.BundleBlockReason(this.bundles[b]) == null);
+
+        /// <summary>
+        /// The project whose obj DLL is <paramref name="projectKey"/> and the registered projects
+        /// it reads, or null when it is not registered. One level is the whole closure: an SDK
+        /// project's csc references include every transitive project output.
+        /// </summary>
+        public IReadOnlyList<ProjectRecord>? SyncClosure(string projectKey)
+            => this.projects.TryGetValue(projectKey, out var project)
+                ? new[] { project }.Concat(this.DependenciesOf(project)).ToList()
+                : null;
+
+        /// <summary>
+        /// Why <paramref name="projectKey"/> is not current for a build that skips its project
+        /// references, or null when it is: it and the projects it reads are not dirty, red,
+        /// waiting for a <c>dotnet build</c> or a copy, every bundle including it is emitted,
+        /// and every copy of a registered output that they read matches it (<see cref="StaleCopy"/>).
+        /// </summary>
+        public string? SyncBlocker(string projectKey)
+        {
+            if (!this.projects.TryGetValue(projectKey, out var project))
+            {
+                return "not watched";
+            }
+
+            foreach (var dependency in this.DependenciesOf(project))
+            {
+                var blocked = this.ProjectBlocker(dependency, project.Inputs.References);
+                if (blocked != null)
+                {
+                    return blocked;
+                }
+            }
+
+            var own = this.ProjectBlocker(project, Array.Empty<string>());
+            if (own != null)
+            {
+                return own;
+            }
+
+            foreach (var bundle in this.BundlesIncluding(project.Key).OrderBy(b => b.Seq))
+            {
+                var blocked = this.BundleBlockReason(bundle)
+                    ?? (this.dirtyBundles.Contains(bundle.Key) ? Path.GetFileName(bundle.Key) + " not emitted" : null);
+                if (blocked != null)
+                {
+                    return blocked;
+                }
+            }
+
+            var reads = this.SyncClosure(projectKey)!.SelectMany(p => p.Inputs.References)
+                .Concat(this.BundlesIncluding(project.Key).SelectMany(b => b.References));
+            return this.StaleCopy(reads);
+        }
+
+        /// <summary>
+        /// The JS files of the bundles including <paramref name="projectKey"/> that are not what
+        /// the daemon's last successful emit left: rewritten since (another configuration or
+        /// mode), deleted, or never emitted by it. A synced build keeps only the daemon's JS.
+        /// </summary>
+        public IReadOnlyList<string> ForeignJs(string projectKey)
+            => this.projects.ContainsKey(projectKey)
+                ? this.BundlesIncluding(projectKey)
+                    .Where(b => !this.emittedJs.TryGetValue(b.Key, out var hash) || this.probe(b.Key) != FileProbe.Present(hash))
+                    .Select(b => b.Key)
+                    .ToList()
+                : Array.Empty<string>();
+
+        /// <summary>
+        /// The csc references of <paramref name="projectKey"/> that are another registered
+        /// project's output or a copy of one (same file name), each with that project's
+        /// directory and intermediate directory (where its watch build recorded its target path);
+        /// null when it is not registered or a name matches two projects. A synced
+        /// <c>dotnet build</c> passes these instead of evaluating its project references:
+        /// <see cref="SyncBlocker"/> has just vouched for each of them.
+        /// </summary>
+        public IReadOnlyList<(string ProjectDir, string Reference, string IntermediateDir)>? SyncReferences(string projectKey)
+        {
+            if (!this.projects.TryGetValue(projectKey, out var project))
+            {
+                return null;
+            }
+
+            var byName = this.projects.Values.Where(p => !Same(p.Key, projectKey)).ToLookup(p => p.Name, StringComparer.OrdinalIgnoreCase);
+            var result = new List<(string, string, string)>();
+            foreach (var reference in project.Inputs.References)
+            {
+                var owners = byName[Path.GetFileName(reference)].ToList();
+                if (owners.Count > 1)
+                {
+                    return null;
+                }
+
+                if (owners.Count == 1)
+                {
+                    result.Add((owners[0].Cwd, reference, Path.GetDirectoryName(owners[0].Key)!));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// The first of <paramref name="reads"/> that is a copy of a registered output (same
+        /// file name) and matches none: an assembly copy needs the obj DLL's MVID and write
+        /// time (a resource patch keeps the MVID), a reference-assembly copy needs the
+        /// <c>/refout</c>'s MVID (MSBuild skips that copy while the MVID is unchanged). An
+        /// unreadable copy is stale. It reads the disk, not copy edges, so an edge that was
+        /// never found cannot turn into a wrong yes.
+        /// </summary>
+        private string? StaleCopy(IEnumerable<string> reads)
+        {
+            var byName = this.projects.Values.ToLookup(p => p.Name, StringComparer.OrdinalIgnoreCase);
+            foreach (var path in reads.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                var owners = byName[Path.GetFileName(path)].Where(p => !p.Outputs.Any(o => Same(o, path))).ToList();
+                if (owners.Count == 0)
+                {
+                    continue;
+                }
+
+                var copy = this.readStamp(path);
+                if (copy == null)
+                {
+                    return path + " unreadable (a copy of " + owners[0].Name + ")";
+                }
+
+                if (owners.Any(p => Nullable.Equals(copy, this.readStamp(p.Key))
+                    || (p.Inputs.RefOut != null && this.readStamp(p.Inputs.RefOut)?.Mvid == copy.Value.Mvid)))
+                {
+                    continue;
+                }
+
+                return path + " stale (" + owners[0].Name + " changed since it was copied)";
             }
 
             return null;
@@ -671,6 +844,23 @@ namespace NScript.Lib.Service
         public void ClearCopyPending(CopyEdge edge) => this.copyPending.Remove(edge);
 
         /// <summary>
+        /// Clears pending copies whose target now equals its source, as after the full build
+        /// that copied it (S3 D-S3-3): the obj DLL by MVID and mtime (the rule StaleCopy uses),
+        /// the reference assembly by MVID (MSBuild copies it only when the MVID changes). A
+        /// target that is still stale or cannot be read stays pending; nothing is copied here.
+        /// </summary>
+        public void RefreshCopyPending()
+        {
+            this.copyPending.RemoveWhere(edge =>
+            {
+                var target = this.readStamp(edge.Target);
+                var source = this.readStamp(edge.Source);
+                return target != null && source != null
+                    && (edge.IsRefAssembly ? target.Value.Mvid == source.Value.Mvid : target.Value == source.Value);
+            });
+        }
+
+        /// <summary>
         /// Clears red marks whose obj DLL changed since the failure: somebody built it (for
         /// example a plain <c>dotnet build</c>). A DLL that cannot be read (deleted by a clean,
         /// locked mid-write) is not a rebuild and keeps red. Returns the cleared project keys.
@@ -737,7 +927,7 @@ namespace NScript.Lib.Service
             yield return new KeyValuePair<string, string>("WatchRed", string.Join(";", this.red.Keys.Select(Path.GetFileName)));
             yield return new KeyValuePair<string, string>(
                 "WatchNeedsBuild",
-                string.Join(";", this.needsBuild.Select(p => Path.GetFileName(p.Key) + ": " + p.Value)));
+                string.Join(";", this.needsBuild.Select(p => Path.GetFileName(p.Key) + ": " + p.Value[^1].Reason)));
             yield return new KeyValuePair<string, string>(
                 "WatchCopyPending",
                 string.Join(";", this.copyPending.Select(e => e.Target)));
@@ -780,7 +970,7 @@ namespace NScript.Lib.Service
                 case FileProbeState.Missing:
                     foreach (var owner in owners)
                     {
-                        result.NeedsBuild.Add((owner.Key, "deleted " + path));
+                        result.NeedsBuild.Add((owner.Key, "deleted " + path, null));
                     }
 
                     break;
@@ -847,7 +1037,7 @@ namespace NScript.Lib.Service
 
             foreach (var project in changed)
             {
-                result.NeedsBuild.Add((project.Key, "build file changed: " + path));
+                result.NeedsBuild.Add((project.Key, "build file changed: " + path, null));
             }
         }
 
@@ -884,8 +1074,35 @@ namespace NScript.Lib.Service
 
             foreach (var project in added)
             {
-                result.NeedsBuild.Add((project.Key, "new file " + path));
+                result.NeedsBuild.Add((project.Key, "new file " + path, path));
             }
+        }
+
+        private string? NeedsBuildReason(string projectKey)
+            => this.needsBuild.TryGetValue(projectKey, out var reasons) ? reasons[^1].Reason : null;
+
+        /// <summary>
+        /// A "new file" reason lapses once that file is gone again (added, then deleted before
+        /// any build). Other reasons stay until a build. A plain build may have compiled the
+        /// file meanwhile, so the projects whose reason lapsed are returned to recompile.
+        /// </summary>
+        private List<string> DropVanishedAddedFiles()
+        {
+            var lapsed = new List<string>();
+            foreach (var pair in this.needsBuild.ToList())
+            {
+                if (pair.Value.RemoveAll(r => r.AddedFile != null && this.probe(r.AddedFile).State == FileProbeState.Missing) > 0)
+                {
+                    lapsed.Add(pair.Key);
+                }
+
+                if (pair.Value.Count == 0)
+                {
+                    this.needsBuild.Remove(pair.Key);
+                }
+            }
+
+            return lapsed;
         }
 
         private void SetResult(string projectKey, int exitCode)
@@ -903,9 +1120,9 @@ namespace NScript.Lib.Service
         /// <summary>Why a bundle or dependent reading <paramref name="reads"/> must not use <paramref name="project"/> now, or null.</summary>
         private string? ProjectBlocker(ProjectRecord project, IEnumerable<string> reads)
         {
-            if (this.needsBuild.ContainsKey(project.Key))
+            if (this.NeedsBuildReason(project.Key) is string reason)
             {
-                return project.Name + " needs dotnet build";
+                return project.Name + " needs dotnet build -p:NScriptWatch=true: " + reason;
             }
 
             if (this.red.ContainsKey(project.Key))

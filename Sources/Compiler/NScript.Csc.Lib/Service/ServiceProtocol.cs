@@ -88,6 +88,12 @@ namespace NScript.Csc.Lib.Service
         public const string KindStatus = "status";
         public const string KindStop = "stop";
 
+        /// <summary>
+        /// <c>nscript service --sync</c>: Args are the project's obj DLL and the wait in whole
+        /// seconds; the reply's ExitCode is the answer (0 current, 1 not, 2 busy).
+        /// </summary>
+        public const string KindSync = "sync";
+
         private static readonly UTF8Encoding Utf8NoBom = new UTF8Encoding(false);
 
         public static void WriteMessage<T>(Stream stream, T message)
