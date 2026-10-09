@@ -761,8 +761,8 @@ namespace NScript.Lib.Service
                     return path + " unreadable (a copy of " + owners[0].Name + ")";
                 }
 
-                if (owners.Any(p => Nullable.Equals(copy, this.readStamp(p.Key))
-                    || (p.Inputs.RefOut != null && this.readStamp(p.Inputs.RefOut)?.Mvid == copy.Value.Mvid)))
+                if (owners.Any(p => (this.readStamp(p.Key) is AssemblyStamp obj && CopyMatches(obj, copy.Value, mvidOnly: false))
+                    || (p.Inputs.RefOut != null && this.readStamp(p.Inputs.RefOut) is AssemblyStamp refOut && CopyMatches(refOut, copy.Value, mvidOnly: true))))
                 {
                     continue;
                 }
@@ -824,7 +824,8 @@ namespace NScript.Lib.Service
                             bool unreadable = targetStamp == null
                                 && this.probe(path).State != FileProbeState.Missing
                                 && isRef == string.Equals(Path.GetFileName(Path.GetDirectoryName(path)), "ref", StringComparison.OrdinalIgnoreCase);
-                            if (unreadable || (targetStamp != null && outputStamp.Value.Mvid == targetStamp.Value.Mvid))
+                            // Found by MVID alone: a copy is its source's copy while stale too.
+                            if (unreadable || (targetStamp != null && CopyMatches(outputStamp.Value, targetStamp.Value, mvidOnly: true)))
                             {
                                 var edge = new CopyEdge(project.Key, output, path, holderKey) { IsRefAssembly = isRef };
                                 this.copyEdges.Add(edge);
@@ -838,6 +839,15 @@ namespace NScript.Lib.Service
                 }
             }
         }
+
+        /// <summary>
+        /// The one copy-freshness rule (F-006). <paramref name="mvidOnly"/>: a reference-assembly
+        /// copy matches by MVID, as MSBuild copies it only when the MVID changes. Otherwise an
+        /// assembly copy matches by MVID and write time: MSBuild's Copy keeps the write time,
+        /// and a resource patch keeps the MVID but not the write time.
+        /// </summary>
+        public static bool CopyMatches(AssemblyStamp source, AssemblyStamp copy, bool mvidOnly)
+            => mvidOnly ? source.Mvid == copy.Mvid : source == copy;
 
         /// <summary>The copies to refresh after <paramref name="projectKey"/> compiled.</summary>
         public IReadOnlyList<CopyEdge> CopiesOf(string projectKey)
@@ -862,8 +872,7 @@ namespace NScript.Lib.Service
             {
                 var target = this.readStamp(edge.Target);
                 var source = this.readStamp(edge.Source);
-                return target != null && source != null
-                    && (edge.IsRefAssembly ? target.Value.Mvid == source.Value.Mvid : target.Value == source.Value);
+                return target != null && source != null && CopyMatches(source.Value, target.Value, edge.IsRefAssembly);
             });
         }
 

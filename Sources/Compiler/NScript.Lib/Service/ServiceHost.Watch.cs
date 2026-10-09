@@ -1133,7 +1133,7 @@ namespace NScript.Lib.Service
             {
                 var source = ReadStamp(edge.Source);
                 var target = ReadStamp(edge.Target);
-                if (source != null && target != null && source.Value.Mvid == target.Value.Mvid)
+                if (source != null && target != null && WatchRegistry.CopyMatches(source.Value, target.Value, mvidOnly: true))
                 {
                     lock (this.watchGate)
                     {
