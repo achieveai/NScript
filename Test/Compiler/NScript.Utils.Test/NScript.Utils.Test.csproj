@@ -17,6 +17,10 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp">
       <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
     </Reference>
+    <!-- The session-refresh test rewrites its fixture with Cecil. -->
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />

@@ -12,8 +12,10 @@ namespace NScript.Utils.Test
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Emit;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NScript.CLR;
     using NScript.Csc.Lib.Service;
     using NScript.Lib.Service;
+    using Cecil = Mono.Cecil;
 
     /// <summary>
     /// Contracts of the watch-mode resource patch (M3-1) on a real Roslyn DLL shaped like a
@@ -174,8 +176,78 @@ namespace NScript.Utils.Test
             CollectionAssert.AreEqual(new[] { this.dll }, Directory.GetFiles(this.dir, "Fx.dll*"));
         }
 
+        /// <summary>
+        /// Build-session refresh (M3 slice 3, L1) on a loaded module. A patched image gives the
+        /// module its new resources, and so does the patch that reverts it. Nothing changes, and
+        /// the reason says why, for: the same image again, a recompile (new MVID), a changed
+        /// $$BstInfo$$, an added resource (both with the MVID kept, as a Cecil rewrite does), or an
+        /// image of a module that is not loaded.
+        /// </summary>
+        [TestMethod]
+        public void Refresh_TakesPatchedResources_RefusesRecompileBstInfoOrResourceSetChange()
+        {
+            using var clr = new ClrContext();
+            clr.LoadAssembly(this.dll);
+            Assert.IsTrue(clr.TryGetModuleDefinition("Fx", out var module));
+            var original = File.ReadAllBytes(this.skin);
+
+            File.WriteAllText(this.skin, "<div>v2</div>");
+            Assert.AreEqual(ResourcePatchOutcome.Ok, ResourcePatcher.Patch(this.dll, new[] { this.skin }).Outcome);
+            var patched = File.ReadAllBytes(this.dll);
+            Assert.IsTrue(clr.TryRefreshResources(new[] { patched }, out var replaced, out var reason), reason);
+            Assert.AreEqual(1, replaced);
+            CollectionAssert.AreEqual(File.ReadAllBytes(this.skin), Resource(module, "Fx.Shell.skin.cshtml"));
+            CollectionAssert.AreEqual(BstInfo, Resource(module, "$$BstInfo$$"));
+
+            void Refused(byte[] image, string expected)
+            {
+                Assert.IsFalse(clr.TryRefreshResources(new[] { image }, out var none, out var why), expected);
+                Assert.AreEqual(0, none);
+                StringAssert.StartsWith(why, expected);
+                CollectionAssert.AreEqual(File.ReadAllBytes(this.skin), Resource(module, "Fx.Shell.skin.cshtml"), expected);
+            }
+
+            Refused(patched, "no-resource-change");
+
+            var map = new Dictionary<string, string> { ["Fx.Shell.skin.cshtml"] = this.skin, ["Fx.Site.css"] = this.css };
+            Emit(Path.Combine(this.dir, "recompiled"), map, out var recompiled, out _, Source.Replace("fixture", "fixture 2"));
+            Refused(File.ReadAllBytes(recompiled), "mvid");
+
+            static byte[] Rewrite(byte[] image, Action<Cecil.ModuleDefinition> edit)
+            {
+                using var rewritten = Cecil.ModuleDefinition.ReadModule(new MemoryStream(image));
+                edit(rewritten);
+                var output = new MemoryStream();
+                rewritten.Write(output);
+                return output.ToArray();
+            }
+
+            var bstChanged = Rewrite(patched, m =>
+            {
+                var index = m.Resources.IndexOf(m.Resources.Single(r => r.Name == "$$BstInfo$$"));
+                m.Resources[index] = new Cecil.EmbeddedResource("$$BstInfo$$", m.Resources[index].Attributes, Encoding.UTF8.GetBytes("other tree"));
+                var skinIndex = m.Resources.IndexOf(m.Resources.Single(r => r.Name == "Fx.Shell.skin.cshtml"));
+                m.Resources[skinIndex] = new Cecil.EmbeddedResource("Fx.Shell.skin.cshtml", m.Resources[skinIndex].Attributes, Encoding.UTF8.GetBytes("<div>v3</div>"));
+            });
+            Refused(bstChanged, "$$BstInfo$$");
+
+            var added = Rewrite(patched, m => m.Resources.Add(new Cecil.EmbeddedResource("Fx.New.css", Cecil.ManifestResourceAttributes.Public, Encoding.UTF8.GetBytes(".n {}"))));
+            Refused(added, "resource-set");
+
+            var otherModule = Rewrite(patched, m => m.Name = "Fy.dll");
+            Refused(otherModule, "not-loaded");
+
+            File.WriteAllBytes(this.skin, original);
+            Assert.AreEqual(ResourcePatchOutcome.Ok, ResourcePatcher.Patch(this.dll, new[] { this.skin }).Outcome);
+            Assert.IsTrue(clr.TryRefreshResources(new[] { File.ReadAllBytes(this.dll) }, out replaced, out reason), reason);
+            CollectionAssert.AreEqual(original, Resource(module, "Fx.Shell.skin.cshtml"));
+        }
+
+        private static byte[] Resource(Cecil.ModuleDefinition module, string name)
+            => module.Resources.OfType<Cecil.EmbeddedResource>().Single(r => r.Name == name).GetResourceData();
+
         /// <summary>Compiles <see cref="Source"/> into <paramref name="dir"/>/Fx.dll + Fx.pdb, embedding the mapped files and $$ResInfo$$.</summary>
-        private static void Emit(string dir, Dictionary<string, string> map, out string dllPath, out string pdbPath)
+        private static void Emit(string dir, Dictionary<string, string> map, out string dllPath, out string pdbPath, string source = Source)
         {
             Directory.CreateDirectory(dir);
             dllPath = Path.Combine(dir, "Fx.dll");
@@ -193,7 +265,7 @@ namespace NScript.Utils.Test
 
             var compilation = CSharpCompilation.Create(
                 "Fx",
-                new[] { CSharpSyntaxTree.ParseText(Source) },
+                new[] { CSharpSyntaxTree.ParseText(source) },
                 new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, deterministic: true));
             using var dllStream = File.Create(dllPath);

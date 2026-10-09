@@ -217,6 +217,66 @@ namespace NScript.Converter
         }
 
         /// <summary>
+        /// Keeps the session when the changed inputs differ only in resources (a watch-mode
+        /// resource patch): the kept modules take the new resources, and the stamps move on.
+        /// The same inputs must be in the same order, and each changed file must still hash to
+        /// its new stamp, so the resources taken are the bytes the stamps describe. The refresh
+        /// is an optimisation: any failure to read an input is a logged miss (a cold build),
+        /// never a new way to fail. Nothing changes before the refresh commits, so a miss is safe.
+        /// </summary>
+        private bool TryRefreshSession(List<(string path, string sha256)> stamps, Serilog.ILogger log)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            string reason = null;
+            int replaced = 0;
+            var images = new List<byte[]>();
+            try
+            {
+                if (stamps.Count != this.sessionStamps.Count
+                    || stamps.Where((stamp, index) => stamp.path != this.sessionStamps[index].path).Any())
+                {
+                    reason = "input-set";
+                }
+                else
+                {
+                    for (int index = 0; index < stamps.Count && reason == null; index++)
+                    {
+                        if (stamps[index].sha256 == this.sessionStamps[index].sha256)
+                        {
+                            continue;
+                        }
+
+                        var image = File.ReadAllBytes(stamps[index].path);
+                        if (System.Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(image)) != stamps[index].sha256)
+                        {
+                            reason = "rewritten " + Path.GetFileName(stamps[index].path);
+                        }
+
+                        images.Add(image);
+                    }
+                }
+
+                if (reason == null && this.sessionClr.TryRefreshResources(images, out replaced, out reason))
+                {
+                    this.sessionStamps = stamps;
+                }
+            }
+            catch (System.Exception ex) when (!(ex is System.OutOfMemoryException))
+            {
+                reason = "error " + ex.GetType().Name + ": " + ex.Message;
+            }
+
+            log.Information(
+                "Session.Refresh Refreshed={Refreshed} Images={Images} Resources={Resources} Miss={Miss} ElapsedMs={ElapsedMs}",
+                reason == null,
+                images.Count,
+                replaced,
+                reason,
+                sw.ElapsedMilliseconds);
+            return reason == null;
+        }
+
+        /// <summary>
         /// Logs chunk counts and render time; with <c>NSCRIPT_DEV_CHUNK_INDEX=1</c> also writes
         /// <c>&lt;out&gt;.chunks.tsv</c> (name, 1-based start line, line count).
         /// </summary>
@@ -332,6 +392,12 @@ namespace NScript.Converter
                 : warm ? "unchanged"
                 : this.sessionContext == null ? "new"
                 : "inputs-changed";
+            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, log))
+            {
+                warm = true;
+                sessionReason = "resources-refreshed";
+            }
+
             ClrContext clrContext;
             if (warm)
             {

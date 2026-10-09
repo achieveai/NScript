@@ -5,12 +5,15 @@ namespace NScript.Csc.Lib.Test
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Text;
+    using System.Text.Json;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Mono.Cecil;
     using NScript.CLR;
     using NScript.Converter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
+    using NScript.Utils;
 
     /// <summary>
     /// Slice 2, Inc 3: a dev-mode <see cref="Builder"/> keeps a session (loaded modules and
@@ -30,10 +33,17 @@ namespace NScript.Csc.Lib.Test
             private ClrContext clrContext;
             private RuntimeScopeManager runtimeScopeManager;
 
+            /// <summary>The text of the main module's <see cref="OracleResource"/> the last build's plugin read, if any.</summary>
+            public static string LastOracleText { get; set; }
+
             public void Initialize(ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
             {
                 this.clrContext = clrContext;
                 this.runtimeScopeManager = runtimeScopeManager;
+                var resource = clrContext.Modules
+                    .SelectMany(m => m.Resources.OfType<EmbeddedResource>())
+                    .FirstOrDefault(r => r.Name == OracleResource);
+                LastOracleText = resource == null ? null : Encoding.UTF8.GetString(resource.GetResourceData());
             }
 
             public void ParseArgs(IList<Tuple<string, string>> args) { }
@@ -86,6 +96,29 @@ namespace NScript.Csc.Lib.Test
             js = File.ReadAllBytes(outJs);
             map = File.ReadAllBytes(Path.ChangeExtension(outJs, ".map"));
             return (new WeakReference(plugin), plugin.Context);
+        }
+
+        private const string OracleResource = "Oracle.txt";
+
+        /// <summary>
+        /// Sets <see cref="OracleResource"/> in the DLL at <paramref name="path"/> through Cecil, which
+        /// keeps the MVID and every other resource: the shape of a watch-mode resource patch.
+        /// </summary>
+        private static void SetOracleResource(string path, string text)
+        {
+            using var module = ModuleDefinition.ReadModule(new MemoryStream(File.ReadAllBytes(path)));
+            var resource = new EmbeddedResource(OracleResource, ManifestResourceAttributes.Public, Encoding.UTF8.GetBytes(text));
+            var index = module.Resources.ToList().FindIndex(r => r.Name == OracleResource);
+            if (index < 0)
+            {
+                module.Resources.Add(resource);
+            }
+            else
+            {
+                module.Resources[index] = resource;
+            }
+
+            module.Write(path);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -182,6 +215,193 @@ namespace NScript.Csc.Lib.Test
             }
             finally
             {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// M3 slice 3 (L1): a change to the entry DLL that only changes a resource keeps the
+        /// session. The build is warm on the same ConverterContext, the plugin reads the new
+        /// resource, the output equals the cold build, and the next unchanged build is warm, so
+        /// the session took the new stamps. A same-MVID change that is not a resource change
+        /// stays cold (Session_WarmBuildEqualsCold...: TimeDateStamp flip).
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 4 builds.
+        public void Session_ResourceOnlyChange_RefreshesWarm_EqualsCold_KeepsNewStamps()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-refresh-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var main = Copy("realScript.dll");
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            SetOracleResource(main, "v1");
+            try
+            {
+                using (var builder = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true))
+                {
+                    var cold = BuildOnce(builder, outJs, out var coldJs, out var coldMap);
+                    Assert.AreEqual("cold", builder.LastBuildKind);
+                    Assert.AreEqual("v1", RootsPlugin.LastOracleText);
+
+                    SetOracleResource(main, "v2");
+                    var refreshed = BuildOnce(builder, outJs, out var refreshedJs, out var refreshedMap);
+                    Assert.AreEqual("warm", builder.LastBuildKind, "A resource-only change must keep the session.");
+                    Assert.IsTrue(SameTarget(cold.context, refreshed.context), "A refreshed build must reuse the session's ConverterContext.");
+                    Assert.AreEqual("v2", RootsPlugin.LastOracleText, "The plugin must read the new resource.");
+                    CollectionAssert.AreEqual(coldJs, refreshedJs, "A refreshed build's .js differs from the cold build.");
+                    CollectionAssert.AreEqual(coldMap, refreshedMap, "A refreshed build's .map differs from the cold build.");
+
+                    BuildOnce(builder, outJs, out var againJs, out _);
+                    Assert.AreEqual("warm", builder.LastBuildKind, "After a refresh the session must hold the new stamps.");
+                    Assert.AreEqual("v2", RootsPlugin.LastOracleText);
+                    CollectionAssert.AreEqual(coldJs, againJs);
+                }
+
+                using (var fresh = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true))
+                {
+                    BuildOnce(fresh, outJs, out _, out _);
+                    Assert.AreEqual("cold", fresh.LastBuildKind);
+                    Assert.AreEqual("v2", RootsPlugin.LastOracleText, "A cold build of the patched DLL reads the same resource.");
+                }
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// The shortest prefix of <paramref name="whole"/> (in 61-byte steps) that Cecil fails to
+        /// read with an exception other than BadImageFormatException: a cut inside the headers
+        /// (EndOfStreamException or IndexOutOfRangeException), which the old catch let escape.
+        /// </summary>
+        private static byte[] TruncateUnreadably(byte[] whole)
+        {
+            for (int keep = 64; keep < whole.Length; keep += 61)
+            {
+                var cut = whole.Take(keep).ToArray();
+                try
+                {
+                    using var module = ModuleDefinition.ReadModule(new MemoryStream(cut), new ReaderParameters(ReadingMode.Deferred));
+                    foreach (var resource in module.Resources.OfType<EmbeddedResource>())
+                    {
+                        resource.GetResourceData();
+                    }
+                }
+                catch (BadImageFormatException)
+                {
+                }
+                catch (Exception)
+                {
+                    return cut;
+                }
+            }
+
+            Assert.Fail("No prefix of the " + whole.Length + "-byte fixture fails to read with a non-BadImageFormat exception.");
+            return null;
+        }
+
+        /// <summary>
+        /// M3 slice 3 (L1): the refresh is an optimisation and must never be a new way to fail.
+        /// A changed input Cecil cannot read (a truncated DLL, not a BadImageFormatException) is a
+        /// refresh miss with its reason logged; the build then fails only where a cold build
+        /// fails, loading the DLL. With the DLL whole again the next build is cold and green.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 3 builds.
+        public void Session_UnreadableChangedInput_IsARefreshMiss_ThenColdAndGreen()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-refresh-miss-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var main = Copy("realScript.dll");
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            var logPath = Path.Combine(dir, "build.jsonl");
+            CompilerLog.Shutdown();
+            try
+            {
+                using (var builder = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true))
+                {
+                    BuildOnce(builder, outJs, out var coldJs, out _);
+                    Assert.AreEqual("cold", builder.LastBuildKind);
+
+                    var whole = File.ReadAllBytes(main);
+                    File.WriteAllBytes(main, TruncateUnreadably(whole));
+                    CompilerLog.Initialize(logPath, "test");
+                    bool built;
+                    try
+                    {
+                        Builder.ResetProcessState();
+                        built = builder.Execute(new IConverterPlugin[] { new RootsPlugin() });
+                    }
+                    catch (Exception ex) when (!(ex is AssertFailedException))
+                    {
+                        built = false;
+                    }
+                    finally
+                    {
+                        CompilerLog.Shutdown();
+                    }
+
+                    Assert.IsFalse(built, "A truncated entry DLL cannot build.");
+                    var refresh = File.ReadAllLines(logPath)
+                        .Select(line => JsonDocument.Parse(line).RootElement)
+                        .Where(e => e.GetProperty("@mt").GetString().StartsWith("Session.Refresh ", StringComparison.Ordinal))
+                        .ToList();
+                    Assert.AreEqual(1, refresh.Count, "The refresh must log its miss instead of throwing.");
+                    Assert.IsFalse(refresh[0].GetProperty("Refreshed").GetBoolean());
+                    var miss = refresh[0].GetProperty("Miss").GetString();
+                    Assert.IsTrue(miss.StartsWith("error ", StringComparison.Ordinal), "Miss: " + miss);
+
+                    File.WriteAllBytes(main, whole);
+                    BuildOnce(builder, outJs, out var againJs, out _);
+                    Assert.AreEqual("cold", builder.LastBuildKind, "The failed build dropped the session.");
+                    CollectionAssert.AreEqual(coldJs, againJs);
+                }
+            }
+            finally
+            {
+                CompilerLog.Shutdown();
                 Directory.Delete(dir, recursive: true);
             }
         }

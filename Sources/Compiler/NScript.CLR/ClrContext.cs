@@ -268,6 +268,90 @@ namespace NScript.CLR
         }
 
         /// <summary>
+        /// Build session: takes the resources of new images of loaded modules when only
+        /// resources changed. An image qualifies when its module is loaded, it has the loaded
+        /// module's MVID, the same embedded resources in the same order (name and attributes),
+        /// every "$$" resource ($$BstInfo$$, $$ResInfo$$) byte-equal, and at least one other
+        /// resource that differs. ResourcePatcher writes such images; a recompile gets a new
+        /// MVID and a new $$BstInfo$$. Every image is checked before any module changes.
+        /// </summary>
+        /// <param name="images">The new bytes of each changed input.</param>
+        /// <param name="replaced">The number of resources replaced.</param>
+        /// <param name="reason">Why an image does not qualify; null on success.</param>
+        /// <returns>true if the modules took the new resources; false if nothing changed.</returns>
+        public bool TryRefreshResources(IReadOnlyList<byte[]> images, out int replaced, out string reason)
+        {
+            var plan = new List<(ModuleDefinition module, int index, EmbeddedResource resource)>();
+            replaced = 0;
+            foreach (var image in images)
+            {
+                using var fresh = ModuleDefinition.ReadModule(
+                    new MemoryStream(image, writable: false),
+                    new ReaderParameters(ReadingMode.Deferred));
+                if (!this.assemblies.TryGetValue(fresh.Name.ToLowerInvariant(), out var kept))
+                {
+                    reason = "not-loaded " + fresh.Name;
+                    return false;
+                }
+
+                if (fresh.Mvid != kept.Mvid)
+                {
+                    reason = "mvid " + fresh.Name;
+                    return false;
+                }
+
+                if (fresh.Resources.Count != kept.Resources.Count)
+                {
+                    reason = "resource-set " + fresh.Name;
+                    return false;
+                }
+
+                int changed = 0;
+                for (int index = 0; index < kept.Resources.Count; index++)
+                {
+                    if (!(kept.Resources[index] is EmbeddedResource keptResource)
+                        || !(fresh.Resources[index] is EmbeddedResource freshResource)
+                        || keptResource.Name != freshResource.Name
+                        || keptResource.Attributes != freshResource.Attributes)
+                    {
+                        reason = "resource-set " + fresh.Name;
+                        return false;
+                    }
+
+                    var data = freshResource.GetResourceData();
+                    if (data.AsSpan().SequenceEqual(keptResource.GetResourceData()))
+                    {
+                        continue;
+                    }
+
+                    if (keptResource.Name.StartsWith("$$", StringComparison.Ordinal))
+                    {
+                        reason = keptResource.Name + " " + fresh.Name;
+                        return false;
+                    }
+
+                    plan.Add((kept, index, new EmbeddedResource(keptResource.Name, keptResource.Attributes, data)));
+                    changed++;
+                }
+
+                if (changed == 0)
+                {
+                    reason = "no-resource-change " + fresh.Name;
+                    return false;
+                }
+            }
+
+            foreach (var (module, index, resource) in plan)
+            {
+                module.Resources[index] = resource;
+            }
+
+            replaced = plan.Count;
+            reason = null;
+            return true;
+        }
+
+        /// <summary>
         /// Resolves the specified type reference.
         /// </summary>
         /// <param name="paramDef">The type reference.</param>
