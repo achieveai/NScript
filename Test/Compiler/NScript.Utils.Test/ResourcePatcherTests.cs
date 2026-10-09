@@ -180,8 +180,8 @@ namespace NScript.Utils.Test
         /// Build-session refresh (M3 slice 3, L1) on a loaded module. A patched image gives the
         /// module its new resources, and so does the patch that reverts it. Nothing changes, and
         /// the reason says why, for: the same image again, a recompile (new MVID), a changed
-        /// $$BstInfo$$, an added resource (both with the MVID kept, as a Cecil rewrite does), or an
-        /// image of a module that is not loaded.
+        /// $$BstInfo$$, an added, renamed or re-attributed resource (all with the MVID kept, as a
+        /// Cecil rewrite does), or an image of a module that is not loaded.
         /// </summary>
         [TestMethod]
         public void Refresh_TakesPatchedResources_RefusesRecompileBstInfoOrResourceSetChange()
@@ -233,6 +233,18 @@ namespace NScript.Utils.Test
 
             var added = Rewrite(patched, m => m.Resources.Add(new Cecil.EmbeddedResource("Fx.New.css", Cecil.ManifestResourceAttributes.Public, Encoding.UTF8.GetBytes(".n {}"))));
             Refused(added, "resource-set");
+
+            static void Replace(Cecil.ModuleDefinition m, string name, Func<Cecil.EmbeddedResource, Cecil.EmbeddedResource> make)
+            {
+                var index = m.Resources.IndexOf(m.Resources.Single(r => r.Name == name));
+                m.Resources[index] = make((Cecil.EmbeddedResource)m.Resources[index]);
+            }
+
+            var renamed = Rewrite(patched, m => Replace(m, "Fx.Site.css", r => new Cecil.EmbeddedResource("Fx.Other.css", r.Attributes, r.GetResourceData())));
+            Refused(renamed, "resource-set");
+
+            var reattributed = Rewrite(patched, m => Replace(m, "Fx.Site.css", r => new Cecil.EmbeddedResource(r.Name, r.Attributes ^ Cecil.ManifestResourceAttributes.Public ^ Cecil.ManifestResourceAttributes.Private, r.GetResourceData())));
+            Refused(reattributed, "resource-set");
 
             var otherModule = Rewrite(patched, m => m.Name = "Fy.dll");
             Refused(otherModule, "not-loaded");
