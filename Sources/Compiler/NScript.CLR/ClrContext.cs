@@ -83,6 +83,13 @@ namespace NScript.CLR
             new Dictionary<TypeDefinition, ReadOnlyCollection<MethodReference>>();
 
         /// <summary>
+        /// Interface overrides per type. They depend only on the loaded modules, so they live as long as this
+        /// context and are never shared with another one.
+        /// </summary>
+        private readonly Dictionary<TypeDefinition, Dictionary<MethodReference, MethodReference>> typeToInterfaceOverrides =
+            new Dictionary<TypeDefinition, Dictionary<MethodReference, MethodReference>>();
+
+        /// <summary>
         /// backing store for KnownReferences.
         /// </summary>
         private readonly ClrKnownReferences knownReferences;
@@ -443,6 +450,21 @@ namespace NScript.CLR
             }
 
             throw new InvalidProgramException();
+        }
+
+        /// <summary>
+        /// Gets the interface overrides of a type, computed once per type for this context.
+        /// The returned map is shared; callers must not change it.
+        /// </summary>
+        public Dictionary<MethodReference, MethodReference> GetInterfaceOverrides(TypeDefinition typeDefinition)
+        {
+            if (!this.typeToInterfaceOverrides.TryGetValue(typeDefinition, out var overrides))
+            {
+                overrides = TypeHelpers.ComputeInterfaceOverrides(typeDefinition, this);
+                this.typeToInterfaceOverrides.Add(typeDefinition, overrides);
+            }
+
+            return overrides;
         }
 
         /// <summary>

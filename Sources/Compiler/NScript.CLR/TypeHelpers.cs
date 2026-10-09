@@ -1261,6 +1261,17 @@ namespace NScript.CLR
             this TypeDefinition typeDefinition,
             ClrContext clrContext)
         {
+            return clrContext.GetInterfaceOverrides(typeDefinition);
+        }
+
+        /// <summary>
+        /// Computes the interface overrides of a type. Callers go through
+        /// <see cref="ClrContext.GetInterfaceOverrides"/>, which keeps one result per type.
+        /// </summary>
+        internal static Dictionary<MethodReference, MethodReference> ComputeInterfaceOverrides(
+            TypeDefinition typeDefinition,
+            ClrContext clrContext)
+        {
             if (typeDefinition.IsInterface)
             {
                 return new Dictionary<MethodReference, MethodReference>();
