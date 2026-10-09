@@ -259,7 +259,7 @@ namespace NScript.Utils.Test
             => module.Resources.OfType<Cecil.EmbeddedResource>().Single(r => r.Name == name).GetResourceData();
 
         /// <summary>Compiles <see cref="Source"/> into <paramref name="dir"/>/Fx.dll + Fx.pdb, embedding the mapped files and $$ResInfo$$.</summary>
-        private static void Emit(string dir, Dictionary<string, string> map, out string dllPath, out string pdbPath, string source = Source)
+        private static void Emit(string dir, Dictionary<string, string> map, out string dllPath, out string pdbPath, string source = Source, params string[] references)
         {
             Directory.CreateDirectory(dir);
             dllPath = Path.Combine(dir, "Fx.dll");
@@ -278,7 +278,7 @@ namespace NScript.Utils.Test
             var compilation = CSharpCompilation.Create(
                 "Fx",
                 new[] { CSharpSyntaxTree.ParseText(source) },
-                new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
+                references.Append(typeof(object).Assembly.Location).Select(path => MetadataReference.CreateFromFile(path)),
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, deterministic: true));
             using var dllStream = File.Create(dllPath);
             using var pdbStream = File.Create(pdbPath);
@@ -288,6 +288,35 @@ namespace NScript.Utils.Test
                 manifestResources: resources,
                 options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb, pdbFilePath: pdbPath));
             Assert.IsTrue(emitted.Success, string.Join(Environment.NewLine, emitted.Diagnostics));
+        }
+
+        /// <summary>
+        /// A parameter defaulting to an enum of another assembly: Cecil resolves that enum to
+        /// write the default, so the patch needs the compile's references (MCQdbDev's McqdbClient).
+        /// </summary>
+        [TestMethod]
+        public void Patch_EnumDefaultFromAReference_ResolvesThroughTheReferences()
+        {
+            var kindsDir = Path.Combine(this.dir, "kinds");
+            Directory.CreateDirectory(kindsDir);
+            var kinds = Path.Combine(kindsDir, "Kinds.dll");
+            var kindsCompilation = CSharpCompilation.Create(
+                "Kinds",
+                new[] { CSharpSyntaxTree.ParseText("namespace Kinds { public enum Kind { A, B } }") },
+                new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, deterministic: true));
+            Assert.IsTrue(kindsCompilation.Emit(kinds).Success);
+
+            var appDir = Path.Combine(this.dir, "app");
+            var map = new Dictionary<string, string> { ["Fx.Shell.skin.cshtml"] = this.skin };
+            Emit(appDir, map, out var app, out _, "namespace Fx { public class C { public void M(Kinds.Kind k = Kinds.Kind.B) { } } }", kinds);
+            File.WriteAllText(this.skin, "<div>v2</div>");
+
+            Assert.AreEqual(ResourcePatchOutcome.Fallback, ResourcePatcher.Patch(app, new[] { this.skin }).Outcome, "Without references the write cannot resolve Kinds.");
+            var result = ResourcePatcher.Patch(app, new[] { this.skin }, new[] { kinds });
+
+            Assert.AreEqual(ResourcePatchOutcome.Ok, result.Outcome, result.Reason);
+            CollectionAssert.AreEqual(Encoding.UTF8.GetBytes("<div>v2</div>"), Image.Read(app).Resources["Fx.Shell.skin.cshtml"]);
         }
 
         /// <summary>What the patch must keep or change, read with System.Reflection.Metadata (not Cecil, the writer).</summary>

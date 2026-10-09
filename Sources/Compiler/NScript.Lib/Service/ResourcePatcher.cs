@@ -80,9 +80,11 @@ namespace NScript.Lib.Service
         /// Makes every resource in <paramref name="dllPath"/> equal its file. Falls back when
         /// a file in <paramref name="resourceInputs"/> is not mapped by <c>$$ResInfo$$</c>,
         /// when a mapped file is missing, or when Cecil cannot read the image. The reference
-        /// assembly is left alone: it has no resources.
+        /// assembly is left alone: it has no resources. <paramref name="references"/> are the
+        /// compile's references: writing a parameter's default value of an enum from another
+        /// assembly resolves that enum.
         /// </summary>
-        public static ResourcePatchResult Patch(string dllPath, IEnumerable<string> resourceInputs)
+        public static ResourcePatchResult Patch(string dllPath, IEnumerable<string> resourceInputs, IEnumerable<string> references = null)
         {
             if (!File.Exists(dllPath))
             {
@@ -99,11 +101,17 @@ namespace NScript.Lib.Service
                 return ResourcePatchResult.IoFailed("read output: " + ex.Message);
             }
 
+            using var resolver = new DefaultAssemblyResolver();
+            foreach (var directory in (references ?? Enumerable.Empty<string>()).Select(Path.GetDirectoryName).Where(d => !string.IsNullOrEmpty(d)).Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                resolver.AddSearchDirectory(directory);
+            }
+
             ModuleDefinition module;
             try
             {
-                // Deferred: Immediate resolves referenced assemblies, which a patch never needs.
-                module = ModuleDefinition.ReadModule(new MemoryStream(dllBytes), new ReaderParameters(ReadingMode.Deferred));
+                // Deferred: Immediate resolves every referenced assembly; the writer resolves only what it must.
+                module = ModuleDefinition.ReadModule(new MemoryStream(dllBytes), new ReaderParameters(ReadingMode.Deferred) { AssemblyResolver = resolver });
             }
             catch (Exception ex) when (ex is BadImageFormatException || ex is InvalidOperationException || ex is ArgumentException || ex is NotSupportedException)
             {

@@ -1116,7 +1116,7 @@ namespace NScript.Lib.Service
             ResourcePatchResult patch;
             try
             {
-                patch = ResourcePatcher.Patch(project.Inputs.Output, project.Inputs.Resources);
+                patch = ResourcePatcher.Patch(project.Inputs.Output, project.Inputs.Resources, project.Inputs.References);
             }
             catch (Exception ex)
             {
