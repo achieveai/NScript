@@ -177,15 +177,11 @@
                     case BinaryOperator.Minus:
                     case BinaryOperator.Plus:
                     case BinaryOperator.Mul:
-                        if (BinaryExpression.CompareTypes(this.Left.ResultType, this.Right.ResultType) >= 0)
-                        {
-                            rv = this.Left.ResultType;
-                        }
-                        else
-                        {
-                            rv = this.Right.ResultType;
-                        }
-
+                        // Each side once: reading Left again made a long a + b + c + ... chain
+                        // cost 3^depth (a 12-term string concat took 0.6 s to convert).
+                        var leftType = this.Left.ResultType;
+                        var rightType = this.Right.ResultType;
+                        rv = BinaryExpression.CompareTypes(leftType, rightType) >= 0 ? leftType : rightType;
                         break;
                     case BinaryOperator.Equals:
                     case BinaryOperator.GreaterThan:

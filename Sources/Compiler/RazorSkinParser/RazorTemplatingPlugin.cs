@@ -8,6 +8,7 @@ using NScript.CLR;
 using NScript.Converter;
 using NScript.Converter.TypeSystemConverter;
 using NScript.JST;
+using NScript.Utils;
 using NScript.RazorSkin.CodeGen;
 using NScript.RazorSkin.TemplateIR;
 using Serilog;
@@ -22,6 +23,31 @@ namespace NScript.RazorSkin
     public class RazorTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
         private static ILogger Log => RazorSkinCompiler.Logger;
+
+        /// <summary>
+        /// Compiled skin IR by content, kept for the process (see <see cref="ContentCache{T}"/>).
+        /// </summary>
+        internal static readonly ContentCache<SkinTemplateNode> SkinIRs = new ContentCache<SkinTemplateNode>(512);
+
+        /// <summary>
+        /// Returns this build's own copy of the compiled IR. The IR depends only on these
+        /// strings; codegen later writes Cecil-derived values into it, so the cached IR is
+        /// never handed out directly.
+        /// </summary>
+        internal static SkinTemplateNode GetSkinIR(
+            string templateName, string templateSource, string[] additionalSources, string fileName)
+            => GetSkinIR(templateName, templateSource, additionalSources, fileName, out _);
+
+        internal static SkinTemplateNode GetSkinIR(
+            string templateName, string templateSource, string[] additionalSources, string fileName, out bool cacheHit)
+        {
+            var irKey = ContentCache<SkinTemplateNode>.Key(
+                new[] { templateName, templateSource, fileName }.Concat(additionalSources).ToArray());
+            return TemplateIR.IRCloner.Clone(SkinIRs.GetOrCreate(
+                irKey,
+                () => RazorSkinCompiler.CompileToIR(templateName, templateSource, additionalSources, fileName),
+                out cacheHit));
+        }
 
         private RuntimeScopeManager _runtimeScopeManager;
         private ClrContext _clrContext;
@@ -164,12 +190,24 @@ namespace NScript.RazorSkin
         /// </summary>
         private CssLiteralReplacer _cssLiteralReplacer;
 
+        // This build's parsed-CSS cache hits and misses (Probe.RazorInit).
+        private int _cssHits, _cssMisses;
+
         /// <summary>
         /// All embedded CSS resources found during module scanning, keyed by resource name.
         /// Used to resolve @styles references to actual CSS content.
         /// </summary>
         private readonly Dictionary<string, EmbeddedResource> _cssResources
             = new Dictionary<string, EmbeddedResource>();
+
+        // CSS resource name -> its source path from $$ResInfo$$, so CSS diagnostics name the file.
+        private readonly Dictionary<string, string> _cssFileNames = new Dictionary<string, string>();
+
+        // Template key -> template text, so a missing CSS class is reported at its line.
+        private readonly Dictionary<string, string> _templateSources = new Dictionary<string, string>();
+
+        // A stylesheet shared by several templates fails for each of them; report it once.
+        private readonly HashSet<string> _reportedCssErrors = new HashSet<string>();
 
         /// <summary>
         /// Maps template name to its JST getter function identifier.
@@ -229,6 +267,11 @@ namespace Sunlight.Framework.Observables
 
             // Reset per-compilation data index counter
             _nextDataIndex = 100;
+            _templateMethodReferences = null;
+            var probeTotal = System.Diagnostics.Stopwatch.StartNew();
+            long probeStubTicks = 0, probeCompileTicks = 0;
+            int probeTemplates = 0;
+            int irHits = 0, irMisses = 0;
 
             // Scan embedded resources for .skin.cshtml and .css files
             foreach (var module in clrContext.Modules)
@@ -242,6 +285,8 @@ namespace Sunlight.Framework.Observables
                     if (embeddedResource.Name.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
                     {
                         _cssResources[embeddedResource.Name] = embeddedResource;
+                        _cssFileNames[embeddedResource.Name] = runtimeScopeManager.Context.GetResourceFileName(
+                            module, embeddedResource.Name);
                         Log.Debug("Discovered CSS resource {ResourceName}", embeddedResource.Name);
                     }
 
@@ -264,16 +309,21 @@ namespace Sunlight.Framework.Observables
                             // Generate C# stubs for the model type from Cecil type info.
                             // This allows the Roslyn analysis phase to detect observable
                             // properties and promote bindings from OneTime to OneWay.
+                            var probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
                             var modelTypeStub = _stubGenerator.GenerateModelTypeStub(templateSource);
+                            probeStubTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
+                            probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
                             var additionalSources = modelTypeStub != null
                                 ? new[] { FrameworkTypeStubs, modelTypeStub }
                                 : new[] { FrameworkTypeStubs };
 
-                            var ir = RazorSkinCompiler.CompileToIR(
-                                templateName, templateSource,
-                                additionalSources, fileName);
+                            var ir = GetSkinIR(templateName, templateSource, additionalSources, fileName, out var irHit);
+                            if (irHit) { irHits++; } else { irMisses++; }
+                            probeCompileTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
+                            probeTemplates++;
                             var resourceKey = GetTemplateKey(module, embeddedResource.Name);
                             _compiledIRs[resourceKey] = ir;
+                            _templateSources[resourceKey] = templateSource;
                             _templateShortNames[resourceKey] = templateName;
                             _hasRazorTemplates = true;
 
@@ -292,8 +342,9 @@ namespace Sunlight.Framework.Observables
                         {
                             Log.Error(ex, "Compilation failed for resource {ResourceName}", embeddedResource.Name);
 
-                            runtimeScopeManager.Context.AddError(
-                                (ex as RazorSkinPreprocessorException)?.Location,
+                            runtimeScopeManager.Context.AddTemplateError(
+                                (ex as RazorSkinPreprocessorException)?.Location
+                                    ?? (ex as NScript.Converter.ConverterLocationException)?.Location,
                                 $"Error compiling Razor skin template '{fileName}': {ex.Message}",
                                 false);
                         }
@@ -301,6 +352,8 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
+            long probeKnownMs = 0, probeResolveMs = 0, probeCssMs = 0, probeScanMs = 0;
+            var probePhase = System.Diagnostics.Stopwatch.StartNew();
             if (_hasRazorTemplates)
             {
                 try
@@ -317,14 +370,28 @@ namespace Sunlight.Framework.Observables
                         false);
                 }
 
+                probeKnownMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
                 ResolveRuntimeIdentifiers(clrContext, runtimeScopeManager);
+                probeResolveMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
 
                 // Load CSS for templates with @styles directives
                 LoadCssForTemplates(runtimeScopeManager);
+                probeCssMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
 
                 // Scan [CssClass] const fields and enable minification
                 ScanCssClassAttributes(runtimeScopeManager);
+                probeScanMs = probePhase.ElapsedMilliseconds;
             }
+
+            var probeTicksPerMs = System.Diagnostics.Stopwatch.Frequency / 1000.0;
+            Log.Information(
+                "Probe.RazorInit TotalMs={TotalMs} StubMs={StubMs} CompileMs={CompileMs} Templates={Templates} KnownMs={KnownMs} ResolveMs={ResolveMs} CssMs={CssMs} ScanMs={ScanMs} IrHits={IrHits} IrMisses={IrMisses} CssHits={CssHits} CssMisses={CssMisses} ProcessIrHits={ProcessIrHits} ProcessIrMisses={ProcessIrMisses} ProcessCssHits={ProcessCssHits} ProcessCssMisses={ProcessCssMisses}",
+                probeTotal.ElapsedMilliseconds,
+                System.Math.Round(probeStubTicks / probeTicksPerMs),
+                System.Math.Round(probeCompileTicks / probeTicksPerMs),
+                probeTemplates, probeKnownMs, probeResolveMs, probeCssMs, probeScanMs,
+                irHits, irMisses, _cssHits, _cssMisses,
+                SkinIRs.Hits, SkinIRs.Misses, RazorCssManager.ParsedSheets.Hits, RazorCssManager.ParsedSheets.Misses);
         }
 
         /// <summary>
@@ -362,7 +429,7 @@ namespace Sunlight.Framework.Observables
                         using var reader = new StreamReader(stream);
                         var cssText = reader.ReadToEnd();
 
-                        cssManager.AddStylesheet(cssResourceName, cssText);
+                        if (cssManager.AddStylesheet(cssResourceName, cssText, _cssFileNames.GetValueOrDefault(cssResourceName))) { _cssHits++; } else { _cssMisses++; }
                         Log.Debug("Loaded CSS {ResourceName} for template {TemplateName}",
                             cssResourceName, ir.TemplateName);
                     }
@@ -373,7 +440,8 @@ namespace Sunlight.Framework.Observables
                         cssManager.ValidateCssVariables();
 
                         // Validate class names used in template HTML
-                        TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, cssManager);
+                        TemplateIR.TemplateIRBuilder.ValidateCssClasses(
+                            ir, cssManager, _templateSources.GetValueOrDefault(kvp.Key));
 
                         // Note: CompressNames() is called later in ScanCssClassAttributes()
                         // once [CssClass] const fields are validated, ensuring all dynamic
@@ -388,10 +456,15 @@ namespace Sunlight.Framework.Observables
                 catch (Exception ex)
                 {
                     Log.Error(ex, "CSS loading failed for template {TemplateName}", ir.TemplateName);
-                    runtimeScopeManager.Context.AddError(
-                        null,
-                        $"Error loading CSS for Razor template '{ir.TemplateName}': {ex.Message}",
-                        false);
+                    var location = (ex as NScript.Converter.ConverterLocationException)?.Location;
+                    if (_reportedCssErrors.Add(
+                            $"{location?.FileName}|{location?.StartLine}|{location?.StartColumn}|{ex.Message}"))
+                    {
+                        runtimeScopeManager.Context.AddTemplateError(
+                            location,
+                            $"Error loading CSS for Razor template '{ir.TemplateName}': {ex.Message}",
+                            false);
+                    }
                 }
             }
         }
@@ -1032,7 +1105,11 @@ namespace Sunlight.Framework.Observables
             MethodDefinition methodDefinition,
             ConverterContext converterContext)
         {
-            Log.Verbose("Checking interest level for method {MethodName}", methodDefinition.FullName);
+            // Called for every method of every build: build FullName only when it is logged.
+            if (Log.IsEnabled(Serilog.Events.LogEventLevel.Verbose))
+            {
+                Log.Verbose("Checking interest level for method {MethodName}", methodDefinition.FullName);
+            }
 
             // Check if this is a [Skin("...")] property getter where the template
             // name corresponds to a compiled .skin.cshtml template
@@ -1161,6 +1238,12 @@ namespace Sunlight.Framework.Observables
             return new List<MethodReference>();
         }
 
+        /// <summary>
+        /// Methods the templates reference. They depend only on the compiled IRs and type metadata, both fixed
+        /// after Initialize, so they are collected on the first pass and reused on later passes of this build.
+        /// </summary>
+        private List<MethodReference> _templateMethodReferences;
+
         public List<MethodReference> GetMethodsToEmitPassN()
         {
             // After XWML's pass has run and created DocStorageGetter, look it up
@@ -1173,6 +1256,11 @@ namespace Sunlight.Framework.Observables
             // Collect methods referenced by template event handlers so the demand-driven
             // converter emits their bodies. Without this, methods called only from
             // templates (e.g., onclick="@Model.OnSelectTodo(todo)") would be dead-code-eliminated.
+            if (_templateMethodReferences != null)
+            {
+                return new List<MethodReference>(_templateMethodReferences);
+            }
+
             var methods = new List<MethodReference>();
             if (_hasRazorTemplates && _clrContext != null)
             {
@@ -1188,7 +1276,8 @@ namespace Sunlight.Framework.Observables
                 }
             }
 
-            return methods;
+            _templateMethodReferences = methods;
+            return new List<MethodReference>(methods);
         }
 
         /// <summary>
@@ -1513,7 +1602,7 @@ namespace Sunlight.Framework.Observables
                 }
                 catch (InvalidOperationException ex)
                 {
-                    _runtimeScopeManager.Context.AddError(sub.Location, ex.Message, false);
+                    _runtimeScopeManager.Context.AddTemplateError(sub.Location, ex.Message, false);
                     controlType = null;
                 }
                 if (controlType != null)
@@ -1771,7 +1860,7 @@ namespace Sunlight.Framework.Observables
                 {
                     Log.Error(ex, "JST generation failed for template {TemplateName}", kvp.Value.TemplateName);
 
-                    _runtimeScopeManager.Context.AddError(
+                    _runtimeScopeManager.Context.AddTemplateError(
                         (ex as RazorSubControlDiagnosticException)?.Location,
                         $"Error generating JST for Razor template '{kvp.Value.TemplateName}': {ex.Message}",
                         false);

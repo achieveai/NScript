@@ -26,12 +26,68 @@ namespace NScript.JSParser
             ANTLRStringStream input = new ANTLRStringStream(js);
             JavaScriptLexer lexer = new JavaScriptLexer(input);
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+
+            // The grammar needs at least one statement; a body of only comments and whitespace has none.
+            tokenStream.Fill();
+            if (tokenStream.GetTokens().All(token => token.Type == JavaScriptLexer.SkipSpace || token.Type == JavaScriptLexer.EOF))
+            {
+                stopWatch.Stop();
+                return new JST.ScopeBlock(null, parentScope, new List<Statement>());
+            }
+
             JavaScriptParser parser = new JavaScriptParser(tokenStream);
             CommonTree tree = parser.program().Tree;
 
             var rv = Parser.WalkTree(tree, parentScope, resolver);
             stopWatch.Stop();
             return rv;
+        }
+
+        /// <summary>
+        /// Decodes a JavaScript string literal token, quotes included, to its value. The
+        /// writer escapes the value again, so keeping the raw text would double every escape.
+        /// </summary>
+        /// <param name="token">The token text, as the lexer matched it.</param>
+        /// <returns>The string value.</returns>
+        private static string UnescapeStringLiteral(string token)
+        {
+            var builder = new StringBuilder(token.Length);
+
+            for (int index = 1; index < token.Length - 1; index++)
+            {
+                char ch = token[index];
+                if (ch != '\\')
+                {
+                    builder.Append(ch);
+                    continue;
+                }
+
+                ch = token[++index];
+                switch (ch)
+                {
+                    case 'b': builder.Append('\b'); break;
+                    case 'f': builder.Append('\f'); break;
+                    case 'n': builder.Append('\n'); break;
+                    case 'r': builder.Append('\r'); break;
+                    case 't': builder.Append('\t'); break;
+                    case 'v': builder.Append('\v'); break;
+                    case '0': builder.Append('\0'); break;
+                    case 'x':
+                        builder.Append((char)Convert.ToInt32(token.Substring(index + 1, 2), 16));
+                        index += 2;
+                        break;
+                    case 'u':
+                        builder.Append((char)Convert.ToInt32(token.Substring(index + 1, 4), 16));
+                        index += 4;
+                        break;
+                    default:
+                        // Quotes, the backslash and non-escape characters stand for themselves.
+                        builder.Append(ch);
+                        break;
+                }
+            }
+
+            return builder.ToString();
         }
 
         /// <summary>
@@ -48,6 +104,12 @@ namespace NScript.JSParser
             ScopeResolver identifierResolver = new ScopeResolver(
                 parentScope,
                 resolver);
+
+            // A body the grammar rejects outright parses to a lone error node; report it.
+            if (tree is CommonErrorNode)
+            {
+                Parser.ParseStatementNode(tree, identifierResolver);
+            }
 
             foreach (CommonTree treeNode in tree.Children)
             {
@@ -293,7 +355,7 @@ namespace NScript.JSParser
                 case JavaScriptParser.StringLiteral:
                     return new StringLiteralExpression(
                         resolver.Scope,
-                        tree.Token.Text.Substring(1, tree.token.Text.Length-2));
+                        Parser.UnescapeStringLiteral(tree.token.Text));
                 case JavaScriptParser.BoolLiteral:
                     return new BooleanLiteralExpression(
                         resolver.Scope,

@@ -170,6 +170,20 @@ namespace XwmlParser
         Queue<TemplateParser> templatesToParse = new Queue<TemplateParser>();
 
         /// <summary>
+        /// HTML documents and template parsers read this build (Probe.XwmlInit). Nothing is
+        /// cached across builds, so every document is a miss.
+        /// </summary>
+        internal int ProbeDocuments;
+
+        internal int ProbeTemplatesParsed;
+
+        /// <summary>Style sheets read this build (Probe.XwmlInit).</summary>
+        internal int ProbeStyleSheets => this.styleSheet.Count;
+
+        /// <summary>Style sheets this build found already parsed (<see cref="CssStyleSheet.ParsedSheets"/>).</summary>
+        internal int ProbeStyleSheetHits;
+
+        /// <summary>
         /// The resource map.
         /// </summary>
         Dictionary<string, Tuple<EmbeddedResource, string>> resourceMap =
@@ -406,6 +420,7 @@ namespace XwmlParser
                     this.parserContext.RegisterHtmlParser(
                         templateNameSplits[0],
                         htmlParser);
+                    this.ProbeDocuments++;
                 }
 
                 if (htmlParser == null)
@@ -465,13 +480,16 @@ namespace XwmlParser
                 using (System.IO.Stream stream = resource.Item1.GetResourceStream())
                 using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
                 {
-                    rv.AddCss(
+                    if (rv.AddCss(
                         reader.ReadToEnd(),
                         new Location(
                             rv.ResourceName,
                             0,
                             0),
-                        styleSheets);
+                        styleSheets))
+                    {
+                        this.ProbeStyleSheetHits++;
+                    }
                 }
 
                 this.styleSheet.Add(relativeCssResourceId, rv);
@@ -535,6 +553,7 @@ namespace XwmlParser
                     this.templatesToParse.Dequeue();
 
                 templateParser.Parse();
+                this.ProbeTemplatesParsed++;
 
                 if (templateParser.SkinNodeInfo != null)
                 {

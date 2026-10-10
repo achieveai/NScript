@@ -36,40 +36,27 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <value>The reader identifier.</value>
         public IIdentifier ReaderIdentifier
-        {
-            get
-            {
-                if (this.readerIdentifier == null)
-                {
-                    this.readerIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                        this.identifierScope,
-                        "rd",
-                        false);
-                }
-
-                return this.readerIdentifier;
-            }
-        }
+            => MethodRecorder.Call(
+                this,
+                0,
+                static (self, _) => self.readerIdentifier ??= SimpleIdentifier.CreateScopeIdentifier(
+                    self.identifierScope,
+                    "rd",
+                    false),
+                static (r, _) => r.Runtime.ReferenceManager.ReaderIdentifier);
 
         /// <summary>
         /// Gets the writer identifier.
         /// </summary>
         /// <value>The writer identifier.</value>
         public IIdentifier WriterIdentifier
-        {
-            get
-            {
-                if (this.writerIdentifier == null)
-                {
-                    this.writerIdentifier =
-                        SimpleIdentifier.CreateScopeIdentifier(
-                            this.identifierScope,
-                            "wt",
-                            false);
-                }
-
-                return this.writerIdentifier;
-            }
-        }
+            => MethodRecorder.Call(
+                this,
+                0,
+                static (self, _) => self.writerIdentifier ??= SimpleIdentifier.CreateScopeIdentifier(
+                    self.identifierScope,
+                    "wt",
+                    false),
+                static (r, _) => r.Runtime.ReferenceManager.WriterIdentifier);
     }
 }

@@ -415,11 +415,43 @@ namespace NScript.Converter.TypeSystemConverter
 
             if (!this.implementedMethods.ContainsKey(methodDefinition))
             {
-                this.implementedMethods.Add(
-                    methodDefinition,
-                    new MethodConverter(this, methodDefinition));
+                // Slice-2 Inc 0 probe: time spent inside new MethodConverter, outermost call only.
+                var outermost = ProbeDepth++ == 0;
+                ProbeNestedConverts += outermost ? 0 : 1;
+                var start = System.Diagnostics.Stopwatch.GetTimestamp();
+                try
+                {
+                    this.implementedMethods.Add(
+                        methodDefinition,
+                        this.context.MethodCache?.TryReplay(this, methodDefinition)
+                            ?? new MethodConverter(this, methodDefinition));
+                }
+                finally
+                {
+                    ProbeDepth--;
+                    var elapsed = System.Diagnostics.Stopwatch.GetTimestamp() - start;
+                    ProbeMethodsConverted++;
+                    ProbeMethodConvertTicks += outermost ? elapsed : 0;
+                    ProbeMaxMethodConvertTicks = Math.Max(ProbeMaxMethodConvertTicks, elapsed);
+                    if (outermost && elapsed > ProbeSlowMethodTicks)
+                    {
+                        ProbeSlowMethods.Add((methodDefinition.FullName, elapsed));
+                    }
+                }
             }
         }
+
+        /// <summary>
+        /// Slice-2 Inc 0 probe counters, reset and logged per build by <see cref="Builder"/>.
+        /// Static is safe: stage-2 builds never overlap in one process (the service lock).
+        /// </summary>
+        internal static long ProbeMethodConvertTicks, ProbeMaxMethodConvertTicks, ProbeParseTicks;
+        internal static int ProbeMethodsConverted, ProbeNestedConverts, ProbeDepth;
+
+        /// <summary>Outermost conversions slower than 20 ms, for Probe.Convert's SlowMethods.</summary>
+        internal static readonly List<(string Method, long Ticks)> ProbeSlowMethods = new List<(string, long)>();
+
+        private static readonly long ProbeSlowMethodTicks = System.Diagnostics.Stopwatch.Frequency / 50;
 
         /// <summary>
         /// Adds the field to implementation.
@@ -444,6 +476,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="paramDef">The type reference base.</param>
         /// <returns>Identifier for givenType.</returns>
         public IList<IIdentifier> Resolve(TypeReference typeReference)
+            => MethodRecorder.Call(this, typeReference, static (self, t) => self.ResolveCore(t), static (rec, self, a) => { rec.Target(self); return a; }, static (r, t) => r.TypeConverter.Resolve(t));
+
+        private IList<IIdentifier> ResolveCore(TypeReference typeReference)
         {
             // If we are resolving paramDef which points to typeDefinition
             // replace it with localTypeReference. This is done so that if typeDefinition
@@ -484,6 +519,15 @@ namespace NScript.Converter.TypeSystemConverter
                                 this.typeScope,
                                 strBuilder.ToString(),
                                 false);
+                            if (this.typeScope == this.RuntimeManager.Scope)
+                            {
+                                // Non-generic owner: the local type reference is a root identifier.
+                                var localRef = typeReference;
+                                DevNames.Assign(
+                                    this.context,
+                                    rv,
+                                    () => DevNames.TypeHelper(this.typeDefinition, "lt$" + DevNames.TypeForm(localRef)));
+                            }
                         }
 
                         this.localTypeReferences.Add(typeReference, rv);
@@ -502,6 +546,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// Identifier identifying the member.
         /// </returns>
         public IIdentifier Resolve(FieldReference fieldReference)
+            => MethodRecorder.Call(this, fieldReference, static (self, f) => self.ResolveCore(f), static (rec, self, a) => { rec.Target(self); return a; }, static (r, f) => r.TypeConverter.Resolve(f));
+
+        private IIdentifier ResolveCore(FieldReference fieldReference)
         {
             return ResolverHelper.Resolve(
                 this.RuntimeManager,
@@ -550,6 +597,16 @@ namespace NScript.Converter.TypeSystemConverter
         public IList<IIdentifier> ResolveStaticMember(
             FieldReference member,
             Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (member, resolver),
+                static (self, a) => self.ResolveStaticMemberCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveStaticMember(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IList<IIdentifier> ResolveStaticMemberCore(
+            FieldReference member,
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return ResolverHelper.ResolveStaticMember(
                 this.RuntimeManager,
@@ -569,6 +626,16 @@ namespace NScript.Converter.TypeSystemConverter
         internal IIdentifier ResolveStaticMember(
             PropertyDefinition propertyDefinition,
             Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (propertyDefinition, resolver),
+                static (self, a) => self.ResolveStaticMemberCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveStaticMember(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IIdentifier ResolveStaticMemberCore(
+            PropertyDefinition propertyDefinition,
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return ResolverHelper.ResolveStaticMember(
                 this.RuntimeManager,
@@ -585,6 +652,16 @@ namespace NScript.Converter.TypeSystemConverter
         public IList<IIdentifier> ResolveStaticMember(
             MethodReference member,
             Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (member, resolver),
+                static (self, a) => self.ResolveStaticMemberCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveStaticMember(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IList<IIdentifier> ResolveStaticMemberCore(
+            MethodReference member,
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return ResolverHelper.ResolveStaticMember(
                 this.RuntimeManager,
@@ -594,6 +671,16 @@ namespace NScript.Converter.TypeSystemConverter
         }
 
         public IList<IIdentifier> ResolveFactory(
+            MethodReference constructor,
+            Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (constructor, resolver),
+                static (self, a) => self.ResolveFactoryCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveFactory(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IList<IIdentifier> ResolveFactoryCore(
             MethodReference constructor,
             Func<TypeReference, IList<IIdentifier>> resolver)
         {
@@ -795,6 +882,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// Identifier for ImplementedVersion of imported property.
         /// </returns>
         public IIdentifier ResolveImplementedVersion(PropertyDefinition propertyDefinition)
+            => MethodRecorder.Call(this, propertyDefinition, static (self, p) => self.ResolveImplementedVersionCore(p), static (rec, self, a) => { rec.Target(self); return a; }, static (r, p) => r.TypeConverter.ResolveImplementedVersion(p));
+
+        private IIdentifier ResolveImplementedVersionCore(PropertyDefinition propertyDefinition)
         {
             return new CompoundIdentifier(
                 this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
@@ -809,6 +899,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// .
         /// </returns>
         public IIdentifier ResolveWrappedMethod(MethodDefinition methodDefinition)
+            => MethodRecorder.Call(this, methodDefinition, static (self, m) => self.ResolveWrappedMethodCore(m), static (rec, self, a) => { rec.Target(self); return a; }, static (r, m) => r.TypeConverter.ResolveWrappedMethod(m));
+
+        private IIdentifier ResolveWrappedMethodCore(MethodDefinition methodDefinition)
         {
             if (methodDefinition.IsStatic)
             {
@@ -1202,9 +1295,24 @@ namespace NScript.Converter.TypeSystemConverter
                 this.Scope,
                 new IdentifierScope(this.Scope),
                 new List<IIdentifier>(),
-                typeName ?? SimpleIdentifier.CreateScopeIdentifier(
-                    this.Scope,
-                    this.typeDefinition.FullName, false));
+                typeName ?? this.CreateFallbackConstructorName());
+
+        /// <summary>
+        /// Name for a constructor function that has no type identifier. In dev mode it gets a
+        /// stable name when it lives in the root scope.
+        /// </summary>
+        protected IIdentifier CreateFallbackConstructorName()
+        {
+            var rv = SimpleIdentifier.CreateScopeIdentifier(
+                this.Scope,
+                this.typeDefinition.FullName, false);
+            if (this.Scope == this.RuntimeManager.Scope)
+            {
+                DevNames.Assign(this.context, rv, () => DevNames.TypeHelper(this.typeDefinition, "ctor"));
+            }
+
+            return rv;
+        }
 
         /// <summary>
         /// Initializes the type id.
@@ -1334,6 +1442,13 @@ namespace NScript.Converter.TypeSystemConverter
                     this.Scope,
                     "__initTracker",
                     false);
+                if (this.Scope == this.RuntimeManager.Scope)
+                {
+                    DevNames.Assign(
+                        this.context,
+                        initTracker,
+                        () => DevNames.TypeHelper(this.typeDefinition, "initTracker"));
+                }
 
                 List<Statement> ifStatements = new List<Statement>();
                 ifStatements.Add(new ReturnStatement(null, innerScope, null));

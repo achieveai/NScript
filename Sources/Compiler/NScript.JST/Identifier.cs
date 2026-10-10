@@ -91,6 +91,12 @@ namespace NScript.JST
             => this.originalSuggestedName;
 
         /// <summary>
+        /// Gets or sets the identity-derived name used by <see cref="IdentifierScope.DevStableNamer"/>
+        /// in dev mode. Null means the namer derives the name itself. Release naming ignores it.
+        /// </summary>
+        public string StableName { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether Identifier should enforce suggestion.
         /// </summary>
         /// <value>
@@ -180,6 +186,7 @@ namespace NScript.JST
                 ownerScope.AddIdentifier(returnValue);
             }
 
+            IdentifierScope.Observer?.IdentifierCreated(returnValue, suggestedName, enforceSuggestion, dontEscape);
             return returnValue;
         }
 
@@ -236,6 +243,7 @@ namespace NScript.JST
         public void AddUsage(IdentifierScope identifierScope)
         {
             this.usageCount++;
+            IdentifierScope.Observer?.IdentifierUsed(this);
 
             if (!this.ownerScope.IsExecutionScope)
             { this.AddUsageInternal(this.ownerScope); }

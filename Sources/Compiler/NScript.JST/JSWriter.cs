@@ -29,6 +29,16 @@ namespace NScript.JST
         private int scopeDepth = 0;
 
         /// <summary>
+        /// True for the writer that renders one chunk; chunk-flagged functions inside it render in place.
+        /// </summary>
+        private readonly bool isChunkWriter;
+
+        /// <summary>
+        /// Chunks in output order, filled while writing.
+        /// </summary>
+        private readonly List<ChunkInfo> chunks = new();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="JSWriter"/> class.
         /// </summary>
         /// <param name="isIndented">if set to <c>true</c> [is indented].</param>
@@ -39,6 +49,27 @@ namespace NScript.JST
         {
             IsOptimized = isOptimized;
         }
+
+        private JSWriter(bool isChunkWriter)
+        {
+            this.isChunkWriter = isChunkWriter;
+        }
+
+        /// <summary>
+        /// The chunks of the last write, in output order (dev mode). Empty when nothing was chunked.
+        /// </summary>
+        public IReadOnlyList<ChunkInfo> Chunks => this.chunks;
+
+        /// <summary>
+        /// Total time spent rendering chunks, in stopwatch ticks.
+        /// </summary>
+        public long ChunkRenderTicks { get; private set; }
+
+        /// <summary>
+        /// Chunk-flagged functions written in place instead, because a token other than a
+        /// writer newline holds a raw newline (re-indenting would change its text).
+        /// </summary>
+        public int ChunkFallbacks { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is optimized.
@@ -342,6 +373,85 @@ namespace NScript.JST
         }
 
         /// <summary>
+        /// Renders a chunk-flagged function on its own at depth 0 and adds it as one token.
+        /// Returns false when the function must render in place: inside a chunk, or when optimized.
+        /// </summary>
+        /// <param name="function">The function; its location is already on the location stack.</param>
+        internal bool TryWriteChunk(FunctionExpression function, string name)
+        {
+            if (this.isChunkWriter || this.IsOptimized)
+            {
+                return false;
+            }
+
+            long start = System.Diagnostics.Stopwatch.GetTimestamp();
+            var chunkWriter = new JSWriter(isChunkWriter: true);
+            chunkWriter.EnterLocation(this.GetTopLocation());
+            function.Write(chunkWriter);
+            chunkWriter.ArrangeSpaces();
+
+            var chunkTokens = chunkWriter.tokens;
+            if (chunkTokens.First?.Value.Type != TokenType.Keyword
+                || !(chunkTokens.Last.Value is SymbolToken { Symbol: Symbols.BracketCloseCurly }))
+            {
+                throw new InvalidOperationException(
+                    "Chunk '" + name + "' must start with a keyword and end with '}'.");
+            }
+
+            // Render with the first token's location already current: the outer writer
+            // emits the mappings for entering the chunk, exactly as in-place rendering would.
+            var state = new RenderState { LastLocation = chunkTokens.First.Value.Location };
+            var segments = new List<ChunkSegment>();
+            var sink = new ChunkSink(segments);
+            using var text = new StringWriter();
+            foreach (var token in chunkTokens)
+            {
+                chunkWriter.RenderToken(token, state, text, sink);
+            }
+
+            if (state.ScopeDepth != 0)
+            {
+                throw new InvalidOperationException(
+                    "Chunk '" + name + "' ends at scope depth " + state.ScopeDepth + ".");
+            }
+
+            this.ChunkRenderTicks += System.Diagnostics.Stopwatch.GetTimestamp() - start;
+            if (state.HasRawNewline)
+            {
+                // The caller writes the function in place, as with chunks off.
+                this.ChunkFallbacks++;
+                return false;
+            }
+
+            var chunk = new RenderedChunk(
+                name,
+                chunkTokens.First.Value,
+                chunkTokens.Last.Value,
+                text.ToString(),
+                segments,
+                state.Line,
+                state.Column,
+                state.LastLocation);
+            function.RenderedChunk = chunk;
+            this.tokens.AddLast(new ChunkToken(chunk));
+            return true;
+        }
+
+        /// <summary>
+        /// Adds a chunk rendered by an earlier write, as <see cref="TryWriteChunk"/> adds a new one.
+        /// </summary>
+        internal void WriteCachedChunk(RenderedChunk chunk)
+        {
+            if (this.isChunkWriter || this.IsOptimized)
+            {
+                throw new InvalidOperationException(
+                    "Cached chunk '" + chunk.Name + "' can only be written at depth 0 of a dev-mode writer.");
+            }
+
+            this.tokens.AddLast(new ChunkToken(chunk));
+        }
+
+        /// <summary>
         /// Writes script to jsFileName and map file to jsFileName.map with given sourceRoot.
         /// </summary>
         /// <param name="jsFileName"> Filename of the js file. </param>
@@ -358,17 +468,21 @@ namespace NScript.JST
         ///     <paramref name="secondaryRepoRoot"/>. Must be an absolute <c>https://</c> URL. </param>
         public void Write(string jsFileName, string sourceRoot, bool emitLegacyAshxHandler = true, string repoRoot = null, string secondaryRepoRoot = null, string secondarySourceRoot = null)
         {
-            using var streamWriter = new StreamWriter(jsFileName, false, System.Text.Encoding.UTF8);
-            this.Write(
-                streamWriter,
-                Path.GetFileName(jsFileName),
-                Path.GetDirectoryName(jsFileName),
-                true,
-                sourceRoot,
-                emitLegacyAshxHandler,
-                repoRoot,
-                secondaryRepoRoot,
-                secondarySourceRoot);
+            // Temp file + rename (the .map too, in SourceMap.Write): a reader never sees a
+            // truncated bundle, and a process killed mid-write keeps the old one.
+            OwaSourceMapper.AtomicFile.Write(
+                jsFileName,
+                System.Text.Encoding.UTF8,
+                streamWriter => this.Write(
+                    streamWriter,
+                    Path.GetFileName(jsFileName),
+                    Path.GetDirectoryName(jsFileName),
+                    true,
+                    sourceRoot,
+                    emitLegacyAshxHandler,
+                    repoRoot,
+                    secondaryRepoRoot,
+                    secondarySourceRoot));
         }
 
         /// <summary>
@@ -431,10 +545,8 @@ namespace NScript.JST
         {
             this.ArrangeSpaces();
 
-            int scopeDepth = 0;
-            Location lastLocation = null;
-            int curLine = 0;
-            int curCol = 0;
+            var state = new RenderState();
+            this.chunks.Clear();
             var sourceMapping = new OwaSourceMapper.SourceMap();
             if (jsFileName != null)
             {
@@ -452,129 +564,28 @@ namespace NScript.JST
             sourceMapping.SecondarySourceRoot = secondarySourceRoot;
 
             sourceMapping.AddMapping(
-                curLine,
+                state.Line,
                 0,
-                curLine,
+                state.Line,
                 0,
                 jsFileName);
 
             if (jsFileName != null)
             {
-                writer.Write("(function(){");
+                // Columns count from after the wrapper, which shares the first line with
+                // the first token when newlines are optimized away.
+                const string wrapperStart = "(function(){";
+                writer.Write(wrapperStart);
+                state.Column = wrapperStart.Length;
             }
 
+            var sink = new SourceMapSink(sourceMapping, jsFileName);
             foreach (var token in this.tokens)
             {
-                string str = string.Empty;
-
-                if (token.Type != TokenType.Space
-                    && token.Type != TokenType.Newline
-                    && token.Location != lastLocation)
-                {
-                    if (lastLocation != null
-                        && lastLocation.EndLine != int.MaxValue)
-                    {
-                        sourceMapping.AddMapping(
-                            curLine,
-                            curCol,
-                            lastLocation.EndLine - 1,
-                            lastLocation.EndColumn - 1,
-                            lastLocation.FileName);
-                    }
-
-                    lastLocation = token.Location;
-
-                    if (lastLocation == null
-                        || lastLocation.StartLine < 0
-                        || string.IsNullOrWhiteSpace(lastLocation.FileName))
-                    {
-                        sourceMapping.AddMapping(
-                            curLine,
-                            curCol,
-                            curLine,
-                            curCol,
-                            jsFileName);
-                    }
-                    else
-                    {
-                        // Forward the pre-minification name for identifier tokens so the
-                        // V3 "names" array is populated — browser DevTools uses it to show
-                        // original C# identifiers in place of renamed JS symbols.
-                        string originalName = token.Type == TokenType.IdentifierToken
-                            ? ((GenericStrToken)token).OriginalName
-                            : null;
-
-                        sourceMapping.AddMapping(
-                            curLine,
-                            curCol,
-                            lastLocation.StartLine - 1,
-                            lastLocation.StartColumn - 1,
-                            lastLocation.FileName,
-                            originalName);
-                    }
-                }
-
-                switch (token.Type)
-                {
-                    case TokenType.Keyword:
-                        str = GetString(((KeywordToken) token).Keyword);
-                        break;
-                    case TokenType.Symbol:
-                        str = GetString(((SymbolToken) token).Symbol);
-                        break;
-                    case TokenType.Space:
-                        str = " ";
-                        break;
-                    case TokenType.Newline:
-                        str = this.GetNewLineString(scopeDepth);
-                        break;
-                    case TokenType.StrToken:
-                    case TokenType.NumToken:
-                    case TokenType.IdentifierToken:
-                        str = GetString((GenericStrToken) token);
-                        break;
-                    case TokenType.ScopeToken:
-                        if (!this.IsOptimized)
-                        {
-                            ScopeToken scopeToken = (ScopeToken) token;
-
-                            if (scopeToken.IsExit)
-                            {
-                                scopeDepth--;
-                            }
-                            else
-                            {
-                                scopeDepth++;
-                            }
-                        }
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                if (token.Type == TokenType.Newline)
-                {
-                    curLine++;
-                    curCol = str.Length - 2;
-                    lastLocation = null;
-                    sourceMapping.AddMapping(
-                        curLine,
-                        0,
-                        curLine,
-                        0,
-                        jsFileName);
-                }
-                else if (!string.IsNullOrEmpty(str))
-                {
-                    curCol += str.Length;
-                }
-
-                if (!string.IsNullOrEmpty(str))
-                {
-                    writer.Write(str);
-                }
+                this.RenderToken(token, state, writer, sink);
             }
 
+            int curLine = state.Line;
             if (jsFileName != null)
             {
                 writer.Write("\r\n})();");
@@ -604,6 +615,262 @@ namespace NScript.JST
             }
 
             return sourceMapping;
+        }
+
+        /// <summary>
+        /// Writes one token and adds its mappings. The whole file and each chunk render through here.
+        /// </summary>
+        private void RenderToken(TokenBase token, RenderState state, TextWriter writer, IMappingSink sink)
+        {
+            if (token.Type == TokenType.Chunk)
+            {
+                this.RenderChunk((ChunkToken)token, state, writer, sink);
+                return;
+            }
+
+            string str = string.Empty;
+
+            if (token.Type != TokenType.Space
+                && token.Type != TokenType.Newline
+                && token.Location != state.LastLocation)
+            {
+                EnterTokenLocation(token, state, sink);
+            }
+
+            switch (token.Type)
+            {
+                case TokenType.Keyword:
+                    str = GetString(((KeywordToken) token).Keyword);
+                    break;
+                case TokenType.Symbol:
+                    str = GetString(((SymbolToken) token).Symbol);
+                    break;
+                case TokenType.Space:
+                    str = " ";
+                    break;
+                case TokenType.Newline:
+                    str = this.GetNewLineString(state.ScopeDepth);
+                    break;
+                case TokenType.StrToken:
+                case TokenType.NumToken:
+                case TokenType.IdentifierToken:
+                    str = GetString((GenericStrToken) token);
+                    break;
+                case TokenType.ScopeToken:
+                    if (!this.IsOptimized)
+                    {
+                        ScopeToken scopeToken = (ScopeToken) token;
+
+                        if (scopeToken.IsExit)
+                        {
+                            state.ScopeDepth--;
+                        }
+                        else
+                        {
+                            state.ScopeDepth++;
+                        }
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            if (token.Type == TokenType.Newline)
+            {
+                // An optimized newline writes nothing, so the position does not move.
+                if (str.Length == 0)
+                {
+                    return;
+                }
+
+                state.Line++;
+                state.Column = str.Length - 2;
+                state.LastLocation = null;
+                sink.AddSelf(state.Line, 0, isLineStart: true);
+            }
+            else if (!string.IsNullOrEmpty(str))
+            {
+                state.Column += str.Length;
+                if (str.IndexOf('\n') >= 0)
+                {
+                    state.HasRawNewline = true;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(str))
+            {
+                writer.Write(str);
+            }
+        }
+
+        /// <summary>
+        /// Adds the mappings for leaving the current location and entering the token's.
+        /// </summary>
+        private static void EnterTokenLocation(TokenBase token, RenderState state, IMappingSink sink)
+        {
+            var lastLocation = state.LastLocation;
+            if (lastLocation != null
+                && lastLocation.EndLine != int.MaxValue)
+            {
+                sink.AddSource(
+                    state.Line,
+                    state.Column,
+                    lastLocation.EndLine - 1,
+                    lastLocation.EndColumn - 1,
+                    lastLocation.FileName,
+                    null);
+            }
+
+            lastLocation = token.Location;
+            state.LastLocation = lastLocation;
+
+            if (lastLocation == null
+                || lastLocation.StartLine < 0
+                || string.IsNullOrWhiteSpace(lastLocation.FileName))
+            {
+                sink.AddSelf(state.Line, state.Column, isLineStart: false);
+            }
+            else
+            {
+                // Forward the pre-minification name for identifier tokens so the
+                // V3 "names" array is populated — browser DevTools uses it to show
+                // original C# identifiers in place of renamed JS symbols.
+                string originalName = token.Type == TokenType.IdentifierToken
+                    ? ((GenericStrToken)token).OriginalName
+                    : null;
+
+                sink.AddSource(
+                    state.Line,
+                    state.Column,
+                    lastLocation.StartLine - 1,
+                    lastLocation.StartColumn - 1,
+                    lastLocation.FileName,
+                    originalName);
+            }
+        }
+
+        /// <summary>
+        /// Splices a chunk: re-indents its text by the current depth and re-adds its mappings
+        /// at the current position.
+        /// </summary>
+        private void RenderChunk(ChunkToken chunk, RenderState state, TextWriter writer, IMappingSink sink)
+        {
+            int startLine = state.Line;
+            if (chunk.FirstToken.Location != state.LastLocation)
+            {
+                EnterTokenLocation(chunk.FirstToken, state, sink);
+            }
+
+            int indent = 2 * state.ScopeDepth;
+            writer.Write(
+                indent == 0
+                    ? chunk.Text
+                    : chunk.Text.Replace(Environment.NewLine, Environment.NewLine + new string(' ', indent)));
+
+            foreach (var segment in chunk.Segments)
+            {
+                int line = state.Line + segment.Line;
+                int column = segment.Line == 0
+                    ? state.Column + segment.Column
+                    : segment.IsLineStart ? segment.Column : segment.Column + indent;
+                if (segment.IsSelf)
+                {
+                    sink.AddSelf(line, column, segment.IsLineStart);
+                }
+                else
+                {
+                    sink.AddSource(line, column, segment.SourceLine, segment.SourceColumn, segment.File, segment.Name);
+                }
+            }
+
+            state.Column = chunk.EndLine == 0 ? state.Column + chunk.EndColumn : chunk.EndColumn + indent;
+            state.Line += chunk.EndLine;
+            state.LastLocation = chunk.EndLocation;
+            this.chunks.Add(new ChunkInfo(chunk.Name, startLine, chunk.EndLine + 1));
+        }
+
+        /// <summary>
+        /// Position and location state of one render pass.
+        /// </summary>
+        private sealed class RenderState
+        {
+            public int ScopeDepth;
+            public Location LastLocation;
+            public int Line;
+            public int Column;
+
+            /// <summary>A token other than a writer newline wrote a raw newline.</summary>
+            public bool HasRawNewline;
+        }
+
+        /// <summary>
+        /// Receives the mappings of a render pass.
+        /// </summary>
+        private interface IMappingSink
+        {
+            void AddSource(int line, int column, int sourceLine, int sourceColumn, string file, string name);
+
+            void AddSelf(int line, int column, bool isLineStart);
+        }
+
+        /// <summary>
+        /// Adds mappings to the file's source map.
+        /// </summary>
+        private sealed class SourceMapSink : IMappingSink
+        {
+            private readonly OwaSourceMapper.SourceMap sourceMap;
+            private readonly string jsFileName;
+
+            public SourceMapSink(OwaSourceMapper.SourceMap sourceMap, string jsFileName)
+            {
+                this.sourceMap = sourceMap;
+                this.jsFileName = jsFileName;
+            }
+
+            public void AddSource(int line, int column, int sourceLine, int sourceColumn, string file, string name)
+                => this.sourceMap.AddMapping(line, column, sourceLine, sourceColumn, file, name);
+
+            public void AddSelf(int line, int column, bool isLineStart)
+                => this.sourceMap.AddMapping(line, column, line, column, this.jsFileName);
+        }
+
+        /// <summary>
+        /// Records a chunk's mappings relative to the chunk start.
+        /// </summary>
+        private sealed class ChunkSink : IMappingSink
+        {
+            private readonly List<ChunkSegment> segments;
+
+            public ChunkSink(List<ChunkSegment> segments)
+            {
+                this.segments = segments;
+            }
+
+            public void AddSource(int line, int column, int sourceLine, int sourceColumn, string file, string name)
+                => this.segments.Add(new ChunkSegment(line, column, false, false, sourceLine, sourceColumn, file, name));
+
+            public void AddSelf(int line, int column, bool isLineStart)
+                => this.segments.Add(new ChunkSegment(line, column, true, isLineStart, 0, 0, null, null));
+        }
+
+        /// <summary>
+        /// One chunk of the last write: the function name, its 0-based generated start line
+        /// and its line count.
+        /// </summary>
+        public sealed class ChunkInfo
+        {
+            public ChunkInfo(string name, int startLine, int lineCount)
+            {
+                this.Name = name;
+                this.StartLine = startLine;
+                this.LineCount = lineCount;
+            }
+
+            public string Name { get; }
+
+            public int StartLine { get; }
+
+            public int LineCount { get; }
         }
 
         /// <summary>
@@ -875,9 +1142,45 @@ namespace NScript.JST
                     case TokenType.IdentifierToken:
                         this.ArrangeGenericTokenSpaces(token);
                         break;
+                    case TokenType.Chunk:
+                        this.ArrangeChunkSpaces(token);
+                        break;
                 }
 
                 token = token.Next;
+            }
+        }
+
+        /// <summary>
+        /// Spaces a chunk's edges as in-place rendering would: the left edge by its first token
+        /// (a keyword), the right edge by its last token ('}'). The inside was arranged when the
+        /// chunk was rendered, and inside tokens never look past the chunk's own first and last token.
+        /// </summary>
+        private void ArrangeChunkSpaces(LinkedListNode<TokenBase> node)
+        {
+            var chunk = (ChunkToken)node.Value;
+
+            // ArrangeKeywordSpaces (not optimized), the part that looks before the keyword.
+            var prevToken = this.GetNonOptimizableTokenBefore(node);
+            if (prevToken != null &&
+                prevToken.Type != TokenType.Newline &&
+                prevToken.Type != TokenType.Space &&
+                prevToken.Type != TokenType.Symbol)
+            {
+                this.InsertSpace(node, true);
+            }
+
+            // ArrangeSymbolSpaces for '}', the part that looks after it.
+            var nextToken = this.GetNonOptimizableTokenAfter(node);
+            if (nextToken != null &&
+                nextToken.Type != TokenType.Space &&
+                nextToken.Type != TokenType.Newline &&
+                nextToken.Type != TokenType.Symbol)
+            {
+                this.tokens.AddAfter(
+                    node,
+                    new LinkedListNode<TokenBase>(
+                        new SpaceToken(chunk.LastToken.Location)));
             }
         }
 
@@ -1236,6 +1539,8 @@ namespace NScript.JST
                     case TokenType.IdentifierToken:
                     case TokenType.Space:
                         return node.Value;
+                    case TokenType.Chunk:
+                        return ((ChunkToken)node.Value).LastToken;
                     case TokenType.Newline:
                         if (!this.IsOptimized)
                         {
@@ -1268,6 +1573,8 @@ namespace NScript.JST
                     case TokenType.IdentifierToken:
                     case TokenType.Space:
                         return node.Value;
+                    case TokenType.Chunk:
+                        return ((ChunkToken)node.Value).FirstToken;
                     case TokenType.Newline:
                         if (!this.IsOptimized)
                         {

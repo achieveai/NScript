@@ -23,6 +23,15 @@ namespace OwaSourceMapper.Utils
         public static string ConvertToBase64VLQ(int x)
         {
             StringBuilder encodedValue = new StringBuilder();
+            AppendBase64VLQ(encodedValue, x);
+            return encodedValue.ToString();
+        }
+
+        /// <summary>
+        /// Appends the Base64 VLQ encoding of <paramref name="x"/> to <paramref name="encodedValue"/>.
+        /// </summary>
+        public static void AppendBase64VLQ(StringBuilder encodedValue, int x)
+        {
             x = ToSignedBitInt(x);
 
             do 
@@ -37,8 +46,6 @@ namespace OwaSourceMapper.Utils
 
                 encodedValue.Append(EncodeBase64(digit));
             } while (x > 0);
-
-            return encodedValue.ToString();
         }
 
         public static int ToSignedBitInt(int x)

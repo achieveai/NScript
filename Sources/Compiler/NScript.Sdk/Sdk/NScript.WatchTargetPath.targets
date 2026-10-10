@@ -1,0 +1,19 @@
+﻿<Project>
+	<!--
+	  A watch build records this project's GetTargetPath item for synced builds of the projects that
+	  reference it, one line: path|ReferenceAssembly|TargetPlatformMoniker|TargetPlatformIdentifier|
+	  TargetFrameworkIdentifier|TargetFrameworkVersion|CopyUpToDateMarker. Not a FileWrites item:
+	  the next plain build of this project (IncrementalClean) would delete it. The only writer of
+	  the file: Sdk.targets and Sources/Framework/Directory.Build.props both import this one, and
+	  _NScriptWatchSyncReferencePaths (Sdk.targets) parses the line field by field.
+	-->
+	<Target Name="_NScriptWatchTargetPath"
+	        AfterTargets="CoreCompile"
+	        DependsOnTargets="GetTargetPathWithTargetPlatformMoniker"
+	        Condition="'$(NScriptWatch)' == 'true'">
+		<WriteLinesToFile File="$(IntermediateOutputPath)nscript.targetpath"
+		                  Lines="@(TargetPathWithTargetPlatformMoniker->'%(Identity)|%(ReferenceAssembly)|%(TargetPlatformMoniker)|%(TargetPlatformIdentifier)|%(TargetFrameworkIdentifier)|%(TargetFrameworkVersion)|%(CopyUpToDateMarker)')"
+		                  Overwrite="true"
+		                  WriteOnlyWhenDifferent="true" />
+	</Target>
+</Project>

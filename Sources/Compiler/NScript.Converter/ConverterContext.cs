@@ -141,14 +141,14 @@ namespace NScript.Converter
         private readonly List<string> additionalCssContributions = new();
 
         /// <summary>
-        /// The method converter plugins.
+        /// The method converter plugins (per build; see <see cref="BeginBuild"/>).
         /// </summary>
-        private readonly IList<IMethodConverterPlugin> methodConverterPlugins;
+        private IList<IMethodConverterPlugin> methodConverterPlugins;
 
         /// <summary>
-        /// The method converter plugins.
+        /// The type converter plugins (per build; see <see cref="BeginBuild"/>).
         /// </summary>
-        private readonly IList<ITypeConverterPlugin> typeConverterPlugins;
+        private IList<ITypeConverterPlugin> typeConverterPlugins;
 
         /// <summary>
         /// Constructor.
@@ -170,93 +170,186 @@ namespace NScript.Converter
 
             foreach (var module in clrContext.Modules)
             {
-                JArray jsonAstArray = null;
-                JObject resourceFileNameMap = null;
-                FullAst fullAst = null;
-                foreach (var resource in module.Resources)
-                {
-                    if (resource.Name == "$$JstInfo$$")
-                    {
-                        using var stream = ((EmbeddedResource)resource).GetResourceStream();
-                        fullAst = Serializer.Deserialize(
-                            stream,
-                            Serializer.SerializationKind.Json);
-                    }
-                    if (resource.Name == "$$BstInfo$$")
-                    {
-                        using var stream = ((EmbeddedResource)resource).GetResourceStream();
-                        fullAst = Serializer.Deserialize(
-                            stream,
-                            Serializer.SerializationKind.NetSerializer);
-                    }
-                    else if (resource.Name == "$$ResInfo$$")
-                    {
-                        EmbeddedResource embededResource = (EmbeddedResource)resource;
-
-                        using var stream = embededResource.GetResourceStream();
-                        if (stream.Length > 0)
-                        {
-                            StreamReader streamReader = new(stream);
-                            string tmp = streamReader.ReadToEnd();
-                            stream.Position = 0;
-
-                            JsonTextReader reader = new(streamReader);
-                            resourceFileNameMap = (JObject)JObject.ReadFrom(reader);
-                        }
-                    }
-                }
-
-                if (jsonAstArray != null)
-                {
-                    // stopWatch.Restart();
-                    // for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
-                    // {
-                    //     var tuple = toAst.ParseMethodBody(
-                    //         jsonAstArray.Value<JObject>(iAst));
-
-                    //     this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
-                    // }
-                    // stopWatch.Stop();
-                    // jsonCost += stopWatch.Elapsed.TotalSeconds;
-
-                    // stopWatch.Restart();
-                }
-
-                if (fullAst != null)
-                {
-                    var bondToAst = new BondToAst(
-                        fullAst.TypeInfo,
-                        this.ClrContext);
-
-                    foreach (var item in fullAst.Methods)
-                    {
-                        var tuple = bondToAst.ParseMethodBody(item);
-                        var (methodDef, func) = tuple;
-                        // tupl.Item2();
-                        this.methodAstMapping.Add(methodDef, func);
-                    }
-
-                    // stopWatch.Stop();
-                    // bondCost += stopWatch.Elapsed.TotalSeconds;
-                }
-
-                Dictionary<string, string> resourceNameMap = new();
-                if (resourceFileNameMap != null)
-                {
-                    foreach (var item in resourceFileNameMap.Properties())
-                    {
-                        resourceNameMap.Add(
-                            item.Name,
-                            (string)item.Value);
-                    }
-                }
-
-                this.resourceNameMapping.Add(
-                    module,
-                    resourceNameMap);
+                this.LoadModule(module);
             }
 
             // Console.WriteLine("JsonCost: {0}, BondCost: {1}", jsonCost, bondCost);
+        }
+
+        /// <summary>
+        /// Reads a module's method ASTs (<c>$$BstInfo$$</c>, unless <paramref name="readAst"/> is
+        /// false) and resource file names (<c>$$ResInfo$$</c>). A refresh reads a module again:
+        /// its entries replace the old.
+        /// </summary>
+        private void LoadModule(ModuleDefinition module, bool readAst = true)
+        {
+            JArray jsonAstArray = null;
+            JObject resourceFileNameMap = null;
+            FullAst fullAst = null;
+            foreach (var resource in module.Resources)
+            {
+                if (resource.Name == "$$JstInfo$$")
+                {
+                    using var stream = ((EmbeddedResource)resource).GetResourceStream();
+                    fullAst = Serializer.Deserialize(
+                        stream,
+                        Serializer.SerializationKind.Json);
+                }
+                if (resource.Name == "$$BstInfo$$" && readAst)
+                {
+                    using var stream = ((EmbeddedResource)resource).GetResourceStream();
+                    fullAst = Serializer.Deserialize(
+                        stream,
+                        Serializer.SerializationKind.NetSerializer);
+                }
+                else if (resource.Name == "$$ResInfo$$")
+                {
+                    EmbeddedResource embededResource = (EmbeddedResource)resource;
+
+                    using var stream = embededResource.GetResourceStream();
+                    if (stream.Length > 0)
+                    {
+                        StreamReader streamReader = new(stream);
+                        string tmp = streamReader.ReadToEnd();
+                        stream.Position = 0;
+
+                        JsonTextReader reader = new(streamReader);
+                        resourceFileNameMap = (JObject)JObject.ReadFrom(reader);
+                    }
+                }
+            }
+
+            if (jsonAstArray != null)
+            {
+                // stopWatch.Restart();
+                // for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
+                // {
+                //     var tuple = toAst.ParseMethodBody(
+                //         jsonAstArray.Value<JObject>(iAst));
+
+                //     this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
+                // }
+                // stopWatch.Stop();
+                // jsonCost += stopWatch.Elapsed.TotalSeconds;
+
+                // stopWatch.Restart();
+            }
+
+            if (fullAst != null)
+            {
+                var bondToAst = new BondToAst(
+                    fullAst.TypeInfo,
+                    this.ClrContext);
+
+                foreach (var item in fullAst.Methods)
+                {
+                    var tuple = bondToAst.ParseMethodBody(item);
+                    var (methodDef, func) = tuple;
+                    // tupl.Item2();
+                    this.methodAstMapping[methodDef] = func;
+                }
+
+                // stopWatch.Stop();
+                // bondCost += stopWatch.Elapsed.TotalSeconds;
+            }
+
+            Dictionary<string, string> resourceNameMap = new();
+            if (resourceFileNameMap != null)
+            {
+                foreach (var item in resourceFileNameMap.Properties())
+                {
+                    resourceNameMap.Add(
+                        item.Name,
+                        (string)item.Value);
+                }
+            }
+
+            this.resourceNameMapping[module] = resourceNameMap;
+        }
+
+        /// <summary>
+        /// Build session, before a refresh commits: forgets the method ASTs and type kinds of
+        /// the types it changes, while those types still hang together, and returns the kinds
+        /// computed so far for <see cref="Refresh"/> to check.
+        /// </summary>
+        public List<KeyValuePair<TypeDefinition, TypeKind>> BeginRefresh(ModuleRefresh refresh)
+        {
+            var stale = this.methodAstMapping.Keys
+                .Where(method => refresh.IsAffected(method.DeclaringType))
+                .ToList();
+            foreach (var method in stale)
+            {
+                this.methodAstMapping.Remove(method);
+            }
+
+            var kinds = this.typeKindMapping.Where(entry => refresh.IsAffected(entry.Key)).ToList();
+            foreach (var entry in kinds)
+            {
+                this.typeKindMapping.Remove(entry.Key);
+            }
+
+            return kinds;
+        }
+
+        /// <summary>
+        /// Build session, after a refresh committed: reads the recompiled modules again (the
+        /// ASTs only where source files changed) and checks that each changed type keeps its
+        /// kind, which other types' conversions depend on. False with a reason when a kind
+        /// changed; the session is then unusable.
+        /// </summary>
+        public bool Refresh(
+            ModuleRefresh refresh,
+            List<KeyValuePair<TypeDefinition, TypeKind>> kindsBefore,
+            out string reason)
+        {
+            foreach (var module in refresh.Recompiled)
+            {
+                this.LoadModule(module, readAst: refresh.SourceChanged.Contains(module));
+            }
+
+            foreach (var entry in kindsBefore)
+            {
+                // Generated types were rebuilt; their kinds come back when asked for.
+                if (entry.Key.Name.StartsWith("<", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var kind = this.GetTypeKind(entry.Key);
+                if (kind != entry.Value)
+                {
+                    reason = "type-kind " + entry.Key.FullName + " " + entry.Value + "->" + kind;
+                    return false;
+                }
+            }
+
+            reason = null;
+            return true;
+        }
+
+        /// <summary>
+        /// Starts another build on a kept context (build session): takes this build's plugins
+        /// and clears what the last build reported (errors, warnings, CSS contributions).
+        /// </summary>
+        public void BeginBuild(
+            IList<IMethodConverterPlugin> methodConverterPlugins,
+            IList<ITypeConverterPlugin> typeConverterPlugins)
+        {
+            this.methodConverterPlugins = methodConverterPlugins ?? new List<IMethodConverterPlugin>();
+            this.typeConverterPlugins = typeConverterPlugins ?? new List<ITypeConverterPlugin>();
+            this.errors.Clear();
+            this.warnings.Clear();
+            this.additionalCssContributions.Clear();
+        }
+
+        /// <summary>
+        /// Ends a build on a kept context: drops the plugins, which hold the build's
+        /// <c>RuntimeScopeManager</c>, so the session keeps no per-build objects alive.
+        /// </summary>
+        public void EndBuild()
+        {
+            this.methodConverterPlugins = new List<IMethodConverterPlugin>();
+            this.typeConverterPlugins = new List<ITypeConverterPlugin>();
         }
 
         /// <summary>
@@ -285,6 +378,25 @@ namespace NScript.Converter
         /// </value>
         public ConverterKnownReferences KnownReferences
         { get { return this.converterKnownReferences; } }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this build uses dev-mode stable names and
+        /// dev type ids. Set it before the <see cref="TypeSystemConverter.RuntimeScopeManager"/>
+        /// is created.
+        /// </summary>
+        public bool DevMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether method functions are rendered as chunks
+        /// (dev mode, unless <c>NSCRIPT_DEV_CHUNKS=off</c>). Output is the same either way.
+        /// </summary>
+        public bool DevChunks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session's method cache; null when the build does not reuse methods
+        /// (only warm-able dev builds with chunks do).
+        /// </summary>
+        public TypeSystemConverter.MethodCache MethodCache { get; set; }
 
         /// <summary>
         /// Gets the errors.
@@ -346,6 +458,23 @@ namespace NScript.Converter
 
             return null;
         }
+
+        /// <summary>
+        /// Adds an error or warning at a template location (XWML, Razor skin or CSS). Template
+        /// frontends keep 0-based columns, the source-map convention; reported columns are 1-based
+        /// like the C# ones (RoslynExtensions), so the column moves by one here.
+        /// </summary>
+        public void AddTemplateError(Location templateLocation, string error, bool isWarning)
+            => this.AddError(ToReportedColumn(templateLocation), error, isWarning);
+
+        /// <summary>
+        /// The 1-based-column copy of a template location. Null, and a location with no line
+        /// (line 0), are returned as they are.
+        /// </summary>
+        public static Location ToReportedColumn(Location templateLocation)
+            => templateLocation == null || templateLocation.StartLine <= 0
+                ? templateLocation
+                : new Location(templateLocation.FileName, templateLocation.StartLine, templateLocation.StartColumn + 1);
 
         /// <summary>
         /// Adds an error.
@@ -422,7 +551,9 @@ namespace NScript.Converter
                 return false;
             }
 
+            long parseStart = System.Diagnostics.Stopwatch.GetTimestamp();
             var (topLevelBlock, blockKind) = func != null ? func() : null;
+            TypeSystemConverter.TypeConverter.ProbeParseTicks += System.Diagnostics.Stopwatch.GetTimestamp() - parseStart;
             rootBlock = topLevelBlock != null
                 ? topLevelBlock.RootBlock
                 : null;

@@ -164,12 +164,41 @@ server.listen(0, async () => {
         if (msg.type() === 'error') console.error('[browser]', msg.text());
       });
 
+      // A suite whose bundle did not load runs 0 tests, and QUnit calls that a pass.
+      // Only the page and what it loads count (not, say, the browser's favicon probe).
+      // A 404 script is also reported as aborted; keep the first reason per path.
+      const notLoadedByPath = new Map();
+      const notLoad = (reason, url) => {
+        const resourcePath = new URL(url).pathname;
+        if (!notLoadedByPath.has(resourcePath)) notLoadedByPath.set(resourcePath, `${reason} ${resourcePath}`);
+      };
+      const isPagePart = request => ['document', 'script', 'stylesheet'].includes(request.resourceType());
+      page.on('response', response => {
+        if (response.status() >= 400 && isPagePart(response.request())) notLoad(response.status(), response.url());
+      });
+      page.on('requestfailed', request => {
+        if (isPagePart(request)) notLoad(request.failure()?.errorText ?? 'failed', request.url());
+      });
+
       const results = await runSuite(page, port, suite);
+      const notLoaded = [...notLoadedByPath.values()];
+      const testCount = results.passCount + results.failCount;
+      if (notLoaded.length > 0 || testCount === 0) {
+        results.passed = false;
+      }
+
       allResults.push({ suite, results });
 
       console.log(`\n=== QUnit Results: ${suite.name} ===`);
       console.log(results.summary);
       console.log(`Tests: ${results.passCount} passed, ${results.failCount} failed`);
+      for (const resource of notLoaded) {
+        console.log(`❌ Not loaded: ${resource}`);
+      }
+
+      if (testCount === 0) {
+        console.log('❌ No tests ran');
+      }
 
       if (results.failed.length > 0) {
         console.log('\n=== Failed Tests ===');

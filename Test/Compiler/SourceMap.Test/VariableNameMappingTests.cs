@@ -185,7 +185,12 @@ namespace OwaSourceMapper.Test
             string json = map.ToString();
 
             var segments = DecodeFirstLineSegments(ExtractMappingsField(json));
+            // The first segment maps the "(function(){" wrapper at column 0. The first
+            // token maps after it (column 12) instead of replacing it.
+            Assert.AreEqual(4, segments[0].Count, "Expected the wrapper's own segment first.\n" + json);
+            segments.RemoveAt(0);
             Assert.AreEqual(1, segments.Count, "Expected one mapping segment on the first line.\n" + json);
+            Assert.AreEqual(12, segments[0][0], "The identifier starts after the 12-character wrapper.\n" + json);
             Assert.AreEqual(
                 5,
                 segments[0].Count,
@@ -240,6 +245,10 @@ namespace OwaSourceMapper.Test
                 "Expected names array containing alpha and beta in the JSON output.");
 
             var segments = DecodeFirstLineSegments(ExtractMappingsField(json));
+            // The first segment maps the "(function(){" wrapper at column 0. The first
+            // token maps after it (column 12) instead of replacing it.
+            Assert.AreEqual(4, segments[0].Count, "Expected the wrapper's own segment first.\n" + json);
+            segments.RemoveAt(0);
             Assert.AreEqual(3, segments.Count, "Expected three segments: alpha, keyword, beta.");
             Assert.AreEqual(5, segments[0].Count, "Renamed alpha segment must carry a name field.");
             Assert.AreEqual(4, segments[1].Count, "Keyword segment must NOT carry a name field.");

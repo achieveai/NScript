@@ -10,6 +10,7 @@ namespace NScript.Converter
     using System.Collections.Generic;
     using NScript.CLR;
     using NScript.JST;
+    using NScript.Converter.TypeSystemConverter;
     using Mono.Cecil;
 
     /// <summary>
@@ -240,10 +241,14 @@ namespace NScript.Converter
                 else
                 {
                     // if the memberName is fixed name and if it already exists, use the same identifer.
-                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
-                        forceStatic ? this.staticMemberScope : this.scope,
-                        name,
-                        false);
+                    returnValue = this.WithStableName(
+                        SimpleIdentifier.CreateScopeIdentifier(
+                            forceStatic ? this.staticMemberScope : this.scope,
+                            name,
+                            false),
+                        methodDefinition.Name,
+                        forceStatic ? DevNames.Kind.StaticMethod : DevNames.Kind.InstanceMethod,
+                        () => DevNames.MethodSig(methodDefinition));
                 }
 
                 identifierMap.Add(memberDefinition, returnValue);
@@ -308,10 +313,14 @@ namespace NScript.Converter
                 else
                 {
                     // if the memberName is fixed name and if it already exists, use the same identifer.
-                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
-                        forceStatic ? this.staticMemberScope : this.scope,
-                        name,
-                        false);
+                    returnValue = this.WithStableName(
+                        SimpleIdentifier.CreateScopeIdentifier(
+                            forceStatic ? this.staticMemberScope : this.scope,
+                            name,
+                            false),
+                        methodDefinition.Name,
+                        forceStatic ? DevNames.Kind.UnderlyingStaticMethod : DevNames.Kind.UnderlyingMethod,
+                        () => DevNames.MethodSig(methodDefinition));
                 }
 
                 identifierMap.Add(methodDefinition, returnValue);
@@ -373,10 +382,14 @@ namespace NScript.Converter
                 else
                 {
                     // if the memberName is fixed name and if it already exists, use the same identifer.
-                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
-                        forceStatic ? this.staticMemberScope : this.scope,
-                        name,
-                        false);
+                    returnValue = this.WithStableName(
+                        SimpleIdentifier.CreateScopeIdentifier(
+                            forceStatic ? this.staticMemberScope : this.scope,
+                            name,
+                            false),
+                        fieldDefinition.Name,
+                        DevNames.Kind.Field,
+                        () => null);
                 }
 
                 this.fieldMap.Add(fieldDefinition, returnValue);
@@ -424,10 +437,14 @@ namespace NScript.Converter
                 else
                 {
                     // if the memberName is fixed name and if it already exists, use the same identifer.
-                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
-                        forceStatic ? this.staticMemberScope : this.scope,
-                        name,
-                        false);
+                    returnValue = this.WithStableName(
+                        SimpleIdentifier.CreateScopeIdentifier(
+                            forceStatic ? this.staticMemberScope : this.scope,
+                            name,
+                            false),
+                        propertyDefinition.Name,
+                        DevNames.Kind.Property,
+                        () => DevNames.PropertySig(propertyDefinition));
                 }
 
                 propertyMap.Add(propertyDefinition, returnValue);
@@ -454,10 +471,14 @@ namespace NScript.Converter
                 string name = propertyDefinition.Name;
 
                 // if the memberName is fixed name and if it already exists, use the same identifer.
-                returnValue = SimpleIdentifier.CreateScopeIdentifier(
-                    forceStatic ? this.staticMemberScope : this.scope,
+                returnValue = this.WithStableName(
+                    SimpleIdentifier.CreateScopeIdentifier(
+                        forceStatic ? this.staticMemberScope : this.scope,
+                        name,
+                        false),
                     name,
-                    false);
+                    DevNames.Kind.ImportedExtensionProperty,
+                    () => DevNames.PropertySig(propertyDefinition));
 
                 importedExtensionPropertyMap.Add(propertyDefinition, returnValue);
             }
@@ -521,10 +542,14 @@ namespace NScript.Converter
                 }
                 else
                 {
-                    returnValue = SimpleIdentifier.CreateScopeIdentifier(
-                        this.scope,
-                        "V_" + methodDefinition.Name,
-                        false);
+                    returnValue = this.WithStableName(
+                        SimpleIdentifier.CreateScopeIdentifier(
+                            this.scope,
+                            "V_" + methodDefinition.Name,
+                            false),
+                        methodDefinition.Name,
+                        DevNames.Kind.VirtualSlot,
+                        () => DevNames.MethodSig(methodDefinition));
                 }
 
                 this.virtualMethodIdentifiers.Add(methodDefinition, returnValue);
@@ -556,6 +581,17 @@ namespace NScript.Converter
             string identifierString,
             bool isInstance,
             bool enforce)
+            => MethodRecorder.Call(
+                this,
+                (identifierString, isInstance, enforce),
+                static (self, a) => self.GetIdentifierCore(a.Item1, a.Item2, a.Item3),
+                static (rec, self, a) => (self.typeDefinition, a),
+                static (r, a) => r.Runtime.GetTypeScope(a.typeDefinition).GetIdentifier(a.a.Item1, a.a.Item2, a.a.Item3));
+
+        private IIdentifier GetIdentifierCore(
+            string identifierString,
+            bool isInstance,
+            bool enforce)
         {
             var scope = isInstance
                 ? this.scope
@@ -565,6 +601,29 @@ namespace NScript.Converter
                 scope,
                 identifierString,
                 enforce);
+        }
+
+        /// <summary>
+        /// In dev mode, names a member identifier <c>M(name) $ depth kind [$ sig]</c>, where depth
+        /// is its scope's position in the lookup chain (design section 3, rule 3).
+        /// <paramref name="name"/> is the metadata name: the JS name lowers the first letter, so
+        /// <c>Go</c> and <c>go</c> would collide (D1).
+        /// </summary>
+        private IIdentifier WithStableName(
+            IIdentifier identifier,
+            string name,
+            char kind,
+            Func<string> sig)
+        {
+            DevNames.Assign(
+                this.context,
+                identifier,
+                () => DevNames.Member(
+                    name,
+                    DevNames.Depth(((SimpleIdentifier)identifier).OwnerScope),
+                    kind,
+                    sig()));
+            return identifier;
         }
 
         /// <summary>

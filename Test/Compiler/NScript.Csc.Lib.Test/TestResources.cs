@@ -499,6 +499,52 @@
                 ),
             };
 
+        /// <summary>
+        /// One fixture folder per test process. The fixtures (mscorlib.dll, realScript.dll, ...)
+        /// have fixed names, so two test runs sharing the bare temp folder overwrote and locked
+        /// each other's files.
+        /// </summary>
+        private static readonly Lazy<string> fixtureDirectory =
+            new Lazy<string>(CreateFixtureDirectory);
+
+        public static string FixtureDirectory => fixtureDirectory.Value;
+
+        private static string CreateFixtureDirectory()
+        {
+            const string Prefix = "nscript-csclib-";
+            var temp = Path.GetTempPath();
+
+            // Best effort: drop folders left by runs that died before their exit handler ran.
+            foreach (var stale in Directory.EnumerateDirectories(temp, Prefix + "*"))
+            {
+                TryDelete(stale, DateTime.UtcNow.AddDays(-1));
+            }
+
+            var dir = Path.Combine(
+                temp,
+                Prefix + Environment.ProcessId + "-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(dir);
+            AppDomain.CurrentDomain.ProcessExit += (_, __) => TryDelete(dir, DateTime.MaxValue);
+            return dir;
+        }
+
+        private static void TryDelete(string dir, DateTime olderThanUtc)
+        {
+            try
+            {
+                if (Directory.GetLastWriteTimeUtc(dir) < olderThanUtc)
+                {
+                    Directory.Delete(dir, true);
+                }
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+
         public static readonly Dictionary<string, Dictionary<IMethodSymbol, MethodBody>> moduleMethodBodyMap
             = new Dictionary<string, Dictionary<IMethodSymbol, MethodBody>>();
 
@@ -608,13 +654,13 @@
                 options: compilerOptions,
                 references: resources
                     .refs
-                    .Select(_ => Path.Combine(Path.GetTempPath(), _ + ".dll"))
+                    .Select(_ => Path.Combine(FixtureDirectory, _ + ".dll"))
                     .Select(_ => MetadataReference.CreateFromFile(_))
                     .ToList());
 
             rv = SerializationHelper.ExpressionVisitMap(
                 compilation,
-                Path.GetTempPath(),
+                FixtureDirectory,
                 resources.outName,
                 runtimeMetadataVersion);
 

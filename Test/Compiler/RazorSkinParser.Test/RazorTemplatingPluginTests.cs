@@ -20,6 +20,22 @@ namespace RazorSkinParser.Test
     [TestClass]
     public class RazorTemplatingPluginTests
     {
+        [TestMethod]
+        public void TemplateDiagnostics_ReportOneBasedColumns()
+        {
+            // Template locations keep 0-based columns (source maps); MSBuild and watch.log read
+            // the printed column as 1-based, so a template error at offset 66 prints column 67.
+            var reported = ConverterContext.ToReportedColumn(
+                new NScript.Utils.Location("TitleEditor.skin.cshtml", 5, 66));
+            reported.FileName.Should().Be("TitleEditor.skin.cshtml");
+            reported.StartLine.Should().Be(5);
+            reported.StartColumn.Should().Be(67);
+
+            ConverterContext.ToReportedColumn(null).Should().BeNull();
+            var noLine = new NScript.Utils.Location("App.css", 0, 0);
+            ConverterContext.ToReportedColumn(noLine).Should().BeSameAs(noLine);
+        }
+
         // --- CanHandle tests ---
 
         [TestMethod]

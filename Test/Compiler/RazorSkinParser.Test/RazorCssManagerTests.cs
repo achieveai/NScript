@@ -169,6 +169,42 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void CssDiagnostics_NameTheSourceFileAndLine()
+        {
+            // Watch and MSBuild show these locations: the .css path and line for a parse error,
+            // the .skin.cshtml path and line for a class the stylesheets do not define.
+            // An unclosed rule is reported where the parser stops: the end of the text (line 2).
+            const string cssPath = @"C:\app\RazorTemplates\AppShell.css";
+            Action parse = () => new RazorCssManager().AddStylesheet(
+                "App.RazorTemplates.AppShell.css", ".a { color: red; }\n.b { color: red", cssPath);
+            var parseError = parse.Should().Throw<NScript.Converter.ConverterLocationException>().Which;
+            parseError.Location.FileName.Should().Be(cssPath);
+            parseError.Location.StartLine.Should().Be(2);
+
+            const string skinPath = @"C:\app\RazorTemplates\Editor.skin.cshtml";
+            var manager = new RazorCssManager();
+            manager.AddStylesheet("App.RazorTemplates.AppShell.css", ".a { color: red; }", cssPath);
+            // Leading blank lines (directives in a real skin) are trimmed from the IR's HTML,
+            // so the line must come from the template text: line 4.
+            const string skin = "\n\n<div>\n  <span class=\"a\">x</span><input class=\"a missing\" />\n</div>";
+            var ir = RazorSkinCompiler.CompileToIR("Editor", skin, null, skinPath);
+            Action validate = () => NScript.RazorSkin.TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, manager, skin);
+            var classError = validate.Should().Throw<NScript.Converter.ConverterLocationException>().Which;
+            classError.Message.Should().Contain("'missing'");
+            classError.Location.FileName.Should().Be(skinPath);
+            classError.Location.StartLine.Should().Be(4);
+
+            // A class declared again at top level in a later sheet: that sheet's path and line.
+            const string extraPath = @"C:\app\RazorTemplates\Extra.css";
+            Action redeclare = () => manager.AddStylesheet(
+                "App.RazorTemplates.Extra.css", ".b { color: red; }\n.a { color: blue; }", extraPath);
+            var redeclareError = redeclare.Should().Throw<NScript.Converter.ConverterLocationException>().Which;
+            redeclareError.Message.Should().Contain("already declared");
+            redeclareError.Location.FileName.Should().Be(extraPath);
+            redeclareError.Location.StartLine.Should().Be(2);
+        }
+
+        [TestMethod]
         public void MediaRules_ClassNamesRegistered()
         {
             var manager = new RazorCssManager();

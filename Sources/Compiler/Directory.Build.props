@@ -5,6 +5,23 @@
     <Dependencies>$(MSBuildThisFileDirectory)/../../Dependencies</Dependencies>
   </PropertyGroup>
 
+  <!--
+    Test/Compiler projects pass NScriptCompilerPrivateOutput to their compiler
+    references, so a test build never rewrites NScriptToolSet/bin. That folder is
+    the toolset the SDK and the build service run from; rewriting it changes the
+    toolset hash and races with other builds. Solution builds and direct builds
+    of a compiler project still write the toolset.
+    Object files move too, so the two kinds of build never share obj. Restore
+    output stays in obj\ so one restore serves both.
+  -->
+  <PropertyGroup Condition="'$(NScriptCompilerPrivateOutput)' != ''">
+    <OutputPath>$(NScriptCompilerPrivateOutput)bin/$(Configuration)</OutputPath>
+    <BaseIntermediateOutputPath>$(NScriptCompilerPrivateOutput)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(MSBuildProjectDirectory)/obj/</MSBuildProjectExtensionsPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**</DefaultItemExcludes>
+    <GenerateNScriptPackages>false</GenerateNScriptPackages>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DebugType>None</DebugType>
     <DebugSymbols>False</DebugSymbols>

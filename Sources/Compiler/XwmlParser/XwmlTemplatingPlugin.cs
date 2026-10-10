@@ -9,6 +9,7 @@
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Runtime.InteropServices;
 
@@ -23,6 +24,13 @@
         private ParserContext parserContext;
 
         private CodeGenerator codeGenerator;
+
+        // Probe.XwmlInit: Stopwatch ticks per phase of this build. Overwrite reads the
+        // template documents (and the sheets they link), Parse parses the queued templates,
+        // Gen compresses CSS names and generates the template code.
+        private long probeInitTicks;
+        private long probeOverwriteTicks;
+        private long probeParseTicks;
 
         public ParserContext ParserContext
         { get { return this.parserContext; } }
@@ -72,6 +80,19 @@
 
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {
+            long start = Stopwatch.GetTimestamp();
+            try
+            {
+                return this.GetOverwriteCore(methodConverter);
+            }
+            finally
+            {
+                this.probeOverwriteTicks += Stopwatch.GetTimestamp() - start;
+            }
+        }
+
+        private List<Statement> GetOverwriteCore(MethodConverter methodConverter)
+        {
             var attr = methodConverter.MethodDefinition.GetPropertyDefinition()
                 .CustomAttributes.SelectAttribute(this.knownTemplateTypes.SkinAttribute)
                 ?? methodConverter.MethodDefinition.GetPropertyDefinition()
@@ -84,6 +105,7 @@
 
         public void Initialize(NScript.CLR.ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
         {
+            long start = Stopwatch.GetTimestamp();
             HtmlAgilityPack.HtmlNode.ElementsFlags.Remove("form");
             this.knownTemplateTypes = new KnownTemplateTypes(runtimeScopeManager.Context.ClrKnownReferences);
             this.typeResolver = new TypeResolver(
@@ -106,6 +128,10 @@
                     "XwmlParser.Initialized KnownCssClassCount={Count}",
                     cssClassEntries.Length);
             }
+
+            this.probeInitTicks = Stopwatch.GetTimestamp() - start;
+            this.probeOverwriteTicks = 0;
+            this.probeParseTicks = 0;
         }
 
         public void ParseArgs(IList<Tuple<string, string>> args)
@@ -128,7 +154,9 @@
 
         public List<MethodReference> GetMethodsToEmitPassN()
         {
+            long start = Stopwatch.GetTimestamp();
             this.codeGenerator.IterateParsing();
+            this.probeParseTicks += Stopwatch.GetTimestamp() - start;
             return new List<MethodReference>();
         }
 
@@ -139,7 +167,25 @@
 
         public List<Statement> GetPostJavascript()
         {
-            return this.codeGenerator.GetAllTemplateStatements(); ;
+            long start = Stopwatch.GetTimestamp();
+            var statements = this.codeGenerator.GetAllTemplateStatements();
+            long genTicks = Stopwatch.GetTimestamp() - start;
+
+            static long Ms(long ticks) => ticks * 1000 / Stopwatch.Frequency;
+            CompilerLog.ForComponent("XwmlParser").Information(
+                "Probe.XwmlInit TotalMs={TotalMs} InitMs={InitMs} OverwriteMs={OverwriteMs} ParseMs={ParseMs} GenMs={GenMs} Templates={Templates} TemplatesParsed={TemplatesParsed} StyleSheets={StyleSheets} StyleSheetHits={StyleSheetHits} Hits={Hits} Misses={Misses}",
+                Ms(this.probeInitTicks + this.probeOverwriteTicks + this.probeParseTicks + genTicks),
+                Ms(this.probeInitTicks),
+                Ms(this.probeOverwriteTicks),
+                Ms(this.probeParseTicks),
+                Ms(genTicks),
+                this.codeGenerator.ProbeDocuments,
+                this.codeGenerator.ProbeTemplatesParsed,
+                this.codeGenerator.ProbeStyleSheets,
+                this.codeGenerator.ProbeStyleSheetHits,
+                0,
+                this.codeGenerator.ProbeDocuments);
+            return statements;
         }
 
         private List<Statement> GetSkinPropertyOverwrite(MethodConverter methodConverter)
@@ -172,7 +218,7 @@
             }
             catch (ConverterLocationException ex)
             {
-                this.codeGenerator.ParserContext.ConverterContext.AddError(
+                this.codeGenerator.ParserContext.ConverterContext.AddTemplateError(
                     ex.Location,
                     ex.Message,
                     false);

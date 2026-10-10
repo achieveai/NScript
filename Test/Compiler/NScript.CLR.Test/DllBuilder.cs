@@ -108,7 +108,7 @@ namespace NScript.CLR.Test
             string backupDir = Environment.CurrentDirectory;
             try
             {
-                Environment.CurrentDirectory = System.IO.Path.GetTempPath();
+                Environment.CurrentDirectory = Csc.Lib.Test.TestResources.FixtureDirectory;
                 JsCsc.Lib.DriverWrapper driverWrapper = new JsCsc.Lib.DriverWrapper();
                 string tempFileName = Path.GetTempFileName();
                 File.WriteAllLines(tempFileName, args, System.Text.Encoding.UTF8);

@@ -43,8 +43,9 @@ namespace CssParser
                 {
                     CommonTree tree = parser.styleSheet().Tree;
 
+                    // Undeclared variables are checked across the whole stylesheet set
+                    // (ADR 0016); one sheet may use a variable another sheet's :root declares.
                     this.ParseCss(tree);
-                    this.ValidateCssVariables();
                 }
             }
             catch (Antlr.Runtime.RecognitionException ex)
@@ -943,9 +944,10 @@ namespace CssParser
         }
 
         /// <summary>
-        /// Validates that all var() function calls reference defined CSS variables
+        /// Validates that all var() function calls reference variables this sheet's :root defines.
+        /// Only for a sheet that stands alone; builds validate across all sheets instead.
         /// </summary>
-        private void ValidateCssVariables()
+        public void ValidateCssVariables()
         {
             // First, collect all defined CSS variables from :root
             this.CollectCssVariablesFromRules();

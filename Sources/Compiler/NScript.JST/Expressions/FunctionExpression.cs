@@ -99,6 +99,22 @@ namespace NScript.JST
         public bool IsGenerator => this.isGenerator;
 
         /// <summary>
+        /// Dev mode: the writer renders this function on its own and splices the result in
+        /// (a chunk), with output equal to rendering it in place.
+        /// </summary>
+        public bool IsChunk { get; set; }
+
+        /// <summary>
+        /// The chunk the last write rendered for this function, when it rendered as a chunk.
+        /// </summary>
+        public RenderedChunk RenderedChunk { get; internal set; }
+
+        /// <summary>
+        /// A chunk from an earlier build to write instead of this function's own statements.
+        /// </summary>
+        public RenderedChunk CachedChunk { get; set; }
+
+        /// <summary>
         /// Gets the parameters.
         /// </summary>
         /// <value>The parameters.</value>
@@ -190,6 +206,19 @@ namespace NScript.JST
         /// <param name="writer">The writer.</param>
         public override void Write(JSWriter writer)
         {
+            if (this.CachedChunk != null)
+            {
+                writer.WriteCachedChunk(this.CachedChunk);
+                this.RenderedChunk = this.CachedChunk;
+                return;
+            }
+
+            if (this.IsChunk
+                && writer.TryWriteChunk(this, this.name?.GetName() ?? "(anonymous)"))
+            {
+                return;
+            }
+
             if (isAsync) writer.Write(Keyword.Async);
             writer.Write(Keyword.Function);
             if (isGenerator) writer.Write(Symbols.Multiply);
