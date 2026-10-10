@@ -399,6 +399,15 @@ namespace NScript.Lib.Service
                 && !this.needsBuild.ContainsKey(project.Key);
 
         /// <summary>
+        /// True when the obj DLL of <paramref name="projectKey"/> is, by MVID, the image the
+        /// daemon last left (<paramref name="mvid"/>; null: read it now). Only such an image may
+        /// be patched: patching another build's DLL would vouch for code the daemon never compiled.
+        /// </summary>
+        public bool IsDaemonImage(string projectKey, Guid? mvid = null)
+            => this.written.TryGetValue(projectKey, out var stamp)
+                && (mvid ?? this.readStamp(projectKey)?.Mvid) == stamp.Mvid;
+
+        /// <summary>
         /// A resource patch made the DLL embed the files with <paramref name="hashes"/>: record
         /// them as seen, like a compile does for every input, and the project is clean.
         /// </summary>
@@ -1118,10 +1127,17 @@ namespace NScript.Lib.Service
         private void ClassifyBuildFile(string path, WatchChanges result)
         {
             var dir = Path.GetDirectoryName(path)!;
+
+            // MSBuild imports the nearest Directory.Build.props/.targets above a project. One no
+            // project recorded is new, and may now be the nearest for any project below it; a
+            // recorded one affects only the projects that recorded it.
+            bool autoImported = Path.GetFileName(path).StartsWith("Directory.Build.", StringComparison.OrdinalIgnoreCase)
+                && !this.projects.Values.Any(p => p.BuildFiles.ContainsKey(path));
             var affected = this.projects.Values
                 .Where(p => p.BuildFiles.ContainsKey(path)
                     || Same(p.Cwd, dir)
                     || RelativeUnder(p.Cwd, path) != null
+                    || (autoImported && RelativeUnder(dir, p.Cwd) != null)
                     || (p.SdkDir != null && Same(p.SdkDir, dir)))
                 .ToList();
             if (affected.Count == 0)

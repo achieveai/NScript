@@ -124,6 +124,12 @@ namespace NScript.Lib.Service
                 result.MvidBefore = module.Mvid;
                 result.MvidAfter = module.Mvid;
 
+                // The rewrite has no key, so a signed image would come out with a bad signature.
+                if ((module.Attributes & ModuleAttributes.StrongNameSigned) != 0 || module.Assembly?.Name.HasPublicKey == true)
+                {
+                    return ResourcePatchResult.Fallback("strong-name signed: " + dllPath);
+                }
+
                 var resInfo = module.Resources.OfType<EmbeddedResource>().FirstOrDefault(r => r.Name == ResInfoName);
                 if (resInfo == null)
                 {

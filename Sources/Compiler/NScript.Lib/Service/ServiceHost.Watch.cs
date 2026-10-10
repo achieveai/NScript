@@ -289,8 +289,13 @@ namespace NScript.Lib.Service
                     record = this.registry.RegisterCompile(request.Cwd, replayArgs, inputs, response.ExitCode, request.WatchSdkDir, existing, buildFiles, sinceEvaluation, request.WatchPropsHash);
                 }
 
-                // Kept while watching, red included (--sync answers that); deleted when watch stops.
-                this.WriteWatchMarker(record.Key);
+                // Watchers first: a marker makes the project sync-eligible, so it is written only
+                // once its folders are watched. Kept while watching, red included (--sync answers
+                // that); deleted when watch stops.
+                if (this.UpdateWatchers())
+                {
+                    this.WriteWatchMarker(record.Key);
+                }
 
                 log.Information(
                     "WatchRegister Kind={Kind} Key={Key} Inputs={Inputs} Outputs={Outputs} References={References} BuildFiles={BuildFiles} ExitCode={ExitCode} EvaluatedUtc={EvaluatedUtc} NewSinceEvaluation={NewSinceEvaluation} BuildFilesSinceEvaluation={BuildFilesSinceEvaluation} PropsHash={PropsHash}",
@@ -306,7 +311,6 @@ namespace NScript.Lib.Service
                     sinceEvaluation?.BuildFiles,
                     request.WatchPropsHash);
                 this.WatchLog("register compile {0} ({1} inputs, exit {2})", record.Name, record.Inputs.Sources.Count + record.Inputs.Resources.Count, response.ExitCode);
-                this.UpdateWatchers();
                 this.ArmBatchIfStillDirty(record.Name);
                 return response;
             }
@@ -491,8 +495,27 @@ namespace NScript.Lib.Service
             return dirs;
         }
 
-        /// <summary>Creates watchers for new roots and disposes the ones no longer needed.</summary>
-        private void UpdateWatchers()
+        /// <summary>
+        /// Creates watchers for new roots and disposes the ones no longer needed. A watcher
+        /// that cannot start (Linux: inotify instances exhausted) stops the watch, as a watcher
+        /// error does: published watch state must never outlive its coverage. False then.
+        /// </summary>
+        private bool UpdateWatchers()
+        {
+            try
+            {
+                this.StartWatchers();
+                return Volatile.Read(ref this.watchStopped) == 0;
+            }
+            catch (Exception ex)
+            {
+                this.WatchLog("watcher could not start ({0}); watch stopped, dotnet build runs in full", ex.Message);
+                this.WatchFatal(ex);
+                return false;
+            }
+        }
+
+        private void StartWatchers()
         {
             lock (this.watchGate)
             {
@@ -538,7 +561,17 @@ namespace NScript.Lib.Service
                     watcher.Deleted += (_, e) => this.OnFileEvent(e.FullPath, null);
                     watcher.Renamed += (_, e) => this.OnFileEvent(e.FullPath, e.OldFullPath);
                     watcher.Error += (_, e) => this.OnWatcherError(root, e.GetException());
-                    watcher.EnableRaisingEvents = true;
+                    try
+                    {
+                        this.options.BeforeWatcherStart?.Invoke(root);
+                        watcher.EnableRaisingEvents = true;
+                    }
+                    catch
+                    {
+                        watcher.Dispose();
+                        throw;
+                    }
+
                     this.watchers[root] = watcher;
                     added = true;
                 }
@@ -558,18 +591,32 @@ namespace NScript.Lib.Service
         }
 
         /// <summary>
-        /// Queues every input and recorded build file, so changes no event reported (before a
-        /// watcher started, or lost in an overflow) are classified. Call under <see cref="watchGate"/>.
+        /// Queues every input and recorded build file, and every build file the registrations
+        /// never saw, so changes no event reported (before a watcher started, or lost in an
+        /// overflow) are classified. A folder that cannot be listed throws: the caller stops the
+        /// watch rather than vouch for build files it could not see. Call under <see cref="watchGate"/>.
         /// </summary>
         private void QueueRescan()
         {
-            foreach (var path in this.registry.AllInputs().Concat(this.registry.Projects.SelectMany(p => p.BuildFiles.Keys)))
+            foreach (var path in this.registry.AllInputs()
+                .Concat(this.registry.Projects.SelectMany(p => p.BuildFiles.Keys))
+                .Concat(this.registry.Projects.SelectMany(UnrecordedBuildFiles)))
             {
                 this.pendingPaths.Add(path);
             }
 
             this.MarkEvent();
         }
+
+        /// <summary>
+        /// Build files in <paramref name="project"/>'s build-file folders (<see cref="BuildFileDirs"/>,
+        /// listed now) that its registration did not record: created since, their events maybe lost.
+        /// </summary>
+        private static IEnumerable<string> UnrecordedBuildFiles(ProjectRecord project)
+            => BuildFileDirs(project.Cwd, project.SdkDir)
+                .SelectMany(d => Directory.EnumerateFiles(d).Where(WatchRegistry.IsBuildFile))
+                .Where(f => !project.BuildFiles.ContainsKey(f))
+                .ToList();
 
         private void OnFileEvent(string path, string? oldPath)
         {
@@ -850,6 +897,14 @@ namespace NScript.Lib.Service
                         log.Information("WatchRedCleared BatchId={BatchId} Key={Key} Reason={Reason}", batchId, cleared, "output rebuilt outside watch");
                     }
 
+                    // An obj DLL another build rewrote holds its code: compile it (and its
+                    // dependents) before this batch patches or emits from it.
+                    foreach (var foreign in this.registry.RefreshForeignOutputs())
+                    {
+                        log.Information("WatchForeignOutput BatchId={BatchId} Key={Key} Reason={Reason}", batchId, foreign, "obj DLL rewritten or deleted outside watch");
+                        this.WatchLog("foreign {0} rewritten outside watch; recompiling", Path.GetFileName(foreign));
+                    }
+
                     this.registry.RefreshCopyEdges();
                     this.registry.Apply(changes);
                     if (changes.Changed.Count > 0)
@@ -1109,10 +1164,25 @@ namespace NScript.Lib.Service
         /// the embedded bytes as seen. <see cref="ResourcePatchOutcome.Fallback"/> means the
         /// caller compiles instead. Must be called under <see cref="requestLock"/>.
         /// </summary>
+        private const string ForeignImage = "DLL rewritten outside watch";
+
         private ResourcePatchOutcome RunPatch(long batchId, ProjectRecord project)
         {
             var log = CompilerLog.ForComponent("Watch");
             var clock = Stopwatch.StartNew();
+            bool owned;
+            lock (this.watchGate)
+            {
+                owned = this.registry.IsDaemonImage(project.Key);
+            }
+
+            if (!owned)
+            {
+                log.Information("ResourcePatchFailed BatchId={BatchId} Project={Project} Outcome={Outcome} Error={Error}", batchId, project.Key, ResourcePatchOutcome.Fallback, ForeignImage);
+                this.WatchLog("patch   {0} not possible ({1}); compiling", project.Name, ForeignImage);
+                return ResourcePatchOutcome.Fallback;
+            }
+
             ResourcePatchResult patch;
             try
             {
@@ -1139,7 +1209,20 @@ namespace NScript.Lib.Service
 
             lock (this.watchGate)
             {
-                this.registry.RecordPatch(project.Key, patch.Hashes);
+                // Another build rewrote the DLL between the check and the patch: the patched
+                // image holds its code, so compile over it rather than record it as the daemon's.
+                owned = this.registry.IsDaemonImage(project.Key, patch.MvidBefore);
+                if (owned)
+                {
+                    this.registry.RecordPatch(project.Key, patch.Hashes);
+                }
+            }
+
+            if (!owned)
+            {
+                log.Information("ResourcePatchFailed BatchId={BatchId} Project={Project} Outcome={Outcome} Error={Error}", batchId, project.Key, ResourcePatchOutcome.Fallback, ForeignImage);
+                this.WatchLog("patch   {0} not possible ({1}); compiling", project.Name, ForeignImage);
+                return ResourcePatchOutcome.Fallback;
             }
 
             log.Information(
@@ -1494,7 +1577,8 @@ namespace NScript.Lib.Service
         /// <summary>
         /// Adds to <paramref name="unseen"/> the files of <paramref name="closure"/> the watch
         /// has not seen: source files in a project folder that are neither inputs nor were there
-        /// at registration (a watcher overflow can lose their events), and inputs that are gone.
+        /// at registration, build files the registration did not record (a watcher overflow can
+        /// lose their events), and inputs that are gone.
         /// </summary>
         private static bool TryFindUnseenFiles(IReadOnlyList<ProjectRecord> closure, List<string> unseen, out string? failure)
         {
@@ -1504,6 +1588,7 @@ namespace NScript.Lib.Service
                 {
                     unseen.AddRange(EnumerateSourceFiles(project.Cwd)
                         .Where(f => !project.InputSet.Contains(f) && !project.PreexistingNonInputs.Contains(f)));
+                    unseen.AddRange(UnrecordedBuildFiles(project));
                 }
                 catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
                 {
@@ -1598,6 +1683,11 @@ namespace NScript.Lib.Service
 
         private void WriteWatchMarker(string projectKey)
         {
+            if (Volatile.Read(ref this.watchStopped) != 0)
+            {
+                return;
+            }
+
             var path = WatchMarkerPath(projectKey);
             try
             {

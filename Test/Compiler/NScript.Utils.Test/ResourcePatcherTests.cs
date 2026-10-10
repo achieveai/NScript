@@ -158,6 +158,30 @@ namespace NScript.Utils.Test
             CollectionAssert.AreEqual(bytes, File.ReadAllBytes(this.dll));
         }
 
+        /// <summary>
+        /// F-F: the patch rewrites the DLL without a signing key, so a strong-name signed DLL
+        /// falls back to a compile, writing nothing.
+        /// </summary>
+        [TestMethod]
+        public void Patch_StrongNameSignedDll_FallsBack()
+        {
+            using (var signed = Cecil.ModuleDefinition.ReadModule(new MemoryStream(File.ReadAllBytes(this.dll))))
+            {
+                signed.Attributes |= Cecil.ModuleAttributes.StrongNameSigned;
+                signed.Assembly.Name.PublicKey = Enumerable.Range(0, 160).Select(i => (byte)i).ToArray();
+                signed.Write(this.dll);
+            }
+
+            var bytes = File.ReadAllBytes(this.dll);
+            File.WriteAllText(this.skin, "<div>v2</div>");
+
+            var result = ResourcePatcher.Patch(this.dll, new[] { this.skin });
+
+            Assert.AreEqual(ResourcePatchOutcome.Fallback, result.Outcome);
+            StringAssert.StartsWith(result.Reason, "strong-name signed");
+            CollectionAssert.AreEqual(bytes, File.ReadAllBytes(this.dll));
+        }
+
         /// <summary>A DLL held open without delete sharing (a reader): IoFailed, the DLL is unchanged, no temp file is left.</summary>
         [TestMethod]
         public void Patch_LockedDll_IoFailed_DllUnchanged_NoTemp()
@@ -257,6 +281,19 @@ namespace NScript.Utils.Test
 
         private static byte[] Resource(Cecil.ModuleDefinition module, string name)
             => module.Resources.OfType<Cecil.EmbeddedResource>().Single(r => r.Name == name).GetResourceData();
+
+        /// <summary>
+        /// Writes at <paramref name="dllPath"/> a stage-1-shaped DLL embedding the mapped files,
+        /// whose code says <paramref name="code"/>: another <paramref name="code"/>, another MVID.
+        /// </summary>
+        internal static void EmitAt(string dllPath, string code, Dictionary<string, string> map)
+        {
+            var temp = Path.Combine(Path.GetTempPath(), "nscript-emit-" + Guid.NewGuid().ToString("N"));
+            Emit(temp, map, out var emitted, out _, Source.Replace("fixture", code, StringComparison.Ordinal));
+            Directory.CreateDirectory(Path.GetDirectoryName(dllPath));
+            File.Copy(emitted, dllPath, overwrite: true);
+            Directory.Delete(temp, recursive: true);
+        }
 
         /// <summary>Compiles <see cref="Source"/> into <paramref name="dir"/>/Fx.dll + Fx.pdb, embedding the mapped files and $$ResInfo$$.</summary>
         private static void Emit(string dir, Dictionary<string, string> map, out string dllPath, out string pdbPath, string source = Source, params string[] references)

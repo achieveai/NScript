@@ -60,6 +60,12 @@ namespace NScript.Lib.Service
         /// </summary>
         public IReadOnlyList<string> DropWatchEvents { get; set; } = Array.Empty<string>();
 
+        /// <summary>
+        /// Test hook: runs with the watched root before each file watcher starts; a throw stands
+        /// in for a watcher that cannot start (Linux: inotify instances exhausted). Null in normal use.
+        /// </summary>
+        public Action<string>? BeforeWatcherStart { get; set; }
+
         /// <summary>Settings that could not be read and fell back to their defaults, one line; logged once at start.</summary>
         public string? StartupWarning { get; set; }
 

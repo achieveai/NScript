@@ -1813,6 +1813,103 @@ namespace NScript.Utils.Test
         }
 
         /// <summary>
+        /// F-D: a build file created next to a watched project, whose event an overflow lost,
+        /// is found by the overflow rescan: the project needs a dotnet build and sync says no.
+        /// The lost event is stood in for by dropped .props events.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void WatcherOverflow_LostNewBuildFile_RescanFindsIt_SyncNo()
+        {
+            using (var watch = new WatchHost(_ => new ServiceResponse { ExitCode = 0 }, dropWatchEvents: new[] { ".props" }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                watch.Register("A.cs");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(key).ExitCode, "control: nothing changed");
+
+                File.WriteAllText(Path.Combine(watch.Project, "Directory.Build.props"), "<Project />");
+                foreach (var root in watch.Host.WatchRoots)
+                {
+                    watch.Host.OnWatcherError(root, new InternalBufferOverflowException("Too many changes at once in directory:" + root + "."));
+                }
+
+                this.WaitForLogLines(1, "WatchNeedsBuild", "Directory.Build.props");
+                var answer = watch.Sync(key);
+                Assert.AreEqual(ServiceHost.SyncExitNo, answer.ExitCode, answer.Message);
+                StringAssert.Contains(answer.Message, "Directory.Build.props");
+            }
+        }
+
+        /// <summary>
+        /// F-E: a watcher that cannot start (Linux: inotify instances exhausted) stops the
+        /// watch like a watcher error: no marker is left and the daemon exits, so dotnet build
+        /// runs in full rather than ask a daemon that sees no saves.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe: 1-2 s.
+        public void WatcherCannotStart_StopsWatch_NoMarker()
+        {
+            using (var watch = new WatchHost(
+                _ => new ServiceResponse { ExitCode = 0 },
+                beforeWatcherStart: _ => throw new IOException("The configured user limit (128) on the number of inotify instances has been reached.")))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                Directory.CreateDirectory(Path.GetDirectoryName(key));
+                watch.Register("A.cs");
+
+                Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "the daemon kept a watch whose watcher never started");
+                Assert.IsFalse(File.Exists(ServiceHost.WatchMarkerPath(key)), "a marker makes dotnet build ask a daemon that sees no saves");
+            }
+        }
+
+        /// <summary>
+        /// F-A: a CSS save after another build rewrote the obj DLL (other DefineConstants) must
+        /// not patch that build's DLL and then vouch for it: the save compiles, so the DLL is the
+        /// daemon's again. Control: the same save on the daemon's own DLL patches, no compile.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // Roslyn emits and a real daemon with file watchers: 2-4 s.
+        public void ResourceSave_AfterAnotherBuildRewroteTheDll_CompilesInsteadOfPatching()
+        {
+            int compiles = 0;
+            WatchHost watch = null;
+            Dictionary<string, string> Map() => new Dictionary<string, string> { ["Fx.A.css"] = Path.Combine(watch.Project, "A.css") };
+            using (watch = new WatchHost(
+                request =>
+                {
+                    if (request.Kind == ServiceProtocol.KindCompile)
+                    {
+                        Interlocked.Increment(ref compiles);
+                        ResourcePatcherTests.EmitAt(Path.Combine(watch.Project, "obj", "A.dll"), "daemon", Map());
+                    }
+
+                    return new ServiceResponse { ExitCode = 0 };
+                },
+                resources: new[] { "A.css" }))
+            {
+                var key = Path.Combine(watch.Project, "obj", "A.dll");
+                var css = Path.Combine(watch.Project, "A.css");
+                watch.Register("A.cs");
+                int before = Volatile.Read(ref compiles);
+
+                File.WriteAllText(css, ".a { color: green; }");
+                this.WaitForLogLines(1, "WatchBatchEnd");
+                Assert.AreEqual(ServiceHost.SyncExitYes, watch.Sync(key).ExitCode, "control: the save was patched");
+                Assert.AreEqual(before, Volatile.Read(ref compiles), "control: a CSS save on the daemon's DLL patches it");
+
+                ResourcePatcherTests.EmitAt(key, "another build", Map());
+                var foreign = ServiceHost.ReadStamp(key).Value.Mvid;
+                File.WriteAllText(css, ".a { color: blue; }");
+                this.WaitForLogLines(2, "WatchBatchEnd");
+                var answer = watch.Sync(key);
+
+                Assert.AreEqual(ServiceHost.SyncExitYes, answer.ExitCode, answer.Message);
+                Assert.AreEqual(before + 1, Volatile.Read(ref compiles), "the save after another build's DLL compiled");
+                Assert.AreNotEqual(foreign, ServiceHost.ReadStamp(key).Value.Mvid, "the DLL still holds the other build's code");
+            }
+        }
+
+        /// <summary>
         /// S2: while a batch runs, sync waits for it and answers busy when its wait runs out;
         /// a sync waiting when the daemon stops answers busy at once (MSBuild then builds as
         /// today), not yes or no.
@@ -2083,22 +2180,35 @@ namespace NScript.Utils.Test
 
             private readonly string pipeName = "nscript-test-" + Guid.NewGuid().ToString("N");
 
-            public WatchHost(Func<ServiceRequest, ServiceResponse> run, string toolsetHash = null, TimeSpan? registrationQuiet = null, string[] dropWatchEvents = null)
+            public WatchHost(
+                Func<ServiceRequest, ServiceResponse> run,
+                string toolsetHash = null,
+                TimeSpan? registrationQuiet = null,
+                string[] dropWatchEvents = null,
+                string[] resources = null,
+                Action<string> beforeWatcherStart = null)
             {
                 this.Identity = ServiceIdentity.FromKnown(NewTempDir(), new string('0', 64));
                 this.Project = NewTempDir();
                 this.Dependent = NewTempDir();
                 File.WriteAllText(Path.Combine(this.Project, "A.cs"), "class A { }");
                 File.WriteAllText(Path.Combine(this.Dependent, "B.cs"), "class B : A { }");
+                var resourcesOfA = (resources ?? Array.Empty<string>()).Select(r => Path.Combine(this.Project, r)).ToArray();
+                foreach (var resource in resourcesOfA)
+                {
+                    File.WriteAllText(resource, ".a { color: red; }");
+                }
+
                 var options = new ServiceHostOptions
                 {
                     ToolsetHash = () => this.ToolsetHashNow ?? toolsetHash ?? this.Identity.ToolsetHash,
                     RunRequest = run,
                     RunRequestInputs = request => string.Equals(request.Cwd, this.Dependent, StringComparison.OrdinalIgnoreCase)
-                        ? Inputs(this.Dependent, "B", Path.Combine(this.Project, "obj", "A.dll"))
-                        : Inputs(this.Project, "A"),
+                        ? Inputs(this.Dependent, "B", Array.Empty<string>(), Path.Combine(this.Project, "obj", "A.dll"))
+                        : Inputs(this.Project, "A", resourcesOfA),
                     RunRequestEmitOptions = request => ParseOptions.ParseArgs(request.Args),
                     DropWatchEvents = dropWatchEvents ?? Array.Empty<string>(),
+                    BeforeWatcherStart = beforeWatcherStart,
                 };
                 if (registrationQuiet != null)
                 {
@@ -2192,17 +2302,23 @@ namespace NScript.Utils.Test
                 Directory.Delete(this.Dependent, recursive: true);
             }
 
-            private static CompileInputs Inputs(string dir, string name, params string[] references)
+            private static CompileInputs Inputs(string dir, string name, string[] resources, params string[] references)
             {
                 var source = Path.Combine(dir, name + ".cs");
+                var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [source] = CompileInputs.HashFile(source) };
+                foreach (var resource in resources)
+                {
+                    hashes[resource] = CompileInputs.HashFile(resource);
+                }
+
                 return new CompileInputs(
                     Path.Combine(dir, "obj", name + ".dll"),
                     null,
                     null,
                     new[] { source },
-                    Array.Empty<string>(),
+                    resources,
                     references,
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [source] = CompileInputs.HashFile(source) });
+                    hashes);
             }
         }
 
