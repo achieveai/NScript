@@ -1105,7 +1105,11 @@ namespace Sunlight.Framework.Observables
             MethodDefinition methodDefinition,
             ConverterContext converterContext)
         {
-            Log.Verbose("Checking interest level for method {MethodName}", methodDefinition.FullName);
+            // Called for every method of every build: build FullName only when it is logged.
+            if (Log.IsEnabled(Serilog.Events.LogEventLevel.Verbose))
+            {
+                Log.Verbose("Checking interest level for method {MethodName}", methodDefinition.FullName);
+            }
 
             // Check if this is a [Skin("...")] property getter where the template
             // name corresponds to a compiled .skin.cshtml template

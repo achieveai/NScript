@@ -27,6 +27,15 @@
 
 		private bool _disposed;
 
+		/// <summary>
+		/// Results by (browsers, content). A watch build prefixes the same bundle CSS again and
+		/// again (0.6 s in V8 on MCQdb); the output depends only on these inputs.
+		/// </summary>
+		private readonly Dictionary<(string Browsers, string Content), string> _results =
+			new Dictionary<(string Browsers, string Content), string>();
+
+		private const int MaxResults = 8;
+
     	/// <summary>
 		/// Constructs instance of Autoprefixer
 		/// </summary>
@@ -78,14 +87,26 @@
 
             lock (_synchronizer)
             {
+                if (_results.TryGetValue((currentBrowsersString, content), out var cached))
+                {
+                    return cached;
+                }
+
                 Initialize();
 
                 try
                 {
-                    return _javascriptEngine.Evaluate(
+                    var result = _javascriptEngine.Evaluate(
                         string.Format(FunctionCallTemplate,
                             JsonConvert.SerializeObject(content),
                             currentBrowsersString)) as string;
+                    if (_results.Count >= MaxResults)
+                    {
+                        _results.Clear();
+                    }
+
+                    _results[(currentBrowsersString, content)] = result;
+                    return result;
                 }
                 catch (JsRuntimeException e)
                 {
