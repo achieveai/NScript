@@ -6,66 +6,38 @@
 
 namespace NScript.JST.Writer
 {
-    using System.Collections.Generic;
     using NScript.Utils;
 
     /// <summary>
-    /// One method function, rendered on its own at depth 0 (dev mode). The outer writer
-    /// splices <see cref="Text"/> in with re-indentation and re-adds <see cref="Segments"/>
-    /// at the splice position, so the output equals rendering the tokens in place.
+    /// A rendered chunk in a writer's token list.
     /// </summary>
     internal sealed class ChunkToken : TokenBase
     {
-        public ChunkToken(
-            string name,
-            LinkedList<TokenBase> tokens,
-            string text,
-            List<ChunkSegment> segments,
-            int endLine,
-            int endColumn,
-            Location endLocation)
-            : base(TokenType.Chunk, tokens.First.Value.Location)
+        public ChunkToken(RenderedChunk chunk)
+            : base(TokenType.Chunk, chunk.FirstToken.Location)
         {
-            this.Name = name;
-            this.Tokens = tokens;
-            this.Text = text;
-            this.Segments = segments;
-            this.EndLine = endLine;
-            this.EndColumn = endColumn;
-            this.EndLocation = endLocation;
+            this.Chunk = chunk;
         }
 
-        public string Name { get; }
+        public RenderedChunk Chunk { get; }
 
-        /// <summary>The chunk's own tokens, spaces already arranged.</summary>
-        public LinkedList<TokenBase> Tokens { get; }
+        public string Name => this.Chunk.Name;
 
-        /// <summary>The first token; the outer writer spaces the chunk's left edge by it.</summary>
-        public TokenBase FirstToken => this.Tokens.First.Value;
+        public TokenBase FirstToken => this.Chunk.FirstToken;
 
-        /// <summary>The last token; the outer writer spaces the chunk's right edge by it.</summary>
-        public TokenBase LastToken => this.Tokens.Last.Value;
+        public TokenBase LastToken => this.Chunk.LastToken;
 
-        /// <summary>Rendered text at depth 0.</summary>
-        public string Text { get; }
+        public string Text => this.Chunk.Text;
 
-        /// <summary>Mappings emitted while rendering, relative to the chunk start.</summary>
-        public List<ChunkSegment> Segments { get; }
+        public System.Collections.Generic.List<ChunkSegment> Segments => this.Chunk.Segments;
 
-        /// <summary>Generated line of the chunk end, relative to the chunk start.</summary>
-        public int EndLine { get; }
+        public int EndLine => this.Chunk.EndLine;
 
-        /// <summary>Generated column of the chunk end, at depth 0.</summary>
-        public int EndColumn { get; }
+        public int EndColumn => this.Chunk.EndColumn;
 
-        /// <summary>The writer's last location after the chunk's last token.</summary>
-        public Location EndLocation { get; }
+        public Location EndLocation => this.Chunk.EndLocation;
     }
 
-    /// <summary>
-    /// One source-map segment of a chunk. <see cref="Line"/> is relative to the chunk start;
-    /// <see cref="Column"/> is at depth 0.
-    /// </summary>
     internal readonly struct ChunkSegment
     {
         public ChunkSegment(int line, int column, bool isSelf, bool isLineStart, int sourceLine, int sourceColumn, string file, string name)
@@ -84,10 +56,8 @@ namespace NScript.JST.Writer
 
         public int Column { get; }
 
-        /// <summary>Maps the generated position to itself in the generated file.</summary>
         public bool IsSelf { get; }
 
-        /// <summary>The column-0 mapping a writer newline adds; it is not re-indented.</summary>
         public bool IsLineStart { get; }
 
         public int SourceLine { get; }
@@ -97,5 +67,65 @@ namespace NScript.JST.Writer
         public string File { get; }
 
         public string Name { get; }
+    }
+}
+
+namespace NScript.JST
+{
+    using System.Collections.Generic;
+    using NScript.JST.Writer;
+    using NScript.Utils;
+
+    /// <summary>
+    /// One function rendered on its own: its text and its source-map segments relative to
+    /// its start. A writer splices it in at any depth, so a later build can write it again
+    /// without converting or rendering the function.
+    /// </summary>
+    public sealed class RenderedChunk
+    {
+        internal RenderedChunk(
+            string name,
+            TokenBase firstToken,
+            TokenBase lastToken,
+            string text,
+            List<ChunkSegment> segments,
+            int endLine,
+            int endColumn,
+            Location endLocation)
+        {
+            this.Name = name;
+            this.FirstToken = firstToken;
+            this.LastToken = lastToken;
+            this.Text = text;
+            this.Segments = segments;
+            this.EndLine = endLine;
+            this.EndColumn = endColumn;
+            this.EndLocation = endLocation;
+        }
+
+        /// <summary>The function's name as written, or "(anonymous)".</summary>
+        public string Name { get; }
+
+        /// <summary>The location current when the chunk starts.</summary>
+        public Location FirstLocation => this.FirstToken.Location;
+
+        /// <summary>The location current when the chunk ends.</summary>
+        public Location EndLocation { get; }
+
+        /// <summary>The text length, for size probes.</summary>
+        public int Length => this.Text.Length;
+
+        // Only the edge tokens are kept: spacing and splicing look at nothing else.
+        internal TokenBase FirstToken { get; }
+
+        internal TokenBase LastToken { get; }
+
+        internal string Text { get; }
+
+        internal List<ChunkSegment> Segments { get; }
+
+        internal int EndLine { get; }
+
+        internal int EndColumn { get; }
     }
 }

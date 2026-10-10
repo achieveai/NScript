@@ -65,6 +65,15 @@ namespace NScript.Converter
         private ConverterContext sessionContext;
 
         /// <summary>
+        /// The session's converted methods (dev chunks only); dropped with the session, since a
+        /// cold build loads new modules.
+        /// </summary>
+        private MethodCache methodCache;
+
+        /// <summary>A method cache hit failed its check; the build runs once more.</summary>
+        private bool methodCacheRetry;
+
+        /// <summary>
         /// (full path, SHA-256 of the content) of every input the session was built from.
         /// Content, not length and mtime: a rewrite can keep both (cp -p, restored packages,
         /// two writes in one timestamp tick).
@@ -197,6 +206,7 @@ namespace NScript.Converter
             this.sessionClr = null;
             this.sessionContext = null;
             this.sessionStamps = null;
+            this.methodCache = null;
         }
 
         private void SetPlugins(IConverterPlugin[] buildPlugins)
@@ -224,17 +234,22 @@ namespace NScript.Converter
 
         /// <summary>
         /// Keeps the session when the changed inputs differ only in resources (a watch-mode
-        /// resource patch): the kept modules take the new resources, and the stamps move on.
-        /// The same inputs must be in the same order, and each changed file must still hash to
-        /// its new stamp, so the resources taken are the bytes the stamps describe. The refresh
-        /// is an optimisation: any failure to read an input is a logged miss (a cold build),
-        /// never a new way to fail. Nothing changes before the refresh commits, so a miss is safe.
+        /// resource patch) or, for a recompiled module, only in method bodies of the types its
+        /// changed source files declare (<see cref="ModuleRefresh"/>): the kept modules take
+        /// the change in place, the converter context reads their ASTs again, the method cache
+        /// drops the changed types' methods, and the stamps move on. The same inputs must be in
+        /// the same order, and each changed file must still hash to its new stamp, so the change
+        /// taken is the bytes the stamps describe. The refresh is an optimisation: any failure
+        /// is a logged miss (a cold build, which drops the session), never a new way to fail.
         /// </summary>
-        private bool TryRefreshSession(List<(string path, string sha256)> stamps, Serilog.ILogger log, out string miss)
+        /// <param name="kind">"resources-refreshed" or "bodies-refreshed" on success.</param>
+        private bool TryRefreshSession(List<(string path, string sha256)> stamps, Serilog.ILogger log, out string kind, out string miss)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string reason = null;
-            int replaced = 0;
+            int replaced = 0, recompiled = 0, bodies = 0, invalidated = 0;
+            string changedTypes = null;
+            kind = null;
             var images = new List<byte[]>();
             try
             {
@@ -262,9 +277,33 @@ namespace NScript.Converter
                     }
                 }
 
-                if (reason == null && this.sessionClr.TryRefreshResources(images, out replaced, out reason))
+                using var refresh = reason == null ? this.sessionClr.TryPlanRefresh(images, out reason) : null;
+                if (refresh != null)
                 {
-                    this.sessionStamps = stamps;
+                    replaced = refresh.ResourcesReplaced;
+                    recompiled = refresh.Recompiled.Count;
+                    changedTypes = string.Join(",", refresh.ChangedTypes.Take(10).Select(type => type.FullName));
+                    if (recompiled == 0)
+                    {
+                        refresh.Commit();
+                        kind = "resources-refreshed";
+                    }
+                    else
+                    {
+                        var kinds = this.sessionContext.BeginRefresh(refresh);
+                        invalidated = this.methodCache?.Invalidate(method => refresh.IsAffected(method.DeclaringType)) ?? 0;
+                        refresh.Commit();
+                        bodies = refresh.BodiesReplaced;
+                        if (this.sessionContext.Refresh(refresh, kinds, out reason))
+                        {
+                            kind = "bodies-refreshed";
+                        }
+                    }
+
+                    if (reason == null)
+                    {
+                        this.sessionStamps = stamps;
+                    }
                 }
             }
             catch (System.Exception ex) when (!(ex is System.OutOfMemoryException))
@@ -273,10 +312,15 @@ namespace NScript.Converter
             }
 
             log.Information(
-                "Session.Refresh Refreshed={Refreshed} Images={Images} Resources={Resources} Miss={Miss} ElapsedMs={ElapsedMs}",
+                "Session.Refresh Refreshed={Refreshed} Kind={Kind} Images={Images} Resources={Resources} Recompiled={Recompiled} ChangedTypes={ChangedTypes} Bodies={Bodies} CacheInvalidated={CacheInvalidated} Miss={Miss} ElapsedMs={ElapsedMs}",
                 reason == null,
+                kind,
                 images.Count,
                 replaced,
+                recompiled,
+                changedTypes,
+                bodies,
+                invalidated,
                 reason,
                 sw.ElapsedMilliseconds);
             miss = reason;
@@ -360,6 +404,13 @@ namespace NScript.Converter
             try
             {
                 succeeded = this.ExecuteCore();
+                if (!succeeded && this.methodCacheRetry)
+                {
+                    // The entries that failed are gone; the rest replay again.
+                    this.methodCacheRetry = false;
+                    succeeded = this.ExecuteCore();
+                }
+
                 return succeeded;
             }
             finally
@@ -401,10 +452,10 @@ namespace NScript.Converter
                 : this.sessionContext == null ? "new"
                 : "inputs-changed";
             string refreshMiss = null;
-            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, log, out refreshMiss))
+            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, log, out var refreshKind, out refreshMiss))
             {
                 warm = true;
-                sessionReason = "resources-refreshed";
+                sessionReason = refreshKind;
             }
 
             // Set before loading, so a build that fails to load reports this build, not the last.
@@ -464,6 +515,20 @@ namespace NScript.Converter
                 converterContext.DevMode = this.devMode;
                 converterContext.DevChunks = this.devMode
                     && System.Environment.GetEnvironmentVariable("NSCRIPT_DEV_CHUNKS") != "off";
+                if (converterContext.DevChunks
+                    && this.UseSession
+                    && !this.scriptGenerateSettings.optimize
+                    && MethodCache.IsEnabled)
+                {
+                    this.methodCache ??= new MethodCache();
+                    this.methodCache.BeginBuild();
+                    converterContext.MethodCache = this.methodCache;
+                }
+                else
+                {
+                    converterContext.MethodCache = null;
+                }
+
                 runtimeManager = new RuntimeScopeManager(
                     converterContext,
                     instanceAsStatic: this.scriptGenerateSettings.optimize);
@@ -606,6 +671,15 @@ namespace NScript.Converter
                 if (this.devMode)
                 {
                     NameForDevMode(runtimeManager, converterContext, log);
+                    if (converterContext.MethodCache?.ValidateHits() == false)
+                    {
+                        log.Warning(
+                            "MethodCache.Retry Invalidated={Invalidated} Hits={Hits}",
+                            converterContext.MethodCache.Invalidated,
+                            converterContext.MethodCache.Hits);
+                        this.methodCacheRetry = true;
+                        return false;
+                    }
                 }
                 else
                 {
@@ -637,6 +711,19 @@ namespace NScript.Converter
                     {
                         writer.Write(statement);
                     }
+                }
+
+                if (converterContext.MethodCache != null)
+                {
+                    var cache = converterContext.MethodCache;
+                    cache.Harvest();
+                    log.Information(
+                        "Probe.MethodCache Hits={Hits} Misses={Misses} Stored={Stored} Entries={Entries} Uncacheable={Uncacheable}",
+                        cache.Hits,
+                        cache.Misses,
+                        cache.Stored,
+                        cache.Count,
+                        string.Join(",", cache.Uncacheable.OrderByDescending(u => u.Value).Select(u => u.Key + "=" + u.Value)));
                 }
 
                 // Use the explicit sourceRoot when provided (e.g. an ASP.NET Core handler path

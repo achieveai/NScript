@@ -281,74 +281,40 @@ namespace NScript.CLR
         /// <returns>true if the modules took the new resources; false if nothing changed.</returns>
         public bool TryRefreshResources(IReadOnlyList<byte[]> images, out int replaced, out string reason)
         {
-            var plan = new List<(ModuleDefinition module, int index, EmbeddedResource resource)>();
             replaced = 0;
-            foreach (var image in images)
+            using var refresh = ModuleRefresh.TryPlan(this, images, this.assemblyResolver, resourcesOnly: true, out reason);
+            if (refresh == null)
             {
-                using var fresh = ModuleDefinition.ReadModule(
-                    new MemoryStream(image, writable: false),
-                    new ReaderParameters(ReadingMode.Deferred));
-                if (!this.assemblies.TryGetValue(fresh.Name.ToLowerInvariant(), out var kept))
-                {
-                    reason = "not-loaded " + fresh.Name;
-                    return false;
-                }
-
-                if (fresh.Mvid != kept.Mvid)
-                {
-                    reason = "mvid " + fresh.Name;
-                    return false;
-                }
-
-                if (fresh.Resources.Count != kept.Resources.Count)
-                {
-                    reason = "resource-set " + fresh.Name;
-                    return false;
-                }
-
-                int changed = 0;
-                for (int index = 0; index < kept.Resources.Count; index++)
-                {
-                    if (!(kept.Resources[index] is EmbeddedResource keptResource)
-                        || !(fresh.Resources[index] is EmbeddedResource freshResource)
-                        || keptResource.Name != freshResource.Name
-                        || keptResource.Attributes != freshResource.Attributes)
-                    {
-                        reason = "resource-set " + fresh.Name;
-                        return false;
-                    }
-
-                    var data = freshResource.GetResourceData();
-                    if (data.AsSpan().SequenceEqual(keptResource.GetResourceData()))
-                    {
-                        continue;
-                    }
-
-                    if (keptResource.Name.StartsWith("$$", StringComparison.Ordinal))
-                    {
-                        reason = keptResource.Name + " " + fresh.Name;
-                        return false;
-                    }
-
-                    plan.Add((kept, index, new EmbeddedResource(keptResource.Name, keptResource.Attributes, data)));
-                    changed++;
-                }
-
-                if (changed == 0)
-                {
-                    reason = "no-resource-change " + fresh.Name;
-                    return false;
-                }
+                return false;
             }
 
-            foreach (var (module, index, resource) in plan)
-            {
-                module.Resources[index] = resource;
-            }
-
-            replaced = plan.Count;
-            reason = null;
+            refresh.Commit();
+            replaced = refresh.ResourcesReplaced;
             return true;
+        }
+
+        /// <summary>
+        /// Build session: checks new images of loaded modules (see <see cref="ModuleRefresh"/>).
+        /// Returns null with a reason when one does not qualify; nothing changes until the
+        /// caller commits the plan.
+        /// </summary>
+        public ModuleRefresh TryPlanRefresh(IReadOnlyList<byte[]> images, out string reason)
+            => ModuleRefresh.TryPlan(this, images, this.assemblyResolver, resourcesOnly: false, out reason);
+
+        /// <summary>Drops what this context computed from types a refresh rebuilt or removed.</summary>
+        internal void ForgetTypes(IEnumerable<TypeDefinition> types)
+        {
+            var forgotten = new HashSet<TypeDefinition>(types);
+            foreach (var type in forgotten)
+            {
+                this.typeToVirtualMethods.Remove(type);
+                this.typeToInterfaceOverrides.Remove(type);
+            }
+
+            foreach (var stale in this.typeReferenceToDefinitionMap.Where(entry => forgotten.Contains(entry.Value)).Select(entry => entry.Key).ToList())
+            {
+                this.typeReferenceToDefinitionMap.Remove(stale);
+            }
         }
 
         /// <summary>

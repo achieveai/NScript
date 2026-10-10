@@ -186,6 +186,7 @@ namespace NScript.JST
                 ownerScope.AddIdentifier(returnValue);
             }
 
+            IdentifierScope.Observer?.IdentifierCreated(returnValue, suggestedName, enforceSuggestion, dontEscape);
             return returnValue;
         }
 
@@ -242,6 +243,7 @@ namespace NScript.JST
         public void AddUsage(IdentifierScope identifierScope)
         {
             this.usageCount++;
+            IdentifierScope.Observer?.IdentifierUsed(this);
 
             if (!this.ownerScope.IsExecutionScope)
             { this.AddUsageInternal(this.ownerScope); }

@@ -423,16 +423,32 @@ namespace NScript.JST
                 return false;
             }
 
-            this.tokens.AddLast(
-                new ChunkToken(
-                    name,
-                    chunkTokens,
-                    text.ToString(),
-                    segments,
-                    state.Line,
-                    state.Column,
-                    state.LastLocation));
+            var chunk = new RenderedChunk(
+                name,
+                chunkTokens.First.Value,
+                chunkTokens.Last.Value,
+                text.ToString(),
+                segments,
+                state.Line,
+                state.Column,
+                state.LastLocation);
+            function.RenderedChunk = chunk;
+            this.tokens.AddLast(new ChunkToken(chunk));
             return true;
+        }
+
+        /// <summary>
+        /// Adds a chunk rendered by an earlier write, as <see cref="TryWriteChunk"/> adds a new one.
+        /// </summary>
+        internal void WriteCachedChunk(RenderedChunk chunk)
+        {
+            if (this.isChunkWriter || this.IsOptimized)
+            {
+                throw new InvalidOperationException(
+                    "Cached chunk '" + chunk.Name + "' can only be written at depth 0 of a dev-mode writer.");
+            }
+
+            this.tokens.AddLast(new ChunkToken(chunk));
         }
 
         /// <summary>

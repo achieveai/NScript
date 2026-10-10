@@ -170,93 +170,161 @@ namespace NScript.Converter
 
             foreach (var module in clrContext.Modules)
             {
-                JArray jsonAstArray = null;
-                JObject resourceFileNameMap = null;
-                FullAst fullAst = null;
-                foreach (var resource in module.Resources)
-                {
-                    if (resource.Name == "$$JstInfo$$")
-                    {
-                        using var stream = ((EmbeddedResource)resource).GetResourceStream();
-                        fullAst = Serializer.Deserialize(
-                            stream,
-                            Serializer.SerializationKind.Json);
-                    }
-                    if (resource.Name == "$$BstInfo$$")
-                    {
-                        using var stream = ((EmbeddedResource)resource).GetResourceStream();
-                        fullAst = Serializer.Deserialize(
-                            stream,
-                            Serializer.SerializationKind.NetSerializer);
-                    }
-                    else if (resource.Name == "$$ResInfo$$")
-                    {
-                        EmbeddedResource embededResource = (EmbeddedResource)resource;
-
-                        using var stream = embededResource.GetResourceStream();
-                        if (stream.Length > 0)
-                        {
-                            StreamReader streamReader = new(stream);
-                            string tmp = streamReader.ReadToEnd();
-                            stream.Position = 0;
-
-                            JsonTextReader reader = new(streamReader);
-                            resourceFileNameMap = (JObject)JObject.ReadFrom(reader);
-                        }
-                    }
-                }
-
-                if (jsonAstArray != null)
-                {
-                    // stopWatch.Restart();
-                    // for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
-                    // {
-                    //     var tuple = toAst.ParseMethodBody(
-                    //         jsonAstArray.Value<JObject>(iAst));
-
-                    //     this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
-                    // }
-                    // stopWatch.Stop();
-                    // jsonCost += stopWatch.Elapsed.TotalSeconds;
-
-                    // stopWatch.Restart();
-                }
-
-                if (fullAst != null)
-                {
-                    var bondToAst = new BondToAst(
-                        fullAst.TypeInfo,
-                        this.ClrContext);
-
-                    foreach (var item in fullAst.Methods)
-                    {
-                        var tuple = bondToAst.ParseMethodBody(item);
-                        var (methodDef, func) = tuple;
-                        // tupl.Item2();
-                        this.methodAstMapping.Add(methodDef, func);
-                    }
-
-                    // stopWatch.Stop();
-                    // bondCost += stopWatch.Elapsed.TotalSeconds;
-                }
-
-                Dictionary<string, string> resourceNameMap = new();
-                if (resourceFileNameMap != null)
-                {
-                    foreach (var item in resourceFileNameMap.Properties())
-                    {
-                        resourceNameMap.Add(
-                            item.Name,
-                            (string)item.Value);
-                    }
-                }
-
-                this.resourceNameMapping.Add(
-                    module,
-                    resourceNameMap);
+                this.LoadModule(module);
             }
 
             // Console.WriteLine("JsonCost: {0}, BondCost: {1}", jsonCost, bondCost);
+        }
+
+        /// <summary>
+        /// Reads a module's method ASTs (<c>$$BstInfo$$</c>, unless <paramref name="readAst"/> is
+        /// false) and resource file names (<c>$$ResInfo$$</c>). A refresh reads a module again:
+        /// its entries replace the old.
+        /// </summary>
+        private void LoadModule(ModuleDefinition module, bool readAst = true)
+        {
+            JArray jsonAstArray = null;
+            JObject resourceFileNameMap = null;
+            FullAst fullAst = null;
+            foreach (var resource in module.Resources)
+            {
+                if (resource.Name == "$$JstInfo$$")
+                {
+                    using var stream = ((EmbeddedResource)resource).GetResourceStream();
+                    fullAst = Serializer.Deserialize(
+                        stream,
+                        Serializer.SerializationKind.Json);
+                }
+                if (resource.Name == "$$BstInfo$$" && readAst)
+                {
+                    using var stream = ((EmbeddedResource)resource).GetResourceStream();
+                    fullAst = Serializer.Deserialize(
+                        stream,
+                        Serializer.SerializationKind.NetSerializer);
+                }
+                else if (resource.Name == "$$ResInfo$$")
+                {
+                    EmbeddedResource embededResource = (EmbeddedResource)resource;
+
+                    using var stream = embededResource.GetResourceStream();
+                    if (stream.Length > 0)
+                    {
+                        StreamReader streamReader = new(stream);
+                        string tmp = streamReader.ReadToEnd();
+                        stream.Position = 0;
+
+                        JsonTextReader reader = new(streamReader);
+                        resourceFileNameMap = (JObject)JObject.ReadFrom(reader);
+                    }
+                }
+            }
+
+            if (jsonAstArray != null)
+            {
+                // stopWatch.Restart();
+                // for (int iAst = 0; iAst < jsonAstArray.Count; iAst++)
+                // {
+                //     var tuple = toAst.ParseMethodBody(
+                //         jsonAstArray.Value<JObject>(iAst));
+
+                //     this.methodAstMapping.Add(tuple.Item1, tuple.Item2);
+                // }
+                // stopWatch.Stop();
+                // jsonCost += stopWatch.Elapsed.TotalSeconds;
+
+                // stopWatch.Restart();
+            }
+
+            if (fullAst != null)
+            {
+                var bondToAst = new BondToAst(
+                    fullAst.TypeInfo,
+                    this.ClrContext);
+
+                foreach (var item in fullAst.Methods)
+                {
+                    var tuple = bondToAst.ParseMethodBody(item);
+                    var (methodDef, func) = tuple;
+                    // tupl.Item2();
+                    this.methodAstMapping[methodDef] = func;
+                }
+
+                // stopWatch.Stop();
+                // bondCost += stopWatch.Elapsed.TotalSeconds;
+            }
+
+            Dictionary<string, string> resourceNameMap = new();
+            if (resourceFileNameMap != null)
+            {
+                foreach (var item in resourceFileNameMap.Properties())
+                {
+                    resourceNameMap.Add(
+                        item.Name,
+                        (string)item.Value);
+                }
+            }
+
+            this.resourceNameMapping[module] = resourceNameMap;
+        }
+
+        /// <summary>
+        /// Build session, before a refresh commits: forgets the method ASTs and type kinds of
+        /// the types it changes, while those types still hang together, and returns the kinds
+        /// computed so far for <see cref="Refresh"/> to check.
+        /// </summary>
+        public List<KeyValuePair<TypeDefinition, TypeKind>> BeginRefresh(ModuleRefresh refresh)
+        {
+            var stale = this.methodAstMapping.Keys
+                .Where(method => refresh.IsAffected(method.DeclaringType))
+                .ToList();
+            foreach (var method in stale)
+            {
+                this.methodAstMapping.Remove(method);
+            }
+
+            var kinds = this.typeKindMapping.Where(entry => refresh.IsAffected(entry.Key)).ToList();
+            foreach (var entry in kinds)
+            {
+                this.typeKindMapping.Remove(entry.Key);
+            }
+
+            return kinds;
+        }
+
+        /// <summary>
+        /// Build session, after a refresh committed: reads the recompiled modules again (the
+        /// ASTs only where source files changed) and checks that each changed type keeps its
+        /// kind, which other types' conversions depend on. False with a reason when a kind
+        /// changed; the session is then unusable.
+        /// </summary>
+        public bool Refresh(
+            ModuleRefresh refresh,
+            List<KeyValuePair<TypeDefinition, TypeKind>> kindsBefore,
+            out string reason)
+        {
+            foreach (var module in refresh.Recompiled)
+            {
+                this.LoadModule(module, readAst: refresh.SourceChanged.Contains(module));
+            }
+
+            foreach (var entry in kindsBefore)
+            {
+                // Generated types were rebuilt; their kinds come back when asked for.
+                if (entry.Key.Name.StartsWith("<", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var kind = this.GetTypeKind(entry.Key);
+                if (kind != entry.Value)
+                {
+                    reason = "type-kind " + entry.Key.FullName + " " + entry.Value + "->" + kind;
+                    return false;
+                }
+            }
+
+            reason = null;
+            return true;
         }
 
         /// <summary>
@@ -323,6 +391,12 @@ namespace NScript.Converter
         /// (dev mode, unless <c>NSCRIPT_DEV_CHUNKS=off</c>). Output is the same either way.
         /// </summary>
         public bool DevChunks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session's method cache; null when the build does not reuse methods
+        /// (only warm-able dev builds with chunks do).
+        /// </summary>
+        public TypeSystemConverter.MethodCache MethodCache { get; set; }
 
         /// <summary>
         /// Gets the errors.

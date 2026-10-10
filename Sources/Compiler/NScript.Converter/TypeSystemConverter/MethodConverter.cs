@@ -257,6 +257,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
+            var recorder = MethodRecorder.Begin(this, methodScope);
             try
             {
                 methodFunctionExpression = Convert();
@@ -264,6 +265,8 @@ namespace NScript.Converter.TypeSystemConverter
             }
             catch (Exception ex)
             {
+                recorder?.End(null);
+                recorder = null;
                 if (!(ex is ApplicationException))
                 {
                     throw new ApplicationException(
@@ -275,6 +278,40 @@ namespace NScript.Converter.TypeSystemConverter
 
                 throw;
             }
+
+            recorder?.End(methodFunctionExpression);
+        }
+
+        /// <summary>
+        /// A method cache hit: no conversion. The function writes the cached chunk; its scope is
+        /// the replay's stand-in scope (<see cref="MethodCache"/>).
+        /// </summary>
+        internal MethodConverter(
+            TypeConverter typeConverter,
+            MethodDefinition methodDefinition,
+            IdentifierScope replayScope,
+            RenderedChunk chunk,
+            bool isAsync)
+        {
+            this.typeConverter = typeConverter;
+            this.methodDefinition = methodDefinition;
+            context = typeConverter.RuntimeManager.Context;
+            clrKnownReferences = context.ClrKnownReferences;
+            cnvtKnownReferences = context.KnownReferences;
+            hasGenericArguments = context.HasGenericArguments(methodDefinition);
+            methodScope = replayScope;
+            PushJsScope(replayScope);
+            methodFunctionExpression = new FunctionExpression(
+                null,
+                typeConverter.Scope,
+                replayScope,
+                new List<IIdentifier>(),
+                GetSelfFunctionName(),
+                isAsync)
+            {
+                IsChunk = true,
+                CachedChunk = chunk,
+            };
         }
 
         private (IdentifierScope, int argumentsStartIndex) GetMethodScope(
@@ -315,6 +352,8 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <value>The runtime manager.</value>
         public RuntimeScopeManager RuntimeManager => typeConverter.RuntimeManager;
+
+        internal TypeConverter TypeConverter => typeConverter;
 
         /// <summary>
         /// Gets a value indicating whether this instance is constructor.

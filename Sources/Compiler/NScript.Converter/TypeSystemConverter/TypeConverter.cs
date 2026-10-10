@@ -423,7 +423,8 @@ namespace NScript.Converter.TypeSystemConverter
                 {
                     this.implementedMethods.Add(
                         methodDefinition,
-                        new MethodConverter(this, methodDefinition));
+                        this.context.MethodCache?.TryReplay(this, methodDefinition)
+                            ?? new MethodConverter(this, methodDefinition));
                 }
                 finally
                 {
@@ -475,6 +476,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="paramDef">The type reference base.</param>
         /// <returns>Identifier for givenType.</returns>
         public IList<IIdentifier> Resolve(TypeReference typeReference)
+            => MethodRecorder.Call(this, typeReference, static (self, t) => self.ResolveCore(t), static (rec, self, a) => { rec.Target(self); return a; }, static (r, t) => r.TypeConverter.Resolve(t));
+
+        private IList<IIdentifier> ResolveCore(TypeReference typeReference)
         {
             // If we are resolving paramDef which points to typeDefinition
             // replace it with localTypeReference. This is done so that if typeDefinition
@@ -542,6 +546,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// Identifier identifying the member.
         /// </returns>
         public IIdentifier Resolve(FieldReference fieldReference)
+            => MethodRecorder.Call(this, fieldReference, static (self, f) => self.ResolveCore(f), static (rec, self, a) => { rec.Target(self); return a; }, static (r, f) => r.TypeConverter.Resolve(f));
+
+        private IIdentifier ResolveCore(FieldReference fieldReference)
         {
             return ResolverHelper.Resolve(
                 this.RuntimeManager,
@@ -590,6 +597,16 @@ namespace NScript.Converter.TypeSystemConverter
         public IList<IIdentifier> ResolveStaticMember(
             FieldReference member,
             Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (member, resolver),
+                static (self, a) => self.ResolveStaticMemberCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveStaticMember(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IList<IIdentifier> ResolveStaticMemberCore(
+            FieldReference member,
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return ResolverHelper.ResolveStaticMember(
                 this.RuntimeManager,
@@ -609,6 +626,16 @@ namespace NScript.Converter.TypeSystemConverter
         internal IIdentifier ResolveStaticMember(
             PropertyDefinition propertyDefinition,
             Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (propertyDefinition, resolver),
+                static (self, a) => self.ResolveStaticMemberCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveStaticMember(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IIdentifier ResolveStaticMemberCore(
+            PropertyDefinition propertyDefinition,
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return ResolverHelper.ResolveStaticMember(
                 this.RuntimeManager,
@@ -625,6 +652,16 @@ namespace NScript.Converter.TypeSystemConverter
         public IList<IIdentifier> ResolveStaticMember(
             MethodReference member,
             Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (member, resolver),
+                static (self, a) => self.ResolveStaticMemberCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveStaticMember(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IList<IIdentifier> ResolveStaticMemberCore(
+            MethodReference member,
+            Func<TypeReference, IList<IIdentifier>> resolver)
         {
             return ResolverHelper.ResolveStaticMember(
                 this.RuntimeManager,
@@ -634,6 +671,16 @@ namespace NScript.Converter.TypeSystemConverter
         }
 
         public IList<IIdentifier> ResolveFactory(
+            MethodReference constructor,
+            Func<TypeReference, IList<IIdentifier>> resolver)
+            => MethodRecorder.Call(
+                this,
+                (constructor, resolver),
+                static (self, a) => self.ResolveFactoryCore(a.Item1, a.Item2),
+                static (rec, self, a) => { rec.Target(self); return (a.Item1, rec.Resolver(a.Item2)); },
+                static (r, a) => r.TypeConverter.ResolveFactory(a.Item1, r.TypeResolver(a.Item2)));
+
+        private IList<IIdentifier> ResolveFactoryCore(
             MethodReference constructor,
             Func<TypeReference, IList<IIdentifier>> resolver)
         {
@@ -835,6 +882,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// Identifier for ImplementedVersion of imported property.
         /// </returns>
         public IIdentifier ResolveImplementedVersion(PropertyDefinition propertyDefinition)
+            => MethodRecorder.Call(this, propertyDefinition, static (self, p) => self.ResolveImplementedVersionCore(p), static (rec, self, a) => { rec.Target(self); return a; }, static (r, p) => r.TypeConverter.ResolveImplementedVersion(p));
+
+        private IIdentifier ResolveImplementedVersionCore(PropertyDefinition propertyDefinition)
         {
             return new CompoundIdentifier(
                 this.Resolve(this.cnvtKnownRefs.ImportedExtensionField),
@@ -849,6 +899,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// .
         /// </returns>
         public IIdentifier ResolveWrappedMethod(MethodDefinition methodDefinition)
+            => MethodRecorder.Call(this, methodDefinition, static (self, m) => self.ResolveWrappedMethodCore(m), static (rec, self, a) => { rec.Target(self); return a; }, static (r, m) => r.TypeConverter.ResolveWrappedMethod(m));
+
+        private IIdentifier ResolveWrappedMethodCore(MethodDefinition methodDefinition)
         {
             if (methodDefinition.IsStatic)
             {

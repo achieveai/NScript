@@ -581,6 +581,17 @@ namespace NScript.Converter
             string identifierString,
             bool isInstance,
             bool enforce)
+            => MethodRecorder.Call(
+                this,
+                (identifierString, isInstance, enforce),
+                static (self, a) => self.GetIdentifierCore(a.Item1, a.Item2, a.Item3),
+                static (rec, self, a) => (self.typeDefinition, a),
+                static (r, a) => r.Runtime.GetTypeScope(a.typeDefinition).GetIdentifier(a.a.Item1, a.a.Item2, a.a.Item3));
+
+        private IIdentifier GetIdentifierCore(
+            string identifierString,
+            bool isInstance,
+            bool enforce)
         {
             var scope = isInstance
                 ? this.scope

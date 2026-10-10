@@ -296,6 +296,133 @@ namespace NScript.Csc.Lib.Test
         }
 
         /// <summary>
+        /// Compiles <paramref name="files"/> (name, text) into <c>lib.dll</c> in
+        /// <paramref name="dir"/> the way the NScript csc does: bound bodies in $$BstInfo$$ and
+        /// source checksums in $$SrcInfo$$.
+        /// </summary>
+        private static string CompileLib(string dir, string[] refs, params (string name, string text)[] files)
+        {
+            var path = Path.Combine(dir, "lib.dll");
+            File.Delete(path);
+            var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create(
+                "lib",
+                files.Select(file => Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
+                    file.text,
+                    Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.Default,
+                    Path.Combine(dir, file.name),
+                    Encoding.UTF8)),
+                refs.Select(reference => Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(reference)),
+                new Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions(
+                    Microsoft.CodeAnalysis.OutputKind.DynamicallyLinkedLibrary,
+                    concurrentBuild: false));
+            Assert.IsNotNull(SerializationHelper.ExpressionVisitMap(compilation, dir, "lib.dll"), "The fixture library must compile.");
+            return path;
+        }
+
+        private const string HelperSource =
+            "namespace RealScript { public static class Helper { public static int Say(string text) { return text.Length; } } }";
+
+        private static string ProgramSource(string body) =>
+            "namespace RealScript { using System; using System.Collections.Generic; public static class Program { public static int Main() { " + body + " } } }";
+
+        /// <summary>
+        /// Dot 3 of the save-to-JS plan: a recompile that changes only method bodies keeps the
+        /// session; the kept module takes the new bodies in place. The edit adds a lambda (a
+        /// new generated member) and calls referenced members whose signatures hold primitives
+        /// (<c>List&lt;int&gt;.Count</c>, <c>string.IndexOf</c>): a remapped reference built
+        /// without the primitive's element type did not resolve. The output must equal a cold
+        /// build of the same DLL. Removing the lambda refreshes too; a signature change is a
+        /// refresh miss, so the build is cold and still equal.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 7 builds of a small library.
+        public void Session_BodyOnlyRecompile_RefreshesBodies_EqualsCold_SignatureChangeIsCold()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-bodies-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            // Same file name, so the sourceMappingURL line matches.
+            var coldJs = Path.Combine(Directory.CreateDirectory(Path.Combine(dir, "cold")).FullName, "bundle.js");
+            string Compile(string body) =>
+                CompileLib(dir, refs, ("Program.cs", ProgramSource(body)), ("Helper.cs", HelperSource));
+
+            byte[] Cold(string main)
+            {
+                using var fresh = new Builder(
+                    coldJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true);
+                BuildOnce(fresh, coldJs, out var js, out _);
+                Assert.AreEqual("cold", fresh.LastBuildKind);
+                return js;
+            }
+
+            var main = Compile("return Helper.Say(\"v1\");");
+            try
+            {
+                using (var builder = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true))
+                {
+                    var first = BuildOnce(builder, outJs, out _, out _);
+                    Assert.AreEqual("cold", builder.LastBuildKind);
+
+                    void AssertRefreshed(string body, string what)
+                    {
+                        Compile(body);
+                        var refreshed = BuildOnce(builder, outJs, out var js, out _);
+                        Assert.AreEqual("warm", builder.LastBuildKind, what + " must keep the session.");
+                        Assert.AreEqual("bodies-refreshed", builder.LastBuildReason, what);
+                        Assert.IsTrue(SameTarget(first.context, refreshed.context), what + " must reuse the session's ConverterContext.");
+                        CollectionAssert.AreEqual(Cold(main), js, what + ": the refreshed .js differs from a cold build.");
+                    }
+
+                    AssertRefreshed(
+                        "var list = new List<int>(); list.Add(\"v2\".IndexOf(\"2\")); Func<int, int> twice = value => value * 2; return twice(list.Count) + Helper.Say(\"v2\");",
+                        "A body edit that adds a lambda");
+                    AssertRefreshed("return Helper.Say(\"v3\");", "A body edit that removes the lambda");
+
+                    BuildOnce(builder, outJs, out _, out _);
+                    Assert.AreEqual("warm", builder.LastBuildKind, "After a refresh the session must hold the new stamps.");
+                    Assert.AreEqual("unchanged", builder.LastBuildReason);
+
+                    CompileLib(
+                        dir,
+                        refs,
+                        ("Program.cs", ProgramSource("return Helper.Say(\"v4\");")),
+                        ("Helper.cs", HelperSource.Replace("public static int Say", "public static int Twice(int value) { return value * 2; } public static int Say")));
+                    BuildOnce(builder, outJs, out var changedJs, out _);
+                    Assert.AreEqual("cold", builder.LastBuildKind, "A new member changes the surface, so the build must be cold.");
+                    StringAssert.StartsWith(builder.LastBuildReason, "inputs-changed; refresh miss: ");
+                    CollectionAssert.AreEqual(Cold(main), changedJs, "The cold build after a signature change differs from a fresh one.");
+                }
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
         /// The shortest prefix of <paramref name="whole"/> (in 61-byte steps) that Cecil fails to
         /// read with an exception other than BadImageFormatException: a cut inside the headers
         /// (EndOfStreamException or IndexOutOfRangeException), which the old catch let escape.
@@ -392,7 +519,10 @@ namespace NScript.Csc.Lib.Test
                     Assert.AreEqual(1, refresh.Count, "The refresh must log its miss instead of throwing.");
                     Assert.IsFalse(refresh[0].GetProperty("Refreshed").GetBoolean());
                     var miss = refresh[0].GetProperty("Miss").GetString();
-                    Assert.IsTrue(miss.StartsWith("error ", StringComparison.Ordinal), "Miss: " + miss);
+                    // The refresh planner reads the changed image first, so it is usually the one that fails.
+                    Assert.IsTrue(
+                        miss.StartsWith("plan-error ", StringComparison.Ordinal) || miss.StartsWith("error ", StringComparison.Ordinal),
+                        "Miss: " + miss);
                     Assert.AreEqual("cold", builder.LastBuildKind, "The failed build is reported, not the one before it.");
                     Assert.AreEqual("inputs-changed; refresh miss: " + miss, builder.LastBuildReason);
 

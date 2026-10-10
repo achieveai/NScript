@@ -341,6 +341,135 @@ namespace NScript.JST
 
             private static string ScopeLabel(IdentifierScope scope)
                 => scope.scopeName ?? "<unnamed scope>";
+
+            /// <summary>
+            /// After naming: every name a local in the subtree tried, up to the one it got, with
+            /// whether a name from outside the subtree (root enforced names, enclosing scopes'
+            /// own names) held it. Locals get the same names again while each answer holds.
+            /// </summary>
+            public static List<KeyValuePair<string, bool>> CaptureLocalProbes(IdentifierScope subtreeRoot, OuterNames outer)
+            {
+                var probes = new List<KeyValuePair<string, bool>>();
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                CaptureLocalProbes(subtreeRoot, subtreeRoot.ParentScope, outer, probes, seen);
+                return probes;
+            }
+
+            /// <summary>
+            /// True when each probe from <see cref="CaptureLocalProbes"/> gets the same answer
+            /// for a subtree whose parent is <paramref name="parent"/>.
+            /// </summary>
+            public static bool ProbesMatch(IdentifierScope parent, IReadOnlyList<KeyValuePair<string, bool>> probes, OuterNames outer)
+            {
+                for (int i = 0; i < probes.Count; i++)
+                {
+                    if (outer.Contains(parent, probes[i].Key) != probes[i].Value)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            /// <summary>
+            /// The enforced names in a subtree. They shape the names of the enclosing scope's
+            /// locals, so a stand-in for the subtree must hold them too.
+            /// </summary>
+            public static List<string> EnforcedNames(IdentifierScope subtreeRoot)
+            {
+                var namer = new DevStableNamer();
+                var names = new List<string>(namer.EnforcedInSubtree(subtreeRoot));
+                names.Sort(StringComparer.Ordinal);
+                return names;
+            }
+
+            private static void CaptureLocalProbes(
+                IdentifierScope scope,
+                IdentifierScope parent,
+                OuterNames outer,
+                List<KeyValuePair<string, bool>> probes,
+                HashSet<string> seen)
+            {
+                foreach (var ident in (scope.ParameterIdentifiers ?? Enumerable.Empty<SimpleIdentifier>()).Concat(scope.scopedIdentifiers))
+                {
+                    if (ident.ShouldEnforceSuggestion)
+                    {
+                        continue;
+                    }
+
+                    var baseName = string.IsNullOrEmpty(ident.SuggestedName) ? "v" : ident.SuggestedName;
+                    var name = ident.GetName();
+                    var last = 1;
+                    if (name != baseName
+                        && !(name.Length > baseName.Length + 1
+                            && name.StartsWith(baseName + "_", StringComparison.Ordinal)
+                            && int.TryParse(name.Substring(baseName.Length + 1), out last)))
+                    {
+                        throw new InvalidOperationException(
+                            "Local '" + name + "' does not follow its base name '" + baseName + "'.");
+                    }
+
+                    for (int suffix = 1; suffix <= last; suffix++)
+                    {
+                        var candidate = suffix == 1 ? baseName : baseName + "_" + suffix;
+                        if (seen.Add(candidate))
+                        {
+                            probes.Add(new KeyValuePair<string, bool>(candidate, outer.Contains(parent, candidate)));
+                        }
+                    }
+                }
+
+                foreach (var child in scope.ChildScopes)
+                {
+                    CaptureLocalProbes(child, parent, outer, probes, seen);
+                }
+            }
+
+            /// <summary>
+            /// The names outside a subtree that its locals avoid, per enclosing scope (see
+            /// <see cref="NameLocals"/>): the root's enforced names, then each enclosing scope's own.
+            /// Answers are cached, so make one per naming pass.
+            /// </summary>
+            public sealed class OuterNames
+            {
+                private readonly Dictionary<IdentifierScope, HashSet<string>> own =
+                    new Dictionary<IdentifierScope, HashSet<string>>();
+
+                public bool Contains(IdentifierScope scope, string name)
+                {
+                    for (; scope != null; scope = scope.ParentScope)
+                    {
+                        if (scope.ParentScope == null)
+                        {
+                            return scope.knownNameMap.ContainsKey(name);
+                        }
+
+                        if (this.Own(scope).Contains(name))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                private HashSet<string> Own(IdentifierScope scope)
+                {
+                    if (!this.own.TryGetValue(scope, out var set))
+                    {
+                        set = new HashSet<string>(StringComparer.Ordinal);
+                        foreach (var ident in (scope.ParameterIdentifiers ?? Enumerable.Empty<SimpleIdentifier>()).Concat(scope.scopedIdentifiers))
+                        {
+                            set.Add(ident.GetName());
+                        }
+
+                        this.own.Add(scope, set);
+                    }
+
+                    return set;
+                }
+            }
         }
     }
 }
