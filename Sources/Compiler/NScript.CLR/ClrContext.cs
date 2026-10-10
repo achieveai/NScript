@@ -11,6 +11,7 @@ namespace NScript.CLR
     using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using Mono.Cecil;
     using Mono.Cecil.Cil;
     using Mono.Cecil.Mdb;
@@ -54,6 +55,75 @@ namespace NScript.CLR
                 return base.Resolve(name, parameters);
             }
         }
+
+        /// <summary>
+        /// Remembers what each reference object resolved to. Cecil's resolver scans the
+        /// declaring type's members and compares signatures on every call, and a build session
+        /// resolves the same references build after build. A refresh drops the answers that
+        /// point into the types it rebuilt (<see cref="ForgetTypes"/>).
+        /// </summary>
+        private sealed class CachingMetadataResolver : MetadataResolver
+        {
+            // Weak keys: the converter builds new reference objects every build, and an answer
+            // must not outlive the reference that asked.
+            private readonly ConditionalWeakTable<TypeReference, TypeDefinition> types =
+                new ConditionalWeakTable<TypeReference, TypeDefinition>();
+
+            private readonly ConditionalWeakTable<MethodReference, MethodDefinition> methods =
+                new ConditionalWeakTable<MethodReference, MethodDefinition>();
+
+            private readonly ConditionalWeakTable<FieldReference, FieldDefinition> fields =
+                new ConditionalWeakTable<FieldReference, FieldDefinition>();
+
+            public CachingMetadataResolver(IAssemblyResolver assemblyResolver)
+                : base(assemblyResolver)
+            {
+            }
+
+            public override TypeDefinition Resolve(TypeReference type)
+                => Cached(this.types, type, base.Resolve);
+
+            public override MethodDefinition Resolve(MethodReference method)
+                => Cached(this.methods, method, base.Resolve);
+
+            public override FieldDefinition Resolve(FieldReference field)
+                => Cached(this.fields, field, base.Resolve);
+
+            public void Forget(HashSet<TypeDefinition> forgotten)
+            {
+                Remove(this.types, definition => forgotten.Contains(definition));
+                Remove(this.methods, definition => forgotten.Contains(definition.DeclaringType));
+                Remove(this.fields, definition => forgotten.Contains(definition.DeclaringType));
+            }
+
+            private static TValue Cached<TKey, TValue>(ConditionalWeakTable<TKey, TValue> map, TKey key, Func<TKey, TValue> resolve)
+                where TKey : class
+                where TValue : class
+            {
+                if (!map.TryGetValue(key, out var definition))
+                {
+                    definition = resolve(key);
+                    if (definition != null)
+                    {
+                        map.AddOrUpdate(key, definition);
+                    }
+                }
+
+                return definition;
+            }
+
+            private static void Remove<TKey, TValue>(ConditionalWeakTable<TKey, TValue> map, Func<TValue, bool> stale)
+                where TKey : class
+                where TValue : class
+            {
+                foreach (var key in ((IEnumerable<KeyValuePair<TKey, TValue>>)map).Where(entry => stale(entry.Value)).Select(entry => entry.Key).ToList())
+                {
+                    map.Remove(key);
+                }
+            }
+        }
+
+        private readonly CachingMetadataResolver metadataResolver;
 
         /// <summary>
         /// The assemblies.
@@ -100,6 +170,7 @@ namespace NScript.CLR
         public ClrContext()
         {
             this.assemblyResolver = new InMemoryAssemblyResolver(this);
+            this.metadataResolver = new CachingMetadataResolver(this.assemblyResolver);
             this.knownReferences = new ClrKnownReferences(this);
         }
 
@@ -161,6 +232,7 @@ namespace NScript.CLR
                 new ReaderParameters()
                 {
                     AssemblyResolver = assemblyResolver,
+                    MetadataResolver = metadataResolver,
                     // Read the image into memory so no file handle outlives the load: the
                     // build service keeps the process alive and must not lock obj/ DLLs.
                     InMemory = true,
@@ -315,6 +387,8 @@ namespace NScript.CLR
             {
                 this.typeReferenceToDefinitionMap.Remove(stale);
             }
+
+            this.metadataResolver.Forget(forgotten);
         }
 
         /// <summary>
