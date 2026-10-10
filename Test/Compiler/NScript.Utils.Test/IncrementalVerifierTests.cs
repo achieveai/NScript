@@ -39,5 +39,39 @@ namespace NScript.Utils.Test
                 Directory.Delete(dir, true);
             }
         }
+
+        /// <summary>
+        /// F-K: the build writes <c>App.map</c> beside <c>App.js</c>. Equal .js with different
+        /// maps is a mismatch, and a map on one side only is too.
+        /// </summary>
+        [TestMethod]
+        public void CompareOutputs_ComparesTheMapTheBuildWrites()
+        {
+            var root = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "nscript-verify-test-" + System.Guid.NewGuid().ToString("N"))).FullName;
+            try
+            {
+                var warm = Directory.CreateDirectory(Path.Combine(root, "warm")).FullName;
+                var full = Directory.CreateDirectory(Path.Combine(root, "full")).FullName;
+                string warmJs = Path.Combine(warm, "App.js"), fullJs = Path.Combine(full, "App.js");
+                File.WriteAllText(warmJs, "js\n");
+                File.WriteAllText(fullJs, "js\n");
+                Assert.IsNull(IncrementalVerifier.CompareOutputs(warmJs, fullJs), "equal .js, no maps");
+
+                File.WriteAllText(Path.Combine(full, "App.map"), "{\"mappings\":\"AAAA\"}");
+                Assert.AreEqual("App.map is missing", IncrementalVerifier.CompareOutputs(warmJs, fullJs));
+
+                File.WriteAllText(Path.Combine(warm, "App.map"), "{\"mappings\":\"AACA\"}");
+                Assert.AreEqual(
+                    "App.map line 1: incremental \"{\"mappings\":\"AACA\"}\" vs full \"{\"mappings\":\"AAAA\"}\"",
+                    IncrementalVerifier.CompareOutputs(warmJs, fullJs));
+
+                File.WriteAllText(Path.Combine(warm, "App.map"), "{\"mappings\":\"AAAA\"}");
+                Assert.IsNull(IncrementalVerifier.CompareOutputs(warmJs, fullJs));
+            }
+            finally
+            {
+                Directory.Delete(root, true);
+            }
+        }
     }
 }

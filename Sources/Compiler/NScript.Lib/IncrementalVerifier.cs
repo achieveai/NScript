@@ -45,7 +45,7 @@ namespace NScript.Lib
 
             string mismatch = !built
                 ? "the full build failed"
-                : Compare(jsFileName, fullJs) ?? Compare(jsFileName + ".map", fullJs + ".map");
+                : CompareOutputs(jsFileName, fullJs);
 
             CompilerLog.ForComponent("Verify").Information(
                 "VerifyIncremental Match={Match} Build={Build} Output={Output} Full={Full} Mismatch={Mismatch} ElapsedMs={ElapsedMs}",
@@ -63,6 +63,13 @@ namespace NScript.Lib
 
             return mismatch == null;
         }
+
+        /// <summary>
+        /// Compares the .js, then its map. The map sits beside the .js as <c>X.map</c>, not
+        /// <c>X.js.map</c> (<c>SourceMap.Write</c> drops the .js extension).
+        /// </summary>
+        internal static string CompareOutputs(string incrementalJs, string fullJs)
+            => Compare(incrementalJs, fullJs) ?? Compare(Path.ChangeExtension(incrementalJs, ".map"), Path.ChangeExtension(fullJs, ".map"));
 
         /// <summary>Null when both files are missing or equal; else where they first differ.</summary>
         internal static string Compare(string incremental, string full)
