@@ -253,6 +253,15 @@ namespace NScript.CLR
                 Enumerable.Range(0, keptSource.Files.Count)
                     .Where(index => keptSource.Files[index].checksum != freshSource.Files[index].checksum));
 
+            // A file that declares no type (global usings, assembly attributes) can change how
+            // any other file binds, so no set of changed types covers it.
+            var declaring = new HashSet<int>(keptSource.TypeFiles.Values.Concat(freshSource.TypeFiles.Values).SelectMany(files => files));
+            var typeless = changedFiles.Where(index => !declaring.Contains(index)).DefaultIfEmpty(-1).First();
+            if (typeless >= 0)
+            {
+                return "typeless-file " + Path.GetFileName(freshSource.Files[typeless].path);
+            }
+
             var keptTypes = AllTypes(kept).ToDictionary(t => t.FullName, StringComparer.Ordinal);
             var freshTypes = AllTypes(fresh).ToDictionary(t => t.FullName, StringComparer.Ordinal);
 

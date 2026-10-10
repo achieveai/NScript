@@ -423,6 +423,71 @@ namespace NScript.Csc.Lib.Test
         }
 
         /// <summary>
+        /// F-M: <c>Program.cs</c> returns <c>Chosen.Value</c>, a const reached through a global
+        /// alias in <c>GlobalUsings.cs</c>, a file that declares no type. Changing only the
+        /// alias changes what Program binds to, though Program's file is unchanged: the build
+        /// must be cold (not a body refresh that keeps the old literal) and equal a cold build.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 4 builds of a small library.
+        public void Session_TypelessFileChange_IsARefreshMiss_EqualsCold()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-typeless-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            var coldJs = Path.Combine(Directory.CreateDirectory(Path.Combine(dir, "cold")).FullName, "bundle.js");
+            const string Demo =
+                "namespace RealScript { public static class First { public const int Value = 1; } public static class Second { public const int Value = 2; } }";
+            string Compile(string chosen) => CompileLib(
+                dir,
+                refs,
+                ("Program.cs", ProgramSource("return Chosen.Value;")),
+                ("Demo.cs", Demo),
+                ("GlobalUsings.cs", "global using Chosen = RealScript." + chosen + ";"));
+            Builder Create(string js, string main) => new Builder(
+                js,
+                1,
+                main,
+                refs,
+                Array.Empty<IConverterPlugin>(),
+                (minify: false, uglify: false, optimize: false),
+                devMode: true);
+
+            var main = Compile("First");
+            try
+            {
+                using (var builder = Create(outJs, main))
+                {
+                    BuildOnce(builder, outJs, out _, out _);
+                    Assert.AreEqual("cold", builder.LastBuildKind);
+
+                    Compile("Second");
+                    BuildOnce(builder, outJs, out var changedJs, out _);
+                    Assert.AreEqual("cold", builder.LastBuildKind, "A changed global alias must not refresh bodies.");
+                    StringAssert.Contains(builder.LastBuildReason, "typeless-file GlobalUsings.cs");
+
+                    using var fresh = Create(coldJs, main);
+                    BuildOnce(fresh, coldJs, out var freshJs, out _);
+                    CollectionAssert.AreEqual(freshJs, changedJs, "The build after the alias change differs from a cold build.");
+                }
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
         /// The shortest prefix of <paramref name="whole"/> (in 61-byte steps) that Cecil fails to
         /// read with an exception other than BadImageFormatException: a cut inside the headers
         /// (EndOfStreamException or IndexOutOfRangeException), which the old catch let escape.
