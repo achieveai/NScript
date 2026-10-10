@@ -143,6 +143,7 @@ With the NuGet packages, the toolset is the `Mcqdb.NScript.Cs2Jsc` tool, and its
 | `NSCRIPT_DEV_CHUNK_INDEX` | off | `1`: also writes `<out>.chunks.tsv` (name, start line, lines). | Diagnostic |
 | `NSCRIPT_RAZOR_CACHE` | on | `off`: turns off the Razor skin content cache. | Diagnostic |
 | `NSCRIPT_METHOD_CACHE` | on in dev mode | `off`: a warm emit converts every method again instead of replaying unchanged ones. Output is the same. | Diagnostic |
+| `NSCRIPT_VERIFY_INCREMENTAL` | off | `1`: after each warm emit, builds the same inputs cold into `%TEMP%\nscript-verify\` and compares .js and .map. A difference prints a warning; service.jsonl logs `VerifyIncremental` with the first differing line. Doubles each warm emit. | Diagnostic |
 | `NSCRIPT_LOG_PATH` | unset | Compiler JSONL log path when `--log` is not passed. See README, "Compiler Structured Logging". | Setting |
 | `NSCRIPT_LOG_RUNID` | unset | Run id when `--run-id` is not passed. | Setting |
 | `NSCRIPT_WATCH_DROP_EVENTS` | unset | `;`-separated extensions (e.g. `.cs`) whose watcher events are ignored. watch.log prints `TEST HOOK`. | **Test hook.** Never set it for real work |

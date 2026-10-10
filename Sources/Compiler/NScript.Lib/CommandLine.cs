@@ -1,7 +1,6 @@
 namespace NScript.Lib
 {
     using System;
-    using System.Collections.Generic;
     using NScript.Converter;
     using NScript.Converter.Plugins;
     using NScript.Csc.Lib.Service;
@@ -64,7 +63,7 @@ namespace NScript.Lib
         /// </summary>
         public static int Run(ParseOptions parseOptions)
         {
-            var plugins = new List<IConverterPlugin>()
+            static IConverterPlugin[] CreatePlugins() => new IConverterPlugin[]
             {
                 // Razor MUST be before XWML: the first plugin returning Overwrite wins,
                 // and XWML would claim [Skin] attributes for .skin.cshtml templates
@@ -74,8 +73,8 @@ namespace NScript.Lib
                 new TestGenerator()
             };
 
-            Builder CreateBuilder(IConverterPlugin[] builderPlugins) => new Builder(
-                parseOptions.JsFileName,
+            Builder CreateBuilder(string jsFileName, IConverterPlugin[] builderPlugins) => new Builder(
+                jsFileName,
                 parseOptions.JsParts,
                 parseOptions.EntryAssembly,
                 parseOptions.ReferenceDlls.ToArray(),
@@ -97,9 +96,9 @@ namespace NScript.Lib
             bool succeeded = parseOptions.DevMode
                 ? BuilderSessions.Execute(
                     parseOptions,
-                    () => CreateBuilder(Array.Empty<IConverterPlugin>()),
-                    plugins.ToArray())
-                : CreateBuilder(plugins.ToArray()).Execute();
+                    () => CreateBuilder(parseOptions.JsFileName, Array.Empty<IConverterPlugin>()),
+                    CreatePlugins())
+                : CreateBuilder(parseOptions.JsFileName, CreatePlugins()).Execute();
 
             stopWatch.Stop();
             System.Console.WriteLine("TimeTaken[cs2jsc]: {0}ms", stopWatch.ElapsedMilliseconds);
@@ -109,6 +108,16 @@ namespace NScript.Lib
                 CompilerLog.ForComponent("NScriptCompiler").Information(
                     "cs2jsc total duration {ElapsedMs}ms",
                     stopWatch.ElapsedMilliseconds);
+            }
+
+            string lastBuild = parseOptions.DevMode ? BuilderSessions.LastBuild(parseOptions.JsFileName) : null;
+            if (succeeded && IncrementalVerifier.IsEnabled && lastBuild != null && lastBuild.StartsWith("warm", StringComparison.Ordinal))
+            {
+                IncrementalVerifier.Verify(
+                    parseOptions.JsFileName,
+                    lastBuild,
+                    jsFileName => CreateBuilder(jsFileName, Array.Empty<IConverterPlugin>()),
+                    CreatePlugins);
             }
 
             return succeeded ? 0 : 1;
