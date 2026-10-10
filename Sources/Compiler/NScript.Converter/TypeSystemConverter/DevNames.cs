@@ -91,7 +91,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// Type form. Definitions use the Cecil <c>FullName</c> (nested types include the whole
         /// declaring chain); generic instances bracket their arguments. A type whose outermost type
         /// is not public also carries its assembly (<c>M(asm) $$asm$ M(FullName) $</c>): two
-        /// assemblies of one bundle may each have an internal type of the same full name.
+        /// assemblies of one bundle may each have an internal type of the same full name. An
+        /// assembly name may start with a digit, a JS name may not: such a one gets a leading
+        /// <c>$</c>, which no other form starts with followed by a digit, so the forms stay distinct.
         /// </summary>
         public static string TypeForm(TypeReference type)
         {
@@ -107,9 +109,15 @@ namespace NScript.Converter.TypeSystemConverter
                 default:
                     var definition = type as TypeDefinition ?? type.Resolve();
                     return definition != null && !Outermost(definition).IsPublic
-                        ? M(definition.Module.Assembly.Name.Name) + "$$asm$" + M(type.FullName) + "$"
+                        ? AssemblyPrefix(definition.Module.Assembly.Name.Name) + "$$asm$" + M(type.FullName) + "$"
                         : M(type.FullName) + "$";
             }
+        }
+
+        private static string AssemblyPrefix(string assemblyName)
+        {
+            var mangled = M(assemblyName);
+            return mangled[0] >= '0' && mangled[0] <= '9' ? "$" + mangled : mangled;
         }
 
         // A nested type's full name starts with its outermost type's, so only that one's

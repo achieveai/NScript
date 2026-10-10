@@ -127,6 +127,28 @@ namespace NScript.Csc.Lib.Test
             Assert.AreEqual("Pub_List_9Enumerator$", DevNames.TypeForm(enumerator));
         }
 
+        /// <summary>
+        /// F-G: a legal .NET assembly name may start with a digit (<c>123.App</c>); the form of
+        /// its internal types must still be a JS identifier, and differ from <c>App123</c>'s.
+        /// </summary>
+        [TestMethod]
+        public void InternalTypeOfADigitLeadingAssembly_IsAJsIdentifier()
+        {
+            TypeDefinition Internal(string assembly)
+            {
+                var module = ModuleDefinition.CreateModule(assembly, ModuleKind.Dll);
+                var type = new TypeDefinition(string.Empty, "Program", TypeAttributes.NotPublic | TypeAttributes.Class, module.TypeSystem.Object);
+                module.Types.Add(type);
+                return type;
+            }
+
+            var form = DevNames.TypeForm(Internal("123.App"));
+
+            Assert.AreEqual("$123_App$$asm$Program$", form);
+            Assert.IsTrue(System.Text.RegularExpressions.Regex.IsMatch(form, @"^[A-Za-z_$][A-Za-z0-9_$]*$"), form);
+            Assert.AreEqual("App123$$asm$Program$", DevNames.TypeForm(Internal("App123")), "a letter-leading name keeps its form");
+        }
+
         [TestMethod]
         public void ManglingIsInjectiveOnSeparatorsAndNeverEmitsDollar()
         {
