@@ -97,7 +97,9 @@ namespace NScript.Utils.Test
         /// no to a sync whose compile properties hash differs from the one the watch compile
         /// sent. So the hash a watch compile sends (csc's environment) must equal the hash a build
         /// with the same properties syncs with, and differ for -p:TreatWarningsAsErrors=true and
-        /// -p:DefineConstants=X. The watch compile also gets its evaluation time in UTC ticks.
+        /// -p:DefineConstants=X. The daemon also emits the JS with the watch build's map roots, so
+        /// -p:SourceMapRoot=new differs too (F-C). The watch compile also gets its evaluation time
+        /// in UTC ticks.
         /// </summary>
         [TestMethod]
         [TestCategory("Integration")] // One dotnet msbuild run (~5-10 s).
@@ -114,6 +116,7 @@ namespace NScript.Utils.Test
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=3;NScriptExe=$(MSBuildThisFileDirectory)props-nscript.cmd;TreatWarningsAsErrors=true\" />\n" +
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=4;NScriptExe=$(MSBuildThisFileDirectory)props-nscript.cmd;DefineConstants=X\" />\n" +
                 "    <MSBuild Projects=\"App\\App.proj\" Targets=\"PrepareForBuild;_NScriptWatchPropsEnvironment;DumpEnvironment\" Properties=\"SdkDir=$(SdkDir);Step=5;NScriptWatch=true;DefineConstants=X;DumpFile=$(MSBuildThisFileDirectory)watchX.txt\" />\n" +
+                "    <MSBuild Projects=\"App\\App.proj\" Targets=\"_NScriptWatchSync\" Properties=\"SdkDir=$(SdkDir);Step=6;NScriptExe=$(MSBuildThisFileDirectory)props-nscript.cmd;SourceMapRoot=https://example.test/new/\" />\n" +
                 "  </Target>\n" +
                 "</Project>\n";
             using var tree = new SyncTree(driver);
@@ -125,12 +128,13 @@ namespace NScript.Utils.Test
             string[] synced = Regex.Matches(output, @"NScript watch: full build \(nscript service: sync no App\.dll: props=(-?\d+)\)")
                 .Select(m => m.Groups[1].Value)
                 .ToArray();
-            Assert.AreEqual(3, synced.Length, output);
+            Assert.AreEqual(4, synced.Length, output);
             string[] watch = File.ReadAllLines(Path.Combine(tree.Dir, "watch.txt"));
             Assert.AreEqual(1, watch.Count(l => l == ServiceArgs.WatchPropsHashEnvVar + "=" + synced[0]), "the same properties: one hash\n" + string.Join("\n", watch));
             Assert.AreNotEqual(synced[0], synced[1], "TreatWarningsAsErrors=true");
             Assert.AreNotEqual(synced[0], synced[2], "DefineConstants=X");
             Assert.AreNotEqual(synced[1], synced[2]);
+            Assert.AreNotEqual(synced[0], synced[3], "SourceMapRoot=new");
             Assert.AreEqual(1, File.ReadAllLines(Path.Combine(tree.Dir, "watchX.txt")).Count(l => l == ServiceArgs.WatchPropsHashEnvVar + "=" + synced[2]), "an X watch compile sends the X hash");
 
             string ticks = watch.Single(l => l.StartsWith(ServiceArgs.WatchEvaluatedUtcTicksEnvVar + "=", StringComparison.Ordinal)).Split('=')[1];
