@@ -55,10 +55,12 @@ Saves within a short debounce window form one batch.
 
 ### When a file watcher fails
 
-- **Overflow** (too many changes at once): watch.log says `watcher overflow on <folder> (...); rescanning`. The daemon rechecks every input and build file and keeps watching.
+- **Overflow** (too many changes at once): watch.log says `watcher overflow on <folder> (...); rescanning`. The daemon rechecks every input and build file, new ones included, and keeps watching.
 - **Any other watcher error** (a watched folder removed, a network share gone): watch.log says `watcher lost <folder> (...); watch stopped`.
   - The daemon stops and deletes its markers. Edits in that folder would go unseen.
   - The next `dotnet build` runs in full. Run `dotnet build -p:NScriptWatch=true` to watch again.
+- **A watcher that cannot start** (such as the Linux inotify watch limit): watch.log says `watcher could not start (...); watch stopped, dotnet build runs in full`. No marker is written, so builds do not sync.
+- **A DLL another build rewrote** since the daemon wrote it: the next batch logs `foreign <dll> rewritten outside watch; recompiling`. A skin or CSS save then compiles that project instead of patching the other build's DLL.
 
 ## `dotnet build` while watching
 
@@ -79,6 +81,7 @@ Saves within a short debounce window form one batch.
   - Message: `NScript watch: full build (<reason>)`.
 - **Other compile properties: no.** The daemon replays the watch build's compiler command line. So a build may sync only with the same compile-affecting properties.
   - The list is `_NScriptWatchPropsHash` in `NScript.WatchProps.targets` (next to Sdk.targets): `DefineConstants`, `TreatWarningsAsErrors`, `WarningsAsErrors`, `WarningsNotAsErrors`, `NoWarn`, `Optimize`, `LangVersion`, `Nullable`, `CheckForOverflowUnderflow`, `AllowUnsafeBlocks`, `DebugType`, `DebugSymbols`.
+  - Also the map roots: `SourceMapRoot`, `NScriptRepoRoot`, `NScriptSecondarySourceMapRoot`, `NScriptSecondaryRepoRoot`. The daemon writes the JS and map with the watch build's roots, and a synced build keeps them. Only `-p:` and project values count. A repo-linked root that a target computes from git later in the build is not seen.
   - The watch compile sends a hash of them with its request. The daemon keeps it on that project's registration.
   - `--sync` asks with the build's own hash. The daemon answers no when it differs, or is missing: `NScript watch: full build (nscript service: sync no <App>.dll: build properties differ from the watch build ...)`.
   - It also answers no when a project the key reads was registered again with another hash since the key was: `... <Lib>.dll was registered again with other properties`. Example: a `-p:DefineConstants=X` watch build that failed before reaching the app.
@@ -158,6 +161,10 @@ With the NuGet packages, the toolset is the `Mcqdb.NScript.Cs2Jsc` tool, and its
 - **A new non-source resource with an old time:** a resource such as a `.png` or `.json` added through a glob, copied with its times kept, can be missed by a synced build after a skin or CSS save. This happens when its time falls between the last watch compile and the patch. Touch the file or run a watch build.
 - **After another watch registration:** registering again rewrites the toolset's `lib` DLLs. The next synced build of an app that was already registered then compiles locally once and writes normal JS. The sync after that heals it.
 - **Two builds with different properties at once:** the property check runs when `--sync` starts. A watch build with other `-p:` values that registers a referenced project during the sync's wait is not seen by that sync.
+- **Same user, not elevated.** The supported use is the user's own non-elevated session. The run folder and the shadow toolset are not guarded against another process of the same user.
+  - `nscript service --stop --force` kills the pid in `daemon.pid` when the daemon lock is held and the start time matches. It does not prove that pid holds the lock. Do not run it elevated.
+- **Signed DLLs:** a skin or CSS save in a strong-name signed project compiles instead of patching. The patch cannot re-sign the DLL. Authenticode-signed outputs are not supported while watching.
+- **Linux is untested.** The watch was tested on Windows only. Review reports that on some .NET 8 runtimes a non-recursive Linux watcher stops after an inotify overflow. The daemon rescans, but does not restart that watcher.
 - **Windows Defender:** the first read of a freshly written DLL takes about 80 ms under real-time scanning. The second read takes about 2 ms. The service and batch builds both pay it. NScript does not change scan settings.
 
 ## Cross-links
