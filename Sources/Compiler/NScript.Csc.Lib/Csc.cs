@@ -339,6 +339,11 @@ namespace NScript.Csc.Lib
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var compilation = base.CreateCompilation(consoleOutput, touchedFilesLogger, errorLogger, analyzerConfigOptions, globalConfigOptions);
+            if (compilation?.Options.SourceReferenceResolver is SourceReferenceResolver resolver && !(resolver is CachingSourceReferenceResolver))
+            {
+                compilation = compilation.WithOptions(compilation.Options.WithSourceReferenceResolver(new CachingSourceReferenceResolver(resolver)));
+            }
+
             this.createCompilationMs = sw.ElapsedMilliseconds;
             return compilation;
         }
