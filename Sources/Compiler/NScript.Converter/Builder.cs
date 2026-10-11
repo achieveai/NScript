@@ -219,17 +219,38 @@ namespace NScript.Converter
                 .ToArray<ITypeConverterPlugin>();
         }
 
-        private List<(string path, string sha256)> ReadInputStamps()
+        /// <summary>
+        /// Hashes every input, in parallel. <paramref name="changedImages"/> keeps the bytes of
+        /// each input whose hash differs from the session stamp at the same index, so a refresh
+        /// takes exactly the bytes its stamp describes without reading the file again.
+        /// </summary>
+        private List<(string path, string sha256)> ReadInputStamps(out byte[][] changedImages)
         {
-            var stamps = new List<(string path, string sha256)>();
-            foreach (var input in this.references.Append(this.mainAssembly))
+            var paths = this.references.Append(this.mainAssembly).Select(Path.GetFullPath).ToArray();
+            var hashes = new string[paths.Length];
+            var images = new byte[paths.Length][];
+            var session = this.sessionStamps;
+            try
             {
-                var fullPath = Path.GetFullPath(input);
-                var hash = System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(fullPath));
-                stamps.Add((fullPath, System.Convert.ToHexString(hash)));
+                System.Threading.Tasks.Parallel.For(0, paths.Length, index =>
+                {
+                    var image = File.ReadAllBytes(paths[index]);
+                    hashes[index] = System.Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(image));
+                    if (session != null && index < session.Count && session[index].path == paths[index] && session[index].sha256 != hashes[index])
+                    {
+                        images[index] = image;
+                    }
+                });
+            }
+            catch (System.AggregateException ex)
+            {
+                // Callers see the read's own exception, as they did when this ran in sequence.
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex.InnerExceptions[0]).Throw();
+                throw;
             }
 
-            return stamps;
+            changedImages = images;
+            return paths.Select((path, index) => (path, hashes[index])).ToList();
         }
 
         /// <summary>
@@ -243,7 +264,7 @@ namespace NScript.Converter
         /// is a logged miss (a cold build, which drops the session), never a new way to fail.
         /// </summary>
         /// <param name="kind">"resources-refreshed" or "bodies-refreshed" on success.</param>
-        private bool TryRefreshSession(List<(string path, string sha256)> stamps, Serilog.ILogger log, out string kind, out string miss)
+        private bool TryRefreshSession(List<(string path, string sha256)> stamps, byte[][] changedImages, Serilog.ILogger log, out string kind, out string miss)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string reason = null;
@@ -267,8 +288,8 @@ namespace NScript.Converter
                             continue;
                         }
 
-                        var image = File.ReadAllBytes(stamps[index].path);
-                        if (System.Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(image)) != stamps[index].sha256)
+                        var image = changedImages[index] ?? File.ReadAllBytes(stamps[index].path);
+                        if (changedImages[index] == null && System.Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(image)) != stamps[index].sha256)
                         {
                             reason = "rewritten " + Path.GetFileName(stamps[index].path);
                         }
@@ -443,7 +464,7 @@ namespace NScript.Converter
             }
 
             var loadSw = System.Diagnostics.Stopwatch.StartNew();
-            var stamps = this.ReadInputStamps();
+            var stamps = this.ReadInputStamps(out var changedImages);
             bool warm = this.UseSession
                 && this.sessionContext != null
                 && stamps.SequenceEqual(this.sessionStamps);
@@ -452,7 +473,7 @@ namespace NScript.Converter
                 : this.sessionContext == null ? "new"
                 : "inputs-changed";
             string refreshMiss = null;
-            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, log, out var refreshKind, out refreshMiss))
+            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, changedImages, log, out var refreshKind, out refreshMiss))
             {
                 warm = true;
                 sessionReason = refreshKind;
