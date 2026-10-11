@@ -52,6 +52,9 @@ namespace NScript.Converter.TypeSystemConverter
 
         public int Count => this.entries.Count;
 
+        /// <summary>False when <c>NSCRIPT_PLUGIN_METHOD_CACHE=off</c> (read once per build).</summary>
+        public bool ReplaysPluginConversions { get; private set; }
+
         /// <summary>A hit failed a check; the build's output is wrong and must be built again.</summary>
         public bool RetryRequested { get; private set; }
 
@@ -60,6 +63,7 @@ namespace NScript.Converter.TypeSystemConverter
 
         public void BeginBuild()
         {
+            this.ReplaysPluginConversions = Environment.GetEnvironmentVariable("NSCRIPT_PLUGIN_METHOD_CACHE") != "off";
             this.recorded.Clear();
             this.replayed.Clear();
             this.uncacheable.Clear();
@@ -421,11 +425,17 @@ namespace NScript.Converter.TypeSystemConverter
             return recorder;
         }
 
+        /// <summary>
+        /// True when a plugin takes part in converting the method and its part cannot be
+        /// replayed. Kill switch for replayable plugin conversions: <c>NSCRIPT_PLUGIN_METHOD_CACHE=off</c>.
+        /// </summary>
         internal static bool HasPluginInterest(ConverterContext context, MethodDefinition method)
         {
+            bool replayable = context.MethodCache?.ReplaysPluginConversions == true;
             foreach (var plugin in context.MethodConverterPlugins)
             {
-                if (plugin.GetInterestLevel(method, context) != IntrestLevel.None)
+                if (plugin.GetInterestLevel(method, context) != IntrestLevel.None
+                    && !(replayable && plugin.CanReplayConversion(method, context)))
                 {
                     return true;
                 }

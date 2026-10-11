@@ -603,5 +603,132 @@ namespace NScript.Csc.Lib.Test
                 Directory.Delete(dir, recursive: true);
             }
         }
+
+        /// <summary>
+        /// Overwrites every RealScript <c>Main</c> with <c>return;</c> and reports the build's
+        /// method cache counts. Its conversion is replayable when <see cref="Replayable"/>.
+        /// </summary>
+        private sealed class OverwritePlugin : IRuntimeConverterPlugin, IMethodConverterPlugin
+        {
+            private RuntimeScopeManager runtimeScopeManager;
+
+            public bool Replayable { get; set; }
+
+            public int Hits { get; private set; }
+
+            public int Misses { get; private set; }
+
+            public int UncacheablePlugin { get; private set; }
+
+            public int Overwrites { get; private set; }
+
+            public void Initialize(ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
+                => this.runtimeScopeManager = runtimeScopeManager;
+
+            public void ParseArgs(IList<Tuple<string, string>> args) { }
+
+            public List<MethodReference> GetMethodsToEmitPass1() => null;
+
+            public List<MethodReference> GetMethodsToEmitPassN() => null;
+
+            public List<Statement> GetPreJavascript() => null;
+
+            public List<Statement> GetPostJavascript()
+            {
+                var cache = this.runtimeScopeManager.Context.MethodCache;
+                this.Hits = cache.Hits;
+                this.Misses = cache.Misses;
+                this.UncacheablePlugin = cache.Uncacheable.TryGetValue("plugin", out var count) ? count : 0;
+                return null;
+            }
+
+            public IntrestLevel GetInterestLevel(MethodDefinition methodDefinition, ConverterContext converterContext)
+                => methodDefinition.DeclaringType.Namespace == "RealScript" && methodDefinition.Name == "Main"
+                    ? IntrestLevel.Overwrite
+                    : IntrestLevel.None;
+
+            public bool CanReplayConversion(MethodDefinition methodDefinition, ConverterContext converterContext) => this.Replayable;
+
+            public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter) => null;
+
+            public List<Statement> GetPostInsertionStatements(MethodConverter methodConverter) => null;
+
+            public List<Statement> GetEncapsulationStatements(MethodConverter methodConverter, List<Statement> methodStatments)
+                => methodStatments;
+
+            public List<Statement> GetOverwrite(MethodConverter methodConverter)
+            {
+                this.Overwrites++;
+                return new List<Statement> { new ReturnStatement(null, methodConverter.Scope, null) };
+            }
+        }
+
+        /// <summary>
+        /// A plugin conversion that says it can replay (e.g. an [AutoFire] accessor) is stored by
+        /// the method cache and hit on the next warm build, which equals the cold build. One that
+        /// cannot replay (a skin getter) stays uncacheable.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 4 builds.
+        public void Session_ReplayablePluginConversion_IsCachedAndHit_EqualsCold()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-plugin-cache-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var main = Copy("realScript.dll");
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            try
+            {
+                foreach (var replayable in new[] { true, false })
+                {
+                    using var builder = new Builder(
+                        outJs,
+                        1,
+                        main,
+                        refs,
+                        Array.Empty<IConverterPlugin>(),
+                        (minify: false, uglify: false, optimize: false),
+                        devMode: true);
+                    byte[] Build(OverwritePlugin plugin)
+                    {
+                        Builder.ResetProcessState();
+                        Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin(), plugin }), "Dev-mode build failed.");
+                        return File.ReadAllBytes(outJs);
+                    }
+
+                    var cold = new OverwritePlugin { Replayable = replayable };
+                    var coldJs = Build(cold);
+                    var warm = new OverwritePlugin { Replayable = replayable };
+                    var warmJs = Build(warm);
+                    Assert.AreEqual("warm", builder.LastBuildKind);
+                    Assert.IsTrue(cold.Overwrites > 0, "The fixture has no RealScript Main to overwrite.");
+                    CollectionAssert.AreEqual(coldJs, warmJs, "replayable=" + replayable + ": the warm build differs from the cold build.");
+                    if (replayable)
+                    {
+                        Assert.AreEqual(0, cold.UncacheablePlugin, "A replayable plugin conversion was not stored.");
+                        Assert.AreEqual(0, warm.Overwrites, "A replayable plugin conversion was converted again instead of replayed.");
+                        Assert.AreEqual(0, warm.Misses, "The warm build missed the cache.");
+                    }
+                    else
+                    {
+                        Assert.AreEqual(cold.Overwrites, cold.UncacheablePlugin, "A plugin conversion that cannot replay must not be stored.");
+                        Assert.AreEqual(cold.Overwrites, warm.Overwrites, "A plugin conversion that cannot replay must convert every build.");
+                    }
+                }
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
     }
 }

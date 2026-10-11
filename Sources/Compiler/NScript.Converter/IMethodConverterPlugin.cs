@@ -98,5 +98,12 @@ namespace NScript.Converter
         /// The overwrite.
         /// </returns>
         List<Statement> GetOverwrite(MethodConverter methodConverter);
+
+        /// <summary>
+        /// True when the method cache may replay this plugin's conversion of the method: the
+        /// conversion keeps no plugin state, and every resolver call it makes goes through the
+        /// method converter (so the recording sees it). Default false: never cached.
+        /// </summary>
+        bool CanReplayConversion(MethodDefinition methodDefinition, ConverterContext converterContext) => false;
     }
 }

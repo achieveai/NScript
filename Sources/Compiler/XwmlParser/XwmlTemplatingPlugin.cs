@@ -63,6 +63,18 @@
             else return IntrestLevel.None;
         }
 
+        /// <summary>
+        /// [AutoFire] accessors replay: their overwrite keeps no plugin state and resolves only
+        /// through the method converter. Skin getters do not: converting one queues its template.
+        /// </summary>
+        public bool CanReplayConversion(MethodDefinition methodDefinition, ConverterContext converterContext)
+        {
+            var propertyDefinition = methodDefinition.GetPropertyDefinition();
+            return propertyDefinition?.CustomAttributes != null
+                && propertyDefinition.CustomAttributes.SelectAttribute(this.knownTemplateTypes.SkinAttribute) == null
+                && propertyDefinition.CustomAttributes.SelectAttribute(this.knownTemplateTypes.AutoFireAttribute) != null;
+        }
+
         public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter)
         {
             throw new NotImplementedException();
