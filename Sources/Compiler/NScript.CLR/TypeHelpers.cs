@@ -26,6 +26,13 @@ namespace NScript.CLR
         private static readonly TypeReference[] emtyTypeReferences = new TypeReference[0];
 
         /// <summary>
+        /// Accessor to property, per type. A watch session adds properties to kept types
+        /// (ModuleRefresh), so an entry is rebuilt when the type's property count changes.
+        /// </summary>
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<TypeDefinition, Tuple<int, Dictionary<MethodDefinition, PropertyDefinition>>> propertiesByAccessor =
+            new System.Runtime.CompilerServices.ConditionalWeakTable<TypeDefinition, Tuple<int, Dictionary<MethodDefinition, PropertyDefinition>>>();
+
+        /// <summary>
         /// Determines whether the specified left is same.
         /// </summary>
         /// <param name="left">The left.</param>
@@ -1754,14 +1761,23 @@ namespace NScript.CLR
                 && !methodDefinition.IsSetter)
             { return null; }
 
-            foreach (var propertyDef in methodDefinition.DeclaringType.Resolve().Properties)
+            var typeDef = methodDefinition.DeclaringType.Resolve();
+            var properties = typeDef.Properties;
+            if (!propertiesByAccessor.TryGetValue(typeDef, out var index) || index.Item1 != properties.Count)
             {
-                if (propertyDef.GetMethod == methodDefinition
-                    || propertyDef.SetMethod == methodDefinition)
-                { return propertyDef; }
+                var byAccessor = new Dictionary<MethodDefinition, PropertyDefinition>();
+                foreach (var propertyDef in properties)
+                {
+                    // TryAdd keeps the first property naming an accessor, as the old scan did.
+                    if (propertyDef.GetMethod != null) { byAccessor.TryAdd(propertyDef.GetMethod, propertyDef); }
+                    if (propertyDef.SetMethod != null) { byAccessor.TryAdd(propertyDef.SetMethod, propertyDef); }
+                }
+
+                index = Tuple.Create(properties.Count, byAccessor);
+                propertiesByAccessor.AddOrUpdate(typeDef, index);
             }
 
-            return null;
+            return index.Item2.TryGetValue(methodDefinition, out var found) ? found : null;
         }
 
         /// <summary>
