@@ -437,6 +437,13 @@ namespace NScript.Converter
                     succeeded = this.ExecuteCore();
                 }
 
+                if (!succeeded && this.retryBuild)
+                {
+                    // Out of retries: say so, as the attempt stopped before printing errors.
+                    CompilerLog.ForComponent("Builder").Error("Builder.RetriesExhausted");
+                    System.Console.Out.WriteLine("(0,0): error ERR0124: the build still asked for a retry after 2 retries.");
+                }
+
                 return succeeded;
             }
             finally

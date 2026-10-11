@@ -265,9 +265,28 @@ namespace Sunlight.Framework.Observables
             _typeHelper = new CecilTypeHelper(clrContext);
             _stubGenerator = new CecilModelStubGenerator(clrContext);
 
-            // Reset per-compilation data index counter
+            // Reset per-compilation state. A retried build initializes this plugin again with a
+            // new RuntimeScopeManager: start as a new plugin would, so no identifier of the
+            // discarded scope and no "already reported" CSS error carries into the retry.
             _nextDataIndex = 100;
             _templateMethodReferences = null;
+            _compiledIRs.Clear();
+            _templateShortNames.Clear();
+            _hasRazorTemplates = false;
+            _needsDocStorageGetterEmission = false;
+            _razorKnownTypes = null;
+            _templateCssManagers.Clear();
+            _cssClassMap.Clear();
+            _cssLiteralReplacer = null;
+            _cssHits = 0;
+            _cssMisses = 0;
+            _cssResources.Clear();
+            _cssFileNames.Clear();
+            _templateSources.Clear();
+            _reportedCssErrors.Clear();
+            _templateGetterIdentifiers.Clear();
+            _resolvedIdentifiers.Clear();
+            _resolvedTypeIdentifiers.Clear();
             var probeTotal = System.Diagnostics.Stopwatch.StartNew();
             long probeStubTicks = 0, probeCompileTicks = 0;
             int probeTemplates = 0;
