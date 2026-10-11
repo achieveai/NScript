@@ -15,13 +15,24 @@
 
     public class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
+        /// <summary>
+        /// The parse each build session keeps for its next build, keyed by the session's
+        /// ConverterContext: a cold build makes a new context, so it never sees an old parse.
+        /// </summary>
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ConverterContext, ParserContext> KeptParses
+            = new System.Runtime.CompilerServices.ConditionalWeakTable<ConverterContext, ParserContext>();
+
         private string knownCssClasses = string.Empty;
+
+        /// <summary>
+        /// This build may reuse the session's last parse and keep its own: dev mode, not
+        /// optimized (the builds a session makes), and NSCRIPT_XWML_REUSE is not "off".
+        /// </summary>
+        private bool reuseParse;
 
         private KnownTemplateTypes knownTemplateTypes;
 
         private TypeResolver typeResolver;
-
-        private ParserContext parserContext;
 
         private CodeGenerator codeGenerator;
 
@@ -33,7 +44,7 @@
         private long probeParseTicks;
 
         public ParserContext ParserContext
-        { get { return this.parserContext; } }
+        { get { return this.codeGenerator.ParserContext; } }
 
         public TypeResolver TypeResolver
         { get { return this.typeResolver; } }
@@ -125,14 +136,24 @@
                 runtimeScopeManager.Context.ClrContext);
             this.codeGenerator = new CodeGenerator(runtimeScopeManager, this.knownTemplateTypes);
             var cssClassEntries = this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries);
-            this.parserContext = new ParserContext(
+            var parserContext = new ParserContext(
                 this.knownTemplateTypes,
                 this.codeGenerator,
                 this.typeResolver,
                 this.typeResolver,
                 cssClassEntries);
 
-            this.parserContext.ConverterContext = runtimeScopeManager.Context;
+            var converterContext = runtimeScopeManager.Context;
+            parserContext.ConverterContext = converterContext;
+            this.reuseParse = converterContext.DevMode
+                && !runtimeScopeManager.ImplementInstanceAsStatic
+                && Environment.GetEnvironmentVariable("NSCRIPT_XWML_REUSE") != "off";
+            if (this.reuseParse && KeptParses.TryGetValue(converterContext, out var kept))
+            {
+                // Taken, not shared: only a build that ends well keeps a parse again.
+                KeptParses.Remove(converterContext);
+                this.codeGenerator.OfferKeptParse(kept);
+            }
 
             if (CompilerLog.IsEnabled)
             {
@@ -181,23 +202,57 @@
         {
             long start = Stopwatch.GetTimestamp();
             var statements = this.codeGenerator.GetAllTemplateStatements();
+            this.KeepParse();
             long genTicks = Stopwatch.GetTimestamp() - start;
 
             static long Ms(long ticks) => ticks * 1000 / Stopwatch.Frequency;
             CompilerLog.ForComponent("XwmlParser").Information(
-                "Probe.XwmlInit TotalMs={TotalMs} InitMs={InitMs} OverwriteMs={OverwriteMs} ParseMs={ParseMs} GenMs={GenMs} Templates={Templates} TemplatesParsed={TemplatesParsed} StyleSheets={StyleSheets} StyleSheetHits={StyleSheetHits} Hits={Hits} Misses={Misses}",
+                "Probe.XwmlInit TotalMs={TotalMs} InitMs={InitMs} OverwriteMs={OverwriteMs} ParseMs={ParseMs} GenMs={GenMs} Templates={Templates} TemplatesParsed={TemplatesParsed} StyleSheets={StyleSheets} StyleSheetHits={StyleSheetHits} Hits={Hits} Misses={Misses} Reused={Reused} ReuseMiss={ReuseMiss}",
                 Ms(this.probeInitTicks + this.probeOverwriteTicks + this.probeParseTicks + genTicks),
                 Ms(this.probeInitTicks),
                 Ms(this.probeOverwriteTicks),
                 Ms(this.probeParseTicks),
                 Ms(genTicks),
-                this.codeGenerator.ProbeDocuments,
+                this.codeGenerator.ProbeDocuments + this.codeGenerator.ProbeReusedDocuments,
                 this.codeGenerator.ProbeTemplatesParsed,
                 this.codeGenerator.ProbeStyleSheets,
                 this.codeGenerator.ProbeStyleSheetHits,
-                0,
-                this.codeGenerator.ProbeDocuments);
+                this.codeGenerator.ProbeReusedDocuments,
+                this.codeGenerator.ProbeDocuments,
+                this.codeGenerator.ReusedParse,
+                this.codeGenerator.ReuseMiss);
             return statements;
+        }
+
+        /// <summary>
+        /// Keeps this build's parse for the session's next build. A reused parse holds its
+        /// documents in the earlier build's order; when this build asked in another order, its
+        /// output would not equal a cold build, so the build is run again without it.
+        /// </summary>
+        private void KeepParse()
+        {
+            if (!this.reuseParse)
+            {
+                return;
+            }
+
+            var parserContext = this.codeGenerator.ParserContext;
+            var converterContext = parserContext.ConverterContext;
+            if (!this.codeGenerator.RequestOrderMatchesParse)
+            {
+                // Only a kept parse can disagree: a new one registers documents as they are asked for.
+                converterContext.RequestRetry("xwml-document-order");
+                return;
+            }
+
+            if (converterContext.Errors.Count > 0)
+            {
+                return;
+            }
+
+            parserContext.ResourceFileNames = this.codeGenerator.GetResourceFileNames();
+            parserContext.Rebind(null, null, null, converterContext);
+            KeptParses.AddOrUpdate(converterContext, parserContext);
         }
 
         private List<Statement> GetSkinPropertyOverwrite(MethodConverter methodConverter)

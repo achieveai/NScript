@@ -81,12 +81,6 @@ namespace XwmlParser
 
 
         /// <summary>
-        /// The style sheet.
-        /// </summary>
-        Dictionary<string, CssStyleSheet> styleSheet =
-            new Dictionary<string, CssStyleSheet>();
-
-        /// <summary>
         /// The skin code generators.
         /// </summary>
         Dictionary<TemplateParser, SkinCodeGenerator> skinCodeGenerators =
@@ -178,10 +172,39 @@ namespace XwmlParser
         internal int ProbeTemplatesParsed;
 
         /// <summary>Style sheets read this build (Probe.XwmlInit).</summary>
-        internal int ProbeStyleSheets => this.styleSheet.Count;
+        internal int ProbeStyleSheets => this.parserContext.StyleSheets.Count;
 
         /// <summary>Style sheets this build found already parsed (<see cref="CssStyleSheet.ParsedSheets"/>).</summary>
         internal int ProbeStyleSheetHits;
+
+        /// <summary>Documents this build took from a kept parse (Probe.XwmlInit Hits).</summary>
+        internal int ProbeReusedDocuments;
+
+        /// <summary>
+        /// A parse an earlier build of the session kept, offered by the plugin. The first
+        /// template request adopts it when every resource it read is unchanged.
+        /// </summary>
+        private ParserContext keptParse;
+
+        /// <summary>The documents this build asked for, in the order it first asked.</summary>
+        private readonly List<string> requestedDocuments = new List<string>();
+
+        private readonly HashSet<string> requestedDocumentSet = new HashSet<string>();
+
+        /// <summary>Gets whether this build uses a parse kept from an earlier build.</summary>
+        internal bool ReusedParse { get; private set; }
+
+        /// <summary>Why the offered parse was not used, or null.</summary>
+        internal string ReuseMiss { get; private set; }
+
+        /// <summary>
+        /// True when this build asked for the documents in the order the parse holds them. A
+        /// kept parse registered its documents in the earlier build's order, which sets the CSS
+        /// order and the CSS class names: a build that asks in another order (or for fewer)
+        /// would not equal a cold build.
+        /// </summary>
+        internal bool RequestOrderMatchesParse
+            => System.Linq.Enumerable.SequenceEqual(this.requestedDocuments, this.parserContext.DocumentOrder);
 
         /// <summary>
         /// The resource map.
@@ -397,8 +420,27 @@ namespace XwmlParser
                 return rv;
             }
 
+            if (this.keptParse != null)
+            {
+                this.AdoptKeptParse();
+            }
+
             string[] templateNameSplits = templateParserResourceId.Split(':');
             HtmlParser htmlParser = this.parserContext.GetHtmlParser(templateNameSplits[0]);
+
+            if (htmlParser != null && this.requestedDocumentSet.Add(templateNameSplits[0]))
+            {
+                // This build's first ask for a document the kept parse holds: report what its parse reported.
+                this.requestedDocuments.Add(templateNameSplits[0]);
+                this.ProbeReusedDocuments++;
+                if (this.parserContext.DocumentWarnings.TryGetValue(templateNameSplits[0], out var keptWarnings))
+                {
+                    foreach (var warning in keptWarnings)
+                    {
+                        this.parserContext.ConverterContext.AddError(warning.Item1, warning.Item2, true);
+                    }
+                }
+            }
 
             if (htmlParser == null)
             {
@@ -406,20 +448,25 @@ namespace XwmlParser
                 if (this.resourceMap.TryGetValue(templateNameSplits[0], out resource))
                 {
                     var document = new HtmlAgilityPack.HtmlDocument();
-                    using (System.IO.Stream stream = resource.Item1.GetResourceStream())
-                    using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
+                    using (System.IO.StreamReader reader = this.ReadResource(templateNameSplits[0], resource))
                     {
                         document.Load(reader);
                     }
 
+                    var warnings = this.parserContext.ConverterContext.Warnings;
+                    int warningCount = warnings.Count;
                     htmlParser = new HtmlParser(
                         resource.Item2 ?? templateNameSplits[0],
                         document,
                         this.parserContext);
 
+                    this.parserContext.DocumentWarnings[templateNameSplits[0]] =
+                        System.Linq.Enumerable.ToList(System.Linq.Enumerable.Skip(warnings, warningCount));
                     this.parserContext.RegisterHtmlParser(
                         templateNameSplits[0],
                         htmlParser);
+                    this.requestedDocumentSet.Add(templateNameSplits[0]);
+                    this.requestedDocuments.Add(templateNameSplits[0]);
                     this.ProbeDocuments++;
                 }
 
@@ -448,6 +495,87 @@ namespace XwmlParser
         }
 
         /// <summary>
+        /// Offers a parse an earlier build of the session kept. It is adopted at the first
+        /// template request, when the resource map is complete, if it is still current.
+        /// </summary>
+        internal void OfferKeptParse(ParserContext kept)
+        {
+            this.keptParse = kept;
+        }
+
+        /// <summary>The resource name to file name map of this build.</summary>
+        internal Dictionary<string, string> GetResourceFileNames()
+        {
+            var rv = new Dictionary<string, string>(this.resourceMap.Count);
+            foreach (var pair in this.resourceMap)
+            {
+                rv.Add(pair.Key, pair.Value.Item2);
+            }
+
+            return rv;
+        }
+
+        private void AdoptKeptParse()
+        {
+            var kept = this.keptParse;
+            this.keptParse = null;
+            this.ReuseMiss = this.GetReuseMiss(kept);
+            if (this.ReuseMiss == null)
+            {
+                kept.Rebind(
+                    this,
+                    this.parserContext.ClrResolver,
+                    this.parserContext.JsResolver,
+                    this.parserContext.ConverterContext);
+                this.ReusedParse = true;
+            }
+        }
+
+        /// <summary>Null when the kept parse still matches every input it read, else why not.</summary>
+        private string GetReuseMiss(ParserContext kept)
+        {
+            if (kept.KnownCssClasses != this.parserContext.KnownCssClasses)
+            {
+                return "known-css-classes";
+            }
+
+            var fileNames = kept.ResourceFileNames;
+            if (fileNames == null || fileNames.Count != this.resourceMap.Count)
+            {
+                return "resource-set";
+            }
+
+            foreach (var pair in this.resourceMap)
+            {
+                if (!fileNames.TryGetValue(pair.Key, out var fileName) || fileName != pair.Value.Item2)
+                {
+                    return "resource-set";
+                }
+            }
+
+            foreach (var read in kept.ResourcesRead)
+            {
+                var hash = System.Security.Cryptography.SHA256.HashData(this.resourceMap[read.Key].Item1.GetResourceData());
+                if (!System.Linq.Enumerable.SequenceEqual(hash, read.Value.Item2))
+                {
+                    return "changed " + read.Key;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>A reader over a template or style sheet resource; records its hash for reuse.</summary>
+        private System.IO.StreamReader ReadResource(string resourceId, Tuple<EmbeddedResource, string> resource)
+        {
+            byte[] data = resource.Item1.GetResourceData();
+            this.parserContext.ResourcesRead[resourceId] = Tuple.Create(
+                resource.Item2,
+                System.Security.Cryptography.SHA256.HashData(data));
+            return new System.IO.StreamReader(new System.IO.MemoryStream(data, writable: false));
+        }
+
+        /// <summary>
         /// Gets style sheet.
         /// </summary>
         /// <exception cref="ApplicationException"> Thrown when an Application error condition occurs. </exception>
@@ -465,7 +593,7 @@ namespace XwmlParser
                 currentFileId);
 
             CssStyleSheet rv;
-            if (this.styleSheet.TryGetValue(relativeCssResourceId, out rv))
+            if (this.parserContext.StyleSheets.TryGetValue(relativeCssResourceId, out rv))
             {
                 return rv;
             }
@@ -477,8 +605,7 @@ namespace XwmlParser
                     this.parserContext,
                     resource.Item2 ?? relativeCssResourceId);
 
-                using (System.IO.Stream stream = resource.Item1.GetResourceStream())
-                using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
+                using (System.IO.StreamReader reader = this.ReadResource(relativeCssResourceId, resource))
                 {
                     if (rv.AddCss(
                         reader.ReadToEnd(),
@@ -492,7 +619,7 @@ namespace XwmlParser
                     }
                 }
 
-                this.styleSheet.Add(relativeCssResourceId, rv);
+                this.parserContext.StyleSheets.Add(relativeCssResourceId, rv);
             }
             else
             {
@@ -1440,7 +1567,7 @@ namespace XwmlParser
                     }
                 };
 
-            foreach (var styleSheet in this.styleSheet.Values)
+            foreach (var styleSheet in this.parserContext.StyleSheets.Values)
             {
                 looper(styleSheet);
             }

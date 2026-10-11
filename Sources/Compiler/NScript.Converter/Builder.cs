@@ -70,8 +70,11 @@ namespace NScript.Converter
         /// </summary>
         private MethodCache methodCache;
 
-        /// <summary>A method cache hit failed its check; the build runs once more.</summary>
-        private bool methodCacheRetry;
+        /// <summary>
+        /// A method cache hit failed its check, or a plugin asked for a retry
+        /// (<see cref="ConverterContext.RetryReason"/>): the build runs once more.
+        /// </summary>
+        private bool retryBuild;
 
         /// <summary>
         /// (full path, SHA-256 of the content) of every input the session was built from.
@@ -421,14 +424,16 @@ namespace NScript.Converter
         public bool Execute(IConverterPlugin[] buildPlugins)
         {
             this.SetPlugins(buildPlugins);
+            this.retryBuild = false;
             bool succeeded = false;
             try
             {
                 succeeded = this.ExecuteCore();
-                if (!succeeded && this.methodCacheRetry)
+                for (int retry = 0; !succeeded && this.retryBuild && retry < 2; retry++)
                 {
-                    // The entries that failed are gone; the rest replay again.
-                    this.methodCacheRetry = false;
+                    // The cache entries that failed are gone, and a plugin that asked does not
+                    // reuse that work again; the rest replay again. Two, as each cause can fire once.
+                    this.retryBuild = false;
                     succeeded = this.ExecuteCore();
                 }
 
@@ -648,6 +653,13 @@ namespace NScript.Converter
                     }
                 }
 
+                if (converterContext.RetryReason != null)
+                {
+                    log.Warning("Builder.Retry Reason={Reason}", converterContext.RetryReason);
+                    this.retryBuild = true;
+                    return false;
+                }
+
                 // Per the CLR spec, module initializers run before any user code
                 // in the module — emit their invocations directly before the
                 // entry-point call.
@@ -698,7 +710,7 @@ namespace NScript.Converter
                             "MethodCache.Retry Invalidated={Invalidated} Hits={Hits}",
                             converterContext.MethodCache.Invalidated,
                             converterContext.MethodCache.Hits);
-                        this.methodCacheRetry = true;
+                        this.retryBuild = true;
                         return false;
                     }
                 }

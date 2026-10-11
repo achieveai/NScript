@@ -37,6 +37,11 @@ namespace XwmlParser.NodeInfos
         private IIdentifier[] classNames;
 
         /// <summary>
+        /// The class attribute <see cref="FinalizeGeneratedNode"/> added to the generated node.
+        /// </summary>
+        private HtmlAttribute classAttribute;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="node">     The node. </param>
@@ -253,14 +258,26 @@ namespace XwmlParser.NodeInfos
             return null;
         }
 
-        public static void FinalizeClassNamesInGeneratedNode(
+        /// <summary>
+        /// Adds the class attribute to a generated node. The parse may be reused by a later
+        /// build, which finalizes the node again: the attribute this method added before
+        /// (<paramref name="previous"/>) is removed first, so the node does not gain a second one.
+        /// </summary>
+        /// <returns>The attribute added, or null when there are no class names.</returns>
+        public static HtmlAttribute FinalizeClassNamesInGeneratedNode(
             HtmlNode node,
-            IList<IIdentifier> classNames)
+            IList<IIdentifier> classNames,
+            HtmlAttribute previous)
         {
+            if (previous != null)
+            {
+                node.Attributes.Remove(previous);
+            }
+
             if (classNames == null
                 || classNames.Count == 0)
             {
-                return;
+                return null;
             }
 
             StringBuilder sb = new StringBuilder();
@@ -274,7 +291,7 @@ namespace XwmlParser.NodeInfos
                 sb.Append(classNames[iClass].GetName());
             }
 
-            node.Attributes.Add(
+            return node.Attributes.Append(
                 "class",
                 sb.ToString());
         }
@@ -485,9 +502,10 @@ namespace XwmlParser.NodeInfos
         /// <param name="codeGenerator"> The code generator. </param>
         public void FinalizeGeneratedNode(SkinCodeGenerator codeGenerator)
         {
-            HtmlNodeInfo.FinalizeClassNamesInGeneratedNode(
+            this.classAttribute = HtmlNodeInfo.FinalizeClassNamesInGeneratedNode(
                 this.generatedNode,
-                this.ClassNames);
+                this.ClassNames,
+                this.classAttribute);
 
             foreach (var item in this.ChildNodes)
             {

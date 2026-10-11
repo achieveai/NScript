@@ -22,12 +22,12 @@ namespace XwmlParser
         /// <summary>
         /// The resolver.
         /// </summary>
-        private readonly IClrResolver clrResolver;
+        private IClrResolver clrResolver;
 
         /// <summary>
         /// The code generator.
         /// </summary>
-        private readonly CodeGenerator codeGenerator;
+        private CodeGenerator codeGenerator;
 
         /// <summary>
         /// The document.
@@ -76,6 +76,7 @@ namespace XwmlParser
             this.KnownTypes = knownTypes;
             this.codeGenerator = codeGenerator;
             this.codeGenerator.ParserContext = this;
+            this.KnownCssClasses = string.Join(",", knownCssClasses);
 
             foreach (var cssClassName in knownCssClasses)
             {
@@ -137,6 +138,53 @@ namespace XwmlParser
         /// </value>
         public IResolver JsResolver
         { get { return this.jsResolver; } }
+
+        /// <summary>
+        /// The style sheets the parsed documents link, by resource id, in the order they were
+        /// read. The order sets the order of the generated CSS.
+        /// </summary>
+        internal Dictionary<string, CssStyleSheet> StyleSheets { get; } = new Dictionary<string, CssStyleSheet>();
+
+        /// <summary>The documents in the order they were parsed (registered).</summary>
+        internal List<string> DocumentOrder { get; } = new List<string>();
+
+        /// <summary>
+        /// Every resource the parse read: resource name to its file name and content hash. A
+        /// later build reuses the parse only while each of them is unchanged.
+        /// </summary>
+        internal Dictionary<string, Tuple<string, byte[]>> ResourcesRead { get; } = new Dictionary<string, Tuple<string, byte[]>>();
+
+        /// <summary>The warnings each document's parse added, replayed when the parse is reused.</summary>
+        internal Dictionary<string, List<Tuple<Location, string>>> DocumentWarnings { get; } = new Dictionary<string, List<Tuple<Location, string>>>();
+
+        /// <summary>
+        /// The resource name to file name map the parse resolved links against. A later build
+        /// reuses the parse only when its map is the same.
+        /// </summary>
+        internal Dictionary<string, string> ResourceFileNames { get; set; }
+
+        /// <summary>The known CSS class names this context was made with, joined.</summary>
+        internal string KnownCssClasses { get; }
+
+        /// <summary>
+        /// Points a kept parse at a new build's code generator, resolvers and context: the
+        /// parse holds no other object of the build that made it. Null drops them between builds.
+        /// </summary>
+        internal void Rebind(
+            CodeGenerator codeGenerator,
+            IClrResolver clrResolver,
+            IResolver jsResolver,
+            ConverterContext converterContext)
+        {
+            this.codeGenerator = codeGenerator;
+            this.clrResolver = clrResolver;
+            this.jsResolver = jsResolver;
+            this.ConverterContext = converterContext;
+            if (codeGenerator != null)
+            {
+                codeGenerator.ParserContext = this;
+            }
+        }
 
         /// <summary>
         /// Registers the CSS class name described by cssClassName.
@@ -212,6 +260,7 @@ namespace XwmlParser
         public void RegisterHtmlParser(string templateResourceName, HtmlParser parser)
         {
             this.htmlParsers.Add(templateResourceName, parser);
+            this.DocumentOrder.Add(templateResourceName);
         }
 
         /// <summary>

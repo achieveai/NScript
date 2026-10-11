@@ -56,11 +56,6 @@ namespace XwmlParser
         private readonly HtmlNode generatedNode;
 
         /// <summary>
-        /// The resolver.
-        /// </summary>
-        private readonly IClrResolver resolver;
-
-        /// <summary>
         /// The sub template.
         /// </summary>
         private readonly bool subTemplate = false;
@@ -101,7 +96,8 @@ namespace XwmlParser
                 this.parentParser = htmlParser;
                 this.context = htmlParser.DocumentContext;
                 this.node = htmlNode;
-                this.resolver = this.context.ParserContext.ClrResolver;
+                // A local, not a field: a kept parse must not hold the build's resolver.
+                var resolver = this.context.ParserContext.ClrResolver;
                 this.generatedDocument = this.context.ParserContext.Document;
                 this.generatedNode = this.generatedDocument.CreateElement("div");
 
@@ -125,7 +121,7 @@ namespace XwmlParser
                         "Template/Skin does not have ControlType attribute");
                 }
 
-                this.controlType = this.resolver.GetTypeReference(
+                this.controlType = resolver.GetTypeReference(
                     this.DocumentContext.GetFullName(attr.Value));
                 if (this.controlType == null)
                 {
@@ -150,7 +146,7 @@ namespace XwmlParser
                         "Template/Skin does not have DataContextType attribute");
                 }
 
-                this.dataContextType = this.resolver.GetTypeReference(
+                this.dataContextType = resolver.GetTypeReference(
                     this.DocumentContext.GetFullName(attr.Value));
                 if (this.dataContextType == null)
                 {

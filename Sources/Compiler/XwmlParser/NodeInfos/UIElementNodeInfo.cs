@@ -29,6 +29,11 @@ namespace XwmlParser.NodeInfos
         private bool needHtmlNodeAccess = false;
 
         /// <summary>
+        /// The class attribute <see cref="FinalizeGeneratedNode"/> added to the generated node.
+        /// </summary>
+        private HtmlAttribute classAttribute;
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="type">     The type. </param>
@@ -136,9 +141,10 @@ namespace XwmlParser.NodeInfos
         /// <param name="codeGenerator"> The code generator. </param>
         public void FinalizeGeneratedNode(SkinCodeGenerator codeGenerator)
         {
-            HtmlNodeInfo.FinalizeClassNamesInGeneratedNode(
+            this.classAttribute = HtmlNodeInfo.FinalizeClassNamesInGeneratedNode(
                 this.generatedNode,
-                this.ClassNames);
+                this.ClassNames,
+                this.classAttribute);
 
             foreach (var item in this.ChildNodes)
             {

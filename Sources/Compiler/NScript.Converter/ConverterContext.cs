@@ -340,6 +340,20 @@ namespace NScript.Converter
             this.errors.Clear();
             this.warnings.Clear();
             this.additionalCssContributions.Clear();
+            this.RetryReason = null;
+        }
+
+        /// <summary>
+        /// Set by a plugin whose reuse of earlier work turned out not to match a cold build. The
+        /// builder discards this build's output and runs it once more; the plugin must not
+        /// reuse that work again.
+        /// </summary>
+        public string RetryReason { get; private set; }
+
+        /// <summary>Asks the builder to discard this build and run it again.</summary>
+        public void RequestRetry(string reason)
+        {
+            this.RetryReason ??= reason;
         }
 
         /// <summary>
