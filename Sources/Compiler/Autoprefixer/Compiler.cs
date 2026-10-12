@@ -27,6 +27,22 @@
 
 		private bool _disposed;
 
+		/// <summary>
+		/// Results by (browsers, content). A watch build prefixes the same bundle CSS again and
+		/// again (0.6 s in V8 on MCQdb); the output depends only on these inputs. A dev build
+		/// prefixes each style sheet apart, hundreds of entries, so the bound is on size.
+		/// </summary>
+		private readonly Dictionary<(string Browsers, string Content), string> _results =
+			new Dictionary<(string Browsers, string Content), string>();
+
+		/// <summary>Chars held in <see cref="_results"/> (contents and results).</summary>
+		private long _resultChars;
+
+		private const long MaxResultChars = 32L * 1024 * 1024;
+
+		/// <summary>Times the engine prefixed a text: the cache had no result for it.</summary>
+		public int Runs { get; private set; }
+
     	/// <summary>
 		/// Constructs instance of Autoprefixer
 		/// </summary>
@@ -78,14 +94,30 @@
 
             lock (_synchronizer)
             {
+                if (_results.TryGetValue((currentBrowsersString, content), out var cached))
+                {
+                    return cached;
+                }
+
                 Initialize();
 
                 try
                 {
-                    return _javascriptEngine.Evaluate(
+                    Runs++;
+                    var result = _javascriptEngine.Evaluate(
                         string.Format(FunctionCallTemplate,
                             JsonConvert.SerializeObject(content),
                             currentBrowsersString)) as string;
+                    long chars = content.Length + (result?.Length ?? 0);
+                    if (_resultChars + chars > MaxResultChars)
+                    {
+                        _results.Clear();
+                        _resultChars = 0;
+                    }
+
+                    _results[(currentBrowsersString, content)] = result;
+                    _resultChars += chars;
+                    return result;
                 }
                 catch (JsRuntimeException e)
                 {

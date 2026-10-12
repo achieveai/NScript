@@ -278,6 +278,31 @@ namespace OwaSourceMapper.Test
         }
 
         /// <summary>
+        /// Files and names keep their first-seen index, a second mapping at the same generated
+        /// position replaces the first, and mappings are emitted in position order whatever
+        /// order they were added in.
+        /// </summary>
+        [TestMethod]
+        public void AddMapping_RepeatsAndOutOfOrder_KeepFirstSeenIndicesPositionOrderAndLastWrite()
+        {
+            var map = new SourceMap { File = "out.js" };
+            map.AddMapping(0, 20, 7, 0, @"C:\src\A.cs", name: "n2");
+            map.AddMapping(0, 10, 3, 0, "B.cs", name: "n1");
+            map.AddMapping(0, 0, 1, 0, @"C:\src\A.cs");
+            map.AddMapping(0, 10, 4, 0, "B.cs", name: "n1");
+
+            string json = map.ToString();
+
+            Assert.AreEqual("[\"C:\\\\src\\\\A.cs\",\n\t\t\"B.cs\"]", JsonArrayField(json, "sourcesLong"));
+            Assert.AreEqual("[\"n2\",\"n1\"]", JsonArrayField(json, "names"));
+            var segments = DecodeFirstLineSegments(ExtractMappingsField(json));
+            Assert.AreEqual(3, segments.Count);
+            CollectionAssert.AreEqual(new[] { 0, 0, 1, 0 }, segments[0], "col 0: A.cs (0), line 1");
+            CollectionAssert.AreEqual(new[] { 10, 1, 3, 0, 1 }, segments[1], "col 10: B.cs (1), line 4 (the later write), name n1 (1)");
+            CollectionAssert.AreEqual(new[] { 10, -1, 3, 0, -1 }, segments[2], "col 20: A.cs (0), line 7, name n2 (0)");
+        }
+
+        /// <summary>
         /// When neither <see cref="SourceMap.File"/> nor <see cref="SourceMap.SourceRoot"/>
         /// is set, the emitted <c>sourceRoot</c> must fall back to <see cref="string.Empty"/>
         /// rather than producing a broken <c>.ashx</c> reference or throwing.
@@ -580,6 +605,15 @@ namespace OwaSourceMapper.Test
             Assert.IsNotNull(rebased);
             Assert.IsFalse(rebased.Contains("\\"), "Rebased path must not contain backslashes: " + rebased);
             Assert.AreEqual("a/b/c.cs", rebased);
+        }
+
+        private static string JsonArrayField(string json, string name)
+        {
+            string marker = "\"" + name + "\": ";
+            int start = json.IndexOf(marker, System.StringComparison.Ordinal);
+            Assert.IsTrue(start >= 0, name + " field not found");
+            start += marker.Length;
+            return json.Substring(start, json.IndexOf(']', start) - start + 1);
         }
 
         private static string ExtractMappingsField(string json)

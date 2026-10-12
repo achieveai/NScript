@@ -42,5 +42,23 @@ namespace NScript.Converter
         /// <param name="runtimeScopeManager">The runtime scope manager.</param>
         /// <returns></returns>
         List<Statement> GetPostJavascript();
+
+        /// <summary>
+        /// Dev patch emit: the name of the section a dev bundle marks after this plugin's
+        /// post JavaScript (<c>/*@S name*/</c>), or null for none.
+        /// </summary>
+        string PatchSectionName => null;
+
+        /// <summary>
+        /// Dev patch emit, after a change to embedded resources only: adds what the bundle
+        /// needs before this plugin's section marker to <paramref name="statements"/>, using
+        /// the state of the full emit this plugin instance made. Returns null, or why it
+        /// cannot patch (the build then emits in full). A plugin that does not know whether
+        /// its output depends on the change cannot patch. A string literal the full emit put
+        /// on the line after a <see cref="MarkerStatement.ForLiteral"/> marker is written again
+        /// in place: add its new value to <paramref name="literals"/>, by marker text.
+        /// </summary>
+        string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
+            => "plugin " + this.GetType().Name;
     }
 }

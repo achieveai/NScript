@@ -17,6 +17,9 @@ namespace NScript.JST
     /// </summary>
     public partial class IdentifierScope
     {
+        [ThreadStatic]
+        private static IIdentifierObserver observer;
+
         /// <summary>
         /// Backing field if IsExecutionScope
         /// </summary>
@@ -153,6 +156,7 @@ namespace NScript.JST
             this.parentScope = parentScope;
             this.isExecutionScope = parentScope.isExecutionScope;
             this.parentScope.childScopes.Add(this);
+            observer?.ScopeCreated(this);
 
             this.readonlyUsedLocalIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.usedLocalIdentifiers);
             this.readonlyScopedIdentifiers = new ReadOnlyCollection<SimpleIdentifier>(this.scopedIdentifiers);
@@ -215,6 +219,15 @@ namespace NScript.JST
             {
                 this.AddIdentifierToTrack(this.paramaterIdentifiers[iParam]);
             }
+        }
+
+        /// <summary>
+        /// The observer for this thread, or null. Set only around one method conversion.
+        /// </summary>
+        public static IIdentifierObserver Observer
+        {
+            get => observer;
+            set => observer = value;
         }
 
         public bool IsExecutionScope

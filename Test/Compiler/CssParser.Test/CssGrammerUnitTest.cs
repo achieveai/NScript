@@ -465,6 +465,7 @@
             
             // Should parse successfully without throwing
             CssGrammer grammerWithDefinedVars = new CssGrammer(cssWithDefinedVariables);
+            grammerWithDefinedVars.ValidateCssVariables();
             Assert.IsNotNull(grammerWithDefinedVars.Rules);
             Assert.IsTrue(grammerWithDefinedVars.Rules.Count > 0, "Should have parsed CSS rules");
             
@@ -481,6 +482,7 @@
             try
             {
                 CssGrammer grammerWithUndefinedVar = new CssGrammer(cssWithUndefinedVariable);
+                grammerWithUndefinedVar.ValidateCssVariables();
                 Assert.Fail("Expected ParseException was not thrown for undefined CSS variable");
             }
             catch (ParseException ex)
@@ -491,6 +493,19 @@
                 Assert.IsTrue(ex.Message.Contains(":root"), 
                     $"Error message should mention :root. Actual: {ex.Message}");
             }
+        }
+
+        [TestMethod]
+        public void CssVariableDeclaredInAnotherSheet_ParsesAndIsReportedAsUsed()
+        {
+            // Builds check variables across all sheets (ADR 0016), so a sheet that uses a
+            // variable from another sheet's :root must parse on its own.
+            var grammer = new CssGrammer(@".body { color: var(--theme-color); }");
+            grammer.CollectCssVariablesFromRules();
+            grammer.CollectUsedCssVariablesFromRules();
+
+            Assert.AreEqual(0, grammer.DefinedCssVariables.Count);
+            Assert.IsTrue(grammer.UsedCssVariables.Contains("--theme-color"));
         }
     }
 }

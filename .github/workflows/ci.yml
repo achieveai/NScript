@@ -53,6 +53,16 @@ jobs:
       - name: Build Debug browser bundles
         run: dotnet build NScript_Full.sln -c Debug --no-restore
 
+      # Build service, builder session, dev naming and source-map suites, on the Debug toolset.
+      - name: Test Utils (build service)
+        run: dotnet test Test/Compiler/NScript.Utils.Test/NScript.Utils.Test.csproj -c Debug --no-build
+
+      - name: Test Csc.Lib (builder session, dev naming)
+        run: dotnet test Test/Compiler/NScript.Csc.Lib.Test/NScript.Csc.Lib.Test.csproj -c Debug --no-build
+
+      - name: Test SourceMap
+        run: dotnet test Test/Compiler/SourceMap.Test/SourceMap.Test.csproj -c Debug --no-build
+
       # ─── Phase 3: Playwright E2E ──────────────────────────────────────
       - name: Install Playwright
         working-directory: Test/Framework/TestWebApplication

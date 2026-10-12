@@ -6,6 +6,7 @@ namespace NScript.Csc.Lib
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using JsCsc.Lib.Serialization;
     using Microsoft.CodeAnalysis;
@@ -46,6 +47,11 @@ namespace NScript.Csc.Lib
         private ConcurrentDictionary<TypeSymbol, TypeSpecSer> typeSerMap
             = new ConcurrentDictionary<TypeSymbol, TypeSpecSer>();
 
+        // Ids come from counters, not from a lock and the map's Count: Roslyn binds methods in
+        // parallel, and the lock was the hottest point of a compile. A race can skip an id,
+        // which is harmless because ids are only keys.
+        private int lastMethodId, lastFieldId, lastPropertyId, lastEventId, lastTypeId;
+
         public TypeInfoSer GetTypesInfo()
         {
             var rv = new TypeInfoSer();
@@ -73,9 +79,7 @@ namespace NScript.Csc.Lib
             if (methodTokenMap.TryGetValue(method, out var rv))
             { return rv; }
 
-            this.AddMethodSpecId(method);
-
-            return methodTokenMap[method];
+            return this.AddMethodSpecId(method);
         }
 
         public int GetTypeSpecId(TypeSymbol type)
@@ -83,9 +87,7 @@ namespace NScript.Csc.Lib
             if (typeTokenMap.TryGetValue(type, out var rv))
             { return rv; }
 
-            this.AddTypeSpecId(type);
-
-            return typeTokenMap[type];
+            return this.AddTypeSpecId(type);
         }
 
         public int GetFieldSpecId(FieldSymbol field)
@@ -93,9 +95,7 @@ namespace NScript.Csc.Lib
             if (fieldTokenMap.TryGetValue(field, out var rv))
             { return rv; }
 
-            this.AddFieldSpecId(field);
-
-            return fieldTokenMap[field];
+            return this.AddFieldSpecId(field);
         }
 
         public int GetPropertySpecId(PropertySymbol property)
@@ -103,9 +103,7 @@ namespace NScript.Csc.Lib
             if (propertyTokenMap.TryGetValue(property, out var rv))
             { return rv; }
 
-            this.AddPropertySpecId(property);
-
-            return propertyTokenMap[property];
+            return this.AddPropertySpecId(property);
         }
 
         public int GetEventSpecId(EventSymbol evt)
@@ -113,9 +111,7 @@ namespace NScript.Csc.Lib
             if (eventTokenMap.TryGetValue(evt, out var rv))
             { return rv; }
 
-            this.AddEventSpecId(evt);
-
-            return eventTokenMap[evt];
+            return this.AddEventSpecId(evt);
         }
 
         private TypeSpecSer GetTypeSpecSer(TypeSymbol type)
@@ -128,73 +124,54 @@ namespace NScript.Csc.Lib
             return typeSerMap[type];
         }
 
-        private void AddTypeSpecId(TypeSymbol type)
+        private int AddTypeSpecId(TypeSymbol type)
         {
-            var ser = this.Serialize(type);
-            if (typeTokenMap.ContainsKey(type)) { return; }
-
-            lock(typeTokenMap)
-            {
-                if (typeTokenMap.ContainsKey(type)) { return; }
-
-                typeSerMap[type] = ser;
-                typeTokenMap[type] = typeTokenMap.Count + 1;
-            }
+            // The serialized form goes in first, so every published id has one.
+            typeSerMap.TryAdd(type, this.Serialize(type));
+            return typeTokenMap.GetOrAdd(
+                type,
+                static (_, self) => Interlocked.Increment(ref self.lastTypeId),
+                this);
         }
 
-        private void AddMethodSpecId(MethodSymbol method)
+        private int AddMethodSpecId(MethodSymbol method)
         {
-            var ser = this.Serialize(method);
-            if (methodTokenMap.ContainsKey(method)) { return; }
-            lock(methodTokenMap)
-            {
-                if (methodTokenMap.ContainsKey(method)) { return; }
-
-                methodSerMap[method] = ser;
-                methodTokenMap[method] = methodTokenMap.Count + 1;
-            }
+            // The serialized form goes in first, so every published id has one.
+            methodSerMap.TryAdd(method, this.Serialize(method));
+            return methodTokenMap.GetOrAdd(
+                method,
+                static (_, self) => Interlocked.Increment(ref self.lastMethodId),
+                this);
         }
 
-        private void AddFieldSpecId(FieldSymbol field)
+        private int AddFieldSpecId(FieldSymbol field)
         {
-            var ser = this.Serialize(field);
-            if (fieldTokenMap.ContainsKey(field)) { return; }
-
-            lock(fieldTokenMap)
-            {
-                if (fieldTokenMap.ContainsKey(field)) { return; }
-
-                fieldSerMap[field] = ser;
-                fieldTokenMap[field] = fieldTokenMap.Count + 1;
-            }
+            // The serialized form goes in first, so every published id has one.
+            fieldSerMap.TryAdd(field, this.Serialize(field));
+            return fieldTokenMap.GetOrAdd(
+                field,
+                static (_, self) => Interlocked.Increment(ref self.lastFieldId),
+                this);
         }
 
-        private void AddPropertySpecId(PropertySymbol property)
+        private int AddPropertySpecId(PropertySymbol property)
         {
-            var ser = this.Serialize(property);
-            if (propertyTokenMap.ContainsKey(property)) { return; }
-
-            lock(propertyTokenMap)
-            {
-                if (propertyTokenMap.ContainsKey(property)) { return; }
-
-                propertySerMap[property] = ser;
-                propertyTokenMap[property] = propertyTokenMap.Count + 1;
-            }
+            // The serialized form goes in first, so every published id has one.
+            propertySerMap.TryAdd(property, this.Serialize(property));
+            return propertyTokenMap.GetOrAdd(
+                property,
+                static (_, self) => Interlocked.Increment(ref self.lastPropertyId),
+                this);
         }
 
-        private void AddEventSpecId(EventSymbol evt)
+        private int AddEventSpecId(EventSymbol evt)
         {
-            var ser = this.Serialize(evt);
-            if (eventTokenMap.ContainsKey(evt)) { return; }
-
-            lock(eventTokenMap)
-            {
-                if (eventTokenMap.ContainsKey(evt)) { return; }
-
-                eventSerMap[evt] = ser;
-                eventTokenMap[evt] = eventTokenMap.Count + 1;
-            }
+            // The serialized form goes in first, so every published id has one.
+            eventSerMap.TryAdd(evt, this.Serialize(evt));
+            return eventTokenMap.GetOrAdd(
+                evt,
+                static (_, self) => Interlocked.Increment(ref self.lastEventId),
+                this);
         }
 
         private TypeSpecSer Serialize(TypeSymbol type)

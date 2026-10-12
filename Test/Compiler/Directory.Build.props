@@ -4,6 +4,19 @@
     <OutputPath>$(MSBuildThisFileDirectory)/bin</OutputPath>
     <Dependencies>$(MSBuildThisFileDirectory)/../../Dependencies</Dependencies>
   </PropertyGroup>
+
+  <!--
+    Build referenced compiler projects into Test/Compiler/compiler-out instead of
+    the shared NScriptToolSet/bin (see Sources/Compiler/Directory.Build.props).
+    Global properties flow to transitive references, so the whole compiler graph
+    lands there. Solution and Visual Studio builds keep the old layout, where
+    building the toolset is the point and a second copy would double the work.
+  -->
+  <ItemDefinitionGroup Condition="'$(BuildingSolutionFile)' != 'true' and '$(BuildingInsideVisualStudio)' != 'true'">
+    <ProjectReference>
+      <AdditionalProperties>NScriptCompilerPrivateOutput=$(MSBuildThisFileDirectory)compiler-out/</AdditionalProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
 </Project>
 
 

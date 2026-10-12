@@ -43,7 +43,7 @@ public static class TestClass {
 
             compilationResults = SerializationHelper.ExpressionVisitMap(
                 compilation,
-                System.IO.Path.GetTempPath(),
+                TestResources.FixtureDirectory,
                 "testcode");
         }
 

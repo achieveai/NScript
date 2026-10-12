@@ -9,23 +9,42 @@
     using NScript.Utils;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Runtime.InteropServices;
 
     public class XwmlTemplatingPlugin : IMethodConverterPlugin, IRuntimeConverterPlugin
     {
+        /// <summary>
+        /// The parse each build session keeps for its next build, keyed by the session's
+        /// ConverterContext: a cold build makes a new context, so it never sees an old parse.
+        /// </summary>
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ConverterContext, ParserContext> KeptParses
+            = new System.Runtime.CompilerServices.ConditionalWeakTable<ConverterContext, ParserContext>();
+
         private string knownCssClasses = string.Empty;
+
+        /// <summary>
+        /// This build may reuse the session's last parse and keep its own: dev mode, not
+        /// optimized (the builds a session makes), and NSCRIPT_XWML_REUSE is not "off".
+        /// </summary>
+        private bool reuseParse;
 
         private KnownTemplateTypes knownTemplateTypes;
 
         private TypeResolver typeResolver;
 
-        private ParserContext parserContext;
-
         private CodeGenerator codeGenerator;
 
+        // Probe.XwmlInit: Stopwatch ticks per phase of this build. Overwrite reads the
+        // template documents (and the sheets they link), Parse parses the queued templates,
+        // Gen compresses CSS names and generates the template code.
+        private long probeInitTicks;
+        private long probeOverwriteTicks;
+        private long probeParseTicks;
+
         public ParserContext ParserContext
-        { get { return this.parserContext; } }
+        { get { return this.codeGenerator.ParserContext; } }
 
         public TypeResolver TypeResolver
         { get { return this.typeResolver; } }
@@ -55,6 +74,18 @@
             else return IntrestLevel.None;
         }
 
+        /// <summary>
+        /// [AutoFire] accessors replay: their overwrite keeps no plugin state and resolves only
+        /// through the method converter. Skin getters do not: converting one queues its template.
+        /// </summary>
+        public bool CanReplayConversion(MethodDefinition methodDefinition, ConverterContext converterContext)
+        {
+            var propertyDefinition = methodDefinition.GetPropertyDefinition();
+            return propertyDefinition?.CustomAttributes != null
+                && propertyDefinition.CustomAttributes.SelectAttribute(this.knownTemplateTypes.SkinAttribute) == null
+                && propertyDefinition.CustomAttributes.SelectAttribute(this.knownTemplateTypes.AutoFireAttribute) != null;
+        }
+
         public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter)
         {
             throw new NotImplementedException();
@@ -72,6 +103,19 @@
 
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {
+            long start = Stopwatch.GetTimestamp();
+            try
+            {
+                return this.GetOverwriteCore(methodConverter);
+            }
+            finally
+            {
+                this.probeOverwriteTicks += Stopwatch.GetTimestamp() - start;
+            }
+        }
+
+        private List<Statement> GetOverwriteCore(MethodConverter methodConverter)
+        {
             var attr = methodConverter.MethodDefinition.GetPropertyDefinition()
                 .CustomAttributes.SelectAttribute(this.knownTemplateTypes.SkinAttribute)
                 ?? methodConverter.MethodDefinition.GetPropertyDefinition()
@@ -84,6 +128,7 @@
 
         public void Initialize(NScript.CLR.ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
         {
+            long start = Stopwatch.GetTimestamp();
             HtmlAgilityPack.HtmlNode.ElementsFlags.Remove("form");
             this.knownTemplateTypes = new KnownTemplateTypes(runtimeScopeManager.Context.ClrKnownReferences);
             this.typeResolver = new TypeResolver(
@@ -91,14 +136,24 @@
                 runtimeScopeManager.Context.ClrContext);
             this.codeGenerator = new CodeGenerator(runtimeScopeManager, this.knownTemplateTypes);
             var cssClassEntries = this.knownCssClasses.Split(new char[]{',', ' '}, StringSplitOptions.RemoveEmptyEntries);
-            this.parserContext = new ParserContext(
+            var parserContext = new ParserContext(
                 this.knownTemplateTypes,
                 this.codeGenerator,
                 this.typeResolver,
                 this.typeResolver,
                 cssClassEntries);
 
-            this.parserContext.ConverterContext = runtimeScopeManager.Context;
+            var converterContext = runtimeScopeManager.Context;
+            parserContext.ConverterContext = converterContext;
+            this.reuseParse = converterContext.DevMode
+                && !runtimeScopeManager.ImplementInstanceAsStatic
+                && Environment.GetEnvironmentVariable("NSCRIPT_XWML_REUSE") != "off";
+            if (this.reuseParse && KeptParses.TryGetValue(converterContext, out var kept))
+            {
+                // Taken, not shared: only a build that ends well keeps a parse again.
+                KeptParses.Remove(converterContext);
+                this.codeGenerator.OfferKeptParse(kept);
+            }
 
             if (CompilerLog.IsEnabled)
             {
@@ -106,6 +161,10 @@
                     "XwmlParser.Initialized KnownCssClassCount={Count}",
                     cssClassEntries.Length);
             }
+
+            this.probeInitTicks = Stopwatch.GetTimestamp() - start;
+            this.probeOverwriteTicks = 0;
+            this.probeParseTicks = 0;
         }
 
         public void ParseArgs(IList<Tuple<string, string>> args)
@@ -128,7 +187,9 @@
 
         public List<MethodReference> GetMethodsToEmitPassN()
         {
+            long start = Stopwatch.GetTimestamp();
             this.codeGenerator.IterateParsing();
+            this.probeParseTicks += Stopwatch.GetTimestamp() - start;
             return new List<MethodReference>();
         }
 
@@ -139,7 +200,98 @@
 
         public List<Statement> GetPostJavascript()
         {
-            return this.codeGenerator.GetAllTemplateStatements(); ;
+            long start = Stopwatch.GetTimestamp();
+            var statements = this.codeGenerator.GetAllTemplateStatements();
+            this.KeepParse();
+            long genTicks = Stopwatch.GetTimestamp() - start;
+
+            static long Ms(long ticks) => ticks * 1000 / Stopwatch.Frequency;
+            CompilerLog.ForComponent("XwmlParser").Information(
+                "Probe.XwmlInit TotalMs={TotalMs} InitMs={InitMs} OverwriteMs={OverwriteMs} ParseMs={ParseMs} GenMs={GenMs} Templates={Templates} TemplatesParsed={TemplatesParsed} StyleSheets={StyleSheets} StyleSheetHits={StyleSheetHits} Hits={Hits} Misses={Misses} Reused={Reused} ReuseMiss={ReuseMiss}",
+                Ms(this.probeInitTicks + this.probeOverwriteTicks + this.probeParseTicks + genTicks),
+                Ms(this.probeInitTicks),
+                Ms(this.probeOverwriteTicks),
+                Ms(this.probeParseTicks),
+                Ms(genTicks),
+                this.codeGenerator.ProbeDocuments + this.codeGenerator.ProbeReusedDocuments,
+                this.codeGenerator.ProbeTemplatesParsed,
+                this.codeGenerator.ProbeStyleSheets,
+                this.codeGenerator.ProbeStyleSheetHits,
+                this.codeGenerator.ProbeReusedDocuments,
+                this.codeGenerator.ProbeDocuments,
+                this.codeGenerator.ReusedParse,
+                this.codeGenerator.ReuseMiss);
+            return statements;
+        }
+
+        /// <inheritdoc/>
+        public string PatchSectionName => "XwmlParser";
+
+        /// <summary>
+        /// Dev patch emit: replaces the code of the changed style sheets and documents. The
+        /// patched parse is not kept: a later full emit parses from the start.
+        /// </summary>
+        public string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
+            => this.TryPatchResources(statements, literals, null);
+
+        /// <summary>
+        /// As <see cref="TryPatchResources(List{Statement}, Dictionary{string, string})"/>, over
+        /// the given resources (null reads the modules').
+        /// </summary>
+        internal string TryPatchResources(
+            List<Statement> statements,
+            Dictionary<string, string> literals,
+            Dictionary<string, Tuple<Mono.Cecil.EmbeddedResource, string>> resourceMap)
+        {
+            var parserContext = this.codeGenerator.ParserContext;
+            var converterContext = parserContext.ConverterContext;
+            KeptParses.Remove(converterContext);
+            parserContext.Rebind(this.codeGenerator, this.typeResolver, this.typeResolver, converterContext);
+            try
+            {
+                var miss = this.codeGenerator.PatchResources(statements, literals, resourceMap);
+                if (miss == null && converterContext.Errors.Count > 0)
+                {
+                    miss = "xwml errors";
+                }
+
+                return miss;
+            }
+            catch (Exception ex) when (ex is ConverterLocationException || ex is ApplicationException)
+            {
+                return "xwml " + ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Keeps this build's parse for the session's next build. A reused parse holds its
+        /// documents in the earlier build's order; when this build asked in another order, its
+        /// output would not equal a cold build, so the build is run again without it.
+        /// </summary>
+        private void KeepParse()
+        {
+            if (!this.reuseParse)
+            {
+                return;
+            }
+
+            var parserContext = this.codeGenerator.ParserContext;
+            var converterContext = parserContext.ConverterContext;
+            if (!this.codeGenerator.RequestOrderMatchesParse)
+            {
+                // Only a kept parse can disagree: a new one registers documents as they are asked for.
+                converterContext.RequestRetry("xwml-document-order");
+                return;
+            }
+
+            if (converterContext.Errors.Count > 0)
+            {
+                return;
+            }
+
+            parserContext.ResourceFileNames = this.codeGenerator.GetResourceFileNames();
+            parserContext.Rebind(null, null, null, converterContext);
+            KeptParses.AddOrUpdate(converterContext, parserContext);
         }
 
         private List<Statement> GetSkinPropertyOverwrite(MethodConverter methodConverter)
@@ -172,7 +324,7 @@
             }
             catch (ConverterLocationException ex)
             {
-                this.codeGenerator.ParserContext.ConverterContext.AddError(
+                this.codeGenerator.ParserContext.ConverterContext.AddTemplateError(
                     ex.Location,
                     ex.Message,
                     false);

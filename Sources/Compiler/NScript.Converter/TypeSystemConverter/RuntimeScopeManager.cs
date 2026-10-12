@@ -89,6 +89,12 @@ namespace NScript.Converter.TypeSystemConverter
             new Dictionary<TypeDefinition, string>(MemberReferenceComparer.Instance);
 
         /// <summary>
+        /// Dev mode only: which type owns each hashed type id, to report collisions (NSDEV001).
+        /// </summary>
+        private readonly Dictionary<string, TypeDefinition> devTypeIdOwners =
+            new Dictionary<string, TypeDefinition>(StringComparer.Ordinal);
+
+        /// <summary>
         /// Map from static member to identifier at global level.
         /// </summary>
         private readonly Dictionary<MemberReference, IIdentifier> staticMemberMap =
@@ -167,6 +173,7 @@ namespace NScript.Converter.TypeSystemConverter
                 globalNamespaceManager.Scope,
                 "ptyp_",
                 false);
+            DevNames.Assign(context, ReusablePrototypeIdentifier, () => "$$ptyp");
             InitializeKnownGlobalIdentifiers();
 
             ImplementInstanceAsStatic = instanceAsStatic;
@@ -226,6 +233,15 @@ namespace NScript.Converter.TypeSystemConverter
                 }
 
                 varList.Add(new IdentifierExpression(identifier, Scope));
+            }
+
+            if (Context.DevMode)
+            {
+                // Dev mode: a stable header, so a body edit that changes which roots are used
+                // first does not reorder it.
+                varList.Sort((a, b) => string.CompareOrdinal(
+                    ((IdentifierExpression)a).Identifier.GetName(),
+                    ((IdentifierExpression)b).Identifier.GetName()));
             }
 
             if (varList.Count > 0)
@@ -386,7 +402,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             var typesGenerated = -1;
             var membersGenerated = -1;
-            WalkUsedDependencies();
+            WalkUsedDependencies(plugins);
             var returnValue = new List<Statement>();
 
             do
@@ -410,8 +426,9 @@ namespace NScript.Converter.TypeSystemConverter
                     }
 
                     // Let's emit the type.
+                    var emittedType = typesDefinitionsUsed[typeReference.Resolve()];
                     returnValue.AddRange(
-                        typesDefinitionsUsed[typeReference.Resolve()].Convert(
+                        emittedType.Convert(
                             (typeConverter, statements) =>
                             {
                                 foreach (var dependent in
@@ -452,6 +469,7 @@ namespace NScript.Converter.TypeSystemConverter
                                     }
                                 }
                             }));
+                    this.AddTypeMarker(returnValue, emittedType);
 
                     // Once emited, remove the type from the convertersAdded dictionary.
                     // This is done so that we don't reinit the type again (case of generics).
@@ -491,6 +509,7 @@ namespace NScript.Converter.TypeSystemConverter
                     }
 
                     returnValue.AddRange(typeConverter.Convert(null));
+                    this.AddTypeMarker(returnValue, typeConverter);
                     typeRegistered.Add(typeConverter.TypeDefinition);
                 }
 
@@ -556,7 +575,7 @@ namespace NScript.Converter.TypeSystemConverter
 
                 typesGenerated = typesDefinitionsUsed.Count;
                 membersGenerated = membersProcessed.Count;
-                WalkUsedDependencies();
+                WalkUsedDependencies(plugins);
                 foreach (var typeDefConverter in typesDefinitionsUsed.Values)
                 {
                     typeDefConverter.ClearVariableInitializedTracking();
@@ -636,6 +655,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="name">The name.</param>
         /// <returns>Identifier associated with known name</returns>
         public IIdentifier GetKnownIdentifier(string name)
+            => MethodRecorder.Call(this, name, static (self, n) => self.GetKnownIdentifierCore(n), static (r, n) => r.Runtime.GetKnownIdentifier(n));
+
+        private IIdentifier GetKnownIdentifierCore(string name)
         {
             knownIdentifiers.TryGetValue(name, out var returnValue);
             return returnValue;
@@ -647,6 +669,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="paramDef">The type reference.</param>
         /// <returns></returns>
         public IList<IIdentifier> ResolveType(TypeReference typeReference)
+            => MethodRecorder.Call(this, typeReference, static (self, t) => self.ResolveTypeCore(t), static (r, t) => r.Runtime.ResolveType(t));
+
+        private IList<IIdentifier> ResolveTypeCore(TypeReference typeReference)
         {
             var typeDefinition = typeReference.Resolve();
 
@@ -712,6 +737,14 @@ namespace NScript.Converter.TypeSystemConverter
                             ? typeName.Item2
                             : (typeName.Item2).Replace('.', '_'),
                         isExtended);
+                    var stableTypeReference = typeReference;
+                    DevNames.Assign(
+                        Context,
+                        resolvedIdentifier,
+                        () => DevNames.TypeForm(
+                            stableTypeReference.GetGenericTypeScope() != null
+                                ? stableTypeReference.Resolve()
+                                : stableTypeReference));
 
                     returnValue = new List<IIdentifier>
                     {
@@ -749,6 +782,22 @@ namespace NScript.Converter.TypeSystemConverter
             IdentifierScope scope,
             Func<TypeReference, IdentifierScope, Expression, Expression> resolveTypeToExpressionHelper,
             Expression initializeRefsAndStaticCtor = null)
+            => MethodRecorder.Call(
+                this,
+                (typeReferenceBase, scope, resolveTypeToExpressionHelper, initializeRefsAndStaticCtor),
+                static (self, a) => self.ResolveTypeToExpressionCore(a.Item1, a.Item2, a.Item3, a.Item4),
+                static (rec, self, a) => (a.Item1, rec.Scope(a.Item2), rec.Resolver(a.Item3), rec.Initializer(a.Item4)),
+                static (r, a) => r.Runtime.ResolveTypeToExpression(
+                    a.Item1,
+                    r.ResolveScope(a.Item2),
+                    r.ExpressionResolver(),
+                    MethodReplayer.Initializer(a.Item4, r.ResolveScope(a.Item2))));
+
+        private Expression ResolveTypeToExpressionCore(
+            TypeReference typeReferenceBase,
+            IdentifierScope scope,
+            Func<TypeReference, IdentifierScope, Expression, Expression> resolveTypeToExpressionHelper,
+            Expression initializeRefsAndStaticCtor)
         {
             var typeReference = typeReferenceBase;
             typeReference = Context.KnownReferences.FixArrayType(typeReference) ?? typeReference;
@@ -845,6 +894,10 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Method name identifier for given method.</returns>
         public IIdentifier Resolve(
             PropertyReference propertyReference)
+            => MethodRecorder.Call(this, propertyReference, static (self, m) => self.ResolveCore(m), static (r, m) => r.Runtime.Resolve(m));
+
+        private IIdentifier ResolveCore(
+            PropertyReference propertyReference)
         {
             usedTypeReferencesToProcess.Enqueue(propertyReference.DeclaringType);
             usedMembersToProcess.Enqueue(propertyReference);
@@ -858,6 +911,10 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="memberReference">The method reference.</param>
         /// <returns>Method name identifier for given method.</returns>
         public IIdentifier Resolve(
+            FieldReference memberReference)
+            => MethodRecorder.Call(this, memberReference, static (self, m) => self.ResolveCore(m), static (r, m) => r.Runtime.Resolve(m));
+
+        private IIdentifier ResolveCore(
             FieldReference memberReference)
         {
             usedTypeReferencesToProcess.Enqueue(memberReference.DeclaringType);
@@ -874,6 +931,15 @@ namespace NScript.Converter.TypeSystemConverter
         public IIdentifier Resolve(
             MethodReference memberReference,
             bool forceStatic = false)
+            => MethodRecorder.Call(
+                this,
+                (memberReference, forceStatic),
+                static (self, a) => self.ResolveCore(a.Item1, a.Item2),
+                static (r, a) => r.Runtime.Resolve(a.Item1, a.Item2));
+
+        private IIdentifier ResolveCore(
+            MethodReference memberReference,
+            bool forceStatic)
         {
             usedTypeReferencesToProcess.Enqueue(memberReference.DeclaringType);
             usedMembersToProcess.Enqueue(memberReference);
@@ -899,6 +965,17 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="scope">The scope.</param>
         /// <returns>Expression for referencing the virtual method.</returns>
         public Expression ResolveVirtualMethod(
+            MethodReference methodReference,
+            IdentifierScope scope,
+            Func<TypeReference, IList<IIdentifier>> typeResolver)
+            => MethodRecorder.Call(
+                this,
+                (methodReference, scope, typeResolver),
+                static (self, a) => self.ResolveVirtualMethodCore(a.Item1, a.Item2, a.Item3),
+                static (rec, self, a) => (a.Item1, rec.Scope(a.Item2), rec.Resolver(a.Item3)),
+                static (r, a) => r.Runtime.ResolveVirtualMethod(a.Item1, r.ResolveScope(a.Item2), r.TypeResolver(a.Item3)));
+
+        private Expression ResolveVirtualMethodCore(
             MethodReference methodReference,
             IdentifierScope scope,
             Func<TypeReference, IList<IIdentifier>> typeResolver)
@@ -935,6 +1012,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="methodReference">The method reference.</param>
         /// <returns>Method name identifier.</returns>
         public IIdentifier ResolveFunctionName(MethodReference methodReference)
+            => MethodRecorder.Call(this, methodReference, static (self, m) => self.ResolveFunctionNameCore(m), static (r, m) => r.Runtime.ResolveFunctionName(m));
+
+        private IIdentifier ResolveFunctionNameCore(MethodReference methodReference)
         {
             if (!methodNameIdentifier.TryGetValue(methodReference, out var returnValue))
             {
@@ -942,6 +1022,14 @@ namespace NScript.Converter.TypeSystemConverter
                     methodReference.DeclaringType.Resolve().Name + "." + methodReference.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(Context, returnValue, () =>
+                {
+                    var methodDefinition = methodReference.Resolve();
+                    return DevNames.StaticMember(
+                        methodDefinition.DeclaringType,
+                        methodDefinition.Name,
+                        DevNames.MethodSig(methodDefinition));
+                });
 
                 methodNameIdentifier.Add(methodReference, returnValue);
             }
@@ -955,6 +1043,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="alias">The alias.</param>
         /// <returns>Identifier sequence for given alias.</returns>
         public IList<IIdentifier> ResolveScriptAlias(string alias)
+            => MethodRecorder.Call(this, alias, static (self, a) => self.ResolveScriptAliasCore(a), static (r, a) => r.Runtime.ResolveScriptAlias(a));
+
+        private IList<IIdentifier> ResolveScriptAliasCore(string alias)
         {
             if (!scriptAliasIdentifiers.TryGetValue(
                 alias,
@@ -1002,6 +1093,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="methodDefinition">The method definition.</param>
         /// <returns>identifier for the method</returns>
         public IIdentifier ResolveStatic(MethodDefinition methodDefinition)
+            => MethodRecorder.Call(this, methodDefinition, static (self, m) => self.ResolveStaticCore(m), static (r, m) => r.Runtime.ResolveStatic(m));
+
+        private IIdentifier ResolveStaticCore(MethodDefinition methodDefinition)
         {
             var typeDef = methodDefinition.DeclaringType.Resolve();
             if ((typeDef.IsGenericInstance || typeDef.HasGenericParameters)
@@ -1022,6 +1116,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="constructor">The method definition.</param>
         /// <returns>identifier for the method</returns>
         public IIdentifier ResolveFactory(MethodDefinition constructor)
+            => MethodRecorder.Call(this, constructor, static (self, m) => self.ResolveFactoryCore(m), static (r, m) => r.Runtime.ResolveFactory(m));
+
+        private IIdentifier ResolveFactoryCore(MethodDefinition constructor)
         {
             var typeDef = constructor.DeclaringType.Resolve();
             if (typeDef.IsGenericInstance
@@ -1037,6 +1134,10 @@ namespace NScript.Converter.TypeSystemConverter
                     constructor.DeclaringType.Resolve().Name + "_factory";
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(
+                    Context,
+                    returnValue,
+                    () => DevNames.Factory(typeDef, DevNames.MethodSig(constructor)));
 
                 staticFactoryMap.Add(constructor, returnValue);
             }
@@ -1052,6 +1153,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="fieldDefinition">The field definition.</param>
         /// <returns>identifier for the field.</returns>
         public IIdentifier ResolveStatic(FieldDefinition fieldDefinition)
+            => MethodRecorder.Call(this, fieldDefinition, static (self, m) => self.ResolveStaticCore(m), static (r, m) => r.Runtime.ResolveStatic(m));
+
+        private IIdentifier ResolveStaticCore(FieldDefinition fieldDefinition)
         {
             var typeDef = fieldDefinition.DeclaringType.Resolve();
             if (!fieldDefinition.IsStatic
@@ -1068,6 +1172,10 @@ namespace NScript.Converter.TypeSystemConverter
                     fieldDefinition.DeclaringType.Resolve().Name + "." + fieldDefinition.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(
+                    Context,
+                    returnValue,
+                    () => DevNames.StaticMember(typeDef, fieldDefinition.Name));
 
                 staticMemberMap.Add(fieldDefinition, returnValue);
             }
@@ -1078,6 +1186,9 @@ namespace NScript.Converter.TypeSystemConverter
         }
 
         public IIdentifier ResolveStatic(PropertyDefinition propertyDefinition)
+            => MethodRecorder.Call(this, propertyDefinition, static (self, m) => self.ResolveStaticCore(m), static (r, m) => r.Runtime.ResolveStatic(m));
+
+        private IIdentifier ResolveStaticCore(PropertyDefinition propertyDefinition)
         {
             var typeDef = propertyDefinition.DeclaringType.Resolve();
             if (!propertyDefinition.IsStatic()
@@ -1094,6 +1205,13 @@ namespace NScript.Converter.TypeSystemConverter
                     propertyDefinition.DeclaringType.Resolve().Name + "." + propertyDefinition.Name;
 
                 returnValue = SimpleIdentifier.CreateScopeIdentifier(Scope, suggestedName, false);
+                DevNames.Assign(
+                    Context,
+                    returnValue,
+                    () => DevNames.StaticMember(
+                        typeDef,
+                        propertyDefinition.Name,
+                        DevNames.PropertySig(propertyDefinition)));
 
                 staticMemberMap.Add(propertyDefinition, returnValue);
             }
@@ -1116,6 +1234,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="typeDefinition">The type definition.</param>
         /// <returns></returns>
         public TypeScopeManager GetTypeScope(TypeDefinition typeDefinition)
+            => MethodRecorder.Call(this, typeDefinition, static (self, t) => self.GetTypeScopeCore(t), static (r, t) => r.Runtime.GetTypeScope(t));
+
+        private TypeScopeManager GetTypeScopeCore(TypeDefinition typeDefinition)
         {
             if (!typeScopes.TryGetValue(typeDefinition, out var returnValue))
             {
@@ -1161,6 +1282,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="paramDef">The type reference.</param>
         /// <returns>Returns typeId for given type.</returns>
         public string GetTypeId(TypeReference typeReference)
+            => MethodRecorder.Call(this, typeReference, static (self, t) => self.GetTypeIdCore(t), static (r, t) => r.Runtime.GetTypeId(t));
+
+        private string GetTypeIdCore(TypeReference typeReference)
         {
             // format for typeId is
             // curTypeId$[genericTypeId]_[genericTypeId]$
@@ -1195,6 +1319,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="typeDefinition">The type definition.</param>
         /// <returns>Returns typeId for given type.</returns>
         public string GetTypeId(TypeDefinition typeDefinition)
+            => MethodRecorder.Call(this, typeDefinition, static (self, t) => self.GetTypeIdCore(t), static (r, t) => r.Runtime.GetTypeId(t));
+
+        private string GetTypeIdCore(TypeDefinition typeDefinition)
         {
             if (!typeIdMap.TryGetValue(typeDefinition, out var typeId))
             {
@@ -1202,6 +1329,22 @@ namespace NScript.Converter.TypeSystemConverter
                     || Context.IsPsudoType(typeDefinition))
                 {
                     typeId = GetTypeId(Context.ClrKnownReferences.Object);
+                }
+                else if (Context.DevMode)
+                {
+                    typeId = DevNames.TypeId(typeDefinition);
+                    if (devTypeIdOwners.TryGetValue(typeId, out var owner))
+                    {
+                        Context.AddError(
+                            null,
+                            "NSDEV001: dev type id '" + typeId + "' is shared by "
+                                + owner.FullName + " and " + typeDefinition.FullName + ".",
+                            false);
+                    }
+                    else
+                    {
+                        devTypeIdOwners.Add(typeId, typeDefinition);
+                    }
                 }
                 else
                 {
@@ -1223,6 +1366,17 @@ namespace NScript.Converter.TypeSystemConverter
         /// <param name="typeResolver">The type resolver.</param>
         /// <returns>Expression that will provide access to typeId.</returns>
         public Expression GetTypeId(
+            TypeReference typeReference,
+            IdentifierScope scope,
+            Func<TypeReference, IList<IIdentifier>> typeResolver)
+            => MethodRecorder.Call(
+                this,
+                (typeReference, scope, typeResolver),
+                static (self, a) => self.GetTypeIdCore(a.Item1, a.Item2, a.Item3),
+                static (rec, self, a) => (a.Item1, rec.Scope(a.Item2), rec.Resolver(a.Item3)),
+                static (r, a) => r.Runtime.GetTypeId(a.Item1, r.ResolveScope(a.Item2), r.TypeResolver(a.Item3)));
+
+        private Expression GetTypeIdCore(
             TypeReference typeReference,
             IdentifierScope scope,
             Func<TypeReference, IList<IIdentifier>> typeResolver)
@@ -1443,6 +1597,99 @@ namespace NScript.Converter.TypeSystemConverter
         }
 
         /// <summary>
+        /// Dev mode: ends a type's section with its marker, where patch emit puts changed pieces.
+        /// </summary>
+        private void AddTypeMarker(List<Statement> statements, TypeConverter typeConverter)
+        {
+            if (Context.DevMode)
+            {
+                statements.Add(new MarkerStatement(Scope, MarkerStatement.ForType(typeConverter.TypeDefinition.FullName)));
+            }
+        }
+
+        /// <summary>
+        /// Dev patch emit: the types converted for the last emit.
+        /// </summary>
+        internal IReadOnlyDictionary<TypeDefinition, TypeConverter> TypeConverters => typesDefinitionsUsed;
+
+        /// <summary>
+        /// Dev patch emit: what conversions since the last walk asked for that the emitted
+        /// code does not have yet (a member or type the walk never processed, or a new virtual
+        /// call), or null. Clears the queues, as no walk will take them.
+        /// </summary>
+        internal string TakeNewDemand(int virtualMethodsBefore)
+        {
+            string demand = null;
+            if (virtualMethodsUsed.Count != virtualMethodsBefore)
+            {
+                demand = "virtual call";
+            }
+
+            foreach (var member in usedMembersToProcess)
+            {
+                if (demand == null && !membersProcessed.Contains(member.GetDefinition() as MemberReference))
+                {
+                    demand = "member " + member.FullName;
+                }
+            }
+
+            HashSet<TypeReference> known = null;
+            foreach (var type in usedTypeReferencesToProcess)
+            {
+                if (demand != null
+                    || type.IsGenericParameter
+                    || (type.IsArray && type.GetElementType().IsGenericParameter)
+                    || typeReferencesUsed.Contains(type))
+                {
+                    continue;
+                }
+
+                known ??= new HashSet<TypeReference>(typeReferencesUsed, MemberReferenceComparer.Instance);
+                if (!known.Contains(type))
+                {
+                    demand = "type " + type.FullName;
+                }
+            }
+
+            usedMembersToProcess.Clear();
+            usedTypeReferencesToProcess.Clear();
+            return demand;
+        }
+
+        /// <summary>
+        /// Dev patch emit: like <see cref="TakeNewDemand"/>, but a method of an emitted type
+        /// is not a miss: it is marked processed and added to <paramref name="methods"/>, for
+        /// the caller to convert. A field, a method of a type never emitted, or a new type is.
+        /// </summary>
+        internal string TakeNewMethods(int virtualMethodsBefore, List<MethodDefinition> methods)
+        {
+            var members = new List<MemberReference>(usedMembersToProcess);
+            usedMembersToProcess.Clear();
+            foreach (var member in members)
+            {
+                var definition = member.GetDefinition() as MemberReference;
+                if (membersProcessed.Contains(definition))
+                {
+                    continue;
+                }
+
+                if (!(definition is MethodDefinition method) || !typesDefinitionsUsed.ContainsKey(method.DeclaringType))
+                {
+                    usedTypeReferencesToProcess.Clear();
+                    return "member " + member.FullName;
+                }
+
+                membersProcessed.Add(definition);
+                methods.Add(method);
+            }
+
+            return this.TakeNewDemand(virtualMethodsBefore);
+        }
+
+        /// <summary>Dev patch emit: how many virtual methods calls reach.</summary>
+        internal int VirtualMethodsUsedCount => virtualMethodsUsed.Count;
+
+        /// <summary>
         /// Processes the types.
         /// </summary>
         private void ProcessTypes()
@@ -1524,6 +1771,43 @@ namespace NScript.Converter.TypeSystemConverter
                 if (memberDefinition is FieldDefinition fieldDefinition)
                 {
                     typesDefinitionsUsed[fieldDefinition.DeclaringType].AddFieldToImplementation(fieldDefinition);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Walks the used dependencies, letting the plugins process what the walk found until
+        /// neither finds anything new. A template binds members, converting a skin getter
+        /// queues its template, and parsing that template binds more members; settling the
+        /// chain here, rather than one level per conversion pass, saves whole passes.
+        /// </summary>
+        private void WalkUsedDependencies(IRuntimeConverterPlugin[] plugins)
+        {
+            WalkUsedDependencies();
+            if (plugins == null)
+            {
+                return;
+            }
+
+            while (true)
+            {
+                var known = membersProcessed.Count + typesDefinitionsUsed.Count;
+                foreach (var plugin in plugins)
+                {
+                    var newMethods = plugin.GetMethodsToEmitPassN();
+                    if (newMethods != null)
+                    {
+                        foreach (var methodRef in newMethods)
+                        {
+                            Resolve(methodRef);
+                        }
+                    }
+                }
+
+                WalkUsedDependencies();
+                if (membersProcessed.Count + typesDefinitionsUsed.Count == known)
+                {
+                    return;
                 }
             }
         }

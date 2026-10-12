@@ -164,6 +164,7 @@ Full documentation lives under [`docs/`](docs/README.md). Highlights:
 - [Interop attributes](docs/interop/attributes.md) — `[Script]`, `[ImportedType]`, `[JsonType]`, naming
 - [Compiler pipeline](docs/compiler/pipeline.md) and [plugins](docs/compiler/plugins.md)
 - [MSBuild SDK](docs/build/msbuild-sdk.md), [Testing](docs/testing/README.md), [Source maps](docs/debugging/source-maps.md)
+- [Build service](docs/build/build-service.md) — watch mode rebuilds the JS on save; `dotnet build` asks the daemon first
 - [Architecture Decision Records](docs/adr/) — 25 accepted ADRs
 
 ## Packages

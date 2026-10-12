@@ -11,6 +11,7 @@ namespace NScript.Utils
     using System.Diagnostics;
     using System.IO;
     using Serilog;
+    using Serilog.Events;
     using Serilog.Formatting.Compact;
 
     /// <summary>
@@ -91,7 +92,12 @@ namespace NScript.Utils
         /// <param name="path">     Log file path. When null or whitespace, logging stays disabled. </param>
         /// <param name="stage">    Stage label (e.g. "csc", "cs2jsc"). Defaults to "unknown". </param>
         /// <param name="runId">    Optional cross-process run correlation id. When null, env var or a fresh GUID is used. </param>
-        public static void Initialize(string path, string stage, string runId = null)
+        /// <param name="minimumLevel"> Lowest level written. Defaults to Verbose (every event). </param>
+        /// <param name="fileSizeLimitBytes">
+        /// When set, the file rolls at this size and one older file is kept (long-lived processes
+        /// such as the build service). When null, one file as before.
+        /// </param>
+        public static void Initialize(string path, string stage, string runId = null, LogEventLevel minimumLevel = LogEventLevel.Verbose, long? fileSizeLimitBytes = null)
         {
             if (isEnabled)
             {
@@ -119,16 +125,19 @@ namespace NScript.Utils
                     var effectiveRunId = ResolveRunId(runId);
 
                     var configuration = new LoggerConfiguration()
-                        .MinimumLevel.Verbose()
+                        .MinimumLevel.Is(minimumLevel)
                         .Enrich.WithProperty("RunId", effectiveRunId)
                         .Enrich.WithProperty("Stage", effectiveStage)
                         .Enrich.WithProperty("Pid", Process.GetCurrentProcess().Id)
                         .Enrich.WithProperty("MachineName", Environment.MachineName)
+                        .Enrich.FromLogContext()
                         .WriteTo.File(
                             formatter: new CompactJsonFormatter(),
                             path: resolvedPath,
                             shared: true,
-                            rollOnFileSizeLimit: false,
+                            fileSizeLimitBytes: fileSizeLimitBytes ?? 1L * 1024 * 1024 * 1024,
+                            rollOnFileSizeLimit: fileSizeLimitBytes.HasValue,
+                            retainedFileCountLimit: fileSizeLimitBytes.HasValue ? 2 : 31,
                             flushToDiskInterval: TimeSpan.FromSeconds(1));
 
                     rootLogger = configuration.CreateLogger();

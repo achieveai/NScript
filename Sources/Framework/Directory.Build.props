@@ -41,10 +41,39 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
+  <!--
+    NScriptWatch=true: compile through the build service and register with its watch.
+    The stamp makes CoreCompile run, so an up-to-date project still registers.
+  -->
+  <PropertyGroup Condition="'$(NScriptWatch)' == 'true'">
+    <!-- The evaluation time: as NSCRIPT_WATCH_EVALUATED_UTC_TICKS in NScript.Sdk's Sdk.targets. -->
+    <CscEnvironment>$(CscEnvironment);NSCRIPT_WATCH=true;NSCRIPT_WATCH_EVALUATED_UTC_TICKS=$([System.DateTime]::UtcNow.Ticks)</CscEnvironment>
+  </PropertyGroup>
+
+  <Target Name="NScriptWatchStamp" BeforeTargets="CoreCompile" Condition="'$(NScriptWatch)' == 'true'">
+    <Touch Files="$(IntermediateOutputPath)nscript.watch.stamp" AlwaysCreate="true" />
+    <ItemGroup>
+      <CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)nscript.watch.stamp" />
+    </ItemGroup>
+  </Target>
+
+  <!-- This project's GetTargetPath item, for synced builds of its readers: the SDK's one writer. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Compiler/NScript.Sdk/Sdk/NScript.WatchTargetPath.targets" />
+  <!-- The compile properties hash a watch compile sends; a project reading this one syncs only while it is unchanged. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Compiler/NScript.Sdk/Sdk/NScript.WatchProps.targets" />
+
   <Target Name="EnsureNScriptToolsetBuilt"
           BeforeTargets="CoreCompile"
           Condition="!Exists('$(CscToolPath)$(CscToolExe)') or !Exists('$(NScriptToolsetBinDir)$(NScriptEmitterToolFileName)')">
     <Message Importance="high" Text="Bootstrapping NScript toolset into $(NScriptToolsetBinDir)." />
+    <!-- The compiler projects are not references of the project being built, so its restore
+         skips them, and in a fresh clone their build fails with NETSDK1004. Restore them first.
+         The extra property gives the restore its own evaluation, as dotnet build's -restore does,
+         so the build below evaluates after the restore wrote its props. It is a constant, not a
+         GUID, so framework projects building in parallel share one restore. -->
+    <MSBuild Projects="$(CompilerSources)/JsCsc/JsCsc.csproj;$(CompilerSources)/NScript/NScript.csproj"
+             Targets="Restore"
+             Properties="Configuration=$(Configuration);CompilerNetFramework=$(CompilerNetFramework);NScriptToolsetRestore=true" />
     <MSBuild Projects="$(CompilerSources)/JsCsc/JsCsc.csproj;$(CompilerSources)/NScript/NScript.csproj"
              Targets="Build"
              Properties="Configuration=$(Configuration);CompilerNetFramework=$(CompilerNetFramework)" />

@@ -11,6 +11,7 @@ namespace NScript.CLR
     using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using Mono.Cecil;
     using Mono.Cecil.Cil;
     using Mono.Cecil.Mdb;
@@ -19,13 +20,110 @@ namespace NScript.CLR
     /// <summary>
     /// Definition for ClrContext
     /// </summary>
-    public class ClrContext
+    public class ClrContext : IDisposable
     {
         /// <summary>
-        /// The assembly resolver.
+        /// The assembly resolver. It returns the assemblies this context loaded, and reads any
+        /// other into memory, so a kept build session holds no file open.
         /// </summary>
-        private readonly DefaultAssemblyResolver assemblyResolver =
-            new DefaultAssemblyResolver();
+        private readonly InMemoryAssemblyResolver assemblyResolver;
+
+        /// <summary>
+        /// Resolves to an assembly the context already loaded when there is one. Otherwise it
+        /// uses the search order and cache of <see cref="DefaultAssemblyResolver"/>, reading
+        /// the file into memory (<see cref="ReaderParameters.InMemory"/>). Without the first
+        /// step a reference into a loaded assembly resolved to a second copy read from disk,
+        /// so one type had two TypeDefinitions and the converter emitted it twice.
+        /// </summary>
+        private sealed class InMemoryAssemblyResolver : DefaultAssemblyResolver
+        {
+            private readonly ClrContext context;
+
+            public InMemoryAssemblyResolver(ClrContext context)
+            {
+                this.context = context;
+            }
+
+            public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
+            {
+                if (this.context.TryGetModuleDefinition(name.Name, out var module))
+                {
+                    return module.Assembly;
+                }
+
+                parameters.InMemory = true;
+                return base.Resolve(name, parameters);
+            }
+        }
+
+        /// <summary>
+        /// Remembers what each reference object resolved to. Cecil's resolver scans the
+        /// declaring type's members and compares signatures on every call, and a build session
+        /// resolves the same references build after build. A refresh drops the answers that
+        /// point into the types it rebuilt (<see cref="ForgetTypes"/>).
+        /// </summary>
+        private sealed class CachingMetadataResolver : MetadataResolver
+        {
+            // Weak keys: the converter builds new reference objects every build, and an answer
+            // must not outlive the reference that asked.
+            private readonly ConditionalWeakTable<TypeReference, TypeDefinition> types =
+                new ConditionalWeakTable<TypeReference, TypeDefinition>();
+
+            private readonly ConditionalWeakTable<MethodReference, MethodDefinition> methods =
+                new ConditionalWeakTable<MethodReference, MethodDefinition>();
+
+            private readonly ConditionalWeakTable<FieldReference, FieldDefinition> fields =
+                new ConditionalWeakTable<FieldReference, FieldDefinition>();
+
+            public CachingMetadataResolver(IAssemblyResolver assemblyResolver)
+                : base(assemblyResolver)
+            {
+            }
+
+            public override TypeDefinition Resolve(TypeReference type)
+                => Cached(this.types, type, base.Resolve);
+
+            public override MethodDefinition Resolve(MethodReference method)
+                => Cached(this.methods, method, base.Resolve);
+
+            public override FieldDefinition Resolve(FieldReference field)
+                => Cached(this.fields, field, base.Resolve);
+
+            public void Forget(HashSet<TypeDefinition> forgotten)
+            {
+                Remove(this.types, definition => forgotten.Contains(definition));
+                Remove(this.methods, definition => forgotten.Contains(definition.DeclaringType));
+                Remove(this.fields, definition => forgotten.Contains(definition.DeclaringType));
+            }
+
+            private static TValue Cached<TKey, TValue>(ConditionalWeakTable<TKey, TValue> map, TKey key, Func<TKey, TValue> resolve)
+                where TKey : class
+                where TValue : class
+            {
+                if (!map.TryGetValue(key, out var definition))
+                {
+                    definition = resolve(key);
+                    if (definition != null)
+                    {
+                        map.AddOrUpdate(key, definition);
+                    }
+                }
+
+                return definition;
+            }
+
+            private static void Remove<TKey, TValue>(ConditionalWeakTable<TKey, TValue> map, Func<TValue, bool> stale)
+                where TKey : class
+                where TValue : class
+            {
+                foreach (var key in ((IEnumerable<KeyValuePair<TKey, TValue>>)map).Where(entry => stale(entry.Value)).Select(entry => entry.Key).ToList())
+                {
+                    map.Remove(key);
+                }
+            }
+        }
+
+        private readonly CachingMetadataResolver metadataResolver;
 
         /// <summary>
         /// The assemblies.
@@ -55,6 +153,13 @@ namespace NScript.CLR
             new Dictionary<TypeDefinition, ReadOnlyCollection<MethodReference>>();
 
         /// <summary>
+        /// Interface overrides per type. They depend only on the loaded modules, so they live as long as this
+        /// context and are never shared with another one.
+        /// </summary>
+        private readonly Dictionary<TypeDefinition, Dictionary<MethodReference, MethodReference>> typeToInterfaceOverrides =
+            new Dictionary<TypeDefinition, Dictionary<MethodReference, MethodReference>>();
+
+        /// <summary>
         /// backing store for KnownReferences.
         /// </summary>
         private readonly ClrKnownReferences knownReferences;
@@ -64,6 +169,8 @@ namespace NScript.CLR
         /// </summary>
         public ClrContext()
         {
+            this.assemblyResolver = new InMemoryAssemblyResolver(this);
+            this.metadataResolver = new CachingMetadataResolver(this.assemblyResolver);
             this.knownReferences = new ClrKnownReferences(this);
         }
 
@@ -125,6 +232,10 @@ namespace NScript.CLR
                 new ReaderParameters()
                 {
                     AssemblyResolver = assemblyResolver,
+                    MetadataResolver = metadataResolver,
+                    // Read the image into memory so no file handle outlives the load: the
+                    // build service keeps the process alive and must not lock obj/ DLLs.
+                    InMemory = true,
                     ReadSymbols = loadSymbols,
                     SymbolReaderProvider = loadSymbols ? symbolReader : null
                 });
@@ -138,6 +249,7 @@ namespace NScript.CLR
                 // Early return when BstInfo is not present.
                 // This is done to skip loading assemblies which
                 // are not compiled with custom Roslyn compiler.
+                moduleDefinition.Dispose();
                 return;
             }
 
@@ -152,6 +264,20 @@ namespace NScript.CLR
                 moduleDefinition.Name;
 
             this.assemblies[moduleDefinition.Name.ToLowerInvariant()] = moduleDefinition;
+        }
+
+        /// <summary>
+        /// Releases the loaded modules and every assembly the resolver opened (the resolver
+        /// reads referenced assemblies from disk and keeps their files open until disposed).
+        /// </summary>
+        public void Dispose()
+        {
+            foreach (var module in this.assemblies.Values)
+            {
+                module.Dispose();
+            }
+
+            this.assemblyResolver.Dispose();
         }
 
         /// <summary>
@@ -211,6 +337,58 @@ namespace NScript.CLR
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Build session: takes the resources of new images of loaded modules when only
+        /// resources changed. An image qualifies when its module is loaded, it has the loaded
+        /// module's MVID, the same embedded resources in the same order (name and attributes),
+        /// every "$$" resource ($$BstInfo$$, $$ResInfo$$) byte-equal, and at least one other
+        /// resource that differs. ResourcePatcher writes such images; a recompile gets a new
+        /// MVID and a new $$BstInfo$$. Every image is checked before any module changes.
+        /// </summary>
+        /// <param name="images">The new bytes of each changed input.</param>
+        /// <param name="replaced">The number of resources replaced.</param>
+        /// <param name="reason">Why an image does not qualify; null on success.</param>
+        /// <returns>true if the modules took the new resources; false if nothing changed.</returns>
+        public bool TryRefreshResources(IReadOnlyList<byte[]> images, out int replaced, out string reason)
+        {
+            replaced = 0;
+            using var refresh = ModuleRefresh.TryPlan(this, images, this.assemblyResolver, resourcesOnly: true, out reason);
+            if (refresh == null)
+            {
+                return false;
+            }
+
+            refresh.Commit();
+            replaced = refresh.ResourcesReplaced;
+            return true;
+        }
+
+        /// <summary>
+        /// Build session: checks new images of loaded modules (see <see cref="ModuleRefresh"/>).
+        /// Returns null with a reason when one does not qualify; nothing changes until the
+        /// caller commits the plan.
+        /// </summary>
+        public ModuleRefresh TryPlanRefresh(IReadOnlyList<byte[]> images, out string reason)
+            => ModuleRefresh.TryPlan(this, images, this.assemblyResolver, resourcesOnly: false, out reason);
+
+        /// <summary>Drops what this context computed from types a refresh rebuilt or removed.</summary>
+        internal void ForgetTypes(IEnumerable<TypeDefinition> types)
+        {
+            var forgotten = new HashSet<TypeDefinition>(types);
+            foreach (var type in forgotten)
+            {
+                this.typeToVirtualMethods.Remove(type);
+                this.typeToInterfaceOverrides.Remove(type);
+            }
+
+            foreach (var stale in this.typeReferenceToDefinitionMap.Where(entry => forgotten.Contains(entry.Value)).Select(entry => entry.Key).ToList())
+            {
+                this.typeReferenceToDefinitionMap.Remove(stale);
+            }
+
+            this.metadataResolver.Forget(forgotten);
         }
 
         /// <summary>
@@ -396,6 +574,21 @@ namespace NScript.CLR
             }
 
             throw new InvalidProgramException();
+        }
+
+        /// <summary>
+        /// Gets the interface overrides of a type, computed once per type for this context.
+        /// The returned map is shared; callers must not change it.
+        /// </summary>
+        public Dictionary<MethodReference, MethodReference> GetInterfaceOverrides(TypeDefinition typeDefinition)
+        {
+            if (!this.typeToInterfaceOverrides.TryGetValue(typeDefinition, out var overrides))
+            {
+                overrides = TypeHelpers.ComputeInterfaceOverrides(typeDefinition, this);
+                this.typeToInterfaceOverrides.Add(typeDefinition, overrides);
+            }
+
+            return overrides;
         }
 
         /// <summary>

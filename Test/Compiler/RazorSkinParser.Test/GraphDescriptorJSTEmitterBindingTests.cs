@@ -24,6 +24,7 @@ namespace RazorSkinParser.Test
     {
         private static readonly Location TemplateLocation = new Location("Probe.skin.cshtml", 3, 5);
         private static readonly Location HandlerLocation = new Location("Probe.skin.cshtml", 9, 12);
+        private static readonly Location BindingLocation = new Location("Probe.skin.cshtml", 5, 61);
         private static ClrContext _clrContext;
 
         [ClassInitialize]
@@ -100,6 +101,24 @@ namespace RazorSkinParser.Test
                 var error = emit.Should().Throw<RazorSubControlDiagnosticException>().Which;
                 error.Message.Should().Contain("'" + expression + "'").And.Contain("cannot be resolved");
                 error.Location.Should().BeSameAs(TemplateLocation);
+            }
+        }
+
+        [TestMethod]
+        public void UnsupportedBindings_FailAtTheBindingLocation_WhenTheTemplateKnowsIt()
+        {
+            // Watch and MSBuild show this location: an unbalanced @( must point at its own line,
+            // not at the template's first line.
+            foreach (var expression in new[] { "Model.Missing", "Model.Inner ? \"a\" : \"b\"\" value=\"@Model.Inner" })
+            {
+                var binding = MakeBinding(expression, BindingMode.OneTime, ExpressionTarget.TextContent, "e0", "X");
+                binding.Location = BindingLocation;
+                var topology = GraphTopologyBuilder.Build(MakeTemplate(binding));
+                topology.DomTargets.Clear();
+
+                Action emit = () => Emit(topology);
+                emit.Should().Throw<RazorSubControlDiagnosticException>()
+                    .Which.Location.Should().BeSameAs(BindingLocation, expression);
             }
         }
 

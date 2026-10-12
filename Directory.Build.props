@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <!-- The SDK defaults Configuration after this file is read; the toolset paths below need it now. -->
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <NScriptRoot>$(MSBuildThisFileDirectory)</NScriptRoot>
     <Dependencies>$(NScriptRoot)/Dependencies</Dependencies>
     <NScriptToolsetDir>$(NScriptRoot)/NScriptToolSet</NScriptToolsetDir>
@@ -21,7 +23,7 @@
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<Deterministric>true</Deterministric>
+		<Deterministic>true</Deterministic>
     <!--Set this to true to generate packages-->
     <GenerateNScriptPackages>true</GenerateNScriptPackages>
     <!--Update package version here-->

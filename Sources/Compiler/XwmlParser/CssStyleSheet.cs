@@ -2,6 +2,10 @@
 //
 // summary:	Implements the CSS group class
 
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("XwmlParser.Test")]
+
 namespace XwmlParser
 {
     using NScript.Converter;
@@ -20,6 +24,12 @@ namespace XwmlParser
     {
         private static Microsoft.ClearScript.V8.V8ScriptEngine jsEngine = new Microsoft.ClearScript.V8.V8ScriptEngine();
         private static Autoprefixer.Compiler compiler;
+
+        /// <summary>
+        /// Parsed stylesheets by content, kept for the process, so a warm build service
+        /// parses only the sheets that changed.
+        /// </summary>
+        internal static readonly ContentCache<CssParser.CssGrammer> ParsedSheets = new ContentCache<CssParser.CssGrammer>(1024);
 
         public static readonly Autoprefixer.BrowserSpecification browserSpecification =
             new Autoprefixer.BrowserSpecification()
@@ -101,6 +111,39 @@ namespace XwmlParser
         public IList<CssStyleSheet> Dependencies
         { get { return this.dependencies; } }
 
+        /// <summary>The sheets linked before this one when it was parsed (dev patch emit parses it again against them).</summary>
+        internal List<CssStyleSheet> PreviousSheets { get; private set; }
+
+        /// <summary>The class names this sheet declares (not only modifies).</summary>
+        internal IEnumerable<string> DeclaredClassNames
+        {
+            get
+            {
+                foreach (var pair in this.classNames)
+                {
+                    if (pair.Value.Item2)
+                    {
+                        yield return pair.Key;
+                    }
+                }
+            }
+        }
+
+        /// <summary>Dev patch emit: points this sheet at a dependency parsed again.</summary>
+        internal void ReplaceDependency(CssStyleSheet old, CssStyleSheet parsedAgain)
+        {
+            int index = this.dependencies.IndexOf(old);
+            if (index >= 0)
+            {
+                this.dependencies[index] = parsedAgain;
+            }
+
+            for (index = this.PreviousSheets?.IndexOf(old) ?? -1; index >= 0; index = this.PreviousSheets.IndexOf(old))
+            {
+                this.PreviousSheets[index] = parsedAgain;
+            }
+        }
+
         /// <summary>
         /// Gets the CSS variables declared in :root selectors.
         /// </summary>
@@ -178,25 +221,36 @@ namespace XwmlParser
         /// Adds the CSS.
         /// </summary>
         /// <param name="cssText"> The CSS text. </param>
-        internal void AddCss(
+        /// <returns>True when the parsed stylesheet came from <see cref="ParsedSheets"/>.</returns>
+        internal bool AddCss(
             string cssText,
             Location cssBlockStartPosition,
             List<CssStyleSheet> previousStyles)
         {
+            this.PreviousSheets ??= new List<CssStyleSheet>(previousStyles);
             try
             {
-                // Parse CSS - validation will happen after all blocks are accumulated
-                var grammer = new CssParser.CssGrammer(cssText, parseProperties: false);
-                
-                // Collect declared variables from :root selectors in this block
-                grammer.CollectCssVariablesFromRules();
+                // Parse CSS - validation will happen after all blocks are accumulated.
+                // The parsed rules are only read afterwards (class-name finder, serializer with
+                // rename callbacks), so one parse per content is shared, uncopied.
+                var grammer = ParsedSheets.GetOrCreate(
+                    ContentCache<CssParser.CssGrammer>.Key(cssText),
+                    () =>
+                    {
+                        var parsed = new CssParser.CssGrammer(cssText, parseProperties: false);
+                        parsed.CollectCssVariablesFromRules();
+                        parsed.CollectUsedCssVariablesFromRules();
+                        return parsed;
+                    },
+                    out var cacheHit);
+
+                // Variables declared in this block's :root selectors
                 foreach (var variable in grammer.DefinedCssVariables)
                 {
                     this.declaredCssVariables.Add(variable);
                 }
                 
-                // Collect used variables from var() functions in this block
-                grammer.CollectUsedCssVariablesFromRules();
+                // Variables used by this block's var() functions
                 foreach (var variable in grammer.UsedCssVariables)
                 {
                     this.usedCssVariables.Add(variable);
@@ -211,6 +265,7 @@ namespace XwmlParser
                     grammer.MediaRules,
                     cssBlockStartPosition,
                     previousStyles);
+                return cacheHit;
             }
             catch(CssParser.ParseException ex)
             {
@@ -337,7 +392,7 @@ namespace XwmlParser
 
             if (isDeclared && !nested)
             {
-                this.parserContext.ConverterContext.AddError(
+                this.parserContext.ConverterContext.AddTemplateError(
                     new Location(
                         cssBlockStartPosition.FileName,
                         cssBlockStartPosition.StartLine + cn.Line,
@@ -355,18 +410,36 @@ namespace XwmlParser
             {
                 this.classNames[cn.ClassName] =
                     Tuple.Create(
-                        previousIdentifier ?? parserContext.RegisterCssClassName(cn.ClassName),
+                        previousIdentifier ?? this.RegisterClassName(cn.ClassName),
                         !nested || previousIdentifier == null);
             }
             else if (!result.Item2 && !nested)
             {
                 this.classNames[cn.ClassName] =
                     Tuple.Create(
-                        parserContext.RegisterCssClassName(cn.ClassName),
+                        this.RegisterClassName(cn.ClassName),
                         true);
             }
 
             this.classNames[cn.ClassName].Item1.AddUsage(null);
+        }
+
+        /// <summary>
+        /// A new name for a class this sheet declares. Parsed again for dev patch emit, the
+        /// sheet keeps the name its earlier parse declared, so code already written still
+        /// matches; only a new class gets a new name.
+        /// </summary>
+        private IIdentifier RegisterClassName(string className)
+        {
+            if (this.parserContext.ParsedBefore != null
+                && this.parserContext.ParsedBefore.TryGetValue(this.ResourceName, out var before)
+                && before.classNames.TryGetValue(className, out var declared)
+                && declared.Item2)
+            {
+                return declared.Item1;
+            }
+
+            return this.parserContext.RegisterCssClassName(className);
         }
     }
 }

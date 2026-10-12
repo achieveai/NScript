@@ -144,10 +144,17 @@
       <_NScriptPkgBinLines Include="repoRoot=$(_NScriptPkgRoot)" />
     </ItemGroup>
 
+    <!--
+      WriteOnlyWhenDifferent keeps the file timestamp when content is unchanged.
+      The .repo.bin is a CoreCompile input, so a rewrite on every build forces
+      every framework project to recompile. Do not add an Encoding attribute:
+      MSBuild skips the content comparison when Encoding is set. The default is
+      UTF-8 without BOM; PackageRepoMetadata tolerates either.
+    -->
     <WriteLinesToFile File="$(_NScriptPackageRepoBinFile)"
                       Lines="@(_NScriptPkgBinLines)"
                       Overwrite="true"
-                      Encoding="utf-8"
+                      WriteOnlyWhenDifferent="true"
                       Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'" />
 
     <!--
@@ -186,7 +193,7 @@
     <WriteLinesToFile File="$(_NScriptPackageBuildTransitivePropsFile)"
                       Lines="@(_NScriptPkgPropsLines)"
                       Overwrite="true"
-                      Encoding="utf-8"
+                      WriteOnlyWhenDifferent="true"
                       Condition="'$(_NScriptPkgMetadataAvailable)' == 'true'" />
 
     <!--

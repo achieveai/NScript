@@ -13,6 +13,10 @@
             BeforeTargets="CoreCompile"
             Condition="!Exists('$(CscToolPath)$(CscToolExe)') or !Exists('$(NScriptExe)')">
         <Message Importance="high" Text="Bootstrapping NScript Debug toolset into $(NScriptToolsetDebugBinDir)." />
+        <!-- Restore first, in its own evaluation: see EnsureNScriptToolsetBuilt in Sources/Framework/Directory.Build.props. -->
+        <MSBuild Projects="$(CompilerSources)/JsCsc/JsCsc.csproj;$(CompilerSources)/NScript/NScript.csproj"
+                 Targets="Restore"
+                 Properties="Configuration=Debug;CompilerNetFramework=$(CompilerNetFramework);NScriptToolsetRestore=true" />
         <MSBuild Projects="$(CompilerSources)/JsCsc/JsCsc.csproj;$(CompilerSources)/NScript/NScript.csproj"
                  Targets="Build"
                  Properties="Configuration=Debug;CompilerNetFramework=$(CompilerNetFramework)" />

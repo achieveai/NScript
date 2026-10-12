@@ -3,6 +3,11 @@
     <TargetFramework>$(CompilerNetFramework)</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Exe</OutputType>
+    <!-- The build service daemon runs in this process. Server GC with dynamic adaptation (DATAS)
+         cut a warm MCQdbDev NeetPG emit from 18.7 s to 7.3 s (GC pause 4.6 s to 0.6 s) at the
+         same ~0.9 GB heap as workstation GC. -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>latest</LangVersion>
     <ProduceReferenceAssemblies>false</ProduceReferenceAssemblies>

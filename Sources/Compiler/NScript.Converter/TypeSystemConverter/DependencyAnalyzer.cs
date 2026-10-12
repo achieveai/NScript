@@ -214,7 +214,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
             }
 
-            HashSet<TypeReference> typesAlreadyAdded = new HashSet<TypeReference>();
+            HashSet<TypeReference> typesAlreadyAdded = new HashSet<TypeReference>(MemberReferenceComparer.Instance);
             List<TypeReference> rv = new List<TypeReference>();
             foreach (var typeRef in rvPass1)
             {
@@ -228,9 +228,9 @@ namespace NScript.Converter.TypeSystemConverter
                 rv.Add(typeRef);
             }
 
-            Dictionary<TypeReference, int> pointingTo = new Dictionary<TypeReference, int>();
+            Dictionary<TypeReference, int> pointingTo = new Dictionary<TypeReference, int>(MemberReferenceComparer.Instance);
             Dictionary<TypeReference, List<TypeReference>> dependencies
-                = new Dictionary<TypeReference, List<TypeReference>>();
+                = new Dictionary<TypeReference, List<TypeReference>>(MemberReferenceComparer.Instance);
 
             foreach (var typeRef in rv)
             {

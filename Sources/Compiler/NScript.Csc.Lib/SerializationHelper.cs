@@ -131,7 +131,12 @@
                 },
                 true);
 
-            return (new ResourceDescription[] { astResource }, rv);
+            var srcResource = new ResourceDescription(
+                "$$SrcInfo$$",
+                () => ToSrcInfoStream(compilation),
+                false);
+
+            return (new ResourceDescription[] { astResource, srcResource }, rv);
 
             /*
             var astJResource = new ResourceDescription(
@@ -158,6 +163,74 @@
 
             memStream.Position = 0;
             return memStream;
+        }
+
+        /// <summary>
+        /// Writes which source files the assembly came from and which files declare each type,
+        /// so a build session can tell which types a recompile changed. One line per item:
+        /// <c>O\t&lt;options&gt;</c> with the options that change code without changing a file
+        /// (defines, language version, optimization, overflow checks, unsafe, platform,
+        /// nullable), then <c>F\t&lt;path&gt;\t&lt;checksum hex&gt;</c> per syntax tree, in
+        /// compilation order, then <c>T\t&lt;Cecil full name&gt;\t&lt;file indexes, comma
+        /// separated&gt;</c> per source type.
+        /// </summary>
+        private static Stream ToSrcInfoStream(CSharpCompilation compilation)
+        {
+            var text = new System.Text.StringBuilder();
+            var parseOptions = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+            var options = compilation.Options;
+            text.Append("O\t")
+                .Append(string.Join(";", parseOptions?.PreprocessorSymbolNames ?? Enumerable.Empty<string>()))
+                .Append('|').Append(parseOptions?.LanguageVersion)
+                .Append('|').Append(options.OptimizationLevel)
+                .Append('|').Append(options.CheckOverflow)
+                .Append('|').Append(options.AllowUnsafe)
+                .Append('|').Append(options.Platform)
+                .Append('|').Append(options.NullableContextOptions)
+                .Append('\n');
+
+            var fileIndex = new Dictionary<SyntaxTree, int>();
+            foreach (var tree in compilation.SyntaxTrees)
+            {
+                fileIndex[tree] = fileIndex.Count;
+                text.Append("F\t")
+                    .Append(tree.FilePath)
+                    .Append('\t')
+                    .Append(System.Convert.ToHexString(tree.GetText().GetChecksum().AsSpan()))
+                    .Append('\n');
+            }
+
+            void AddTypes(IEnumerable<INamedTypeSymbol> types, string prefix)
+            {
+                foreach (var type in types)
+                {
+                    var fullName = prefix + type.MetadataName;
+                    var files = type.DeclaringSyntaxReferences
+                        .Select(reference => fileIndex.TryGetValue(reference.SyntaxTree, out var index) ? index : -1)
+                        .Where(index => index >= 0)
+                        .Distinct()
+                        .OrderBy(index => index);
+                    text.Append("T\t")
+                        .Append(fullName)
+                        .Append('\t')
+                        .Append(string.Join(",", files))
+                        .Append('\n');
+                    AddTypes(type.GetTypeMembers(), fullName + "/");
+                }
+            }
+
+            void AddNamespace(INamespaceSymbol ns)
+            {
+                var prefix = ns.IsGlobalNamespace ? string.Empty : ns.ToDisplayString() + ".";
+                AddTypes(ns.GetTypeMembers(), prefix);
+                foreach (var child in ns.GetNamespaceMembers())
+                {
+                    AddNamespace(child);
+                }
+            }
+
+            AddNamespace(((Compilation)compilation).Assembly.GlobalNamespace);
+            return new MemoryStream(new System.Text.UTF8Encoding(false).GetBytes(text.ToString()));
         }
 
         private static Stream ToAstStream(

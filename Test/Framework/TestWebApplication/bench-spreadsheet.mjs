@@ -43,10 +43,10 @@ const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
 page.on('pageerror', e => console.log('[pageerror]', e.message));
 await page.goto(url + '/SpreadsheetApp.htm', { waitUntil: 'domcontentloaded' });
-await page.waitForFunction(() => window.__sheet && document.getElementById('sheet'), { timeout: 20000 });
+await page.waitForFunction(() => window.__sheet && document.getElementById('sheet'), undefined, { timeout: 20000 });
 
 await page.evaluate(() => window.__sheet.runAll());
-await page.waitForFunction(() => !window.__sheet.isRunning(), { timeout: 600000, polling: 200 });
+await page.waitForFunction(() => !window.__sheet.isRunning(), undefined, { timeout: 600000, polling: 200 });
 const results = JSON.parse(await page.evaluate(() => window.__sheet.resultsJson()));
 
 await browser.close();

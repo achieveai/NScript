@@ -1463,51 +1463,91 @@ namespace NScript.RazorSkin.TemplateIR
         /// <summary>
         /// Validates that all static CSS class names used in template HTML actually exist
         /// in the referenced @styles stylesheets. Throws ConverterLocationException if
-        /// a class is not found.
+        /// a class is not found, at its class attribute in <paramref name="templateSource"/>
+        /// when given (the IR's HTML is trimmed and rewritten, so its offsets are not the
+        /// template's), otherwise at the start of the HTML that holds it.
         /// </summary>
-        public static void ValidateCssClasses(SkinTemplateNode ir, RazorCssManager cssManager)
+        public static void ValidateCssClasses(
+            SkinTemplateNode ir, RazorCssManager cssManager, string templateSource = null)
         {
             if (cssManager == null || !cssManager.HasStylesheets)
                 return;
 
-            ValidateCssClassesInNodes(ir.Children, cssManager, ir.TemplateName);
+            ValidateCssClassesInNodes(ir.Children, cssManager, ir.TemplateName, templateSource);
         }
 
         private static void ValidateCssClassesInNodes(
             List<IRNode> nodes,
             RazorCssManager cssManager,
-            string templateName)
+            string templateName,
+            string templateSource)
         {
             foreach (var node in nodes)
             {
                 if (node is HtmlNode htmlNode)
                 {
-                    ValidateCssClassesInHtml(htmlNode.HtmlContent, cssManager, templateName);
+                    ValidateCssClassesInHtml(htmlNode.HtmlContent, htmlNode.Location, cssManager, templateName, templateSource);
                 }
 
                 // Recurse into children
                 if (node.Children.Count > 0)
-                    ValidateCssClassesInNodes(node.Children, cssManager, templateName);
+                    ValidateCssClassesInNodes(node.Children, cssManager, templateName, templateSource);
 
                 // Recurse into conditional branches
                 if (node is ConditionalNode conditional)
                 {
                     if (conditional.TrueBranch.Count > 0)
-                        ValidateCssClassesInNodes(conditional.TrueBranch, cssManager, templateName);
+                        ValidateCssClassesInNodes(conditional.TrueBranch, cssManager, templateName, templateSource);
                     if (conditional.FalseBranch.Count > 0)
-                        ValidateCssClassesInNodes(conditional.FalseBranch, cssManager, templateName);
+                        ValidateCssClassesInNodes(conditional.FalseBranch, cssManager, templateName, templateSource);
                 }
 
                 // Recurse into loop body
                 if (node is LoopNode loop && loop.ItemTemplate.Count > 0)
-                    ValidateCssClassesInNodes(loop.ItemTemplate, cssManager, templateName);
+                    ValidateCssClassesInNodes(loop.ItemTemplate, cssManager, templateName, templateSource);
             }
+        }
+
+        /// <summary>
+        /// Where <paramref name="className"/> first appears in a static class attribute of
+        /// <paramref name="templateSource"/> (1-based line, 0-based column), or null.
+        /// </summary>
+        private static Location FindClassInTemplate(string templateSource, string fileName, string className)
+        {
+            if (string.IsNullOrEmpty(templateSource) || string.IsNullOrEmpty(fileName))
+                return null;
+
+            foreach (Match match in ClassAttributeRegex.Matches(templateSource))
+            {
+                var value = match.Groups[1].Success ? match.Groups[1] : match.Groups[2];
+                var names = Regex.Matches(value.Value, @"\S+");
+                foreach (Match name in names)
+                {
+                    if (name.Value != className)
+                        continue;
+
+                    int offset = value.Index + name.Index;
+                    int line = 1, lineStart = 0;
+                    for (int i = 0; i < offset; i++)
+                    {
+                        if (templateSource[i] != '\n') continue;
+                        line++;
+                        lineStart = i + 1;
+                    }
+
+                    return new Location(fileName, line, offset - lineStart);
+                }
+            }
+
+            return null;
         }
 
         private static void ValidateCssClassesInHtml(
             string htmlContent,
+            Location htmlLocation,
             RazorCssManager cssManager,
-            string templateName)
+            string templateName,
+            string templateSource)
         {
             if (string.IsNullOrEmpty(htmlContent)) return;
 
@@ -1529,7 +1569,9 @@ namespace NScript.RazorSkin.TemplateIR
                     if (!cssManager.TryGetCssClassIdentifier(className, out identifier))
                     {
                         throw new NScript.Converter.ConverterLocationException(
-                            new NScript.Utils.Location(templateName, 0, 0),
+                            FindClassInTemplate(templateSource, htmlLocation?.FileName, className)
+                                ?? htmlLocation
+                                ?? new NScript.Utils.Location(templateName, 0, 0),
                             $"CSS class name '{className}' not found in any @styles stylesheet. " +
                             "Ensure the class is defined in a referenced CSS file.");
                     }

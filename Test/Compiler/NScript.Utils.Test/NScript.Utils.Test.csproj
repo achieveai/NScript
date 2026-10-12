@@ -10,6 +10,19 @@
     <ProjectReference Include="$(CompilerSources)\NScript.Lib\NScript.Lib.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- ResourcePatcherTests emits its fixture DLL with Roslyn. -->
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>$(Dependencies)\Roslyn\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <!-- The session-refresh test rewrites its fixture with Cecil. -->
+    <Reference Include="Mono.Cecil.Private">
+      <HintPath>$(Dependencies)\Mono.Cecil.Private.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />

@@ -57,7 +57,7 @@ namespace NScript.Csc.Lib.Test
             // Builds mscorlib.dll / system.core.dll / microsoft.csharp.dll / realScript.dll
             // into the temp directory (idempotent across tests).
             TestAssemblyLoader.LoadAssemblies();
-            var temp = Path.GetTempPath();
+            var temp = TestResources.FixtureDirectory;
             return (
                 Path.Combine(temp, "realScript.dll"),
                 new[]

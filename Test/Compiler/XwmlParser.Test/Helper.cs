@@ -138,13 +138,17 @@ namespace XwmlParser.Test
 
         internal static XwmlParser.XwmlTemplatingPlugin CreatePlugin(
             List<Tuple<string,string>> args)
+            => CreatePlugin(args, new ConverterContext(context, null, null));
+
+        /// <summary>
+        /// A plugin for one build on <paramref name="converterContext"/>; a build session
+        /// passes the same context to every build, as the Builder does.
+        /// </summary>
+        internal static XwmlParser.XwmlTemplatingPlugin CreatePlugin(
+            List<Tuple<string,string>> args,
+            ConverterContext converterContext)
         {
             XwmlTemplatingPlugin rv = new XwmlTemplatingPlugin();
-            ConverterContext converterContext =
-                new ConverterContext(
-                    context,
-                    null,
-                    null);
             var runtimeScopeManager = new RuntimeScopeManager(converterContext);
             rv.ParseArgs(args);
             rv.Initialize(

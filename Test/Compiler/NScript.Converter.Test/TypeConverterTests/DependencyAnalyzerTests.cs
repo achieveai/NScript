@@ -51,5 +51,42 @@ namespace NScript.Converter.Test.TypeConverterTests
                         "BaseInterface",
                         false));
         }
+
+        /// <summary>
+        /// A generic instance must be initialized after the instances its type arguments name,
+        /// even when the argument is another object for the same type: Cecil makes a new
+        /// GenericInstanceType per reference, so KeyValuePair&lt;String, Action&lt;String&gt;&gt;
+        /// rarely holds the very Action&lt;String&gt; the analyzer was given. Out of order, the
+        /// bundle reads typeId of an undefined Action&lt;String&gt; while loading.
+        /// </summary>
+        [TestMethod]
+        public void OrderedGenericTypes_ArgumentEqualButNotSameObject_ComesFirst()
+        {
+            var context = new ConverterContext(TestAssemblyLoader.Context);
+            var corlib = context.ClrKnownReferences.String.Resolve().Module;
+            var action = corlib.GetType("System.Action`1");
+            var pair = corlib.GetType("System.Collections.Generic.KeyValuePair`2");
+            Assert.IsNotNull(action, "fixture mscorlib has Action`1");
+            Assert.IsNotNull(pair, "fixture mscorlib has KeyValuePair`2");
+
+            GenericInstanceType Instance(TypeDefinition definition, params TypeReference[] arguments)
+            {
+                var instance = new GenericInstanceType(definition);
+                foreach (var argument in arguments)
+                {
+                    instance.GenericArguments.Add(argument);
+                }
+
+                return instance;
+            }
+
+            var actionOfString = Instance(action, context.ClrKnownReferences.String);
+            var pairOfAction = Instance(pair, context.ClrKnownReferences.String, Instance(action, context.ClrKnownReferences.String));
+
+            var ordered = new DependencyAnalyzer(context).GetOrderedGenericTypeDependencies(
+                new TypeReference[] { actionOfString, pairOfAction });
+
+            CollectionAssert.AreEqual(new TypeReference[] { actionOfString, pairOfAction }, ordered);
+        }
     }
 }

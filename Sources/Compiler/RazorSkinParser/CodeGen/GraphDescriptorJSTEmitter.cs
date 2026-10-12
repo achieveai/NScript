@@ -486,7 +486,7 @@ namespace NScript.RazorSkin.CodeGen
                     // (bare dependency name), which only TryBuildResolvedPropertyGetter knows.
                     // Everything else (bare loop variable, literals, static Type.Member) is C#.
                     return TryBuildResolvedPropertyGetter(getterExpression)
-                        ?? BuildBindingExpressionGetter(getterExpression);
+                        ?? BuildBindingExpressionGetter(getterExpression, GetterLocation(nodeIndex));
                 }
 
                 case GraphNodeTypeConstants.Gate:
@@ -500,7 +500,7 @@ namespace NScript.RazorSkin.CodeGen
                     if (string.IsNullOrEmpty(getterExpression))
                         return new NullLiteralExpression(_scope);
 
-                    return BuildBindingExpressionGetter(getterExpression);
+                    return BuildBindingExpressionGetter(getterExpression, GetterLocation(nodeIndex));
                 }
 
                 default:
@@ -509,11 +509,19 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
+        /// The template location of graph node <paramref name="nodeIndex"/> for diagnostics, or
+        /// the template's fallback location when the IR had none.
+        /// </summary>
+        private Location GetterLocation(int nodeIndex)
+            => _topology.GetterLocations?[nodeIndex] ?? _fallbackLocation;
+
+        /// <summary>
         /// Builds <c>function(dc, tp) { return &lt;expr&gt;; }</c> for a C# binding expression.
         /// Every name is resolved through <see cref="ResolveBindingPath"/>; unsupported
-        /// forms throw <see cref="RazorSubControlDiagnosticException"/> (build error).
+        /// forms throw <see cref="RazorSubControlDiagnosticException"/> (build error) at
+        /// <paramref name="diagnosticLocation"/>.
         /// </summary>
-        private Expression BuildBindingExpressionGetter(string csharpExpression)
+        private Expression BuildBindingExpressionGetter(string csharpExpression, Location diagnosticLocation)
         {
             var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
             var body = BindingExpressionConverter.Convert(
@@ -521,7 +529,7 @@ namespace NScript.RazorSkin.CodeGen
                 getterScope,
                 segments => ResolveBindingPath(segments, getterScope),
                 (receiver, method, arguments) => ResolveInvocation(receiver, method, arguments, getterScope),
-                _fallbackLocation);
+                diagnosticLocation);
 
             var fn = new FunctionExpression(_fallbackLocation, _scope, getterScope,
                 getterScope.ParameterIdentifiers, null);
@@ -1875,7 +1883,7 @@ namespace NScript.RazorSkin.CodeGen
                 string ownerExpression = root;
                 for (int j = 0; j < k; j++)
                     ownerExpression += "." + sub.PathSegments[j];
-                getters.Add(BuildBindingExpressionGetter(ownerExpression));
+                getters.Add(BuildBindingExpressionGetter(ownerExpression, GetterLocation(sub.NodeIdx)));
             }
             return getters;
         }
