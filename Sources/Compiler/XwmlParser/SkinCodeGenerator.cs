@@ -292,7 +292,8 @@ namespace XwmlParser
             this.code.Add(this.GetSkinInstanceCtorExpression());
 
             this.skinFactoryMethodIdentifier =
-                SimpleIdentifier.CreateScopeIdentifier(
+                this.codeGenerator.GeneratedBefore(this.parser)?.skinFactoryMethodIdentifier
+                ?? SimpleIdentifier.CreateScopeIdentifier(
                     this.CodeGenerator.ScopeManager.Scope,
                     this.parser.GetUniqueTemplateId() + "_factory",
                     false);
@@ -317,8 +318,11 @@ namespace XwmlParser
         {
             Location skinLocation = this.GetLocation(this.skinNodeInfo);
 
+            // Generated again for dev patch emit, the template keeps its names: the new
+            // functions replace the old, and the code that calls the getter stays as written.
             this.skinStorageVariable =
-                SimpleIdentifier.CreateScopeIdentifier(
+                this.codeGenerator.GeneratedBefore(this.parser)?.skinStorageVariable
+                ?? SimpleIdentifier.CreateScopeIdentifier(
                     codeGenerator.ScopeManager.Scope,
                     this.parser.GetUniqueTemplateId() + "_var",
                     false);

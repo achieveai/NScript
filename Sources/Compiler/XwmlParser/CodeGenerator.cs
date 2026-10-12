@@ -212,6 +212,21 @@ namespace XwmlParser
         Dictionary<string, Tuple<EmbeddedResource, string>> resourceMap =
             new Dictionary<string, Tuple<EmbeddedResource, string>>();
 
+        /// <summary>The template and style sheet resources of this build, by resource name.</summary>
+        internal IReadOnlyDictionary<string, Tuple<EmbeddedResource, string>> ResourceMap => this.resourceMap;
+
+        /// <summary>Dev patch emit: each template parsed again, to the generator it had before.</summary>
+        private Dictionary<TemplateParser, SkinCodeGenerator> generatedBefore;
+
+        /// <summary>True while a patch writes the CSS again.</summary>
+        private bool patching;
+
+        /// <summary>The other plugins' CSS the full emit wrote.</summary>
+        private List<string> cssContributions;
+
+        /// <summary>The CSS the last document initializer wrote.</summary>
+        private string writtenCss;
+
         /// <summary>
         /// The CSS registry methods.
         /// </summary>
@@ -226,6 +241,16 @@ namespace XwmlParser
         {
             this.scopeManager = scopeManager;
             this.knownReferences = knownReferences;
+            foreach (var pair in this.ReadResourceMap())
+            {
+                this.AddResource(pair.Value.Item1, pair.Value.Item2);
+            }
+        }
+
+        /// <summary>The template and style sheet resources of the loaded modules, by resource name.</summary>
+        private Dictionary<string, Tuple<EmbeddedResource, string>> ReadResourceMap()
+        {
+            var rv = new Dictionary<string, Tuple<EmbeddedResource, string>>();
             foreach (var module in this.scopeManager.Context.ClrContext.Modules)
             {
                 foreach (var resource in module.Resources)
@@ -233,7 +258,7 @@ namespace XwmlParser
                     EmbeddedResource embeddedResource = resource as EmbeddedResource;
                     if (embeddedResource == null) { continue; }
 
-                    var fileName = scopeManager.Context.GetResourceFileName(
+                    var fileName = this.scopeManager.Context.GetResourceFileName(
                         module,
                         embeddedResource.Name);
 
@@ -245,12 +270,12 @@ namespace XwmlParser
                             || fileName.EndsWith(".css")
                             || fileName.EndsWith(".less")))
                     {
-                        this.AddResource(
-                            embeddedResource,
-                            (string)fileName);
+                        rv.Add(embeddedResource.Name, Tuple.Create(embeddedResource, (string)fileName));
                     }
                 }
             }
+
+            return rv;
         }
 
         /// <summary>
@@ -719,6 +744,263 @@ namespace XwmlParser
             }
 
             return this.generatedCode;
+        }
+
+        /// <summary>
+        /// Dev patch emit: the generator a template had before its document was parsed again,
+        /// whose names the new one keeps. Null otherwise.
+        /// </summary>
+        internal SkinCodeGenerator GeneratedBefore(TemplateParser templateParser)
+        {
+            return this.generatedBefore != null && this.generatedBefore.TryGetValue(templateParser, out var rv)
+                ? rv
+                : null;
+        }
+
+        /// <summary>
+        /// Dev patch emit: parses the changed style sheets and documents again and adds the code
+        /// that replaces theirs to <paramref name="statements"/>. The templates keep their names
+        /// and the classes keep theirs; new skins take storage indexes past the old ones. Returns
+        /// null when patched, or why the change needs a full emit.
+        /// </summary>
+        internal string PatchResources(
+            List<Statement> statements,
+            Dictionary<string, Tuple<EmbeddedResource, string>> resourceMap = null)
+        {
+            long probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
+            resourceMap ??= this.ReadResourceMap();
+            if (resourceMap.Count != this.resourceMap.Count)
+            {
+                return "xwml resource-set";
+            }
+
+            foreach (var pair in resourceMap)
+            {
+                if (!this.resourceMap.TryGetValue(pair.Key, out var before) || before.Item2 != pair.Value.Item2)
+                {
+                    return "xwml resource-set";
+                }
+            }
+
+            this.resourceMap = resourceMap;
+            var changed = new HashSet<string>();
+            foreach (var read in this.parserContext.ResourcesRead)
+            {
+                var hash = System.Security.Cryptography.SHA256.HashData(resourceMap[read.Key].Item1.GetResourceData());
+                if (!System.Linq.Enumerable.SequenceEqual(hash, read.Value.Item2))
+                {
+                    changed.Add(read.Key);
+                }
+            }
+
+            if (changed.Count == 0)
+            {
+                return null;
+            }
+
+            long probeRead = System.Diagnostics.Stopwatch.GetTimestamp();
+            int start = this.generatedCode.Count;
+            try
+            {
+                foreach (var key in System.Linq.Enumerable.ToList(this.parserContext.StyleSheets.Keys))
+                {
+                    if (changed.Contains(key))
+                    {
+                        string miss = this.ParseStyleSheetAgain(key);
+                        if (miss != null)
+                        {
+                            return miss;
+                        }
+                    }
+                }
+
+                this.generatedBefore = new Dictionary<TemplateParser, SkinCodeGenerator>();
+                var replaced = new Dictionary<TemplateParser, TemplateParser>();
+                foreach (var key in System.Linq.Enumerable.ToList(this.parserContext.DocumentOrder))
+                {
+                    if (changed.Contains(key))
+                    {
+                        string miss = this.ParseDocumentAgain(key, replaced);
+                        if (miss != null)
+                        {
+                            return miss;
+                        }
+                    }
+                }
+
+                var generatorsBefore = System.Linq.Enumerable.ToList(this.skinCodeGenerators);
+                this.IterateParsing();
+
+                // Same order as before, so the CSS keeps its order; skins asked for anew go last.
+                var generators = new Dictionary<TemplateParser, SkinCodeGenerator>();
+                foreach (var pair in generatorsBefore)
+                {
+                    if (replaced.TryGetValue(pair.Key, out var parsedAgain))
+                    {
+                        if (this.skinCodeGenerators.TryGetValue(parsedAgain, out var generator))
+                        {
+                            generators.Add(parsedAgain, generator);
+                        }
+                    }
+                    else
+                    {
+                        generators.Add(pair.Key, pair.Value);
+                    }
+                }
+
+                foreach (var pair in this.skinCodeGenerators)
+                {
+                    if (!generators.ContainsKey(pair.Key) && !replaced.ContainsKey(pair.Key))
+                    {
+                        generators.Add(pair.Key, pair.Value);
+                    }
+                }
+
+                this.skinCodeGenerators = generators;
+                this.parserContext.ValidateAllCssVariables();
+            }
+            finally
+            {
+                this.generatedBefore = null;
+                this.parserContext.ParsedBefore = null;
+            }
+
+            statements.AddRange(System.Linq.Enumerable.Skip(this.generatedCode, start));
+            long probeParse = System.Diagnostics.Stopwatch.GetTimestamp();
+            int prefixRuns = CssStyleSheet.Compiler.Runs;
+
+            // The CSS is one block: the document initializer that writes it is replaced whole,
+            // and only when the CSS changed, as each copy adds the whole CSS to the bundle. Its
+            // storage size is a hint: the array grows for the indexes new skins take.
+            this.patching = true;
+            try
+            {
+                string css = this.GetAllCss();
+                if (css != this.writtenCss)
+                {
+                    statements.Add(
+                        new ExpressionStatement(
+                            null,
+                            this.scopeManager.Scope,
+                            this.GenerateDocumentInitializerMethod(css)));
+                }
+            }
+            finally
+            {
+                this.patching = false;
+            }
+
+            static long Ms(long ticks) => ticks * 1000 / System.Diagnostics.Stopwatch.Frequency;
+            CompilerLog.ForComponent("XwmlParser").Information(
+                "Probe.XwmlPatch Changed={Changed} ReadMs={ReadMs} ParseMs={ParseMs} CssMs={CssMs} PrefixRuns={PrefixRuns}",
+                changed.Count,
+                Ms(probeRead - probeStart),
+                Ms(probeParse - probeRead),
+                Ms(System.Diagnostics.Stopwatch.GetTimestamp() - probeParse),
+                CssStyleSheet.Compiler.Runs - prefixRuns);
+            return null;
+        }
+
+        /// <summary>Dev patch emit: parses a changed style sheet again, keeping its class names.</summary>
+        private string ParseStyleSheetAgain(string key)
+        {
+            var old = this.parserContext.StyleSheets[key];
+            var resource = this.resourceMap[key];
+            var parsedAgain = new CssStyleSheet(this.parserContext, resource.Item2 ?? key);
+            this.parserContext.ParsedBefore = new Dictionary<string, CssStyleSheet> { [old.ResourceName] = old };
+            using (System.IO.StreamReader reader = this.ReadResource(key, resource))
+            {
+                parsedAgain.AddCss(
+                    reader.ReadToEnd(),
+                    new Location(parsedAgain.ResourceName, 0, 0),
+                    old.PreviousSheets ?? new List<CssStyleSheet>());
+            }
+
+            var declared = new HashSet<string>(parsedAgain.DeclaredClassNames);
+            foreach (var className in old.DeclaredClassNames)
+            {
+                if (!declared.Contains(className))
+                {
+                    return "xwml class removed " + className;
+                }
+            }
+
+            declared.ExceptWith(old.DeclaredClassNames);
+            foreach (var htmlParser in this.parserContext.HtmlParsers)
+            {
+                var documentCss = htmlParser.DocumentContext.DocumentCss;
+                if (documentCss != null && System.Linq.Enumerable.Any(documentCss.ClassNames, declared.Contains))
+                {
+                    // A cold build may refuse it: the document declares the class too.
+                    return "xwml class added " + key;
+                }
+            }
+
+            this.parserContext.StyleSheets[key] = parsedAgain;
+            foreach (var styleSheet in this.parserContext.StyleSheets.Values)
+            {
+                styleSheet.ReplaceDependency(old, parsedAgain);
+            }
+
+            foreach (var htmlParser in this.parserContext.HtmlParsers)
+            {
+                htmlParser.DocumentContext.ReplaceStyleSheet(old, parsedAgain);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Dev patch emit: parses a changed document again. Each template asked for before is
+        /// asked for again under the same getter.
+        /// </summary>
+        private string ParseDocumentAgain(string key, Dictionary<TemplateParser, TemplateParser> replaced)
+        {
+            var old = this.parserContext.GetHtmlParser(key);
+            var resource = this.resourceMap[key];
+            var documentCss = old.DocumentContext.DocumentCss;
+            this.parserContext.ParsedBefore = documentCss == null
+                ? null
+                : new Dictionary<string, CssStyleSheet> { [documentCss.ResourceName] = documentCss };
+
+            var document = new HtmlAgilityPack.HtmlDocument();
+            using (System.IO.StreamReader reader = this.ReadResource(key, resource))
+            {
+                document.Load(reader);
+            }
+
+            var warnings = this.parserContext.ConverterContext.Warnings;
+            int warningCount = warnings.Count;
+            var parsedAgain = new HtmlParser(resource.Item2 ?? key, document, this.parserContext);
+            this.parserContext.DocumentWarnings[key] =
+                System.Linq.Enumerable.ToList(System.Linq.Enumerable.Skip(warnings, warningCount));
+            this.parserContext.ReplaceHtmlParser(key, parsedAgain);
+
+            foreach (var pair in System.Linq.Enumerable.ToList(this.templateGetterIds))
+            {
+                if (pair.Key.HtmlParser != old)
+                {
+                    continue;
+                }
+
+                var templateParser = parsedAgain.GetTemplateParser(pair.Key.TemplateName);
+                if (templateParser == null)
+                {
+                    return "xwml template removed " + pair.Key.GetUniqueTemplateId();
+                }
+
+                this.templateGetterIds.Remove(pair.Key);
+                this.templateGetterIds.Add(templateParser, pair.Value);
+                if (this.skinCodeGenerators.TryGetValue(pair.Key, out var generator))
+                {
+                    this.generatedBefore.Add(templateParser, generator);
+                }
+
+                replaced.Add(pair.Key, templateParser);
+                this.templatesToParse.Enqueue(templateParser);
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1391,7 +1673,7 @@ namespace XwmlParser
                 new ExpressionStatement(
                     null,
                     this.scopeManager.Scope,
-                    this.GenerateDocumentInitializerMethod()));
+                    this.GenerateDocumentInitializerMethod(this.GetAllCss())));
         }
 
         /// <summary>
@@ -1400,8 +1682,9 @@ namespace XwmlParser
         /// <returns>
         /// The document initializer method.
         /// </returns>
-        private FunctionExpression GenerateDocumentInitializerMethod()
+        private FunctionExpression GenerateDocumentInitializerMethod(string css)
         {
+            this.writtenCss = css;
             var methodScope = new IdentifierScope(
                 this.scopeManager.Scope,
                 new string[]{
@@ -1476,7 +1759,7 @@ namespace XwmlParser
                             "textContent")),
                     new StringLiteralExpression(
                         methodScope,
-                        this.GetAllCss())));
+                        css)));
 
             // doc.body.appendChild(style)
             initializers.Add(
@@ -1546,7 +1829,7 @@ namespace XwmlParser
         /// </returns>
         private string GetAllCss()
         {
-            StringBuilder sb = new StringBuilder();
+            var pieces = new List<string>();
             HashSet<DocumentContext> documentContexts = new HashSet<DocumentContext>();
             List<CssStyleSheet> dependencyOrderedList = new List<CssStyleSheet>();
 
@@ -1574,7 +1857,7 @@ namespace XwmlParser
 
             foreach (var styleSheet in dependencyOrderedList)
             {
-                sb.Append(styleSheet.GetCssString());
+                pieces.Add(styleSheet.GetCssString());
             }
 
             foreach (var skinCodeGenerators in this.skinCodeGenerators.Keys)
@@ -1583,22 +1866,36 @@ namespace XwmlParser
                 if (!documentContexts.Contains(dc))
                 {
                     documentContexts.Add(dc);
-                    sb.Append(dc.GetCssString());
+                    pieces.Add(dc.GetCssString());
                 }
             }
 
-            // Append CSS contributions from other plugins (e.g., Razor templates)
-            if (this.parserContext?.ConverterContext != null)
+            // Append CSS contributions from other plugins (e.g., Razor templates). A patch
+            // starts a build that clears them, so it writes the ones the full emit wrote.
+            if (!this.patching && this.parserContext?.ConverterContext != null)
             {
-                foreach (var contribution in this.parserContext.ConverterContext.GetCssContributions())
+                this.cssContributions = new List<string>(this.parserContext.ConverterContext.GetCssContributions());
+            }
+
+            pieces.AddRange(this.cssContributions ?? new List<string>());
+
+            // The prefixer caches results by text. Dev mode prefixes each piece apart, so a
+            // changed sheet is the only text read again; a release build prefixes one block.
+            if (this.parserContext?.ConverterContext?.DevMode != true)
+            {
+                return CssStyleSheet.Compiler.Prefix(string.Concat(pieces), CssStyleSheet.browserSpecification);
+            }
+
+            StringBuilder sb = new StringBuilder();
+            foreach (var piece in pieces)
+            {
+                if (!string.IsNullOrEmpty(piece))
                 {
-                    sb.Append(contribution);
+                    sb.Append(CssStyleSheet.Compiler.Prefix(piece, CssStyleSheet.browserSpecification));
                 }
             }
 
-            return CssStyleSheet.Compiler.Prefix(
-                sb.ToString(),
-                CssStyleSheet.browserSpecification);
+            return sb.ToString();
         }
 
         private string GetRelativeResourceId(

@@ -475,6 +475,41 @@ namespace OwaSourceMapper
         }
 
         /// <summary>
+        /// Moves every mapping at generated line <paramref name="line"/> or later down by
+        /// <paramref name="count"/> lines, for lines put in before it (dev patch emit). A
+        /// mapping into the script itself (<paramref name="scriptFile"/>) moves its target too.
+        /// </summary>
+        public void InsertLines(int line, int count, string scriptFile)
+        {
+            if (count == 0)
+            {
+                return;
+            }
+
+            int scriptIndex = scriptFile != null && this.fileIndexes.TryGetValue(scriptFile, out var index) ? index : -1;
+
+            // Keys keep their order, so the new list fills in order (each add appends).
+            var moved = new SortedList<(int Line, int Column), SourceMapping>(this.mappings.Count);
+            foreach (var mapping in this.mappings.Values)
+            {
+                var copy = mapping;
+                if (copy.SourceLine >= line)
+                {
+                    copy.SourceLine += count;
+                }
+
+                if (copy.SourceFileIndex == scriptIndex && scriptIndex >= 0 && copy.TargetLine >= line)
+                {
+                    copy.TargetLine += count;
+                }
+
+                moved.Add((copy.SourceLine, copy.SourceColumn), copy);
+            }
+
+            this.mappings = moved;
+        }
+
+        /// <summary>
         /// Convert this object into a string representation.
         /// </summary>
         /// <returns>

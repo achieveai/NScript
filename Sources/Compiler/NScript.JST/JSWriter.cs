@@ -80,6 +80,12 @@ namespace NScript.JST
         public bool IsOptimized { get; }
 
         /// <summary>
+        /// Dev patch emit: the bundle's closure registers <c>window.__nsPatch[file]</c>, which
+        /// evals a fragment inside it, so a running page can take patches later.
+        /// </summary>
+        public bool LivePatchHook { get; set; }
+
+        /// <summary>
         /// Writes the new line.
         /// </summary>
         public JSWriter WriteNewLine()
@@ -486,6 +492,79 @@ namespace NScript.JST
         }
 
         /// <summary>
+        /// Dev patch emit: writes the script and its map as <see cref="Write(string, string, bool, string, string, string)"/>
+        /// does, and returns both so a later patch can splice them.
+        /// </summary>
+        public (string Text, OwaSourceMapper.SourceMap Map) WriteAndKeep(string jsFileName, string sourceRoot, bool emitLegacyAshxHandler = true, string repoRoot = null, string secondaryRepoRoot = null, string secondarySourceRoot = null)
+        {
+            using var text = new StringWriter();
+            var map = this.Write(
+                text,
+                Path.GetFileName(jsFileName),
+                Path.GetDirectoryName(jsFileName),
+                true,
+                sourceRoot,
+                emitLegacyAshxHandler,
+                repoRoot,
+                secondaryRepoRoot,
+                secondarySourceRoot);
+            var script = text.ToString();
+            OwaSourceMapper.AtomicFile.Write(jsFileName, System.Text.Encoding.UTF8, writer => writer.Write(script));
+            return (script, map);
+        }
+
+        /// <summary>
+        /// Dev patch emit: renders the statements written so far as a fragment for a written
+        /// script, to go in just before the line break that starts line <paramref name="atLine"/>.
+        /// Every statement starts with a line break, so the fragment does too, and it takes
+        /// lines <paramref name="atLine"/> on. Moves the map's mappings from that line down and
+        /// adds the fragment's own.
+        /// </summary>
+        /// <returns>The fragment text.</returns>
+        public string WriteFragment(OwaSourceMapper.SourceMap map, string jsFileName, int atLine)
+        {
+            this.ArrangeSpaces();
+            var state = new RenderState();
+            var segments = new List<ChunkSegment>();
+            var sink = new ChunkSink(segments);
+            using var text = new StringWriter();
+            foreach (var token in this.tokens)
+            {
+                this.RenderToken(token, state, text, sink);
+            }
+
+            var fragment = text.ToString();
+            if (state.ScopeDepth != 0 || !fragment.StartsWith(Environment.NewLine, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("A fragment must start with a line break and end at depth 0.");
+            }
+
+            if (state.HasRawNewline)
+            {
+                // Its line count would be wrong, and so would the map below it: emit in full.
+                throw new InvalidOperationException("A fragment must break lines only where the writer does.");
+            }
+
+            // Fragment line k is script line atLine - 1 + k: its line 0 is the empty end of the line before.
+            map.InsertLines(atLine, state.Line, jsFileName);
+            var mapSink = new SourceMapSink(map, jsFileName);
+            foreach (var segment in segments)
+            {
+                int line = atLine - 1 + segment.Line;
+                if (segment.IsSelf)
+                {
+                    mapSink.AddSelf(line, segment.Column, segment.IsLineStart);
+                }
+                else
+                {
+                    mapSink.AddSource(line, segment.Column, segment.SourceLine, segment.SourceColumn, segment.File, segment.Name);
+                }
+            }
+
+            return fragment;
+        }
+
+        /// <summary>
         /// Writes to the given TextWriter.
         /// </summary>
         /// <param name="writer"> The TextWriter to write. </param>
@@ -574,7 +653,14 @@ namespace NScript.JST
             {
                 // Columns count from after the wrapper, which shares the first line with
                 // the first token when newlines are optimized away.
-                const string wrapperStart = "(function(){";
+                var wrapperStart = "(function(){";
+                if (this.LivePatchHook)
+                {
+                    wrapperStart += "if(typeof window!==\"undefined\")(window.__nsPatch||(window.__nsPatch={}))[\""
+                        + jsFileName.Replace("\\", "\\\\").Replace("\"", "\\\"")
+                        + "\"]=function(f){eval(f);};";
+                }
+
                 writer.Write(wrapperStart);
                 state.Column = wrapperStart.Length;
             }

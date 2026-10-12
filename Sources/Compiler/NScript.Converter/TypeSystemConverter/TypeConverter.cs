@@ -39,7 +39,7 @@ namespace NScript.Converter.TypeSystemConverter
     ///
     /// Note: We still need to figure out how to tackle new T() scenario.
     /// </summary>
-    public abstract class TypeConverter : IResolver
+    public abstract partial class TypeConverter : IResolver
     {
         private const string TypeIdIdx = "typeIdx";
 
@@ -1641,6 +1641,7 @@ namespace NScript.Converter.TypeSystemConverter
 
             List<ExpressionStatement> virtualInitializers = this.InitializeVirtuals(
                 prototypeExpression);
+            this.RecordSlotCopies(prototypeExpression, virtualInitializers);
 
             if (prototypeInitializers.Count > 0
                 || virtualInitializers.Count > 0)

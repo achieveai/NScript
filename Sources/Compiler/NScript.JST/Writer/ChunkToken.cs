@@ -115,6 +115,43 @@ namespace NScript.JST
         /// <summary>The text length, for size probes.</summary>
         public int Length => this.Text.Length;
 
+        /// <summary>
+        /// True when both write the same text with the same mappings, source positions
+        /// included, so either can stand in for the other in a written script.
+        /// </summary>
+        public bool SameAs(RenderedChunk other)
+        {
+            if (other == null
+                || this.Text != other.Text
+                || this.Segments.Count != other.Segments.Count
+                || !SameLocation(this.FirstLocation, other.FirstLocation)
+                || !SameLocation(this.EndLocation, other.EndLocation))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < this.Segments.Count; i++)
+            {
+                var a = this.Segments[i];
+                var b = other.Segments[i];
+                if (a.Line != b.Line || a.Column != b.Column || a.IsSelf != b.IsSelf || a.IsLineStart != b.IsLineStart
+                    || a.SourceLine != b.SourceLine || a.SourceColumn != b.SourceColumn
+                    || a.File != b.File || a.Name != b.Name)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool SameLocation(Location a, Location b)
+            => a == b
+                || (a != null && b != null
+                    && a.FileName == b.FileName
+                    && a.StartLine == b.StartLine && a.StartColumn == b.StartColumn
+                    && a.EndLine == b.EndLine && a.EndColumn == b.EndColumn);
+
         // Only the edge tokens are kept: spacing and splicing look at nothing else.
         internal TokenBase FirstToken { get; }
 

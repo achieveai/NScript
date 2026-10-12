@@ -39,6 +39,9 @@ namespace NScript.JST
             private readonly Dictionary<IdentifierScope, HashSet<string>> enforcedInSubtree =
                 new Dictionary<IdentifierScope, HashSet<string>>();
 
+            // Names only new functions under a named root: free identifiers keep their names.
+            private bool incremental;
+
             private DevStableNamer()
             {
             }
@@ -73,6 +76,143 @@ namespace NScript.JST
 
                 return namer;
             }
+
+            /// <summary>
+            /// Dev patch emit: names function scopes made under the root after it was named, as
+            /// <see cref="NameExecutionTree"/> names the root's children. Identifiers the
+            /// functions use from outside keep the names their scopes already gave them.
+            /// </summary>
+            public static DevStableNamer NameNewFunctions(IdentifierScope root, IEnumerable<IdentifierScope> functions)
+            {
+                var namer = new DevStableNamer { incremental = true };
+                var rootEnforced = new HashSet<string>(root.knownNameMap.Keys, StringComparer.Ordinal);
+                foreach (var function in functions)
+                {
+                    if (function.ParentScope != root || root.assignedNames == null)
+                    {
+                        throw new ArgumentException("Expected a new function scope under the named root.", nameof(functions));
+                    }
+
+                    namer.NameLocals(function, rootEnforced);
+                }
+
+                return namer;
+            }
+
+            /// <summary>
+            /// Dev patch emit: names root and member identifiers made after their scopes were
+            /// named, each by its StableName, in the namer that named its scope. A name already
+            /// in the root, or on a member's lookup chain (its scope, the scopes above and the
+            /// scopes below), is NSDEV001, except a delegate's name taken again by the same
+            /// delegate converted again (<see cref="SameDelegate"/>). A plugin-made root without a StableName takes the
+            /// next <c>$$g</c> ordinal no root name has. Any other identifier without a
+            /// StableName, or outside a named root or member scope, is NSDEV002. Identifiers
+            /// in a scope tree dev naming never named are left to that tree. The returned
+            /// namer only reports.
+            /// </summary>
+            public static DevStableNamer NameNewMembers(IEnumerable<SimpleIdentifier> identifiers)
+            {
+                var report = new DevStableNamer { incremental = true };
+                var taken = new Dictionary<IdentifierScope, Dictionary<string, SimpleIdentifier>>();
+                foreach (var ident in identifiers)
+                {
+                    if (ident.ShouldEnforceSuggestion)
+                    {
+                        continue;
+                    }
+
+                    var scope = ident.OwnerScope;
+                    var top = Ancestors(scope).LastOrDefault() ?? scope;
+                    if (!(top.assignedNames?.Target is DevStableNamer))
+                    {
+                        // A tree dev naming never names (e.g. CSS class names): it names its own.
+                        continue;
+                    }
+
+                    if (!(scope.assignedNames?.Target is DevStableNamer namer) || namer.incremental
+                        || (scope.IsExecutionScope && scope.ParentScope != null))
+                    {
+                        report.errors.Add("NSDEV002: new identifier '" + ident.OriginalSuggestedName + "' is not in a named root or member scope.");
+                        continue;
+                    }
+
+                    bool fallback = ident.StableName == null && scope.ParentScope == null && !string.IsNullOrEmpty(ident.SuggestedName);
+                    if (ident.StableName == null && !fallback)
+                    {
+                        report.errors.Add("NSDEV002: new identifier '" + ident.OriginalSuggestedName + "' has no stable name.");
+                        continue;
+                    }
+
+                    if (!taken.TryGetValue(scope, out var names))
+                    {
+                        // Each used name, with the identifier that first holds it.
+                        names = new Dictionary<string, SimpleIdentifier>(StringComparer.Ordinal);
+                        var chain = scope.IsExecutionScope
+                            ? new[] { scope }
+                            : Ancestors(scope).Concat(Subtree(scope));
+                        foreach (var other in chain.SelectMany(s => s.scopedIdentifiers))
+                        {
+                            if (other.ShouldEnforceSuggestion)
+                            {
+                                names.TryAdd(other.SuggestedName, other);
+                            }
+                            else if (other.OwnerScope.assignedNames?.Target is DevStableNamer owner
+                                && owner.names.TryGetValue(other, out var name))
+                            {
+                                names.TryAdd(name, other);
+                            }
+                        }
+
+                        taken.Add(scope, names);
+                    }
+
+                    if (fallback)
+                    {
+                        // A plugin-made root (rule 5): the next ordinal no name has, so no name is reused.
+                        var name = ident.SuggestedName + "$$g";
+                        for (int ordinal = 2; !names.TryAdd(name, ident); ordinal++)
+                        {
+                            name = ident.SuggestedName + "$$g" + ordinal;
+                        }
+
+                        namer.names[ident] = name;
+                        report.fallbacks.Add(ident.SuggestedName);
+                        continue;
+                    }
+
+                    if (!names.TryAdd(ident.StableName, ident) && !SameDelegate(ident, names[ident.StableName]))
+                    {
+                        report.errors.Add("NSDEV001: new identifier '" + ident.OriginalSuggestedName + "' takes the used name '" + ident.StableName + "'.");
+                        continue;
+                    }
+
+                    namer.names[ident] = ident.StableName;
+                }
+
+                return report;
+            }
+
+            /// <summary>
+            /// A method converted again names its delegates again. A delegate's name binds only
+            /// inside its own function expression, so the new one may take the name of the one
+            /// it replaces: the same suggestion, both function names.
+            /// </summary>
+            private static bool SameDelegate(SimpleIdentifier ident, SimpleIdentifier holder)
+                => ident.IsFunctionName
+                    && holder.IsFunctionName
+                    && ident.OwnerScope == holder.OwnerScope
+                    && ident.OriginalSuggestedName == holder.OriginalSuggestedName;
+
+            private static IEnumerable<IdentifierScope> Ancestors(IdentifierScope scope)
+            {
+                for (var parent = scope.ParentScope; parent != null; parent = parent.ParentScope)
+                {
+                    yield return parent;
+                }
+            }
+
+            private static IEnumerable<IdentifierScope> Subtree(IdentifierScope scope)
+                => new[] { scope }.Concat(scope.ChildScopes.SelectMany(Subtree));
 
             /// <summary>
             /// Names the member tree under <paramref name="root"/> (the Object prototype scope).
@@ -110,7 +250,9 @@ namespace NScript.JST
             private string NameOf(SimpleIdentifier ident)
                 => ident.ShouldEnforceSuggestion
                     ? ident.SuggestedName
-                    : this.names.TryGetValue(ident, out var name) ? name : null;
+                    : this.names.TryGetValue(ident, out var name) ? name
+                    : this.incremental && ident.OwnerScope.assignedNames != null ? ident.GetName()
+                    : null;
 
             private void NameRoot(IdentifierScope root)
             {

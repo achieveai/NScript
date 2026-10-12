@@ -209,6 +209,10 @@ namespace NScript.RazorSkin
         // A stylesheet shared by several templates fails for each of them; report it once.
         private readonly HashSet<string> _reportedCssErrors = new HashSet<string>();
 
+        // Dev patch emit: each skin ("skin:" + template key) and stylesheet ("css:" + name)
+        // this build's output read, with its content hash.
+        private readonly Dictionary<string, byte[]> _resourcesRead = new Dictionary<string, byte[]>();
+
         /// <summary>
         /// Maps template name to its JST getter function identifier.
         /// Populated during GetPostJavascript when JST generation succeeds.
@@ -284,6 +288,7 @@ namespace Sunlight.Framework.Observables
             _cssFileNames.Clear();
             _templateSources.Clear();
             _reportedCssErrors.Clear();
+            _resourcesRead.Clear();
             _templateGetterIdentifiers.Clear();
             _resolvedIdentifiers.Clear();
             _resolvedTypeIdentifiers.Clear();
@@ -314,6 +319,8 @@ namespace Sunlight.Framework.Observables
 
                     if (fileName != null && CanHandle(fileName))
                     {
+                        _resourcesRead["skin:" + GetTemplateKey(module, embeddedResource.Name)] =
+                            System.Security.Cryptography.SHA256.HashData(embeddedResource.GetResourceData());
                         try
                         {
                             using var stream = embeddedResource.GetResourceStream();
@@ -444,6 +451,8 @@ namespace Sunlight.Framework.Observables
                             continue;
                         }
 
+                        _resourcesRead["css:" + cssResourceName] =
+                            System.Security.Cryptography.SHA256.HashData(cssResource.GetResourceData());
                         using var stream = cssResource.GetResourceStream();
                         using var reader = new StreamReader(stream);
                         var cssText = reader.ReadToEnd();
@@ -1809,6 +1818,53 @@ namespace Sunlight.Framework.Observables
         public List<Statement> GetPreJavascript()
         {
             return new List<Statement>();
+        }
+
+        /// <summary>
+        /// Dev patch emit: Razor output cannot be patched yet, so this only checks that the
+        /// change left every skin and stylesheet it read as it was, and added no skin.
+        /// </summary>
+        public string TryPatchResources(List<Statement> statements)
+        {
+            var current = new Dictionary<string, EmbeddedResource>();
+            foreach (var module in _clrContext.Modules)
+            {
+                foreach (var resource in module.Resources)
+                {
+                    if (!(resource is EmbeddedResource embeddedResource))
+                    {
+                        continue;
+                    }
+
+                    if (embeddedResource.Name.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
+                    {
+                        current["css:" + embeddedResource.Name] = embeddedResource;
+                    }
+
+                    var fileName = _runtimeScopeManager.Context.GetResourceFileName(module, embeddedResource.Name);
+                    if (fileName != null && CanHandle(fileName))
+                    {
+                        var key = "skin:" + GetTemplateKey(module, embeddedResource.Name);
+                        if (!_resourcesRead.ContainsKey(key))
+                        {
+                            return "razor skin added " + fileName;
+                        }
+
+                        current[key] = embeddedResource;
+                    }
+                }
+            }
+
+            foreach (var read in _resourcesRead)
+            {
+                if (!current.TryGetValue(read.Key, out var resource)
+                    || !System.Security.Cryptography.SHA256.HashData(resource.GetResourceData()).AsSpan().SequenceEqual(read.Value))
+                {
+                    return "razor resource changed " + read.Key;
+                }
+            }
+
+            return null;
         }
 
         public List<Statement> GetPostJavascript()

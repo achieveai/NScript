@@ -167,6 +167,21 @@ namespace XwmlParser
         internal string KnownCssClasses { get; }
 
         /// <summary>
+        /// Dev patch emit, while sheets and documents are parsed again: the earlier parse of
+        /// each, by resource name, whose class names they keep. Null otherwise.
+        /// </summary>
+        internal Dictionary<string, CssStyleSheet> ParsedBefore { get; set; }
+
+        /// <summary>The parsed documents, in the order they were registered.</summary>
+        internal IEnumerable<HtmlParser> HtmlParsers => this.htmlParsers.Values;
+
+        /// <summary>Dev patch emit: replaces a document parsed again, keeping its place.</summary>
+        internal void ReplaceHtmlParser(string templateResourceName, HtmlParser parser)
+        {
+            this.htmlParsers[templateResourceName] = parser;
+        }
+
+        /// <summary>
         /// Points a kept parse at a new build's code generator, resolvers and context: the
         /// parse holds no other object of the build that made it. Null drops them between builds.
         /// </summary>

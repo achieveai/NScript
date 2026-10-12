@@ -224,6 +224,41 @@
             return statements;
         }
 
+        /// <inheritdoc/>
+        public string PatchSectionName => "XwmlParser";
+
+        /// <summary>
+        /// Dev patch emit: replaces the code of the changed style sheets and documents. The
+        /// patched parse is not kept: a later full emit parses from the start.
+        /// </summary>
+        public string TryPatchResources(List<Statement> statements)
+            => this.TryPatchResources(statements, null);
+
+        /// <summary>As <see cref="TryPatchResources(List{Statement})"/>, over the given resources (null reads the modules').</summary>
+        internal string TryPatchResources(
+            List<Statement> statements,
+            Dictionary<string, Tuple<Mono.Cecil.EmbeddedResource, string>> resourceMap)
+        {
+            var parserContext = this.codeGenerator.ParserContext;
+            var converterContext = parserContext.ConverterContext;
+            KeptParses.Remove(converterContext);
+            parserContext.Rebind(this.codeGenerator, this.typeResolver, this.typeResolver, converterContext);
+            try
+            {
+                var miss = this.codeGenerator.PatchResources(statements, resourceMap);
+                if (miss == null && converterContext.Errors.Count > 0)
+                {
+                    miss = "xwml errors";
+                }
+
+                return miss;
+            }
+            catch (Exception ex) when (ex is ConverterLocationException || ex is ApplicationException)
+            {
+                return "xwml " + ex.Message;
+            }
+        }
+
         /// <summary>
         /// Keeps this build's parse for the session's next build. A reused parse holds its
         /// documents in the earlier build's order; when this build asked in another order, its

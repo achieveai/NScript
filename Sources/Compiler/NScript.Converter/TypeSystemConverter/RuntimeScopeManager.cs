@@ -426,8 +426,9 @@ namespace NScript.Converter.TypeSystemConverter
                     }
 
                     // Let's emit the type.
+                    var emittedType = typesDefinitionsUsed[typeReference.Resolve()];
                     returnValue.AddRange(
-                        typesDefinitionsUsed[typeReference.Resolve()].Convert(
+                        emittedType.Convert(
                             (typeConverter, statements) =>
                             {
                                 foreach (var dependent in
@@ -468,6 +469,7 @@ namespace NScript.Converter.TypeSystemConverter
                                     }
                                 }
                             }));
+                    this.AddTypeMarker(returnValue, emittedType);
 
                     // Once emited, remove the type from the convertersAdded dictionary.
                     // This is done so that we don't reinit the type again (case of generics).
@@ -507,6 +509,7 @@ namespace NScript.Converter.TypeSystemConverter
                     }
 
                     returnValue.AddRange(typeConverter.Convert(null));
+                    this.AddTypeMarker(returnValue, typeConverter);
                     typeRegistered.Add(typeConverter.TypeDefinition);
                 }
 
@@ -1592,6 +1595,99 @@ namespace NScript.Converter.TypeSystemConverter
 
             return GetTypeScope(methodReference.DeclaringType).ResolveVirtualMethod(methodDefinition);
         }
+
+        /// <summary>
+        /// Dev mode: ends a type's section with its marker, where patch emit puts changed pieces.
+        /// </summary>
+        private void AddTypeMarker(List<Statement> statements, TypeConverter typeConverter)
+        {
+            if (Context.DevMode)
+            {
+                statements.Add(new MarkerStatement(Scope, MarkerStatement.ForType(typeConverter.TypeDefinition.FullName)));
+            }
+        }
+
+        /// <summary>
+        /// Dev patch emit: the types converted for the last emit.
+        /// </summary>
+        internal IReadOnlyDictionary<TypeDefinition, TypeConverter> TypeConverters => typesDefinitionsUsed;
+
+        /// <summary>
+        /// Dev patch emit: what conversions since the last walk asked for that the emitted
+        /// code does not have yet (a member or type the walk never processed, or a new virtual
+        /// call), or null. Clears the queues, as no walk will take them.
+        /// </summary>
+        internal string TakeNewDemand(int virtualMethodsBefore)
+        {
+            string demand = null;
+            if (virtualMethodsUsed.Count != virtualMethodsBefore)
+            {
+                demand = "virtual call";
+            }
+
+            foreach (var member in usedMembersToProcess)
+            {
+                if (demand == null && !membersProcessed.Contains(member.GetDefinition() as MemberReference))
+                {
+                    demand = "member " + member.FullName;
+                }
+            }
+
+            HashSet<TypeReference> known = null;
+            foreach (var type in usedTypeReferencesToProcess)
+            {
+                if (demand != null
+                    || type.IsGenericParameter
+                    || (type.IsArray && type.GetElementType().IsGenericParameter)
+                    || typeReferencesUsed.Contains(type))
+                {
+                    continue;
+                }
+
+                known ??= new HashSet<TypeReference>(typeReferencesUsed, MemberReferenceComparer.Instance);
+                if (!known.Contains(type))
+                {
+                    demand = "type " + type.FullName;
+                }
+            }
+
+            usedMembersToProcess.Clear();
+            usedTypeReferencesToProcess.Clear();
+            return demand;
+        }
+
+        /// <summary>
+        /// Dev patch emit: like <see cref="TakeNewDemand"/>, but a method of an emitted type
+        /// is not a miss: it is marked processed and added to <paramref name="methods"/>, for
+        /// the caller to convert. A field, a method of a type never emitted, or a new type is.
+        /// </summary>
+        internal string TakeNewMethods(int virtualMethodsBefore, List<MethodDefinition> methods)
+        {
+            var members = new List<MemberReference>(usedMembersToProcess);
+            usedMembersToProcess.Clear();
+            foreach (var member in members)
+            {
+                var definition = member.GetDefinition() as MemberReference;
+                if (membersProcessed.Contains(definition))
+                {
+                    continue;
+                }
+
+                if (!(definition is MethodDefinition method) || !typesDefinitionsUsed.ContainsKey(method.DeclaringType))
+                {
+                    usedTypeReferencesToProcess.Clear();
+                    return "member " + member.FullName;
+                }
+
+                membersProcessed.Add(definition);
+                methods.Add(method);
+            }
+
+            return this.TakeNewDemand(virtualMethodsBefore);
+        }
+
+        /// <summary>Dev patch emit: how many virtual methods calls reach.</summary>
+        internal int VirtualMethodsUsedCount => virtualMethodsUsed.Count;
 
         /// <summary>
         /// Processes the types.

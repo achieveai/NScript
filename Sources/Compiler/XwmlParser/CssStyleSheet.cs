@@ -111,6 +111,39 @@ namespace XwmlParser
         public IList<CssStyleSheet> Dependencies
         { get { return this.dependencies; } }
 
+        /// <summary>The sheets linked before this one when it was parsed (dev patch emit parses it again against them).</summary>
+        internal List<CssStyleSheet> PreviousSheets { get; private set; }
+
+        /// <summary>The class names this sheet declares (not only modifies).</summary>
+        internal IEnumerable<string> DeclaredClassNames
+        {
+            get
+            {
+                foreach (var pair in this.classNames)
+                {
+                    if (pair.Value.Item2)
+                    {
+                        yield return pair.Key;
+                    }
+                }
+            }
+        }
+
+        /// <summary>Dev patch emit: points this sheet at a dependency parsed again.</summary>
+        internal void ReplaceDependency(CssStyleSheet old, CssStyleSheet parsedAgain)
+        {
+            int index = this.dependencies.IndexOf(old);
+            if (index >= 0)
+            {
+                this.dependencies[index] = parsedAgain;
+            }
+
+            for (index = this.PreviousSheets?.IndexOf(old) ?? -1; index >= 0; index = this.PreviousSheets.IndexOf(old))
+            {
+                this.PreviousSheets[index] = parsedAgain;
+            }
+        }
+
         /// <summary>
         /// Gets the CSS variables declared in :root selectors.
         /// </summary>
@@ -194,6 +227,7 @@ namespace XwmlParser
             Location cssBlockStartPosition,
             List<CssStyleSheet> previousStyles)
         {
+            this.PreviousSheets ??= new List<CssStyleSheet>(previousStyles);
             try
             {
                 // Parse CSS - validation will happen after all blocks are accumulated.
@@ -376,18 +410,36 @@ namespace XwmlParser
             {
                 this.classNames[cn.ClassName] =
                     Tuple.Create(
-                        previousIdentifier ?? parserContext.RegisterCssClassName(cn.ClassName),
+                        previousIdentifier ?? this.RegisterClassName(cn.ClassName),
                         !nested || previousIdentifier == null);
             }
             else if (!result.Item2 && !nested)
             {
                 this.classNames[cn.ClassName] =
                     Tuple.Create(
-                        parserContext.RegisterCssClassName(cn.ClassName),
+                        this.RegisterClassName(cn.ClassName),
                         true);
             }
 
             this.classNames[cn.ClassName].Item1.AddUsage(null);
+        }
+
+        /// <summary>
+        /// A new name for a class this sheet declares. Parsed again for dev patch emit, the
+        /// sheet keeps the name its earlier parse declared, so code already written still
+        /// matches; only a new class gets a new name.
+        /// </summary>
+        private IIdentifier RegisterClassName(string className)
+        {
+            if (this.parserContext.ParsedBefore != null
+                && this.parserContext.ParsedBefore.TryGetValue(this.ResourceName, out var before)
+                && before.classNames.TryGetValue(className, out var declared)
+                && declared.Item2)
+            {
+                return declared.Item1;
+            }
+
+            return this.parserContext.RegisterCssClassName(className);
         }
     }
 }

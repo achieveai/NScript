@@ -313,6 +313,41 @@ namespace NScript.Csc.Lib.Test
         }
 
         [TestMethod]
+        public void Patch_NewRootAndMemberIdentifiersTakeTheirStableNames_UsedNamesAreGuarded()
+        {
+            var root = new IdentifierScope(true);
+            Root(root, "A", "A$");
+            var objectScope = new IdentifierScope(false);
+            var baseScope = new IdentifierScope(objectScope, "Base_Inst");
+            var derived = new IdentifierScope(baseScope, "Derived_Inst");
+            var sibling = new IdentifierScope(objectScope, "Sibling_Inst");
+            Root(derived, "Foo", "Foo$2m");
+            SimpleIdentifier.CreateScopeIdentifier(root, "getter", false);
+            SimpleIdentifier.CreateScopeIdentifier(root, "getter", false);
+            var cssNames = new IdentifierScope(false);
+            Assert.AreEqual(0, IdentifierScope.DevStableNamer.NameExecutionTree(root).Errors.Count);
+            Assert.AreEqual(0, IdentifierScope.DevStableNamer.NameTypeTree(objectScope).Errors.Count);
+
+            // Made after naming, as a patch's conversion makes them.
+            var newRoot = Root(root, "B", "B$");
+            var otherChain = Root(sibling, "Foo", "Foo$2m");
+            var usedBelow = Root(baseScope, "Foo", "Foo$2m");
+            var usedInRoot = Root(root, "C", "A$");
+            var pluginRoot = SimpleIdentifier.CreateScopeIdentifier(root, "getter", false);
+            var noStableName = SimpleIdentifier.CreateScopeIdentifier(sibling, "tmp", false);
+            var otherTree = SimpleIdentifier.CreateScopeIdentifier(cssNames, "selected", false);
+
+            var namer = IdentifierScope.DevStableNamer.NameNewMembers(new[] { newRoot, otherChain, usedBelow, usedInRoot, pluginRoot, noStableName, otherTree });
+
+            Assert.AreEqual("B$", newRoot.GetName());
+            Assert.AreEqual("Foo$2m", otherChain.GetName());
+            Assert.AreEqual("getter$$g3", pluginRoot.GetName(), "A plugin-made root takes the next free ordinal.");
+            Assert.AreEqual(3, namer.Errors.Count, string.Join("; ", namer.Errors));
+            Assert.AreEqual(2, namer.Errors.Count(e => e.StartsWith("NSDEV001", StringComparison.Ordinal)), string.Join("; ", namer.Errors));
+            Assert.AreEqual(1, namer.Errors.Count(e => e.StartsWith("NSDEV002", StringComparison.Ordinal)), string.Join("; ", namer.Errors));
+        }
+
+        [TestMethod]
         public void Guards_InterfaceSlotLookalikeIsNsdev001()
         {
             var objectScope = new IdentifierScope(false);

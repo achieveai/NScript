@@ -71,6 +71,12 @@ namespace NScript.Converter
         private MethodCache methodCache;
 
         /// <summary>
+        /// Dev patch emit (<c>NSCRIPT_PATCH_EMIT=1</c>): what the last full emit left for
+        /// patching its bundle; dropped with the session and by any miss.
+        /// </summary>
+        private DevPatchSession patchSession;
+
+        /// <summary>
         /// A method cache hit failed its check, or a plugin asked for a retry
         /// (<see cref="ConverterContext.RetryReason"/>): the build runs once more.
         /// </summary>
@@ -192,6 +198,9 @@ namespace NScript.Converter
         /// </summary>
         public string LastBuildReason { get; private set; }
 
+        /// <summary>Why the last dev patch emit missed, or null when it patched.</summary>
+        public string LastPatchMiss { get; private set; }
+
         /// <summary>
         /// Whether builds keep a session: dev mode, unless <c>NSCRIPT_SESSION=off</c>.
         /// </summary>
@@ -210,6 +219,7 @@ namespace NScript.Converter
             this.sessionContext = null;
             this.sessionStamps = null;
             this.methodCache = null;
+            this.patchSession = null;
         }
 
         private void SetPlugins(IConverterPlugin[] buildPlugins)
@@ -267,13 +277,15 @@ namespace NScript.Converter
         /// is a logged miss (a cold build, which drops the session), never a new way to fail.
         /// </summary>
         /// <param name="kind">"resources-refreshed" or "bodies-refreshed" on success.</param>
-        private bool TryRefreshSession(List<(string path, string sha256)> stamps, byte[][] changedImages, Serilog.ILogger log, out string kind, out string miss)
+        /// <param name="changed">The changed types (kept definitions), empty unless bodies were refreshed.</param>
+        private bool TryRefreshSession(List<(string path, string sha256)> stamps, byte[][] changedImages, Serilog.ILogger log, out string kind, out string miss, out IReadOnlyList<TypeDefinition> changed)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string reason = null;
             int replaced = 0, recompiled = 0, bodies = 0, invalidated = 0;
             string changedTypes = null;
             kind = null;
+            changed = System.Array.Empty<TypeDefinition>();
             var images = new List<byte[]>();
             try
             {
@@ -321,6 +333,7 @@ namespace NScript.Converter
                         if (this.sessionContext.Refresh(refresh, kinds, out reason))
                         {
                             kind = "bodies-refreshed";
+                            changed = refresh.ChangedTypes;
                         }
                     }
 
@@ -349,6 +362,79 @@ namespace NScript.Converter
                 sw.ElapsedMilliseconds);
             miss = reason;
             return reason == null;
+        }
+
+        /// <summary>
+        /// Patches the last full emit's bundle for a body-only change of
+        /// <paramref name="changedTypes"/>, or for a resource-only change when it is null
+        /// (<see cref="DevPatchSession"/>). False when there is no patch session or it misses;
+        /// the build then emits in full.
+        /// </summary>
+        private bool TryPatchEmit(IReadOnlyList<TypeDefinition> changedTypes, Serilog.ILogger log)
+        {
+            var session = this.patchSession;
+            if (session == null)
+            {
+                return false;
+            }
+
+            // A miss can leave the session's scope manager half changed: it is never used again.
+            this.patchSession = null;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            bool patched;
+            string miss;
+            int methods = 0;
+            try
+            {
+                patched = changedTypes != null
+                    ? session.TryPatch(changedTypes, this.sessionContext, out miss, out methods)
+                    : session.TryPatchResources(this.sessionContext, out miss, out methods);
+            }
+            catch (System.Exception ex) when (!(ex is System.OutOfMemoryException))
+            {
+                patched = false;
+                miss = "error " + ex.GetType().Name + ": " + ex.Message;
+            }
+
+            this.LastPatchMiss = patched ? null : miss;
+
+            log.Information(
+                "Patch.Emit Patched={Patched} Methods={Methods} Patches={Patches} ScriptChars={ScriptChars} Miss={Miss} ElapsedMs={ElapsedMs} FragmentMs={FragmentMs} WriteMs={WriteMs}",
+                patched,
+                methods,
+                session.Patches,
+                session.ScriptLength,
+                miss,
+                sw.ElapsedMilliseconds,
+                patched ? session.ProbeFragmentMs : 0,
+                patched ? session.ProbeWriteMs : 0);
+            if (patched)
+            {
+                this.patchSession = session;
+                this.LastBuildReason += changedTypes != null
+                    ? "; patched " + methods + " methods"
+                    : "; patched resources" + (methods > 0 ? " and " + methods + " methods" : string.Empty);
+            }
+
+            return patched;
+        }
+
+        /// <summary>Writes the context's warnings from index <paramref name="from"/> on, as MSBuild lines.</summary>
+        private static void WriteWarnings(ConverterContext converterContext, int from)
+        {
+            for (int i = from; i < converterContext.Warnings.Count; i++)
+            {
+                var warning = converterContext.Warnings[i];
+                if (warning.Item1 != null)
+                {
+                    System.Console.Out.WriteLine(
+                        string.Format("{0}({1},{2}): warning WRN0123: {3}",
+                            warning.Item1.FileName,
+                            warning.Item1.StartLine,
+                            warning.Item1.StartColumn,
+                            warning.Item2));
+                }
+            }
         }
 
         /// <summary>
@@ -485,7 +571,8 @@ namespace NScript.Converter
                 : this.sessionContext == null ? "new"
                 : "inputs-changed";
             string refreshMiss = null;
-            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, changedImages, log, out var refreshKind, out refreshMiss))
+            IReadOnlyList<TypeDefinition> changedTypes = null;
+            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, changedImages, log, out var refreshKind, out refreshMiss, out changedTypes))
             {
                 warm = true;
                 sessionReason = refreshKind;
@@ -520,6 +607,23 @@ namespace NScript.Converter
                 "Session.Build Kind={Kind} Reason={Reason}",
                 this.LastBuildKind,
                 sessionReason);
+
+            int warningsBefore = this.sessionContext?.Warnings.Count ?? 0;
+            if ((sessionReason == "bodies-refreshed" || sessionReason == "resources-refreshed")
+                && this.TryPatchEmit(sessionReason == "bodies-refreshed" ? changedTypes : null, log))
+            {
+                // A patch misses on any error; it reports the warnings its conversions added.
+                WriteWarnings(this.sessionContext, warningsBefore);
+                log.Information(
+                    "Builder.End {ElapsedMs}ms Warnings={WarningCount} Errors={ErrorCount}",
+                    totalSw.ElapsedMilliseconds,
+                    this.sessionContext.Warnings.Count - warningsBefore,
+                    0);
+                return true;
+            }
+
+            // A full emit makes a new patch session when it writes the bundle.
+            this.patchSession = null;
 
             RuntimeScopeManager runtimeManager;
             ConverterContext converterContext;
@@ -657,6 +761,12 @@ namespace NScript.Converter
                         pluginJsStatements = plugin.GetPostJavascript();
                         if (pluginJsStatements != null)
                         { statements.AddRange(pluginJsStatements); }
+
+                        if (this.devMode && plugin.PatchSectionName != null)
+                        {
+                            // Patch emit puts a resource change's statements before it.
+                            statements.Add(new JST.MarkerStatement(runtimeManager.Scope, JST.MarkerStatement.ForSection(plugin.PatchSectionName)));
+                        }
                     }
                 }
 
@@ -739,6 +849,7 @@ namespace NScript.Converter
 
                 var writerSw = System.Diagnostics.Stopwatch.StartNew();
                 var writer = new JSWriter(true, scriptGenerateSettings.uglify);
+                writer.LivePatchHook = DevPatchSession.IsEnabled && this.devMode && !scriptGenerateSettings.optimize;
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
                 {
@@ -790,13 +901,36 @@ namespace NScript.Converter
                 }
                 else
                 {
-                    writer.Write(
-                        this.jsScript,
-                        effectiveSourceRoot,
-                        emitLegacyAshxHandler: isLegacySourceRoot,
-                        repoRoot: this.repoRoot,
-                        secondaryRepoRoot: this.secondaryRepoRoot,
-                        secondarySourceRoot: this.secondarySourceRoot);
+                    if (DevPatchSession.IsEnabled && this.devMode && this.UseSession && !this.scriptGenerateSettings.optimize)
+                    {
+                        var (script, map) = writer.WriteAndKeep(
+                            this.jsScript,
+                            effectiveSourceRoot,
+                            emitLegacyAshxHandler: isLegacySourceRoot,
+                            repoRoot: this.repoRoot,
+                            secondaryRepoRoot: this.secondaryRepoRoot,
+                            secondarySourceRoot: this.secondarySourceRoot);
+                        this.patchSession = new DevPatchSession(
+                            runtimeManager,
+                            this.methodConverterPlugins,
+                            this.typeConverterPlugins,
+                            this.plugins,
+                            converterContext.DevChunks,
+                            this.jsScript,
+                            script,
+                            map);
+                    }
+                    else
+                    {
+                        writer.Write(
+                            this.jsScript,
+                            effectiveSourceRoot,
+                            emitLegacyAshxHandler: isLegacySourceRoot,
+                            repoRoot: this.repoRoot,
+                            secondaryRepoRoot: this.secondaryRepoRoot,
+                            secondarySourceRoot: this.secondarySourceRoot);
+                    }
+
                     log.Information("JSWriter.End {JsScript} {ElapsedMs}ms", this.jsScript, writerSw.ElapsedMilliseconds);
                     if (converterContext.DevChunks)
                     {
@@ -831,18 +965,7 @@ namespace NScript.Converter
                 }
             }
 
-            foreach (var warning in converterContext.Warnings)
-            {
-                if (warning.Item1 != null)
-                {
-                    System.Console.Out.WriteLine(
-                        string.Format("{0}({1},{2}): warning WRN0123: {3}",
-                            warning.Item1.FileName,
-                            warning.Item1.StartLine,
-                            warning.Item1.StartColumn,
-                            warning.Item2));
-                }
-            }
+            WriteWarnings(converterContext, 0);
 
             foreach (var warning in converterContext.Errors)
             {

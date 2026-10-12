@@ -153,6 +153,12 @@ namespace NScript.Converter.Plugins
         /// Gets the post javascript.
         /// </summary>
         /// <returns></returns>
+        /// <summary>
+        /// Dev patch emit: the test registrations depend only on types, which a change to
+        /// resources leaves as they were.
+        /// </summary>
+        public string TryPatchResources(List<Statement> statements) => null;
+
         public List<Statement> GetPostJavascript()
         {
             List<Statement> rv = new List<Statement>();

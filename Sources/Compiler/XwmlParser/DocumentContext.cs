@@ -274,6 +274,23 @@ namespace XwmlParser
             }
         }
 
+        /// <summary>The document's own style blocks, or null when it has none.</summary>
+        internal CssStyleSheet DocumentCss => this.documentCssScope;
+
+        /// <summary>Dev patch emit: points this document at a style sheet parsed again.</summary>
+        internal void ReplaceStyleSheet(CssStyleSheet old, CssStyleSheet parsedAgain)
+        {
+            for (int index = 0; index < this.applicableCssScopes.Count; index++)
+            {
+                if (this.applicableCssScopes[index] == old)
+                {
+                    this.applicableCssScopes[index] = parsedAgain;
+                }
+            }
+
+            this.documentCssScope?.ReplaceDependency(old, parsedAgain);
+        }
+
         /// <summary>
         /// Collects CSS variables (declared and used) from this document's stylesheets.
         /// This includes both inline style blocks and linked stylesheets.
