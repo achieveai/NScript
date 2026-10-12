@@ -128,6 +128,56 @@ namespace XwmlParser.Test
         }
 
         [TestMethod]
+        public void LinkedSheet_ClassAddedThatALaterSheetDeclares_Misses()
+        {
+            // A cold build parses A first, so B's .card would redeclare it: the patch must not
+            // give A a new name for .card while B and the skin keep theirs.
+            const string A = "Patch.A.css", B = "Patch.B.css";
+            var linked = Document("linked").Replace(
+                "<style> .card { color: red; } </style>",
+                "<link rel=\"stylesheet\" href=\"" + A + "\" /><link rel=\"stylesheet\" href=\"" + B + "\" />");
+            var session = NewSession();
+            session.BeginBuild(null, null);
+            var plugin = Helper.CreatePlugin(null, session);
+            plugin.CodeGenerator.AddResource(Resource(A, ".a { color: red; }"), A);
+            plugin.CodeGenerator.AddResource(Resource(B, ".card { color: blue; }"), B);
+            plugin.CodeGenerator.AddResource(Resource(First, linked), First);
+            Assert.IsNotNull(plugin.CodeGenerator.GetTemplateGetterIdentifier(First));
+            plugin.GetMethodsToEmitPass1();
+            Helper.ConvertCodeToString(plugin.GetPostJavascript());
+            Assert.AreEqual(0, session.Errors.Count, "the build must not fail");
+
+            var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [A] = Tuple.Create(Resource(A, ".a { color: red; } .card { color: green; }"), A),
+            };
+            Assert.AreEqual(
+                "xwml class added " + A,
+                plugin.TryPatchResources(new List<Statement>(), new Dictionary<string, string>(), resources));
+
+            // The full build that follows reports what a cold build reports.
+            var cold = NewSession();
+            cold.BeginBuild(null, null);
+            var coldPlugin = Helper.CreatePlugin(null, cold);
+            string coldError = null;
+            try
+            {
+                coldPlugin.CodeGenerator.AddResource(resources[A].Item1, A);
+                coldPlugin.CodeGenerator.AddResource(Resource(B, ".card { color: blue; }"), B);
+                coldPlugin.CodeGenerator.AddResource(Resource(First, linked), First);
+                coldPlugin.CodeGenerator.GetTemplateGetterIdentifier(First);
+                coldPlugin.GetMethodsToEmitPass1();
+                Helper.ConvertCodeToString(coldPlugin.GetPostJavascript());
+            }
+            catch (Exception ex)
+            {
+                coldError = ex.Message;
+            }
+
+            Assert.IsTrue(coldError != null || cold.Errors.Count > 0, "a cold build refuses .card declared in both sheets");
+        }
+
+        [TestMethod]
         public void ChangedStyle_PatchPrefixesOnlyItsCss()
         {
             // More pieces of CSS than the prefixer once kept results for.

@@ -938,6 +938,16 @@ namespace XwmlParser
                 }
             }
 
+            foreach (var styleSheet in this.parserContext.StyleSheets.Values)
+            {
+                if (styleSheet != old && System.Linq.Enumerable.Any(styleSheet.ClassNames, declared.Contains))
+                {
+                    // Another sheet, and the skins that use it, bound the class to its own name;
+                    // a cold build binds them all to this sheet's.
+                    return "xwml class added " + key;
+                }
+            }
+
             this.parserContext.StyleSheets[key] = parsedAgain;
             foreach (var styleSheet in this.parserContext.StyleSheets.Values)
             {

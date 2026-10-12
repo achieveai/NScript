@@ -613,16 +613,16 @@ namespace NScript.Converter
                 this.LastBuildKind,
                 sessionReason);
 
-            int warningsBefore = this.sessionContext?.Warnings.Count ?? 0;
             if ((sessionReason == "bodies-refreshed" || sessionReason == "resources-refreshed")
                 && this.TryPatchEmit(sessionReason == "bodies-refreshed" ? changedTypes : null, withResources, log))
             {
-                // A patch misses on any error; it reports the warnings its conversions added.
-                WriteWarnings(this.sessionContext, warningsBefore);
+                // A patch misses on any error. Its BeginBuild cleared the last build's warnings,
+                // so the list holds only the warnings its conversions added.
+                WriteWarnings(this.sessionContext, 0);
                 log.Information(
                     "Builder.End {ElapsedMs}ms Warnings={WarningCount} Errors={ErrorCount}",
                     totalSw.ElapsedMilliseconds,
-                    this.sessionContext.Warnings.Count - warningsBefore,
+                    this.sessionContext.Warnings.Count,
                     0);
                 return true;
             }
