@@ -278,7 +278,8 @@ namespace NScript.Converter
         /// </summary>
         /// <param name="kind">"resources-refreshed" or "bodies-refreshed" on success.</param>
         /// <param name="changed">The changed types (kept definitions), empty unless bodies were refreshed.</param>
-        private bool TryRefreshSession(List<(string path, string sha256)> stamps, byte[][] changedImages, Serilog.ILogger log, out string kind, out string miss, out IReadOnlyList<TypeDefinition> changed)
+        /// <param name="withResources">Whether a recompiled module's resources changed too.</param>
+        private bool TryRefreshSession(List<(string path, string sha256)> stamps, byte[][] changedImages, Serilog.ILogger log, out string kind, out string miss, out IReadOnlyList<TypeDefinition> changed, out bool withResources)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             string reason = null;
@@ -286,6 +287,7 @@ namespace NScript.Converter
             string changedTypes = null;
             kind = null;
             changed = System.Array.Empty<TypeDefinition>();
+            withResources = false;
             var images = new List<byte[]>();
             try
             {
@@ -334,6 +336,7 @@ namespace NScript.Converter
                         {
                             kind = "bodies-refreshed";
                             changed = refresh.ChangedTypes;
+                            withResources = refresh.RecompiledResourcesChanged;
                         }
                     }
 
@@ -366,11 +369,12 @@ namespace NScript.Converter
 
         /// <summary>
         /// Patches the last full emit's bundle for a body-only change of
-        /// <paramref name="changedTypes"/>, or for a resource-only change when it is null
+        /// <paramref name="changedTypes"/>, with the plugins' sections when
+        /// <paramref name="withResources"/>, or for a resource-only change when it is null
         /// (<see cref="DevPatchSession"/>). False when there is no patch session or it misses;
         /// the build then emits in full.
         /// </summary>
-        private bool TryPatchEmit(IReadOnlyList<TypeDefinition> changedTypes, Serilog.ILogger log)
+        private bool TryPatchEmit(IReadOnlyList<TypeDefinition> changedTypes, bool withResources, Serilog.ILogger log)
         {
             var session = this.patchSession;
             if (session == null)
@@ -387,7 +391,7 @@ namespace NScript.Converter
             try
             {
                 patched = changedTypes != null
-                    ? session.TryPatch(changedTypes, this.sessionContext, out miss, out methods)
+                    ? session.TryPatch(changedTypes, withResources, this.sessionContext, out miss, out methods)
                     : session.TryPatchResources(this.sessionContext, out miss, out methods);
             }
             catch (System.Exception ex) when (!(ex is System.OutOfMemoryException))
@@ -572,7 +576,8 @@ namespace NScript.Converter
                 : "inputs-changed";
             string refreshMiss = null;
             IReadOnlyList<TypeDefinition> changedTypes = null;
-            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, changedImages, log, out var refreshKind, out refreshMiss, out changedTypes))
+            bool withResources = false;
+            if (!warm && this.UseSession && this.sessionContext != null && this.TryRefreshSession(stamps, changedImages, log, out var refreshKind, out refreshMiss, out changedTypes, out withResources))
             {
                 warm = true;
                 sessionReason = refreshKind;
@@ -610,7 +615,7 @@ namespace NScript.Converter
 
             int warningsBefore = this.sessionContext?.Warnings.Count ?? 0;
             if ((sessionReason == "bodies-refreshed" || sessionReason == "resources-refreshed")
-                && this.TryPatchEmit(sessionReason == "bodies-refreshed" ? changedTypes : null, log))
+                && this.TryPatchEmit(sessionReason == "bodies-refreshed" ? changedTypes : null, withResources, log))
             {
                 // A patch misses on any error; it reports the warnings its conversions added.
                 WriteWarnings(this.sessionContext, warningsBefore);

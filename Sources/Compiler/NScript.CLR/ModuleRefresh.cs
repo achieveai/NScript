@@ -63,6 +63,12 @@ namespace NScript.CLR
         /// <summary>Gets the number of resources the resource-only images replace.</summary>
         public int ResourcesReplaced => this.resourceSwaps.Count;
 
+        /// <summary>
+        /// Gets whether a recompiled image's resources differ from its module's: the commit
+        /// takes them all, so whoever read the old ones reads them again.
+        /// </summary>
+        public bool RecompiledResourcesChanged { get; private set; }
+
         /// <summary>Gets the number of method bodies the commit replaced.</summary>
         public int BodiesReplaced { get; private set; }
 
@@ -169,6 +175,33 @@ namespace NScript.CLR
 
         private static string Key(ModuleDefinition module, string fullName)
             => module.Name.ToLowerInvariant() + "|" + fullName;
+
+        /// <summary>Whether the resources other than the compiler's own ($$...) differ.</summary>
+        private static bool ResourcesDiffer(ModuleDefinition kept, ModuleDefinition fresh)
+        {
+            static List<Resource> Own(ModuleDefinition module)
+                => module.Resources.Where(r => !r.Name.StartsWith("$$", StringComparison.Ordinal)).ToList();
+
+            var keptOwn = Own(kept);
+            var freshOwn = Own(fresh);
+            if (keptOwn.Count != freshOwn.Count)
+            {
+                return true;
+            }
+
+            for (int index = 0; index < keptOwn.Count; index++)
+            {
+                if (!(keptOwn[index] is EmbeddedResource keptResource)
+                    || !(freshOwn[index] is EmbeddedResource freshResource)
+                    || keptResource.Name != freshResource.Name
+                    || !freshResource.GetResourceData().AsSpan().SequenceEqual(keptResource.GetResourceData()))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private string PlanResources(ModuleDefinition kept, ModuleDefinition fresh)
         {
@@ -302,6 +335,7 @@ namespace NScript.CLR
             }
 
             this.recompiled.Add(kept);
+            this.RecompiledResourcesChanged |= ResourcesDiffer(kept, fresh);
             if (changedFiles.Count > 0)
             {
                 this.sourceChanged.Add(kept);

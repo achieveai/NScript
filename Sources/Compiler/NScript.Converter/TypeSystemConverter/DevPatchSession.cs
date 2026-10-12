@@ -64,18 +64,21 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>
         /// How much the patches may grow the bundle, in percent of the full emit, before the
         /// next build emits in full again (compaction): <c>NSCRIPT_PATCH_COMPACT_PERCENT</c>,
-        /// 25 by default.
+        /// 50 by default.
         /// </summary>
         public static int CompactPercent
             => int.TryParse(Environment.GetEnvironmentVariable("NSCRIPT_PATCH_COMPACT_PERCENT"), out var percent) && percent >= 0
                 ? percent
-                : 25;
+                : 50;
 
         /// <summary>Patches written since the full emit.</summary>
         public int Patches { get; private set; }
 
         /// <summary>Script length now, in chars.</summary>
         public int ScriptLength => this.script.Length;
+
+        /// <summary>The string literals the plugins write again in place, by marker (this patch).</summary>
+        private readonly Dictionary<string, string> literals = new Dictionary<string, string>();
 
         /// <summary>Last patch: time rendering its fragments (Patch.Emit FragmentMs).</summary>
         public long ProbeFragmentMs { get; private set; }
@@ -84,22 +87,27 @@ namespace NScript.Converter.TypeSystemConverter
         public long ProbeWriteMs { get; private set; }
 
         /// <summary>
-        /// Patches the written bundle for a body-only change of <paramref name="changedTypes"/>.
-        /// False with a reason when it cannot; the session is then unusable.
+        /// Patches the written bundle for a body-only change of <paramref name="changedTypes"/>,
+        /// and for a change to embedded resources that came with it when
+        /// <paramref name="withResources"/>. False with a reason when it cannot; the session is
+        /// then unusable.
         /// </summary>
         /// <param name="methods">Methods whose override was written.</param>
         public bool TryPatch(
             IReadOnlyList<TypeDefinition> changedTypes,
+            bool withResources,
             ConverterContext context,
             out string miss,
             out int methods)
         {
             var candidates = new List<Candidate>();
+            var sections = new List<(string Name, List<Statement> Statements)>();
             return this.Patch(
                 context,
-                () => this.ConvertAgain(changedTypes, context, candidates),
+                () => this.ConvertAgain(changedTypes, context, candidates)
+                    ?? (withResources ? this.PatchPluginSections(sections) : null),
                 candidates,
-                new List<(string, List<Statement>)>(),
+                sections,
                 out miss,
                 out methods);
         }
@@ -137,6 +145,7 @@ namespace NScript.Converter.TypeSystemConverter
         {
             methods = 0;
             this.ProbeFragmentMs = this.ProbeWriteMs = 0;
+            this.literals.Clear();
             if ((long)this.script.Length * 100 > (long)this.fullLength * (100 + CompactPercent))
             {
                 // The old code the patches left behind is dropped by one full emit.
@@ -314,7 +323,7 @@ namespace NScript.Converter.TypeSystemConverter
                 pieces.Add((MarkerStatement.ForSection(name), statements));
             }
 
-            if (pieces.Count == 0)
+            if (pieces.Count == 0 && this.literals.Count == 0)
             {
                 miss = null;
                 return true;
@@ -396,7 +405,7 @@ namespace NScript.Converter.TypeSystemConverter
             foreach (var plugin in this.runtimePlugins)
             {
                 var statements = new List<Statement>();
-                var miss = plugin.TryPatchResources(statements);
+                var miss = plugin.TryPatchResources(statements, this.literals);
                 if (miss != null)
                 {
                     return miss;
@@ -497,16 +506,27 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         private string Splice(List<(string Marker, List<Statement> Statements)> pieces)
         {
+            string script = this.script;
+            var fileName = Path.GetFileName(this.jsFileName);
+            foreach (var (marker, literal) in this.literals)
+            {
+                script = MarkerStatement.ReplaceLiteral(script, this.map, fileName, marker, literal);
+                if (script == null)
+                {
+                    return "marker " + marker;
+                }
+            }
+
             var places = new List<(int Offset, List<Statement> Statements)>();
             foreach (var (marker, statements) in pieces)
             {
                 // The writer ends lines with Environment.NewLine.
                 var needle = Environment.NewLine + marker;
-                int offset = this.script.IndexOf(needle, StringComparison.Ordinal);
+                int offset = script.IndexOf(needle, StringComparison.Ordinal);
                 int end = offset + needle.Length;
                 if (offset < 0
-                    || this.script.IndexOf(needle, end, StringComparison.Ordinal) >= 0
-                    || (end < this.script.Length && this.script[end] != Environment.NewLine[0]))
+                    || script.IndexOf(needle, end, StringComparison.Ordinal) >= 0
+                    || (end < script.Length && script[end] != Environment.NewLine[0]))
                 {
                     return "marker " + marker;
                 }
@@ -521,7 +541,7 @@ namespace NScript.Converter.TypeSystemConverter
             int line = 0, counted = 0;
             for (int i = 0; i < places.Count; i++)
             {
-                line += this.script.AsSpan(counted, places[i].Offset + Environment.NewLine.Length - counted).Count('\n');
+                line += script.AsSpan(counted, places[i].Offset + Environment.NewLine.Length - counted).Count('\n');
                 counted = places[i].Offset + Environment.NewLine.Length;
                 lines[i] = line;
             }
@@ -529,7 +549,6 @@ namespace NScript.Converter.TypeSystemConverter
             // Last place first: a fragment moves the lines after it, not before.
             long probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
             var fragments = new string[places.Count];
-            var fileName = Path.GetFileName(this.jsFileName);
             for (int i = places.Count - 1; i >= 0; i--)
             {
                 var writer = new JSWriter(true, false);
@@ -542,15 +561,15 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             long probeFragments = System.Diagnostics.Stopwatch.GetTimestamp();
-            var builder = new System.Text.StringBuilder(this.script.Length + fragments.Sum(f => f.Length));
+            var builder = new System.Text.StringBuilder(script.Length + fragments.Sum(f => f.Length));
             int copiedUpTo = 0;
             for (int i = 0; i < places.Count; i++)
             {
-                builder.Append(this.script, copiedUpTo, places[i].Offset - copiedUpTo).Append(fragments[i]);
+                builder.Append(script, copiedUpTo, places[i].Offset - copiedUpTo).Append(fragments[i]);
                 copiedUpTo = places[i].Offset;
             }
 
-            builder.Append(this.script, copiedUpTo, this.script.Length - copiedUpTo);
+            builder.Append(script, copiedUpTo, script.Length - copiedUpTo);
             var patched = builder.ToString();
             OwaSourceMapper.AtomicFile.Write(this.jsFileName, System.Text.Encoding.UTF8, writer => writer.Write(patched));
             this.map.Write(Path.GetDirectoryName(this.jsFileName));

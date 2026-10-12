@@ -77,14 +77,22 @@ namespace XwmlParser.Test
         private static string Css(string code)
             => Regex.Match(code, "textContent = (\".*?\");").Groups[1].Value;
 
+        /// <summary>The CSS a patch writes again in place, as the bundle's literal.</summary>
+        private static string Css(Dictionary<string, string> literals)
+            => literals.TryGetValue(CodeGenerator.CssMarker, out var css) ? "\"" + Utils.ToJSString(css) + "\"" : string.Empty;
+
         [TestMethod]
         public void ChangedDocument_PatchKeepsNamesAndClasses_RefusedChangeMisses_NextFullBuildIsFresh()
         {
             var session = NewSession();
             var cold = Build(session, out var plugin, "second");
 
+            Assert.IsTrue(
+                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssMarker) + @"\r?\n *style\.textContent = """),
+                "the CSS line is marked");
             var statements = new List<Statement>();
-            Assert.IsNull(plugin.TryPatchResources(statements, WithSecond(plugin, Document("changed"))));
+            var literals = new Dictionary<string, string>();
+            Assert.IsNull(plugin.TryPatchResources(statements, literals, WithSecond(plugin, Document("changed"))));
             var fragment = Helper.ConvertCodeToString(statements);
 
             StringAssert.Contains(fragment, "changed");
@@ -97,19 +105,21 @@ namespace XwmlParser.Test
             }
 
             StringAssert.Contains(fragment, "\"2\")", "the skin takes the storage index past the old ones");
-            Assert.IsFalse(fragment.Contains("textContent"), "the CSS did not change: it is not written again");
+            Assert.IsFalse(fragment.Contains("textContent"), "the document initializer stands");
+            Assert.AreEqual(0, literals.Count, "the CSS did not change: it is not written again");
 
-            // A changed style writes the CSS again, the classes keeping their names.
+            // A changed style writes the CSS again in place, the classes keeping their names.
             statements = new List<Statement>();
-            Assert.IsNull(plugin.TryPatchResources(statements, WithSecond(plugin, Document("changed", ".card { color: green; }"))));
-            fragment = Helper.ConvertCodeToString(statements);
+            Assert.IsNull(plugin.TryPatchResources(statements, literals, WithSecond(plugin, Document("changed", ".card { color: green; }"))));
+            Assert.IsFalse(Helper.ConvertCodeToString(statements).Contains("textContent"), "the document initializer stands");
             Assert.AreNotEqual(string.Empty, Css(cold));
-            Assert.AreNotEqual(Css(cold), Css(fragment));
-            Assert.AreEqual(Css(cold), Css(fragment).Replace("green", "red"), "the classes must keep their names");
+            Assert.AreNotEqual(Css(cold), Css(literals));
+            Assert.AreEqual(Css(cold), Css(literals).Replace("green", "red"), "the classes must keep their names");
 
             // The skin uses a class its style no longer declares: a full build reports it.
             Assert.IsNotNull(plugin.TryPatchResources(
                 new List<Statement>(),
+                new Dictionary<string, string>(),
                 WithSecond(plugin, Document("changed", ".other { color: blue; }"))));
 
             var full = Build(session, out plugin, "changed");
@@ -141,9 +151,9 @@ namespace XwmlParser.Test
             {
                 [names[5]] = Tuple.Create(Resource(names[5], Document("many5", ".card { color: green; }")), names[5]),
             };
-            var statements = new List<Statement>();
-            Assert.IsNull(plugin.TryPatchResources(statements, resources));
-            StringAssert.Contains(Helper.ConvertCodeToString(statements), "green");
+            var literals = new Dictionary<string, string>();
+            Assert.IsNull(plugin.TryPatchResources(new List<Statement>(), literals, resources));
+            StringAssert.Contains(Css(literals), "green");
             Assert.AreEqual(1, CssStyleSheet.Compiler.Runs - runs, "only the changed style is prefixed again");
         }
 

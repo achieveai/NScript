@@ -1824,7 +1824,7 @@ namespace Sunlight.Framework.Observables
         /// Dev patch emit: Razor output cannot be patched yet, so this only checks that the
         /// change left every skin and stylesheet it read as it was, and added no skin.
         /// </summary>
-        public string TryPatchResources(List<Statement> statements)
+        public string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
         {
             var current = new Dictionary<string, EmbeddedResource>();
             foreach (var module in _clrContext.Modules)

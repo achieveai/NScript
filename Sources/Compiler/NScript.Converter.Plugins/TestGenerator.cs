@@ -157,7 +157,7 @@ namespace NScript.Converter.Plugins
         /// Dev patch emit: the test registrations depend only on types, which a change to
         /// resources leaves as they were.
         /// </summary>
-        public string TryPatchResources(List<Statement> statements) => null;
+        public string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals) => null;
 
         public List<Statement> GetPostJavascript()
         {

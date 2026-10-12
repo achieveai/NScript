@@ -123,6 +123,43 @@ namespace OwaSourceMapper.Test
                 () => writer.WriteFragment(new OwaSourceMapper.SourceMap(), "out.js", 1));
         }
 
+        /// <summary>A marked line <c>pageCss = "<paramref name="css"/>";</c> between two functions.</summary>
+        private static List<Statement> MarkedLiteral(string css)
+        {
+            var root = new IdentifierScope(isExecutionScope: true);
+            var target = SimpleIdentifier.CreateScopeIdentifier(root, "counterValue", false);
+            var pageCss = SimpleIdentifier.CreateScopeIdentifier(root, "pageCss", false);
+            var program = new List<Statement>
+            {
+                AssignFunction(root, target, "firstFunction", 10),
+                new MarkerStatement(root, MarkerStatement.ForLiteral("Demo.Css")),
+                new ExpressionStatement(
+                    At(20, 1),
+                    root,
+                    new BinaryExpression(
+                        At(20, 1),
+                        root,
+                        BinaryOperator.Assignment,
+                        new IdentifierExpression(pageCss, root, At(20, 1)),
+                        new StringLiteralExpression(root, css, At(20, 11)))),
+                AssignFunction(root, target, "lastFunction", 30),
+            };
+            IdentifierScope.IdentifierMinifiedNamer.MinifyNames(root, false);
+            return program;
+        }
+
+        [TestMethod]
+        public void MarkedLiteral_WrittenAgainInPlace_GivesTheScriptAndMapOfWritingItSo()
+        {
+            const string changed = ".a { color: \"red\"; }\r\n.b { margin: 0; }\n";
+            var expected = Write(MarkedLiteral(changed));
+            var (js, map) = Write(MarkedLiteral(".a { color: blue; }"));
+
+            Assert.AreEqual(expected.js, MarkerStatement.ReplaceLiteral(js, map, "out.js", MarkerStatement.ForLiteral("Demo.Css"), changed));
+            Assert.AreEqual(expected.map.ToString(), map.ToString(), "the map's columns after the literal move with it");
+            Assert.IsNull(MarkerStatement.ReplaceLiteral(js, map, "out.js", MarkerStatement.ForLiteral("Demo.Other"), changed));
+        }
+
         [TestMethod]
         public void Fragments_GiveTheScriptAndMapOfRenderingThemInPlace()
         {

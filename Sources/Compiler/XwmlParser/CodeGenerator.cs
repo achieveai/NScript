@@ -227,6 +227,9 @@ namespace XwmlParser
         /// <summary>The CSS the last document initializer wrote.</summary>
         private string writtenCss;
 
+        /// <summary>Dev bundles: the marker on the line before the page's CSS.</summary>
+        internal static readonly string CssMarker = MarkerStatement.ForLiteral("XwmlParser.Css");
+
         /// <summary>
         /// The CSS registry methods.
         /// </summary>
@@ -759,12 +762,14 @@ namespace XwmlParser
 
         /// <summary>
         /// Dev patch emit: parses the changed style sheets and documents again and adds the code
-        /// that replaces theirs to <paramref name="statements"/>. The templates keep their names
-        /// and the classes keep theirs; new skins take storage indexes past the old ones. Returns
-        /// null when patched, or why the change needs a full emit.
+        /// that replaces theirs to <paramref name="statements"/>, and the page's CSS, when it
+        /// changed, to <paramref name="literals"/> under <see cref="CssMarker"/>. The templates
+        /// keep their names and the classes keep theirs; new skins take storage indexes past
+        /// the old ones. Returns null when patched, or why the change needs a full emit.
         /// </summary>
         internal string PatchResources(
             List<Statement> statements,
+            Dictionary<string, string> literals,
             Dictionary<string, Tuple<EmbeddedResource, string>> resourceMap = null)
         {
             long probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -869,20 +874,17 @@ namespace XwmlParser
             long probeParse = System.Diagnostics.Stopwatch.GetTimestamp();
             int prefixRuns = CssStyleSheet.Compiler.Runs;
 
-            // The CSS is one block: the document initializer that writes it is replaced whole,
-            // and only when the CSS changed, as each copy adds the whole CSS to the bundle. Its
-            // storage size is a hint: the array grows for the indexes new skins take.
+            // The CSS is one block, written again in place on its marked line when it changed.
+            // The document initializer stands: its storage size is a hint, and the array grows
+            // for the indexes new skins take.
             this.patching = true;
             try
             {
                 string css = this.GetAllCss();
                 if (css != this.writtenCss)
                 {
-                    statements.Add(
-                        new ExpressionStatement(
-                            null,
-                            this.scopeManager.Scope,
-                            this.GenerateDocumentInitializerMethod(css)));
+                    literals[CssMarker] = css;
+                    this.writtenCss = css;
                 }
             }
             finally
@@ -1744,6 +1746,12 @@ namespace XwmlParser
                         new StringLiteralExpression(
                             methodScope,
                             "style"))));
+
+            // A dev bundle marks the CSS line, so a patch writes the CSS again in place.
+            if (this.parserContext?.ConverterContext?.DevMode == true)
+            {
+                initializers.Add(new MarkerStatement(methodScope, CssMarker));
+            }
 
             // style.textContent = "CSS"
             initializers.Add(

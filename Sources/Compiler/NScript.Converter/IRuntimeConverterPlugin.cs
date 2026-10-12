@@ -54,8 +54,11 @@ namespace NScript.Converter
         /// needs before this plugin's section marker to <paramref name="statements"/>, using
         /// the state of the full emit this plugin instance made. Returns null, or why it
         /// cannot patch (the build then emits in full). A plugin that does not know whether
-        /// its output depends on the change cannot patch.
+        /// its output depends on the change cannot patch. A string literal the full emit put
+        /// on the line after a <see cref="MarkerStatement.ForLiteral"/> marker is written again
+        /// in place: add its new value to <paramref name="literals"/>, by marker text.
         /// </summary>
-        string TryPatchResources(List<Statement> statements) => "plugin " + this.GetType().Name;
+        string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
+            => "plugin " + this.GetType().Name;
     }
 }

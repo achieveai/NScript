@@ -510,6 +510,41 @@ namespace OwaSourceMapper
         }
 
         /// <summary>
+        /// Moves every mapping on generated line <paramref name="line"/> past
+        /// <paramref name="column"/> right by <paramref name="delta"/> columns, for text there
+        /// written again longer or shorter (dev patch emit). A mapping into the script itself
+        /// (<paramref name="scriptFile"/>) moves its target too.
+        /// </summary>
+        public void ShiftColumns(int line, int column, int delta, string scriptFile)
+        {
+            if (delta == 0)
+            {
+                return;
+            }
+
+            int scriptIndex = scriptFile != null && this.fileIndexes.TryGetValue(scriptFile, out var index) ? index : -1;
+            var moved = new SortedList<(int Line, int Column), SourceMapping>(this.mappings.Count);
+            foreach (var mapping in this.mappings.Values)
+            {
+                var copy = mapping;
+                if (copy.SourceLine == line && copy.SourceColumn > column)
+                {
+                    copy.SourceColumn += delta;
+                }
+
+                if (copy.SourceFileIndex == scriptIndex && scriptIndex >= 0
+                    && copy.TargetLine == line && copy.TargetColumn > column)
+                {
+                    copy.TargetColumn += delta;
+                }
+
+                moved.Add((copy.SourceLine, copy.SourceColumn), copy);
+            }
+
+            this.mappings = moved;
+        }
+
+        /// <summary>
         /// Convert this object into a string representation.
         /// </summary>
         /// <returns>

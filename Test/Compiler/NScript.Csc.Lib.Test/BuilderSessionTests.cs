@@ -607,6 +607,15 @@ namespace NScript.Csc.Lib.Test
                 BuildOnce(builder, outJs, out _, out _);
                 Assert.AreEqual("compaction", builder.LastPatchMiss);
                 Assert.AreEqual(Cold(main), File.ReadAllText(outJs), "The compaction emit differs from a cold build.");
+
+                // A body edit and a resource edit in one image (one watch batch): the plugins
+                // are asked for their sections too. RootsPlugin has none, so it emits in full.
+                Environment.SetEnvironmentVariable("NSCRIPT_PATCH_COMPACT_PERCENT", null);
+                main = Compile("return new Spare().Get() + new Counter(8).Next();", 2);
+                SetOracleResource(main, "v2");
+                BuildOnce(builder, outJs, out _, out _);
+                Assert.AreEqual("plugin RootsPlugin", builder.LastPatchMiss, "A resource changed with the code must reach the plugins.");
+                Assert.AreEqual(Cold(main), File.ReadAllText(outJs), "The full emit after a resource miss differs from a cold build.");
             }
             finally
             {
