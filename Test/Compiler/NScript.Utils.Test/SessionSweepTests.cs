@@ -91,8 +91,7 @@ namespace NScript.Utils.Test
 
         private static void WithFakeClock(Action<string, Action<long>> test)
         {
-            // Sessions other tests left are stamped on the real clock: clear them before faking it.
-            BuilderSessions.DropIdle(TimeSpan.Zero);
+            DropAll();
             var originalClock = BuilderSessions.Clock;
             long now = 0;
             BuilderSessions.Clock = () => now;
@@ -106,9 +105,28 @@ namespace NScript.Utils.Test
             finally
             {
                 BuilderSessions.Clock = originalClock;
-                BuilderSessions.DropIdle(TimeSpan.Zero);
+                DropAll();
                 Logger.Instance = new Logger();
                 Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// Releases every session, whatever clock stamped it. A fake stamp can be later than the
+        /// real clock (ms since boot): a CI host up for less than 40 minutes kept the session the
+        /// fake 40-minute build left, and the next test found it.
+        /// </summary>
+        private static void DropAll()
+        {
+            var clock = BuilderSessions.Clock;
+            BuilderSessions.Clock = () => long.MaxValue;
+            try
+            {
+                BuilderSessions.DropIdle(TimeSpan.Zero);
+            }
+            finally
+            {
+                BuilderSessions.Clock = clock;
             }
         }
 
