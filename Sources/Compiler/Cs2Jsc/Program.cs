@@ -9,7 +9,12 @@ namespace NScript
     {
         public static int Main(string[] args)
         {
-            if (args.Length == 0)
+            var serviceArgs = NScript.Lib.Service.ServiceHost.ServiceArguments(args);
+            if (serviceArgs != null)
+            {
+                return NScript.Lib.Service.ServiceHost.Run(serviceArgs);
+            }
+            else if (args.Length == 0)
             {
                 PrintUsage();
                 return 0;
@@ -17,16 +22,6 @@ namespace NScript
             else if (args[0] == "csc")
             {
                 return CscCompiler.Main(args.Skip(1).ToArray());
-            }
-            else if (args[0] == "service")
-            {
-                // How ServiceLauncher starts a daemon from this (NuGet tool) layout.
-                return NScript.Lib.Service.ServiceHost.Run(args.Skip(1).ToArray());
-            }
-            else if (args[0] == "cs2jsc" && args.Length > 1 && args[1] == "service")
-            {
-                // The SDK's nscript.cmd runs `Cs2Jsc cs2jsc service --sync ...`.
-                return NScript.Lib.Service.ServiceHost.Run(args.Skip(2).ToArray());
             }
             else if (args[0] == "cs2jsc")
             {

@@ -72,6 +72,25 @@ namespace NScript.Utils.Test
         }
 
         [TestMethod]
+        public void FakeClockTest_LeavesNoSession_OnAHostUpLessThanItsFakeTime()
+        {
+            // The real clock is ms since boot; a CI host up 1 minute is earlier than the fake
+            // 40-minute stamp, and the next test found that session.
+            var originalClock = BuilderSessions.Clock;
+            BuilderSessions.Clock = () => Minutes(1);
+            try
+            {
+                WithFakeClock((dir, setNow) => Assert.IsFalse(Build(dir, "late", new ClockLogger(() => setNow(Minutes(40))))));
+                Assert.AreEqual(0, BuilderSessions.Count);
+            }
+            finally
+            {
+                BuilderSessions.Clock = originalClock;
+                DropAll();
+            }
+        }
+
+        [TestMethod]
         public void SessionIdleSetting_ZeroIsOff_BadValuesWarnAndUseTheDefault()
         {
             Assert.AreEqual(TimeSpan.FromMinutes(30), ServiceHost.ParseSessionIdleTimeout(null, out var warning));

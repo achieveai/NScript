@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { createSourceMapRouteHandler } from './source-map-route.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const QUNIT_SUITES = [
+// QUNIT_SUITES (a JSON [{ name, scripts }]) replaces the list; run-qunit.test.mjs uses it.
+const QUNIT_SUITES = process.env.QUNIT_SUITES ? JSON.parse(process.env.QUNIT_SUITES) : [
   {
     name: 'Sunlight.Framework.Test',
     scripts: ['/GeneratedScripts/Sunlight.Framework.Test.js'],

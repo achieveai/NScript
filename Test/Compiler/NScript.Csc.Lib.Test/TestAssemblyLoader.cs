@@ -119,7 +119,13 @@
             string repoRoot = Path.GetFullPath(Path.Combine(
                 Path.GetDirectoryName(typeof(TestAssemblyLoader).Assembly.Location),
                 @"..\..\..\..\"));
-            string libDir = Path.Combine(repoRoot, @"NScriptToolSet\lib\Release");
+            return GetFrameworkPaths(Path.Combine(repoRoot, @"NScriptToolSet\lib\Release"), fileNames);
+        }
+
+        /// <summary>The paths of <paramref name="fileNames"/> in <paramref name="libDir"/>; throws when any is missing.</summary>
+        /// <exception cref="FileNotFoundException">One or more of the assemblies is missing.</exception>
+        internal static string[] GetFrameworkPaths(string libDir, params string[] fileNames)
+        {
             string[] paths = Array.ConvertAll(fileNames, fileName => Path.Combine(libDir, fileName));
             string[] missing = Array.FindAll(paths, path => !File.Exists(path));
             if (missing.Length > 0)

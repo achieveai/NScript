@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<!-- Stand-in for SpreadsheetApp.htm whose benchmark run never finishes: bench-spreadsheet.test.mjs. -->
+<html><head><title>never finishes</title></head>
+<body>
+  <div id="sheet"></div>
+  <script>
+    window.__sheet = { runAll: function () { }, isRunning: function () { return true; } };
+  </script>
+</body></html>
