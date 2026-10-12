@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { createSourceMapRouteHandler } from './source-map-route.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// QUNIT_SUITES (a JSON [{ name, scripts }]) replaces the list; run-qunit.test.mjs uses it.
-const QUNIT_SUITES = process.env.QUNIT_SUITES ? JSON.parse(process.env.QUNIT_SUITES) : [
+// QUNIT_SUITES (a non-empty JSON [{ name, scripts }]) replaces the list; run-qunit.test.mjs uses it.
+const QUNIT_SUITES = process.env.QUNIT_SUITES ? suitesFromEnv(process.env.QUNIT_SUITES) : [
   {
     name: 'Sunlight.Framework.Test',
     scripts: ['/GeneratedScripts/Sunlight.Framework.Test.js'],
@@ -29,6 +29,16 @@ const QUNIT_SUITES = process.env.QUNIT_SUITES ? JSON.parse(process.env.QUNIT_SUI
     scripts: ['/GeneratedScripts/SpreadsheetApp.Test.js'],
   },
 ];
+
+// An empty list would run nothing and pass.
+function suitesFromEnv(json) {
+  const suites = JSON.parse(json);
+  if (!Array.isArray(suites) || suites.length === 0) {
+    console.error('QUNIT_SUITES must be a non-empty JSON array of { name, scripts }.');
+    process.exit(1);
+  }
+  return suites;
+}
 
 const MIME_TYPES = {
   '.html': 'text/html', '.htm': 'text/html',

@@ -50,10 +50,15 @@ namespace NScript.Utils.Test
 
             using var process = Process.Start(psi);
             var stderr = process.StandardError.ReadToEndAsync();
-            string stdout = process.StandardOutput.ReadToEnd();
-            Assert.IsTrue(process.WaitForExit(120_000), "dotnet msbuild did not finish in 120 s");
-            Assert.AreEqual(0, process.ExitCode, stdout + stderr.Result);
-            return stdout;
+            var stdout = process.StandardOutput.ReadToEndAsync();
+            if (!process.WaitForExit(120_000))
+            {
+                process.Kill(entireProcessTree: true);
+                Assert.Fail("dotnet msbuild did not finish in 120 s");
+            }
+
+            Assert.AreEqual(0, process.ExitCode, stdout.Result + stderr.Result);
+            return stdout.Result;
         }
 
         private static string Property(string json, string name)

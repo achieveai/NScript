@@ -10,10 +10,10 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function runBench(page) {
+function runBench(page, timeoutMs = '1000') {
   const run = spawnSync(process.execPath, [path.join(__dirname, 'bench-spreadsheet.mjs')], {
     cwd: __dirname,
-    env: { ...process.env, BENCH_PAGE: page, BENCH_TIMEOUT_MS: '1000' },
+    env: { ...process.env, BENCH_PAGE: page, BENCH_TIMEOUT_MS: timeoutMs },
     encoding: 'utf8',
     // Well under Playwright's 30 s default, so a timeout that is not applied fails here.
     timeout: 15_000,
@@ -31,4 +31,10 @@ test('the run wait uses its timeout', () => {
   const run = runBench('/test-fixtures/sheet-never-finishes.htm');
   assert.equal(run.status, 1, run.output);
   assert.match(run.output, /Timeout 1000ms exceeded/);
+});
+
+test('a zero timeout is refused, not taken as no timeout', () => {
+  const run = runBench('/test-fixtures/sheet-never-finishes.htm', '0');
+  assert.equal(run.status, 1, run.output);
+  assert.match(run.output, /BENCH_TIMEOUT_MS must be a positive number/);
 });

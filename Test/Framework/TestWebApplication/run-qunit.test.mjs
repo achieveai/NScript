@@ -19,10 +19,17 @@ function runQUnit(suites) {
   return { status: run.status, output: run.stdout + run.stderr };
 }
 
-test('a suite whose bundle is missing fails', () => {
-  const run = runQUnit([{ name: 'Missing', scripts: ['/GeneratedScripts/__missing__.js'] }]);
+test('a suite with a missing script fails even when its tests pass', () => {
+  const run = runQUnit([{ name: 'Missing', scripts: ['/test-fixtures/one-qunit-test.js', '/GeneratedScripts/__missing__.js'] }]);
   assert.equal(run.status, 1, run.output);
+  assert.match(run.output, /Tests: 1 passed, 0 failed/);
   assert.match(run.output, /Not loaded: 404 \/GeneratedScripts\/__missing__\.js/);
+});
+
+test('an empty suite list fails', () => {
+  const run = runQUnit([]);
+  assert.equal(run.status, 1, run.output);
+  assert.match(run.output, /QUNIT_SUITES/);
 });
 
 test('a suite that runs no tests fails', () => {

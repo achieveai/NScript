@@ -1384,7 +1384,10 @@ namespace NScript.Utils.Test
                 int before = Volatile.Read(ref emits);
                 watch.EditSource();
                 WaitFor(() => Volatile.Read(ref emits) == before + 2, "The emit was not retried after the reader let go.");
-                WaitFor(() => ReadShared(watchLog).Contains(" ok "), "The retried emit did not succeed.");
+                // The compile line says " ok " too; only an emit line counts.
+                WaitFor(
+                    () => ReadShared(watchLog).Split('\n').Any(line => line.Contains("emit ") && line.Contains(" ok ")),
+                    "The retried emit did not succeed.");
                 StringAssert.Contains(ReadShared(watchLog), "output in use; retry 1/3");
 
                 // Held throughout: 3 retries, then the bundle is kept stale.
