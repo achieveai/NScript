@@ -246,6 +246,26 @@ namespace NScript.Lib.Service
         }
 
         /// <summary>
+        /// The daemon's arguments when a Cs2Jsc command line asks for the service, else null:
+        /// <c>service ...</c> (how <see cref="ServiceLauncher"/> starts a daemon from the NuGet
+        /// tool layout) and <c>cs2jsc service ...</c> (what the SDK's nscript.cmd runs).
+        /// </summary>
+        public static string[]? ServiceArguments(string[] args)
+        {
+            if (args.Length > 0 && args[0] == "service")
+            {
+                return args.Skip(1).ToArray();
+            }
+
+            if (args.Length > 1 && args[0] == "cs2jsc" && args[1] == "service")
+            {
+                return args.Skip(2).ToArray();
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Entry point for <c>nscript.exe service [--foreground] [--status] [--stop [--force]]
         /// [--toolset-dir dir --toolset-hash hash]</c>.
         /// Every connection resets the idle timer, including <c>--status</c>: polling status

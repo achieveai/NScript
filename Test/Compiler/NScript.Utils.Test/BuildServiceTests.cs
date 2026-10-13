@@ -226,6 +226,22 @@ namespace NScript.Utils.Test
             }
         }
 
+        /// <summary>
+        /// Cs2Jsc hosts the daemon for <c>service ...</c> and for the SDK's <c>cs2jsc service ...</c>;
+        /// it printed usage for the second.
+        /// </summary>
+        [TestMethod]
+        public void ServiceArguments_ServiceAndCs2JscService_RunTheDaemon()
+        {
+            CollectionAssert.AreEqual(new[] { "--sync", "a.dll" }, ServiceHost.ServiceArguments(new[] { "service", "--sync", "a.dll" }));
+            CollectionAssert.AreEqual(new[] { "--sync", "a.dll" }, ServiceHost.ServiceArguments(new[] { "cs2jsc", "service", "--sync", "a.dll" }));
+            CollectionAssert.AreEqual(Array.Empty<string>(), ServiceHost.ServiceArguments(new[] { "cs2jsc", "service" }));
+            Assert.IsNull(ServiceHost.ServiceArguments(new[] { "cs2jsc", "-outJs", "a.js" }));
+            Assert.IsNull(ServiceHost.ServiceArguments(new[] { "cs2jsc" }));
+            Assert.IsNull(ServiceHost.ServiceArguments(new[] { "csc", "service" }));
+            Assert.IsNull(ServiceHost.ServiceArguments(Array.Empty<string>()));
+        }
+
         /// <summary>The NuGet tool layout ships Cs2Jsc and no NScript; it must still host a daemon.</summary>
         [TestMethod]
         public void DaemonHost_IsNScriptElseTheNuGetToolsCs2Jsc()
@@ -1323,6 +1339,63 @@ namespace NScript.Utils.Test
                 WaitForLog("\"Step\":\"copy\"", 2);
                 WaitFor(() => watch.Status()["WatchCopyPending"].Length == 0, "The copy stayed pending after its holder let go.");
                 CollectionAssert.AreEqual(File.ReadAllBytes(second), File.ReadAllBytes(copy), "bin\\A.dll is not the new build.");
+            }
+        }
+
+        /// <summary>
+        /// M5-D2: an emit whose JS a reader held through the writer's own retries failed, and the
+        /// edit was lost until the next save. The watch emits it again with no save, at most 3
+        /// times; then it keeps the bundle stale and says so.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // A real daemon on a named pipe with file watchers: 1-2 s.
+        public void Watch_EmitOutputInUse_RetriedWithoutASave_GivesUpAfterThreeRetries()
+        {
+            // Each compile writes a real assembly with another MVID than the last.
+            var assemblies = new[] { typeof(BuildServiceTests).Assembly.Location, typeof(ServiceHost).Assembly.Location };
+            int failures = 0, emits = 0, compiles = 0;
+            WatchHost watch = null;
+            using (watch = new WatchHost(request =>
+            {
+                if (request.Kind == ServiceProtocol.KindEmitJs)
+                {
+                    Interlocked.Increment(ref emits);
+                    if (Interlocked.Decrement(ref failures) >= 0)
+                    {
+                        return new ServiceResponse { ExitCode = 1, Stdout = string.Empty, Stderr = OwaSourceMapper.AtomicFile.InUseMessagePrefix + "app.js: in use by another process" };
+                    }
+                }
+                else
+                {
+                    var dll = Path.Combine(watch.Project, "obj", "A.dll");
+                    Directory.CreateDirectory(Path.GetDirectoryName(dll));
+                    File.Copy(assemblies[Interlocked.Increment(ref compiles) % 2], dll, overwrite: true);
+                }
+
+                return new ServiceResponse { ExitCode = 0 };
+            }))
+            {
+                watch.Register("A.cs");
+                watch.RegisterEmit("-outJs", "app.js", "-entryAssembly", @"obj\A.dll", "-references", typeof(BuildServiceTests).Assembly.Location);
+                var watchLog = watch.Status()["WatchLog"];
+
+                // Held once: the retry writes it.
+                Interlocked.Exchange(ref failures, 1);
+                int before = Volatile.Read(ref emits);
+                watch.EditSource();
+                WaitFor(() => Volatile.Read(ref emits) == before + 2, "The emit was not retried after the reader let go.");
+                // The compile line says " ok " too; only an emit line counts.
+                WaitFor(
+                    () => ReadShared(watchLog).Split('\n').Any(line => line.Contains("emit ") && line.Contains(" ok ")),
+                    "The retried emit did not succeed.");
+                StringAssert.Contains(ReadShared(watchLog), "output in use; retry 1/3");
+
+                // Held throughout: 3 retries, then the bundle is kept stale.
+                Interlocked.Exchange(ref failures, 100);
+                before = Volatile.Read(ref emits);
+                File.WriteAllText(Path.Combine(watch.Project, "A.cs"), "class A { int y; }");
+                WaitFor(() => ReadShared(watchLog).Contains("(stale: output in use after 3 retries; save again)"), "The watch did not give up.");
+                Assert.AreEqual(before + 4, Volatile.Read(ref emits), "The first emit and 3 retries.");
             }
         }
 

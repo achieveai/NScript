@@ -600,6 +600,17 @@ namespace NScript.Csc.Lib.Test
                 // emits in full and drops the old code.
                 js = File.ReadAllText(outJs);
                 Assert.AreEqual(Cold(main), js, "The full emit after a factory miss differs from a cold build.");
+
+                // A closed generic the bundle saw only as a declaring type has no type variable
+                // yet: only a full emit writes it.
+                main = Compile("List<string> none = null; return new Spare().Get() + new Counter(5).Next() + new List<int>().Count + (none == null ? 0 : none.Count);", 2);
+                BuildOnce(builder, outJs, out _, out _);
+                main = Compile("return new Spare().Get() + new Counter(5).Next() + new List<int>().Count + new List<string>().Count;", 2);
+                BuildOnce(builder, outJs, out _, out _);
+                Assert.AreEqual("bodies-refreshed", builder.LastBuildReason, "A body that constructs a new closed generic must emit in full.");
+                StringAssert.StartsWith(builder.LastPatchMiss, "new root variable ");
+                js = File.ReadAllText(outJs);
+                Assert.AreEqual(Cold(main), js, "The full emit after a closed-generic miss differs from a cold build.");
                 main = Compile("return new Spare().Get() + new Counter(6).Next();", 2);
                 fragments = Patched(1, "A body edit before compaction");
                 Environment.SetEnvironmentVariable("NSCRIPT_PATCH_COMPACT_PERCENT", "0");
@@ -810,6 +821,7 @@ namespace NScript.Csc.Lib.Test
         /// <summary>
         /// Dev patch emit of a type with a method a plugin writes in place of its body (a skin
         /// getter): a body edit elsewhere in the type patches, and the written method stands.
+        /// So does an unchanged method with no prototype slot to assign ([MakeStaticUsage]).
         /// </summary>
         [TestMethod]
         [TestCategory("Integration")] // ~17 s fixture setup plus 2 builds of a small library.
@@ -831,8 +843,8 @@ namespace NScript.Csc.Lib.Test
             string Compile(int step) => CompileLib(
                 dir,
                 refs,
-                ("Program.cs", ProgramSource("var view = new View(); view.Skin(); return view.Next();")),
-                ("View.cs", "namespace RealScript { public class View { private int value; public void Skin() { value = 9; } public int Next() { value = value + " + step + "; return value; } } }"));
+                ("Program.cs", ProgramSource("var view = new View(); view.Skin(); return view.Next() + view.Twice();")),
+                ("View.cs", "namespace RealScript { public class View { private int value; public void Skin() { value = 9; } public int Next() { value = value + " + step + "; return value; } [System.Runtime.CompilerServices.MakeStaticUsage] public int Twice() { return value * 2; } } }"));
 
             var previous = Environment.GetEnvironmentVariable("NSCRIPT_PATCH_EMIT");
             Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", "1");
@@ -847,15 +859,31 @@ namespace NScript.Csc.Lib.Test
                     (minify: false, uglify: false, optimize: false),
                     devMode: true);
                 Builder.ResetProcessState();
-                var plugin = new OverwritePlugin { MethodName = "Skin" };
+                var plugin = new OverwritePlugin { MethodName = "Skin", WarnOnAsk = true };
                 Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin(), plugin }), "The full build failed.");
                 Assert.AreEqual(1, plugin.Overwrites, "The plugin must write Skin.");
                 var full = File.ReadAllText(outJs);
 
                 Compile(2);
                 Builder.ResetProcessState();
-                Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), "The patch build failed.");
+                var console = Console.Out;
+                var output = new StringWriter();
+                Console.SetOut(output);
+                try
+                {
+                    Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), "The patch build failed.");
+                }
+                finally
+                {
+                    Console.SetOut(console);
+                }
+
                 Assert.AreEqual("bodies-refreshed; patched 1 methods", builder.LastBuildReason, builder.LastPatchMiss);
+
+                // The full build warned for every method; the patch reports the warnings of
+                // the one it converted, not what is left past the full build's count.
+                StringAssert.Contains(output.ToString(), "View.cs(1,1): warning WRN0123: asked Next");
+                Assert.IsFalse(output.ToString().Contains("asked Main"), "Only the patch's own warnings: " + output);
                 Assert.AreEqual(1, plugin.Overwrites, "The written Skin stands; the plugin is not asked again.");
                 var patched = File.ReadAllText(outJs);
                 StringAssert.StartsWith(patched, full.Substring(0, full.LastIndexOf("/*@T RealScript.View*/", StringComparison.Ordinal) - 2));
@@ -910,10 +938,23 @@ namespace NScript.Csc.Lib.Test
                 return null;
             }
 
+            /// <summary>Adds a warning naming each RealScript method it is asked about.</summary>
+            public bool WarnOnAsk { get; set; }
+
             public IntrestLevel GetInterestLevel(MethodDefinition methodDefinition, ConverterContext converterContext)
-                => methodDefinition.DeclaringType.Namespace == "RealScript" && methodDefinition.Name == this.MethodName
-                    ? IntrestLevel.Overwrite
-                    : IntrestLevel.None;
+            {
+                if (methodDefinition.DeclaringType.Namespace != "RealScript")
+                {
+                    return IntrestLevel.None;
+                }
+
+                if (this.WarnOnAsk)
+                {
+                    converterContext.AddError(new Location("View.cs", 1, 1), "asked " + methodDefinition.Name, true);
+                }
+
+                return methodDefinition.Name == this.MethodName ? IntrestLevel.Overwrite : IntrestLevel.None;
+            }
 
             public bool CanReplayConversion(MethodDefinition methodDefinition, ConverterContext converterContext) => this.Replayable;
 
@@ -996,6 +1037,80 @@ namespace NScript.Csc.Lib.Test
             finally
             {
                 Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// A plugin that asks for a retry on every attempt: the build stops after 2 retries and
+        /// fails with ERR0124, as the attempt stopped before printing any error.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 3 attempts.
+        public void Execute_PluginAsksForARetryEveryAttempt_FailsWithErr0124AfterTwoRetries()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-retry-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var main = Copy("realScript.dll");
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var console = Console.Out;
+            var output = new StringWriter();
+            try
+            {
+                using var builder = new Builder(
+                    Path.Combine(dir, "bundle.js"),
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true);
+                Builder.ResetProcessState();
+                var plugin = new RetryPlugin();
+                Console.SetOut(output);
+                Assert.IsFalse(builder.Execute(new IConverterPlugin[] { new RootsPlugin(), plugin }), "A build that always asks for a retry must fail.");
+                Console.SetOut(console);
+                Assert.AreEqual(3, plugin.Attempts, "The first attempt and 2 retries.");
+                StringAssert.Contains(output.ToString(), "(0,0): error ERR0124: the build still asked for a retry after 2 retries.");
+            }
+            finally
+            {
+                Console.SetOut(console);
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>Asks for a retry at the end of every attempt.</summary>
+        private sealed class RetryPlugin : IRuntimeConverterPlugin
+        {
+            private RuntimeScopeManager runtimeScopeManager;
+
+            public int Attempts { get; private set; }
+
+            public void Initialize(ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
+                => this.runtimeScopeManager = runtimeScopeManager;
+
+            public void ParseArgs(IList<Tuple<string, string>> args) { }
+
+            public List<MethodReference> GetMethodsToEmitPass1() => null;
+
+            public List<MethodReference> GetMethodsToEmitPassN() => null;
+
+            public List<Statement> GetPreJavascript() => null;
+
+            public List<Statement> GetPostJavascript()
+            {
+                this.Attempts++;
+                this.runtimeScopeManager.Context.RequestRetry("always");
+                return null;
             }
         }
     }

@@ -22,6 +22,14 @@ import { chromium } from 'playwright';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIME = { '.htm': 'text/html', '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css' };
+// BENCH_PAGE and BENCH_TIMEOUT_MS (replaces both waits' timeouts) are for bench-spreadsheet.test.mjs.
+const PAGE = process.env.BENCH_PAGE ?? '/SpreadsheetApp.htm';
+const TIMEOUT_MS = process.env.BENCH_TIMEOUT_MS === undefined ? undefined : Number(process.env.BENCH_TIMEOUT_MS);
+// 0 would mean no timeout at all.
+if (TIMEOUT_MS !== undefined && !(TIMEOUT_MS > 0)) {
+  console.error('BENCH_TIMEOUT_MS must be a positive number of milliseconds.');
+  process.exit(1);
+}
 
 function startServer() {
   return new Promise((resolve, reject) => {
@@ -42,11 +50,11 @@ const { server, url } = await startServer();
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
 page.on('pageerror', e => console.log('[pageerror]', e.message));
-await page.goto(url + '/SpreadsheetApp.htm', { waitUntil: 'domcontentloaded' });
-await page.waitForFunction(() => window.__sheet && document.getElementById('sheet'), undefined, { timeout: 20000 });
+await page.goto(url + PAGE, { waitUntil: 'domcontentloaded' });
+await page.waitForFunction(() => window.__sheet && document.getElementById('sheet'), undefined, { timeout: TIMEOUT_MS ?? 20000 });
 
 await page.evaluate(() => window.__sheet.runAll());
-await page.waitForFunction(() => !window.__sheet.isRunning(), undefined, { timeout: 600000, polling: 200 });
+await page.waitForFunction(() => !window.__sheet.isRunning(), undefined, { timeout: TIMEOUT_MS ?? 600000, polling: 200 });
 const results = JSON.parse(await page.evaluate(() => window.__sheet.resultsJson()));
 
 await browser.close();
