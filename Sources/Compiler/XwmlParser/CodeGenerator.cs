@@ -8,6 +8,7 @@ namespace XwmlParser
 {
     using Mono.Cecil;
     using NScript.CLR;
+    using NScript.Converter;
     using NScript.Converter.ExpressionsConverter;
     using NScript.Converter.TypeSystemConverter;
     using NScript.JST;
@@ -226,6 +227,19 @@ namespace XwmlParser
 
         /// <summary>The CSS the last document initializer wrote.</summary>
         private string writtenCss;
+
+        /// <summary>Whether the document initializer has the live CSS hook (<see cref="CreateLiveCss"/>).</summary>
+        private bool liveCssHook;
+
+        private const string CssKey = "__nsCss";
+
+        private const string StylesKey = "__nsStyles";
+
+        /// <summary>
+        /// Patch-emit bundles: skins and CSS go live in the open page (<see cref="LiveSkinHook"/>,
+        /// <see cref="CreateLiveCss"/>). Plain bundles are as before.
+        /// </summary>
+        internal bool LiveHook => this.parserContext?.ConverterContext?.LivePatchHook == true;
 
         /// <summary>Dev bundles: the marker on the line before the page's CSS.</summary>
         internal static readonly string CssMarker = MarkerStatement.ForLiteral("XwmlParser.Css");
@@ -835,6 +849,12 @@ namespace XwmlParser
 
                 var generatorsBefore = System.Linq.Enumerable.ToList(this.skinCodeGenerators);
                 this.IterateParsing();
+
+                // Each skin written again takes a new index; a full emit numbers them from 0 again.
+                if (this.skinCodeGeneratorStorageIndexs.Count > LiveSkinHook.RazorStorageBase)
+                {
+                    return "xwml storage index " + (this.skinCodeGeneratorStorageIndexs.Count - 1) + " reaches Razor's";
+                }
 
                 // Same order as before, so the CSS keeps its order; skins asked for anew go last.
                 var generators = new Dictionary<TemplateParser, SkinCodeGenerator>();
@@ -1580,7 +1600,7 @@ namespace XwmlParser
             return this.storageArrayIdentifier;
         }
 
-        internal void AddStatement(ExpressionStatement expressionStatement)
+        internal void AddStatement(Statement expressionStatement)
         {
             this.generatedCode.Add(expressionStatement);
         }
@@ -1686,7 +1706,96 @@ namespace XwmlParser
                     null,
                     this.scopeManager.Scope,
                     this.GenerateDocumentInitializerMethod(this.GetAllCss())));
+
+            if (this.LiveHook)
+            {
+                this.generatedCode.AddRange(this.CreateLiveSkinHelpers(this.scopeManager.Scope));
+            }
         }
+
+        /// <summary>The live skin helpers (<see cref="LiveSkinHook.CreateHelpers"/>).</summary>
+        private List<Statement> CreateLiveSkinHelpers(IdentifierScope root)
+        {
+            var skinType = this.KnownTypes.SkinCtor.DeclaringType.Resolve();
+            var skinableType = this.KnownTypes.UISkinableElement.Resolve();
+            IIdentifier Field(TypeDefinition type, string name)
+                => this.Resolver.Resolve(System.Linq.Enumerable.First(type.Fields, field => field.Name == name));
+
+            // function(c, v) { c.Skin = v; }
+            var setScope = new IdentifierScope(root, 2);
+            var setSkin = new FunctionExpression(null, root, setScope, setScope.ParameterIdentifiers, null);
+            setSkin.AddStatement(
+                new ExpressionStatement(
+                    null,
+                    setScope,
+                    GetPropertySetterExpression(
+                        this.scopeManager,
+                        setScope,
+                        System.Linq.Enumerable.First(skinableType.Properties, property => property.Name == "Skin"),
+                        this.Resolver,
+                        new IdentifierExpression(setScope.ParameterIdentifiers[0], setScope),
+                        new IdentifierExpression(setScope.ParameterIdentifiers[1], setScope))));
+
+            return LiveSkinHook.CreateHelpers(
+                root,
+                this.GetDocumentStorageGetter(),
+                Field(skinType, "factoryMethod"),
+                Field(skinType, "id"),
+                Field(this.KnownTypes.SkinInstance, "skinableParent"),
+                Field(skinableType, "skinInstance"),
+                setSkin);
+        }
+
+        /// <summary>A skin factory's result, kept on its skin (<see cref="LiveSkinHook.CreateTrack"/>).</summary>
+        internal Expression CreateTrack(IdentifierScope scope, Expression instance, Expression skin)
+            => LiveSkinHook.CreateTrack(scope, this.GetDocumentStorageGetter(), instance, skin);
+
+        /// <summary>The live form of <c>Name_var = null;</c> (<see cref="LiveSkinHook.CreateReskin"/>).</summary>
+        internal Statement CreateReskin(IdentifierScope scope, IIdentifier skinVariable, IIdentifier factory, string id, string name)
+            => LiveSkinHook.CreateReskin(scope, this.GetDocumentStorageGetter(), skinVariable, factory, id, name);
+
+        /// <summary>
+        /// The live form of a CSS patch, run in the bundle's closure: the style element each
+        /// document took gets <paramref name="css"/>, and so does each document made later.
+        /// Null when the bundle has no live CSS hook.
+        /// </summary>
+        internal List<Statement> CreateLiveCss(string css, IdentifierScope root)
+        {
+            if (!this.liveCssHook)
+            {
+                return null;
+            }
+
+            return new List<Statement>
+            {
+                // DocStorageGetter.__nsCss = "CSS";
+                ExpressionStatement.CreateAssignmentExpression(
+                    this.GetterKey(root, CssKey),
+                    new StringLiteralExpression(root, css)),
+
+                // (DocStorageGetter.__nsStyles || []).forEach(function(s){...}, DocStorageGetter.__nsCss);
+                ExpressionStatement.CreateMethodCallExpression(
+                    new IndexExpression(
+                        null,
+                        root,
+                        new BinaryExpression(
+                            null,
+                            root,
+                            BinaryOperator.LogicalOr,
+                            this.GetterKey(root, StylesKey),
+                            new InlineNewArrayInitialization(null, root, new List<Expression>())),
+                        new StringLiteralExpression(root, "forEach")),
+                    new ScriptLiteralExpression(null, root, "function(s){s.textContent=String(this);}"),
+                    this.GetterKey(root, CssKey)),
+            };
+        }
+
+        private Expression GetterKey(IdentifierScope scope, string key)
+            => new IndexExpression(
+                null,
+                scope,
+                new IdentifierExpression(this.GetDocumentStorageGetter(), scope),
+                new StringLiteralExpression(scope, key));
 
         /// <summary>
         /// Generates a document initializer method.
@@ -1763,7 +1872,15 @@ namespace XwmlParser
                 initializers.Add(new MarkerStatement(methodScope, CssMarker));
             }
 
-            // style.textContent = "CSS"
+            // style.textContent = "CSS", or with the live hook DocStorageGetter.__nsCss || "CSS":
+            // a document made after a live patch takes the patch's CSS.
+            this.liveCssHook = this.parserContext?.ConverterContext?.LivePatchHook == true;
+            Expression cssValue = new StringLiteralExpression(methodScope, css);
+            if (this.liveCssHook)
+            {
+                cssValue = new BinaryExpression(null, methodScope, BinaryOperator.LogicalOr, this.GetterKey(methodScope, CssKey), cssValue);
+            }
+
             initializers.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IndexExpression(
@@ -1775,9 +1892,7 @@ namespace XwmlParser
                         new StringLiteralExpression(
                             methodScope,
                             "textContent")),
-                    new StringLiteralExpression(
-                        methodScope,
-                        css)));
+                    cssValue));
 
             // doc.body.appendChild(style)
             initializers.Add(
@@ -1800,6 +1915,29 @@ namespace XwmlParser
                     new IdentifierExpression(
                         styleElemIdentifier,
                         methodScope)));
+
+            // (DocStorageGetter.__nsStyles || (DocStorageGetter.__nsStyles = [])).push(style)
+            if (this.liveCssHook)
+            {
+                initializers.Add(
+                    ExpressionStatement.CreateMethodCallExpression(
+                        new IndexExpression(
+                            null,
+                            methodScope,
+                            new BinaryExpression(
+                                null,
+                                methodScope,
+                                BinaryOperator.LogicalOr,
+                                this.GetterKey(methodScope, StylesKey),
+                                new BinaryExpression(
+                                    null,
+                                    methodScope,
+                                    BinaryOperator.Assignment,
+                                    this.GetterKey(methodScope, StylesKey),
+                                    new InlineNewArrayInitialization(null, methodScope, new List<Expression>()))),
+                            new StringLiteralExpression(methodScope, "push")),
+                        new IdentifierExpression(styleElemIdentifier, methodScope)));
+            }
 
             // if (!doc.storage) {...}
             var ifStatement = new IfBlockStatement(

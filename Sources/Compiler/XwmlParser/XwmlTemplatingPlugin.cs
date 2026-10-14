@@ -234,6 +234,13 @@
         public string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
             => this.TryPatchResources(statements, literals, null);
 
+        /// <inheritdoc/>
+        public List<Statement> LiveLiteral(string marker, string value, IdentifierScope root)
+            => marker == CodeGenerator.CssMarker ? this.codeGenerator.CreateLiveCss(value, root) : null;
+
+        /// <inheritdoc/>
+        public bool PatchSectionLive => this.codeGenerator.LiveHook;
+
         /// <summary>
         /// As <see cref="TryPatchResources(List{Statement}, Dictionary{string, string})"/>, over
         /// the given resources (null reads the modules').

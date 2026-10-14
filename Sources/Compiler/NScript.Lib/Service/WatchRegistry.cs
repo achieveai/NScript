@@ -1304,6 +1304,12 @@ namespace NScript.Lib.Service
 
         private bool Includes(BundleRecord bundle, ProjectRecord project) => this.Owned(project).Overlaps(bundle.Reads);
 
+        /// <summary>The JS files of the bundles that include <paramref name="projectKey"/>; empty when it is not registered.</summary>
+        public IReadOnlyList<string> BundleFilesOf(string projectKey)
+            => this.projects.ContainsKey(projectKey)
+                ? this.BundlesIncluding(projectKey).Select(b => b.Key).ToList()
+                : Array.Empty<string>();
+
         private IEnumerable<BundleRecord> BundlesIncluding(string projectKey)
         {
             var project = this.projects[projectKey];

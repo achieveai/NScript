@@ -217,6 +217,11 @@ namespace NScript.Converter
         private MethodReference createDelegate;
 
         /// <summary>
+        /// Backing field for CreateLateBoundDelegate.
+        /// </summary>
+        private MethodReference createLateBoundDelegate;
+
+        /// <summary>
         /// Backing field for CreateDelegateFromFunction.
         /// </summary>
         private MethodReference createDelegateFromFunction;
@@ -1476,6 +1481,28 @@ namespace NScript.Converter
                 }
 
                 return this.createDelegate;
+            }
+        }
+
+        /// <summary>
+        /// Gets Delegate.CreateLateBound, dev mode's <see cref="CreateDelegate"/>: the
+        /// delegate reads its method at each call, so live patches reach it.
+        /// </summary>
+        public MethodReference CreateLateBoundDelegate
+        {
+            get
+            {
+                if (this.createLateBoundDelegate == null)
+                {
+                    this.createLateBoundDelegate = this.GetMethodReference(
+                        "CreateLateBound",
+                        this.ClrReferences.DelegateType,
+                        this.ClrReferences.DelegateType,
+                        this.ClrReferences.String,
+                        this.ClrReferences.Object);
+                }
+
+                return this.createLateBoundDelegate;
             }
         }
 

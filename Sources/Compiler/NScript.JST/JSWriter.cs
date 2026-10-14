@@ -86,6 +86,12 @@ namespace NScript.JST
         public bool LivePatchHook { get; set; }
 
         /// <summary>
+        /// Dev patch emit, with <see cref="LivePatchHook"/>: the boot literal of the live patch
+        /// client (<see cref="HmrClient"/>), whose lines go after the closure. Null writes none.
+        /// </summary>
+        public string HmrBoot { get; set; }
+
+        /// <summary>
         /// Writes the new line.
         /// </summary>
         public JSWriter WriteNewLine()
@@ -649,15 +655,19 @@ namespace NScript.JST
                 0,
                 jsFileName);
 
+            // A bundle with the live patch client runs it in a finally, so a closure that throws
+            // while it loads still gets a client; the catch tells the client, then rethrows.
+            bool hmrClient = jsFileName != null && this.LivePatchHook && this.HmrBoot != null;
+            var fileLiteral = jsFileName?.Replace("\\", "\\\\").Replace("\"", "\\\"");
             if (jsFileName != null)
             {
                 // Columns count from after the wrapper, which shares the first line with
                 // the first token when newlines are optimized away.
-                var wrapperStart = "(function(){";
+                var wrapperStart = hmrClient ? "try{(function(){" : "(function(){";
                 if (this.LivePatchHook)
                 {
                     wrapperStart += "if(typeof window!==\"undefined\")(window.__nsPatch||(window.__nsPatch={}))[\""
-                        + jsFileName.Replace("\\", "\\\\").Replace("\"", "\\\"")
+                        + fileLiteral
                         + "\"]=function(f){eval(f);};";
                 }
 
@@ -674,13 +684,30 @@ namespace NScript.JST
             int curLine = state.Line;
             if (jsFileName != null)
             {
-                writer.Write("\r\n})();");
+                writer.Write(hmrClient
+                    ? "\r\n})();}catch(e){if(typeof window!==\"undefined\")(window.__nsHmrFailed||(window.__nsHmrFailed={}))[\""
+                        + fileLiteral + "\"]=String(e&&e.message||e);throw e;}finally{"
+                    : "\r\n})();");
                 sourceMapping.AddMapping(
                     ++curLine,
                     0,
                     curLine,
                     0,
                     jsFileName);
+                if (hmrClient)
+                {
+                    // Outside the closure: the client's names cannot meet generated ones.
+                    foreach (var line in new[] { HmrClient.Text, HmrClient.Marker, HmrClient.BootLine(this.HmrBoot), "}" })
+                    {
+                        writer.Write(System.Environment.NewLine + line);
+                        sourceMapping.AddMapping(
+                            ++curLine,
+                            0,
+                            curLine,
+                            0,
+                            jsFileName);
+                    }
+                }
             }
 
             if (outputMap)

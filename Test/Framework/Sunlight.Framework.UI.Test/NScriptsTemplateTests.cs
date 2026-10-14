@@ -56,6 +56,27 @@ namespace Sunlight.Framework.UI.Test
         }
 
         /// <summary>
+        /// Leaves one skinned control open in the page, as <c>#hmr-skin-probe</c>: the live
+        /// patch end-to-end test (e2e-hmr-skin.mjs) edits its skin and watches it.
+        /// </summary>
+        [Test]
+        public static void TestSkinStaysOpenForLivePatch(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            element.SetAttribute("id", "hmr-skin-probe");
+            Window.Instance.Document.Body.AppendChild(element);
+            UISkinableElement control = new UISkinableElement(element);
+
+            var vm = new TestViewModelB();
+            vm.PropStr1 = "probe";
+            control.DataContext = vm;
+            control.Skin = NScriptsTemplatesClass.TestTemplateVMB1;
+            control.Activate();
+
+            assert.Equal("probe", element.QuerySelector("[test]").TextContent, "The open control shows its view model.");
+        }
+
+        /// <summary>
         /// Tests CSS binder.
         /// </summary>
         [Test]

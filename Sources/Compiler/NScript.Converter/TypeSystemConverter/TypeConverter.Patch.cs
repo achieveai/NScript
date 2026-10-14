@@ -32,7 +32,7 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>Why no method of this type can be patched, or null.</summary>
         internal string PatchMiss()
         {
-            if (this.IsGenericLike)
+            if (this.IsGenericLike && !this.context.LivePatchHook)
             {
                 return "generic type";
             }
@@ -133,6 +133,119 @@ namespace NScript.Converter.TypeSystemConverter
                 this.Scope,
                 IdentifierExpression.Create(null, this.Scope, this.Resolve(this.typeDefinition)),
                 new IdentifierExpression(this.Resolve(this.cnvtKnownRefs.PrototypeField), this.Scope));
+
+        /// <summary>
+        /// Whether this type is a generic factory with a marker and eval hook in its closure
+        /// (<see cref="AddFactoryPatchHook"/>): its patch goes before that marker.
+        /// </summary>
+        internal bool HasFactoryHook => this.IsGenericLike && this.context.LivePatchHook && this.PatchMiss() == null;
+
+        /// <summary>
+        /// Live patch emit, in a generic type's factory after its prototype: the marker a
+        /// patch goes before, then <c>T["__nsEval"]</c>, an eval in the factory's closure,
+        /// the instantiation added to <c>factory["__nsInsts"]</c>, and the live patches a
+        /// page took run again for this instantiation (<c>factory["__nsPatches"]</c>).
+        /// </summary>
+        private void AddFactoryPatchHook(List<Statement> statements)
+        {
+            if (!this.HasFactoryHook)
+            {
+                return;
+            }
+
+            Expression TypeVariable() => IdentifierExpression.Create(null, this.Scope, this.Resolve(this.typeDefinition));
+            Expression Factory() => IdentifierExpression.Create(null, this.Scope, this.RuntimeManager.ResolveType(this.typeDefinition));
+            Expression Key(Expression target, string key) => new IndexExpression(null, this.Scope, target, new StringLiteralExpression(this.Scope, key));
+
+            statements.Add(new MarkerStatement(this.Scope, MarkerStatement.ForFactory(this.typeDefinition.FullName)));
+            statements.Add(ExpressionStatement.CreateAssignmentExpression(
+                Key(TypeVariable(), EvalKey),
+                new ScriptLiteralExpression(null, this.Scope, "function(){return eval(arguments[0]);}")));
+            statements.Add(new ExpressionStatement(
+                null,
+                this.Scope,
+                new MethodCallExpression(
+                    null,
+                    this.Scope,
+                    Key(
+                        new BinaryExpression(
+                            null,
+                            this.Scope,
+                            BinaryOperator.LogicalOr,
+                            Key(Factory(), InstancesKey),
+                            new BinaryExpression(
+                                null,
+                                this.Scope,
+                                BinaryOperator.Assignment,
+                                Key(Factory(), InstancesKey),
+                                new InlineNewArrayInitialization(null, this.Scope, new List<Expression>()))),
+                        "push"),
+                    TypeVariable())));
+            statements.Add(new IfBlockStatement(
+                null,
+                this.Scope,
+                Key(Factory(), PatchesKey),
+                new ScopeBlock(
+                    null,
+                    this.Scope,
+                    new List<Statement>
+                    {
+                        new ExpressionStatement(
+                            null,
+                            this.Scope,
+                            new MethodCallExpression(
+                                null,
+                                this.Scope,
+                                Key(Key(Factory(), PatchesKey), "forEach"),
+                                Key(TypeVariable(), EvalKey))),
+                    }),
+                null));
+        }
+
+        /// <summary>
+        /// The live form of a patch to a generic type's factory, run in the bundle's closure:
+        /// <paramref name="fragment"/> runs in the closure of each instantiation made so far,
+        /// and is kept for the ones made later.
+        /// </summary>
+        internal List<Statement> CreateLiveFactoryPatch(string fragment, IdentifierScope root)
+        {
+            Expression Factory() => IdentifierExpression.Create(null, root, this.RuntimeManager.ResolveType(this.typeDefinition));
+            Expression Key(Expression target, string key) => new IndexExpression(null, root, target, new StringLiteralExpression(root, key));
+            Expression OrNew(string key) => new BinaryExpression(
+                null,
+                root,
+                BinaryOperator.LogicalOr,
+                Key(Factory(), key),
+                new BinaryExpression(
+                    null,
+                    root,
+                    BinaryOperator.Assignment,
+                    Key(Factory(), key),
+                    new InlineNewArrayInitialization(null, root, new List<Expression>())));
+
+            return new List<Statement>
+            {
+                new ExpressionStatement(
+                    null,
+                    root,
+                    new MethodCallExpression(null, root, Key(OrNew(PatchesKey), "push"), new StringLiteralExpression(root, fragment))),
+                new ExpressionStatement(
+                    null,
+                    root,
+                    new MethodCallExpression(
+                        null,
+                        root,
+                        Key(OrNew(InstancesKey), "forEach"),
+                        new ScriptLiteralExpression(
+                            null,
+                            root,
+                            "function(t){t[\"" + EvalKey + "\"](\"" + NScript.JST.Utils.ToJSString(fragment) + "\");}"))),
+            };
+        }
+
+        private const string EvalKey = "__nsEval";
+        private const string InstancesKey = "__nsInsts";
+        private const string PatchesKey = "__nsPatches";
 
         private void RecordSlotCopies(Expression prototype, List<ExpressionStatement> virtualInitializers)
         {

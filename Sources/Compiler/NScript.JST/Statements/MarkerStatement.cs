@@ -25,6 +25,12 @@ namespace NScript.JST
         /// <summary>The marker text for the end of a type's section.</summary>
         public static string ForType(string typeFullName) => "/*@T " + typeFullName + "*/";
 
+        /// <summary>
+        /// The marker text inside a generic type's factory, after its prototype: each
+        /// instantiation runs what a patch puts before it, in the factory's closure.
+        /// </summary>
+        public static string ForFactory(string typeFullName) => "/*@G " + typeFullName + "*/";
+
         /// <summary>The marker text for the end of a plugin's section, e.g. its templates.</summary>
         public static string ForSection(string sectionName) => "/*@S " + sectionName + "*/";
 

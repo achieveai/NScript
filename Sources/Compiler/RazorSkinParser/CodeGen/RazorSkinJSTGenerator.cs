@@ -68,12 +68,41 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private readonly RazorCssManager _cssManager;
 
+        /// <summary>Where the graph emitter records each accessor it inlined as the field. May be null.</summary>
+        private readonly List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> _inlinedGetters;
 
         /// <summary>
         /// Pre-created getter identifier from Initialize(), so GetOverwrite can reference
         /// the same identifier that the getter function is registered under.
         /// </summary>
         private readonly IIdentifier _preCreatedGetterIdentifier;
+
+        /// <summary>
+        /// Live patch emit (<see cref="NScript.Converter.LiveSkinHook"/>): the factory keeps what
+        /// it made, and the storage variable's line re-skins the open controls when a patch runs it.
+        /// </summary>
+        private readonly bool _liveHook;
+
+        /// <summary>A patch's names: the factory, storage variable and tmplStore the bundle has. Null: new names.</summary>
+        private readonly TemplateNames _keptNames;
+
+        /// <summary>A template's names in the bundle, kept so a patch writes the same ones.</summary>
+        public sealed class TemplateNames
+        {
+            public SimpleIdentifier Factory { get; set; }
+
+            public SimpleIdentifier Storage { get; set; }
+
+            public IIdentifier TmplStore { get; set; }
+        }
+
+        /// <summary>The names <see cref="Generate"/> wrote.</summary>
+        public TemplateNames Names => new TemplateNames
+        {
+            Factory = _factoryMethodIdentifier,
+            Storage = _skinStorageVariable,
+            TmplStore = _tmplStoreIdentifier,
+        };
 
         public RazorSkinJSTGenerator(
             SkinTemplateNode ir,
@@ -84,8 +113,14 @@ namespace NScript.RazorSkin.CodeGen
             RazorKnownTypes knownTypes,
             int dataIndex,
             IIdentifier preCreatedGetterIdentifier = null,
-            RazorCssManager cssManager = null)
+            RazorCssManager cssManager = null,
+            List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> inlinedGetters = null,
+            bool liveHook = false,
+            TemplateNames keptNames = null)
         {
+            _liveHook = liveHook;
+            _keptNames = keptNames;
+            _inlinedGetters = inlinedGetters;
             _ir = ir;
             _scopeManager = scopeManager;
             _clrContext = clrContext;
@@ -132,15 +167,17 @@ namespace NScript.RazorSkin.CodeGen
                 false);
 
             // Create scope identifiers for template-level names
-            _factoryMethodIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                _scopeManager.Scope,
-                _ir.TemplateName + "_factory",
-                false);
+            _factoryMethodIdentifier = _keptNames?.Factory
+                ?? SimpleIdentifier.CreateScopeIdentifier(
+                    _scopeManager.Scope,
+                    _ir.TemplateName + "_factory",
+                    false);
 
-            _skinStorageVariable = SimpleIdentifier.CreateScopeIdentifier(
-                _scopeManager.Scope,
-                _ir.TemplateName + "_var",
-                false);
+            _skinStorageVariable = _keptNames?.Storage
+                ?? SimpleIdentifier.CreateScopeIdentifier(
+                    _scopeManager.Scope,
+                    _ir.TemplateName + "_var",
+                    false);
 
             // Use pre-created identifier if available (from Initialize), otherwise create new
             _getterMethodIdentifier = (_preCreatedGetterIdentifier as SimpleIdentifier)
@@ -150,10 +187,11 @@ namespace NScript.RazorSkin.CodeGen
                     false);
 
             // Create the tmplStore variable — use a scope identifier like XWML's GetGlobalStateVariable
-            _tmplStoreIdentifier = SimpleIdentifier.CreateScopeIdentifier(
-                _scopeManager.Scope,
-                _ir.TemplateName + "_tmplStore",
-                false);
+            _tmplStoreIdentifier = _keptNames?.TmplStore
+                ?? SimpleIdentifier.CreateScopeIdentifier(
+                    _scopeManager.Scope,
+                    _ir.TemplateName + "_tmplStore",
+                    false);
 
             // Local variables within factory scope
             _domStoreIdentifier = SimpleIdentifier.CreateScopeIdentifier(
@@ -219,11 +257,19 @@ namespace NScript.RazorSkin.CodeGen
                     _scopeManager.Scope,
                     factoryFunction));
 
-            // 3. Storage variable: TemplateName_var = null
+            // 3. Storage variable: TemplateName_var = null, or with the live hook its re-skin
             statements.Add(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IdentifierExpression(_skinStorageVariable, _scopeManager.Scope),
-                    new NullLiteralExpression(_scopeManager.Scope)));
+                _liveHook
+                    ? NScript.Converter.LiveSkinHook.CreateReskin(
+                        _scopeManager.Scope,
+                        GetResolvedIdentifier("DocStorageGetter"),
+                        _skinStorageVariable,
+                        _factoryMethodIdentifier,
+                        _dataIndex.ToString(),
+                        _ir.TemplateName)
+                    : ExpressionStatement.CreateAssignmentExpression(
+                        new IdentifierExpression(_skinStorageVariable, _scopeManager.Scope),
+                        new NullLiteralExpression(_scopeManager.Scope)));
 
             // 4. Getter function
             statements.Add(BuildGetterFunction());
@@ -317,7 +363,8 @@ namespace NScript.RazorSkin.CodeGen
                 cssManager: _cssManager,
                 usingNamespaces: _ir.UsingNamespaces,
                 fallbackLocation: GetTemplateLocation(),
-                controlTypeName: _ir.ControlTypeName);
+                controlTypeName: _ir.ControlTypeName,
+                inlinedGetters: _inlinedGetters);
             var graphDescriptorExpr = graphEmitter.Emit();
 
             initStatements.Add(
@@ -505,10 +552,7 @@ namespace NScript.RazorSkin.CodeGen
             IIdentifier skinInstanceFactoryId = GetResolvedIdentifier(
                 "Sunlight__Framework__UI__Helpers__SkinInstance_factory");
 
-            stmts.Add(
-                new ReturnStatement(
-                    templateLocation,
-                    _factoryScope,
+            Expression instance =
                     new MethodCallExpression(
                         templateLocation,
                         _factoryScope,
@@ -537,7 +581,20 @@ namespace NScript.RazorSkin.CodeGen
                         // liveBinderCount (0 — graph engine handles reactivity)
                         new NumberLiteralExpression(_factoryScope, 0),
                         // extraObjectCount
-                        new NumberLiteralExpression(_factoryScope, 0))));
+                        new NumberLiteralExpression(_factoryScope, 0));
+
+            // With the live hook: return DocStorageGetter.__nsTrack(instance, skinFactory)
+            stmts.Add(
+                new ReturnStatement(
+                    templateLocation,
+                    _factoryScope,
+                    _liveHook
+                        ? NScript.Converter.LiveSkinHook.CreateTrack(
+                            _factoryScope,
+                            GetResolvedIdentifier("DocStorageGetter"),
+                            instance,
+                            new IdentifierExpression(_factoryScope.ParameterIdentifiers[0], _factoryScope))
+                        : instance));
 
             return stmts;
         }

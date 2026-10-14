@@ -1,0 +1,4 @@
+﻿:root {
+    --dummy:#fff;
+}
+.black { background-color: black; color: var(--dummy);}

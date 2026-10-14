@@ -224,6 +224,11 @@ namespace NScript.Lib.Service
         private string stopReason = "unknown";
         private CurrentRequest? current;
 
+        // The live patch socket, started by the first dev full emit that bakes the client.
+        private readonly object hmrGate = new object();
+        private HmrServer? hmr;
+        private bool hmrStopped;
+
         /// <summary>
         /// Creates a host. Tests pass a private <paramref name="pipeName"/>.
         /// </summary>
@@ -559,6 +564,8 @@ namespace NScript.Lib.Service
                 }
 
                 this.StartWatch();
+                BuilderSessions.HmrEndpoint = this.HmrEndpoint;
+                BuilderSessions.PublishLivePatch = this.PublishLivePatch;
                 log.Information(
                     "ServiceStart ToolsetDir={ToolsetDir} ShadowDir={ShadowDir} ToolsetHash={ToolsetHash} PipeName={PipeName} IdleTimeoutSec={IdleTimeoutSec} RequestTimeoutSec={RequestTimeoutSec} RunDir={RunDir}",
                     this.identity.ToolsetDir,
@@ -608,6 +615,7 @@ namespace NScript.Lib.Service
             finally
             {
                 AppDomain.CurrentDomain.UnhandledException -= onCrash;
+                this.StopHmr();
                 this.DisposeWatch();
                 shadowLock?.Dispose();
                 if (runLock != null)
@@ -619,6 +627,71 @@ namespace NScript.Lib.Service
                 CompilerLog.Shutdown();
                 lifetime.ReleaseMutex();
             }
+        }
+
+        /// <summary>
+        /// The live patch socket dev bundles bake; starts it on first use. Null when it cannot
+        /// listen (the bundle's client then only checks its script) or the daemon is stopping.
+        /// </summary>
+        private JST.HmrEndpoint? HmrEndpoint()
+        {
+            lock (this.hmrGate)
+            {
+                if (this.hmr == null && !this.hmrStopped)
+                {
+                    try
+                    {
+                        this.hmr = HmrServer.Start(line => this.WatchLog("{0}", line));
+                    }
+                    catch (Exception ex) when (ex is System.Net.HttpListenerException || ex is System.Net.Sockets.SocketException)
+                    {
+                        CompilerLog.ForComponent("Hmr").Warning(ex, "HmrStartFailed");
+                        this.WatchLog("hmr off: cannot listen: {0}", ex.Message);
+                        this.hmrStopped = true;
+                    }
+                }
+
+                return this.hmr?.Endpoint;
+            }
+        }
+
+        private void PublishLivePatch(string jsFileName, LivePatch live)
+        {
+            HmrServer? server;
+            lock (this.hmrGate)
+            {
+                server = this.hmr;
+            }
+
+            server?.Publish(jsFileName, live);
+        }
+
+        /// <summary>Tells the pages of <paramref name="jsFileName"/> why their code is not current; null ends it.</summary>
+        private void HmrNote(string jsFileName, string? note)
+        {
+            HmrServer? server;
+            lock (this.hmrGate)
+            {
+                server = this.hmr;
+            }
+
+            server?.Note(jsFileName, note);
+        }
+
+        /// <summary>Drops every page's socket: pages then check their script, and reload onto the next daemon's build.</summary>
+        private void StopHmr()
+        {
+            BuilderSessions.HmrEndpoint = null;
+            BuilderSessions.PublishLivePatch = null;
+            HmrServer? server;
+            lock (this.hmrGate)
+            {
+                server = this.hmr;
+                this.hmr = null;
+                this.hmrStopped = true;
+            }
+
+            server?.Dispose();
         }
 
         /// <summary>Asks the daemon to stop after in-flight work.</summary>
@@ -1148,6 +1221,15 @@ namespace NScript.Lib.Service
             {
                 status[pair.Key] = pair.Value;
             }
+
+            HmrServer? hmrServer;
+            lock (this.hmrGate)
+            {
+                hmrServer = this.hmr;
+            }
+
+            // The token stays out: a page that has it can read every patch.
+            status["HmrUrl"] = hmrServer == null ? "off" : hmrServer.Url + "?t=*** clients=" + hmrServer.ClientCount;
 
             return new ServiceResponse
             {

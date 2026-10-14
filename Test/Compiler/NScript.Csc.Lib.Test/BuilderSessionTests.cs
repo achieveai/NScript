@@ -7,6 +7,7 @@ namespace NScript.Csc.Lib.Test
     using System.Runtime.CompilerServices;
     using System.Text;
     using System.Text.Json;
+    using System.Text.RegularExpressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Mono.Cecil;
     using NScript.CLR;
@@ -79,6 +80,11 @@ namespace NScript.Csc.Lib.Test
                 => methodStatments;
 
             public List<Statement> GetOverwrite(MethodConverter methodConverter) => null;
+
+            /// <summary>What every RootsPlugin answers a dev patch, as a skin plugin whose inlined code changed.</summary>
+            public static string PatchMiss { get; set; }
+
+            public string TryPatchBodies(IReadOnlyList<TypeDefinition> changedTypes) => PatchMiss;
         }
 
         /// <summary>
@@ -429,11 +435,14 @@ namespace NScript.Csc.Lib.Test
         /// The text a patch put before each type marker, by type: <paramref name="patched"/>
         /// must be <paramref name="js"/> with text added only at the ends of marker sections.
         /// </summary>
+        /// <summary>
+        /// The text a patch put before each marker, by marker: a type's name for its section
+        /// (<c>/*@T</c>), <c>"G " + name</c> inside a generic type's factory (<c>/*@G</c>).
+        /// </summary>
         private static Dictionary<string, string> PatchFragments(string js, string patched, string what)
         {
-            const string Needle = "\r\n/*@T ";
-            var before = js.Split(Needle);
-            var after = patched.Split(Needle);
+            var before = MarkerLine.Split(Unstamped(js));
+            var after = MarkerLine.Split(Unstamped(patched));
             Assert.AreEqual(before.Length, after.Length, what + ": the patch changed the markers.");
             var fragments = new Dictionary<string, string>();
             for (int i = 0; i < before.Length; i++)
@@ -442,14 +451,32 @@ namespace NScript.Csc.Lib.Test
                 if (after[i].Length > before[i].Length)
                 {
                     Assert.IsTrue(i + 1 < before.Length, what + ": text after the last marker.");
+                    var marker = after[i + 1].Substring(3, after[i + 1].IndexOf("*/", StringComparison.Ordinal) - 3);
                     fragments.Add(
-                        after[i + 1].Substring(0, after[i + 1].IndexOf("*/", StringComparison.Ordinal)),
+                        marker.StartsWith("T ", StringComparison.Ordinal) ? marker.Substring(2) : marker,
                         after[i].Substring(before[i].Length));
                 }
             }
 
             return fragments;
         }
+
+        // The line break (and a factory's indent) before a type or factory marker.
+        private static readonly Regex MarkerLine = new Regex("\r\n *(?=/\\*@[TG] )");
+
+        // The live patch client's boot call: "file|bundle id|url|token|gen:seq". The id hashes
+        // the output path and the gen is random per full emit, so a cold build in another
+        // folder differs in both; seq counts the patches since the full emit.
+        private static readonly Regex BootStamp = new Regex("(__nsHmrBoot\\(\"[^|\"]*\\|)([0-9a-f]{12})(\\|[^|\"]*\\|[^|\"]*\\|)([0-9a-f]{8}:[0-9]+)(\"\\);)");
+
+        private static string Stamp(string bundle)
+        {
+            var matches = BootStamp.Matches(bundle);
+            Assert.AreEqual(1, matches.Count, "A patchable dev bundle has one boot call.");
+            return matches[0].Groups[4].Value;
+        }
+
+        private static string Unstamped(string bundle) => BootStamp.Replace(bundle, "${1}id${3}gen:seq$5");
 
         /// <summary>
         /// Dev patch emit (<c>NSCRIPT_PATCH_EMIT=1</c>): after a full emit, a body-only edit
@@ -481,13 +508,14 @@ namespace NScript.Csc.Lib.Test
             var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
             var outJs = Path.Combine(dir, "bundle.js");
             var coldJs = Path.Combine(Directory.CreateDirectory(Path.Combine(dir, "cold")).FullName, "bundle.js");
+            // seed's initializer is Helper's static constructor.
             const string Helper =
-                "namespace RealScript { public static class Helper { public static int Say(string text) { return text.Length; } public static int Unused(int value) { return value + 1; } } public class Spare { public int Get() { return 7; } } }";
-            string Compile(string body, int step) => CompileLib(
+                "namespace RealScript { public static class Helper { private static int seed = SEED; public static int Say(string text) { return text.Length + seed; } public static int Unused(int value) { return value + BUMP; } } public class Spare { public int Get() { return 7; } } }";
+            string Compile(string body, int step, int seed = 1, int bump = 1) => CompileLib(
                 dir,
                 refs,
                 ("Program.cs", ProgramSource(body)),
-                ("Helper.cs", Helper),
+                ("Helper.cs", Helper.Replace("SEED", seed.ToString()).Replace("BUMP", bump.ToString())),
                 ("Counter.cs", CounterSource.Replace("STEP", step.ToString())));
 
             string Cold(string main)
@@ -501,7 +529,7 @@ namespace NScript.Csc.Lib.Test
                     (minify: false, uglify: false, optimize: false),
                     devMode: true);
                 BuildOnce(fresh, coldJs, out _, out _);
-                return File.ReadAllText(coldJs);
+                return Unstamped(File.ReadAllText(coldJs));
             }
 
             var previous = Environment.GetEnvironmentVariable("NSCRIPT_PATCH_EMIT");
@@ -522,8 +550,67 @@ namespace NScript.Csc.Lib.Test
                 var js = File.ReadAllText(outJs);
                 StringAssert.StartsWith(
                     js.TrimStart('﻿'),
-                    "(function(){if(typeof window!==\"undefined\")(window.__nsPatch||(window.__nsPatch={}))[\"bundle.js\"]=function(f){eval(f);};",
+                    "try{(function(){if(typeof window!==\"undefined\")(window.__nsPatch||(window.__nsPatch={}))[\"bundle.js\"]=function(f){eval(f);};",
                     "A patchable dev bundle registers its live patch hook.");
+                StringAssert.Contains(
+                    js,
+                    "})();}catch(e){if(typeof window!==\"undefined\")(window.__nsHmrFailed||(window.__nsHmrFailed={}))[\"bundle.js\"]=String(e&&e.message||e);throw e;}finally{\r\n(function(){",
+                    "A closure that throws while it loads still boots the client, which learns why.");
+                StringAssert.Contains(js, "\");\r\n}", "The finally ends after the boot call.");
+
+                // A full emit stamps a new gen at seq 0; each patch keeps the gen and counts on.
+                string gen = null;
+                int seq = 0;
+                void Stamped(string bundle, bool full, string what)
+                {
+                    var stamp = Stamp(bundle).Split(':');
+                    if (full)
+                    {
+                        Assert.AreNotEqual(gen, stamp[0], what + ": a full emit must start a new gen.");
+                        gen = stamp[0];
+                        seq = 0;
+                    }
+                    else
+                    {
+                        Assert.AreEqual(gen, stamp[0], what + ": a patch keeps the gen.");
+                        seq++;
+                    }
+
+                    Assert.AreEqual(seq.ToString(), stamp[1], what + ": the stamp must count the patches.");
+                }
+
+                string Full(string what)
+                {
+                    var bundle = File.ReadAllText(outJs);
+                    Stamped(bundle, full: true, what);
+                    return bundle;
+                }
+
+                Stamped(js, full: true, "The first build");
+
+                // What the build service sends open pages: the patch's own gen:seq, and either
+                // the script they run or why they must reload.
+                LivePatch Live(string what, string reload = null)
+                {
+                    var live = builder.LastLivePatch;
+                    Assert.IsNotNull(live, what + ": no live patch.");
+                    Assert.AreEqual(gen + ":" + seq, live.Gen + ":" + live.Seq, what + ": the live patch's stamp.");
+                    Assert.AreEqual(reload, live.Reload, what + ": the reload reason.");
+                    if (reload == null)
+                    {
+                        // Not StringAssert: its message formats the braces in the script.
+                        var url = "\r\n//# sourceURL=nscript-hmr:///bundle.js/" + gen + "-" + seq + ".js";
+                        Assert.AreEqual(url, live.Js.Substring(Math.Max(0, live.Js.Length - url.Length)), what + ": the sourceURL.");
+                    }
+                    else
+                    {
+                        Assert.IsNull(live.Js, what + ": a reload sends no script.");
+                    }
+
+                    return live;
+                }
+
+                Assert.AreEqual("new build", Live("The first build", "new build").Reload);
 
                 // A patch build converts with the kept plugins, so the new one is never asked.
                 Dictionary<string, string> Patched(int methods, string what)
@@ -533,6 +620,7 @@ namespace NScript.Csc.Lib.Test
                     Assert.AreEqual("bodies-refreshed; patched " + methods + " methods", builder.LastBuildReason, what + ": " + builder.LastPatchMiss);
                     var patched = File.ReadAllText(outJs);
                     var fragments = PatchFragments(js, patched, what);
+                    Stamped(patched, full: false, what);
                     js = patched;
                     return fragments;
                 }
@@ -552,6 +640,13 @@ namespace NScript.Csc.Lib.Test
                 StringAssert.StartsWith(fragments["RealScript.Program"], "\r\nfunction RealScript_Program$Main(");
                 StringAssert.Contains(Cold(main), fragments["RealScript.Program"], "The static's fragment must be its cold declaration.");
 
+                // In the page's eval a declaration would stay local to the hook: it is assigned.
+                var staticLive = Live("A static body edit");
+                Assert.AreEqual(1, staticLive.Methods);
+                const string MainAssigned = "RealScript_Program$Main = function RealScript_Program$Main(";
+                Assert.AreEqual(MainAssigned, staticLive.Js.TrimStart().Substring(0, MainAssigned.Length));
+                Assert.AreEqual(0, staticLive.Notes.Count);
+
                 main = Compile("ICount counted = new Counter(); return counted.Next() + new Counter().Next() + Helper.Say(\"v2\");", 2);
                 fragments = Patched(1, "An instance body edit");
                 CollectionAssert.AreEquivalent(new[] { "RealScript.Counter" }, fragments.Keys.ToList());
@@ -567,6 +662,12 @@ namespace NScript.Csc.Lib.Test
                     cold.Contains(counterFragment.Substring(copyAt).Replace("RealScript_Counter$.prototype.", "$$ptyp.")),
                     "The interface slot copy must be the cold section's copy.");
 
+                // Next makes a lambda: functions it made before keep the old code.
+                var instanceLive = Live("An instance body edit");
+                const string SlotAssigned = "RealScript_Counter$.prototype.";
+                Assert.AreEqual(SlotAssigned, instanceLive.Js.TrimStart().Substring(0, SlotAssigned.Length));
+                CollectionAssert.AreEqual(new[] { "closure Counter.Next" }, instanceLive.Notes.ToList());
+
                 main = Compile("return new Counter().Next() + Helper.Unused(2);", 2);
                 fragments = Patched(2, "A body that calls a static the bundle never emitted");
                 CollectionAssert.AreEquivalent(new[] { "RealScript.Program", "RealScript.Helper" }, fragments.Keys.ToList());
@@ -580,16 +681,55 @@ namespace NScript.Csc.Lib.Test
                 CollectionAssert.AreEquivalent(new[] { "RealScript.Program", "RealScript.Counter" }, fragments.Keys.ToList());
                 StringAssert.StartsWith(fragments["RealScript.Counter"], "\r\nRealScript_Counter$.prototype.");
                 StringAssert.Contains(Cold(main), Assigned(fragments["RealScript.Counter"]), "The new slot's function must be the cold build's.");
+                Live("A body that calls an instance method the bundle never emitted");
+
+                // RL3b: an initializer that already exists is in the static constructor, which
+                // ran when the bundle loaded: the bundle is patched, open pages reload.
+                main = Compile("var counter = new Counter(); counter.Reset(); return counter.Next() + Helper.Unused(2) + Helper.Say(\"s\");", 2);
+                Patched(1, "A body that calls Say again");
+                main = Compile("var counter = new Counter(); counter.Reset(); return counter.Next() + Helper.Unused(2) + Helper.Say(\"s\");", 2, seed: 2);
+                Patched(1, "A static initializer edit");
+                Live("A static initializer edit", "load-time Helper..cctor");
+
+                // Dev mode binds a virtual method late: a delegate made before the patch reads
+                // the new function at its next call, so the page takes the patch live.
+                main = Compile("var counter = new Counter(); System.Func<int> next = counter.Next; counter.Reset(); return next() + Helper.Unused(2) + Helper.Say(\"s\");", 2, seed: 2);
+                BuildOnce(builder, outJs, out _, out _);
+                StringAssert.StartsWith(builder.LastPatchMiss, "member System.Delegate System.Delegate::CreateLateBound(", "The bundle had no Delegate.CreateLateBound yet.");
+                js = Full("A body that binds Counter.Next");
+                main = Compile("var counter = new Counter(); System.Func<int> next = counter.Next; counter.Reset(); return next() + Helper.Unused(2) + Helper.Say(\"s\");", 3, seed: 2);
+                Patched(1, "An edit to a late-bound method");
+                Live("An edit to a late-bound method");
+
+                // A delegate to a static is the function itself: it keeps the old code, noted.
+                const string StoresUnused = "var counter = new Counter(); System.Func<int> next = counter.Next; System.Func<int, int> bump = Helper.Unused; counter.Reset(); return next() + bump(2) + Helper.Say(\"s\");";
+                main = Compile(StoresUnused, 3, seed: 2);
+                Patched(1, "A body that stores Helper.Unused");
+                main = Compile(StoresUnused, 3, seed: 2, bump: 2);
+                Patched(1, "An edit to a stored static");
+                CollectionAssert.AreEqual(new[] { "stored Helper.Unused" }, Live("An edit to a stored static").Notes.ToList());
 
                 main = Compile("return new Spare().Get();", 2);
                 BuildOnce(builder, outJs, out _, out _);
                 Assert.AreEqual("bodies-refreshed", builder.LastBuildReason, "A body that needs a new type must emit in full.");
-                js = File.ReadAllText(outJs);
-                Assert.AreEqual(Cold(main), js, "The full emit after a miss differs from a cold build.");
+                js = Full("The full emit after a miss");
+                Assert.AreEqual(Cold(main), Unstamped(js), "The full emit after a miss differs from a cold build.");
+                Live("The full emit after a miss", "new build");
 
                 main = Compile("return new Spare().Get() + 1;", 2);
                 fragments = Patched(1, "A body edit after a miss");
                 CollectionAssert.AreEquivalent(new[] { "RealScript.Program" }, fragments.Keys.ToList());
+
+                // A plugin that wrote a body's old code into its own output (a skin's inlined
+                // getter) misses the patch: the build emits in full.
+                RootsPlugin.PatchMiss = "razor inlined getter RealScript.Spare.Get";
+                main = Compile("return new Spare().Get() + 2;", 2);
+                Builder.ResetProcessState();
+                Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), "A build after a plugin miss failed.");
+                RootsPlugin.PatchMiss = null;
+                Assert.AreEqual("razor inlined getter RealScript.Spare.Get", builder.LastPatchMiss, "The plugin's miss must stop the patch.");
+                js = Full("The full emit after a plugin miss");
+                Assert.AreEqual(Cold(main), Unstamped(js), "The full emit after a plugin miss differs from a cold build.");
 
                 main = Compile("return new Spare().Get() + new Counter(5).Next();", 2);
                 BuildOnce(builder, outJs, out _, out _);
@@ -598,8 +738,8 @@ namespace NScript.Csc.Lib.Test
 
                 // Compaction: once the patches grow the bundle past the limit, the next build
                 // emits in full and drops the old code.
-                js = File.ReadAllText(outJs);
-                Assert.AreEqual(Cold(main), js, "The full emit after a factory miss differs from a cold build.");
+                js = Full("The full emit after a factory miss");
+                Assert.AreEqual(Cold(main), Unstamped(js), "The full emit after a factory miss differs from a cold build.");
 
                 // A closed generic the bundle saw only as a declaring type has no type variable
                 // yet: only a full emit writes it.
@@ -609,15 +749,15 @@ namespace NScript.Csc.Lib.Test
                 BuildOnce(builder, outJs, out _, out _);
                 Assert.AreEqual("bodies-refreshed", builder.LastBuildReason, "A body that constructs a new closed generic must emit in full.");
                 StringAssert.StartsWith(builder.LastPatchMiss, "new root variable ");
-                js = File.ReadAllText(outJs);
-                Assert.AreEqual(Cold(main), js, "The full emit after a closed-generic miss differs from a cold build.");
+                js = Full("The full emit after a closed-generic miss");
+                Assert.AreEqual(Cold(main), Unstamped(js), "The full emit after a closed-generic miss differs from a cold build.");
                 main = Compile("return new Spare().Get() + new Counter(6).Next();", 2);
                 fragments = Patched(1, "A body edit before compaction");
                 Environment.SetEnvironmentVariable("NSCRIPT_PATCH_COMPACT_PERCENT", "0");
                 main = Compile("return new Spare().Get() + new Counter(7).Next();", 2);
                 BuildOnce(builder, outJs, out _, out _);
                 Assert.AreEqual("compaction", builder.LastPatchMiss);
-                Assert.AreEqual(Cold(main), File.ReadAllText(outJs), "The compaction emit differs from a cold build.");
+                Assert.AreEqual(Cold(main), Unstamped(Full("The compaction emit")), "The compaction emit differs from a cold build.");
 
                 // A body edit and a resource edit in one image (one watch batch): the plugins
                 // are asked for their sections too. RootsPlugin has none, so it emits in full.
@@ -626,12 +766,164 @@ namespace NScript.Csc.Lib.Test
                 SetOracleResource(main, "v2");
                 BuildOnce(builder, outJs, out _, out _);
                 Assert.AreEqual("plugin RootsPlugin", builder.LastPatchMiss, "A resource changed with the code must reach the plugins.");
-                Assert.AreEqual(Cold(main), File.ReadAllText(outJs), "The full emit after a resource miss differs from a cold build.");
+                Assert.AreEqual(Cold(main), Unstamped(Full("The full emit after a resource miss")), "The full emit after a resource miss differs from a cold build.");
             }
             finally
             {
                 Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", previous);
                 Environment.SetEnvironmentVariable("NSCRIPT_PATCH_COMPACT_PERCENT", null);
+                RootsPlugin.PatchMiss = null;
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// S3: a generic type is a factory; each instantiation builds its prototype in its own
+        /// closure. A body edit goes before the marker inside the factory, as the cold factory
+        /// writes the method's function and its interface slot copies, so every instantiation
+        /// and every later load runs it. The live form runs the same text in each
+        /// instantiation's closure and keeps it for later ones. A body that needs a closure
+        /// local the factory never declared misses and emits in full; a static initializer
+        /// edit patches the bundle and reloads open pages. Without patch emit the factory has
+        /// no hook.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 8 builds of a small library.
+        public void Session_PatchEmit_GenericTypeBodyEdit_PatchesInsideItsFactory()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            // Not StringAssert: its message formats the braces in the script. A miss keeps
+            // the text for a look.
+            static void Has(string text, string part, string what)
+            {
+                if (!text.Contains(part, StringComparison.Ordinal))
+                {
+                    var keep = Path.Combine(Path.GetTempPath(), "nscript-generic-patch-miss.js");
+                    File.WriteAllText(keep, text);
+                    Assert.Fail((what + ": missing " + part + " in " + keep).Replace("{", "(").Replace("}", ")"));
+                }
+            }
+
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-patch-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            var coldJs = Path.Combine(Directory.CreateDirectory(Path.Combine(dir, "cold")).FullName, "bundle.js");
+            var plainJs = Path.Combine(Directory.CreateDirectory(Path.Combine(dir, "plain")).FullName, "bundle.js");
+            const string Bag =
+                "namespace RealScript { public interface IBag<T> { void Put(T item); int Size(); } public class Bag<T> : IBag<T> { private static int baseline = BASE; private System.Collections.Generic.List<T> items = new System.Collections.Generic.List<T>(); public void Put(T item) { PUT } public int Size() { return items.Count + GROW + baseline; } public static int Twice(int value) { return value * TWICE; } } }";
+            string Compile(int grow = 1, int twice = 2, int baseline = 1, string put = "items.Add(item);") => CompileLib(
+                dir,
+                refs,
+                ("Program.cs", ProgramSource("IBag<int> bag = new Bag<int>(); bag.Put(1); return bag.Size() + new Bag<string>().Size() + Bag<int>.Twice(1) + new List<int>().ToArray().Length;")),
+                ("Bag.cs", Bag.Replace("GROW", grow.ToString()).Replace("TWICE", twice.ToString()).Replace("BASE", baseline.ToString()).Replace("PUT", put)));
+
+            string Build(string js, string main)
+            {
+                using var fresh = new Builder(
+                    js,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true);
+                BuildOnce(fresh, js, out _, out _);
+                return Unstamped(File.ReadAllText(js));
+            }
+
+            string Cold(string main) => Build(coldJs, main);
+
+            var previous = Environment.GetEnvironmentVariable("NSCRIPT_PATCH_EMIT");
+            Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", null);
+            var main = Compile();
+            try
+            {
+                var plain = Build(plainJs, main);
+                Has(plain, "Bag$1", "The plain dev bundle has the generic factory.");
+                Assert.IsFalse(plain.Contains("__nsEval") || plain.Contains("/*@G "), "Without patch emit a factory has no hook.");
+
+                Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", "1");
+                using var builder = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true);
+                BuildOnce(builder, outJs, out _, out _);
+                var js = File.ReadAllText(outJs);
+                Assert.AreEqual(1, Regex.Matches(js, "\r\n +/\\*@G RealScript\\.Bag`1\\*/\r\n").Count, "The factory has its marker on its own line.");
+                Has(js, ".__nsEval = function(){return eval(arguments[0]);};", "The eval hook.");
+                Has(js, ".__nsInsts = [])).push(", "The instantiation list.");
+                Has(js, ".__nsPatches.forEach(", "The replay.");
+
+                Dictionary<string, string> Patched(int methods, string what)
+                {
+                    Builder.ResetProcessState();
+                    Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), what + ": the build failed.");
+                    Assert.AreEqual("bodies-refreshed; patched " + methods + " methods", builder.LastBuildReason, what + ": " + builder.LastPatchMiss);
+                    var patched = File.ReadAllText(outJs);
+                    var fragments = PatchFragments(js, patched, what);
+                    js = patched;
+                    return fragments;
+                }
+
+                // An instance method and its interface slot copy, written with the closure's
+                // type variable: the cold factory writes them with its prototype variable.
+                main = Compile(grow: 2);
+                var fragments = Patched(1, "A generic instance body edit");
+                CollectionAssert.AreEquivalent(new[] { "G RealScript.Bag`1" }, fragments.Keys.ToList());
+                var fragment = fragments["G RealScript.Bag`1"];
+                var prototype = fragment.Substring(2, fragment.IndexOf(".prototype", StringComparison.Ordinal) + ".prototype".Length - 2);
+                var parts = fragment.Split("\r\n" + prototype);
+                Assert.AreEqual(3, parts.Length, "The method and its one interface slot copy: " + fragment);
+                // The factory indents its body one level deeper than a fragment.
+                static string Flat(string text) => Regex.Replace(text, @"\s+", " ");
+                var cold = Flat(Cold(main));
+                Has(cold, Flat("$$ptyp" + parts[1]), "The method must be the cold factory's.");
+                Has(cold, Flat("$$ptyp" + parts[2].Replace(prototype, "$$ptyp")), "The interface slot copy must be the cold factory's.");
+                var live = builder.LastLivePatch;
+                Assert.IsNull(live.Reload, "A generic body edit goes live.");
+                Has(live.Js, ".__nsPatches = [])).push(\"", "The live push.");
+                Has(live.Js, ".__nsInsts = [])).forEach(function(t){t[\"__nsEval\"](\"", "The live run per instantiation.");
+                Has(live.Js, NScript.JST.Utils.ToJSString(prototype + parts[1]), "Each instantiation runs the method's text.");
+
+                // A static is assigned per instantiation.
+                main = Compile(grow: 2, twice: 3);
+                fragments = Patched(1, "A generic static body edit");
+                fragment = fragments["G RealScript.Bag`1"];
+                var typeVariable = prototype.Substring(0, prototype.Length - ".prototype".Length);
+                StringAssert.StartsWith(fragment, "\r\n" + typeVariable + ".");
+                Has(Flat(Cold(main)), Flat(fragment.Substring(2)), "The static must be the cold factory's.");
+                Assert.IsNull(builder.LastLivePatch.Reload, "A generic static body edit goes live.");
+
+                // G7: the static constructor ran when the factory first ran: open pages reload.
+                main = Compile(grow: 2, twice: 3, baseline: 2);
+                Patched(1, "A generic static initializer edit");
+                Assert.AreEqual("load-time Bag`1..cctor", builder.LastLivePatch.Reload);
+
+                // G3: a type the factory never declared a local for (T[], though List<T> has
+                // one): only a full emit adds it. Each closure's T is its own type, so the new
+                // type is the miss; a new closure local by any other way is one too.
+                main = Compile(grow: 2, twice: 3, baseline: 2, put: "items.Add(item); T[] one = new T[] { item };");
+                Builder.ResetProcessState();
+                Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), "A build after a generic local miss failed.");
+                Assert.AreEqual("type System.ArrayG`1<T>", builder.LastPatchMiss, "The generic local miss.");
+                Assert.AreEqual(Cold(main), Unstamped(File.ReadAllText(outJs)), "The full emit after a generic local miss differs from a cold build.");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", previous);
                 Directory.Delete(dir, recursive: true);
             }
         }

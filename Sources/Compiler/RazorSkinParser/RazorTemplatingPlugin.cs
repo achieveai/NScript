@@ -56,9 +56,9 @@ namespace NScript.RazorSkin
 
         /// <summary>
         /// Per-compilation data index counter for Razor templates.
-        /// Starts at 100 to avoid collision with XWML's sequential indices (starting from 0).
+        /// Starts at <see cref="LiveSkinHook.RazorStorageBase"/>, past XWML's sequential indices (from 0).
         /// </summary>
-        private int _nextDataIndex = 100;
+        private int _nextDataIndex = LiveSkinHook.RazorStorageBase;
 
         /// <summary>
         /// Map of assembly module and full resource name to compiled template IR.
@@ -72,8 +72,12 @@ namespace NScript.RazorSkin
         /// </summary>
         private readonly Dictionary<string, string> _templateShortNames = new Dictionary<string, string>();
 
-        private static string GetTemplateKey(ModuleDefinition module, string resourceName)
-            => module.Mvid.ToString("N") + "|" + resourceName;
+        /// <summary>
+        /// A skin's identity: its assembly and resource. Not the Mvid, which a compile changes,
+        /// so a dev patch after a .cs save still finds the skins it read.
+        /// </summary>
+        internal static string GetTemplateKey(ModuleDefinition module, string resourceName)
+            => (module.Assembly?.Name.Name ?? module.Name) + "|" + resourceName;
 
         private string FindTemplateKey(ModuleDefinition module, string resourceName,
             TypeDefinition ownerType, out string ambiguity)
@@ -235,6 +239,33 @@ namespace NScript.RazorSkin
         private readonly Dictionary<string, IList<IIdentifier>> _resolvedTypeIdentifiers = new Dictionary<string, IList<IIdentifier>>();
 
         /// <summary>
+        /// Every getter the skins of the last full emit read as its backing field, and every
+        /// setter they wrote as one (see
+        /// <see cref="TryPatchBodies"/>).
+        /// </summary>
+        private readonly List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> _inlinedGetters
+            = new List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)>();
+
+        /// <summary>Each template's names in the bundle, by template key, so a patch writes the same ones.</summary>
+        private readonly Dictionary<string, RazorSkinJSTGenerator.TemplateNames> _templateNames
+            = new Dictionary<string, RazorSkinJSTGenerator.TemplateNames>();
+
+        /// <summary>
+        /// Patch-emit bundles: a skin save goes live in the open page (<see cref="LiveSkinHook"/>).
+        /// Plain bundles are as before.
+        /// </summary>
+        private bool LiveHook => _runtimeScopeManager?.Context?.LivePatchHook == true;
+
+        /// <summary>Dev bundles: the marker on the line before the skins' CSS.</summary>
+        internal static readonly string CssMarker = MarkerStatement.ForLiteral("RazorSkinParser.Css");
+
+        /// <summary>The CSS the last full emit or patch wrote.</summary>
+        private string _writtenCss;
+
+        /// <summary>Whether the CSS line has the live hook (<see cref="LiveLiteral"/>).</summary>
+        private bool _liveCssHook;
+
+        /// <summary>
         /// Framework type stubs needed for Roslyn analysis to classify observable properties.
         /// These are always passed to RazorSkinCompiler.CompileToIR so that the Roslyn analysis
         /// phase can detect ObservableObject-derived types and promote bindings to OneWay.
@@ -272,7 +303,7 @@ namespace Sunlight.Framework.Observables
             // Reset per-compilation state. A retried build initializes this plugin again with a
             // new RuntimeScopeManager: start as a new plugin would, so no identifier of the
             // discarded scope and no "already reported" CSS error carries into the retry.
-            _nextDataIndex = 100;
+            _nextDataIndex = LiveSkinHook.RazorStorageBase;
             _templateMethodReferences = null;
             _compiledIRs.Clear();
             _templateShortNames.Clear();
@@ -292,6 +323,10 @@ namespace Sunlight.Framework.Observables
             _templateGetterIdentifiers.Clear();
             _resolvedIdentifiers.Clear();
             _resolvedTypeIdentifiers.Clear();
+            _inlinedGetters.Clear();
+            _templateNames.Clear();
+            _writtenCss = null;
+            _liveCssHook = false;
             var probeTotal = System.Diagnostics.Stopwatch.StartNew();
             long probeStubTicks = 0, probeCompileTicks = 0;
             int probeTemplates = 0;
@@ -332,20 +367,8 @@ namespace Sunlight.Framework.Observables
                             var templateName = Path.GetFileNameWithoutExtension(
                                 Path.GetFileNameWithoutExtension(fileName));
 
-                            // Generate C# stubs for the model type from Cecil type info.
-                            // This allows the Roslyn analysis phase to detect observable
-                            // properties and promote bindings from OneTime to OneWay.
-                            var probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
-                            var modelTypeStub = _stubGenerator.GenerateModelTypeStub(templateSource);
-                            probeStubTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
-                            probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
-                            var additionalSources = modelTypeStub != null
-                                ? new[] { FrameworkTypeStubs, modelTypeStub }
-                                : new[] { FrameworkTypeStubs };
-
-                            var ir = GetSkinIR(templateName, templateSource, additionalSources, fileName, out var irHit);
+                            var ir = CompileSkin(templateName, templateSource, fileName, out var irHit, ref probeStubTicks, ref probeCompileTicks);
                             if (irHit) { irHits++; } else { irMisses++; }
-                            probeCompileTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
                             probeTemplates++;
                             var resourceKey = GetTemplateKey(module, embeddedResource.Name);
                             _compiledIRs[resourceKey] = ir;
@@ -418,6 +441,32 @@ namespace Sunlight.Framework.Observables
                 probeTemplates, probeKnownMs, probeResolveMs, probeCssMs, probeScanMs,
                 irHits, irMisses, _cssHits, _cssMisses,
                 SkinIRs.Hits, SkinIRs.Misses, RazorCssManager.ParsedSheets.Hits, RazorCssManager.ParsedSheets.Misses);
+        }
+
+        /// <summary>
+        /// Compiles a skin's source to its IR. C# stubs for the model type, from Cecil type info,
+        /// let the Roslyn analysis phase detect observable properties and promote bindings from
+        /// OneTime to OneWay.
+        /// </summary>
+        private SkinTemplateNode CompileSkin(
+            string templateName,
+            string templateSource,
+            string fileName,
+            out bool irHit,
+            ref long stubTicks,
+            ref long compileTicks)
+        {
+            var probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
+            var modelTypeStub = _stubGenerator.GenerateModelTypeStub(templateSource);
+            stubTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
+            probeStart = System.Diagnostics.Stopwatch.GetTimestamp();
+            var additionalSources = modelTypeStub != null
+                ? new[] { FrameworkTypeStubs, modelTypeStub }
+                : new[] { FrameworkTypeStubs };
+
+            var ir = GetSkinIR(templateName, templateSource, additionalSources, fileName, out irHit);
+            compileTicks += System.Diagnostics.Stopwatch.GetTimestamp() - probeStart;
+            return ir;
         }
 
         /// <summary>
@@ -683,14 +732,29 @@ namespace Sunlight.Framework.Observables
                             new StringLiteralExpression(iifeScope, "createElement")),
                         new StringLiteralExpression(iifeScope, "style"))));
 
-            // s.textContent = "...css..."
+            // s.textContent = "...css...", or with the live hook DocStorageGetter.__nsRazorCss || "...css...":
+            // a load after a live patch takes the patch's CSS. Dev bundles mark the line, so a
+            // patch writes the new CSS in place.
+            _writtenCss = cssText;
+            _liveCssHook = LiveHook && _resolvedIdentifiers.ContainsKey("DocStorageGetter");
+            if (_runtimeScopeManager.Context.DevMode)
+            {
+                body.Add(new MarkerStatement(iifeScope, CssMarker));
+            }
+
+            Expression cssValue = new StringLiteralExpression(iifeScope, cssText);
+            if (_liveCssHook)
+            {
+                cssValue = new BinaryExpression(null, iifeScope, BinaryOperator.LogicalOr, LiveCssKey(iifeScope, "__nsRazorCss"), cssValue);
+            }
+
             body.Add(
                 ExpressionStatement.CreateAssignmentExpression(
                     new IndexExpression(
                         null, iifeScope,
                         new IdentifierExpression(styleVar, iifeScope),
                         new StringLiteralExpression(iifeScope, "textContent")),
-                    new StringLiteralExpression(iifeScope, cssText)));
+                    cssValue));
 
             // d.head.appendChild(s)
             body.Add(
@@ -709,6 +773,15 @@ namespace Sunlight.Framework.Observables
                             new StringLiteralExpression(iifeScope, "appendChild")),
                         new IdentifierExpression(styleVar, iifeScope))));
 
+            // DocStorageGetter.__nsRazorStyle = s
+            if (_liveCssHook)
+            {
+                body.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
+                        LiveCssKey(iifeScope, "__nsRazorStyle"),
+                        new IdentifierExpression(styleVar, iifeScope)));
+            }
+
             // Wrap in IIFE: (function(d){ ... })(document)
             var iifeFunc = new FunctionExpression(
                 null, scope, iifeScope,
@@ -726,6 +799,46 @@ namespace Sunlight.Framework.Observables
             Log.Debug("Emitted CSS style element with {CssLength} chars", cssText.Length);
             return result;
         }
+
+        /// <inheritdoc/>
+        public List<Statement> LiveLiteral(string marker, string value, IdentifierScope root)
+        {
+            if (marker != CssMarker || !_liveCssHook)
+            {
+                return null;
+            }
+
+            return new List<Statement>
+            {
+                // DocStorageGetter.__nsRazorCss = "CSS";
+                ExpressionStatement.CreateAssignmentExpression(
+                    LiveCssKey(root, "__nsRazorCss"),
+                    new StringLiteralExpression(root, value)),
+
+                // if (DocStorageGetter.__nsRazorStyle) DocStorageGetter.__nsRazorStyle.textContent = DocStorageGetter.__nsRazorCss;
+                new IfBlockStatement(
+                    null,
+                    root,
+                    LiveCssKey(root, "__nsRazorStyle"),
+                    new ScopeBlock(
+                        null,
+                        root,
+                        new List<Statement>
+                        {
+                            ExpressionStatement.CreateAssignmentExpression(
+                                new IndexExpression(null, root, LiveCssKey(root, "__nsRazorStyle"), new StringLiteralExpression(root, "textContent")),
+                                LiveCssKey(root, "__nsRazorCss")),
+                        }),
+                    null),
+            };
+        }
+
+        private Expression LiveCssKey(IdentifierScope scope, string key)
+            => new IndexExpression(
+                null,
+                scope,
+                new IdentifierExpression(_resolvedIdentifiers["DocStorageGetter"], scope),
+                new StringLiteralExpression(scope, key));
 
         internal static string CollectCssForEmission(IEnumerable<RazorCssManager> cssManagers)
         {
@@ -1820,13 +1933,23 @@ namespace Sunlight.Framework.Observables
             return new List<Statement>();
         }
 
+        /// <inheritdoc/>
+        public string PatchSectionName => "RazorSkinParser";
+
+        /// <inheritdoc/>
+        public bool PatchSectionLive => LiveHook;
+
         /// <summary>
-        /// Dev patch emit: Razor output cannot be patched yet, so this only checks that the
-        /// change left every skin and stylesheet it read as it was, and added no skin.
+        /// Dev patch emit: writes each changed skin again, with the names the bundle has and a
+        /// storage index past the old ones (each document caches a skin's DOM by its index).
+        /// Misses when a skin was added or removed, a stylesheet changed, or a changed skin
+        /// would need what the bundle lacks: other types, other stylesheets, a class the CSS
+        /// does not declare, or a method no skin called.
         /// </summary>
         public string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
         {
             var current = new Dictionary<string, EmbeddedResource>();
+            var fileNames = new Dictionary<string, string>();
             foreach (var module in _clrContext.Modules)
             {
                 foreach (var resource in module.Resources)
@@ -1851,16 +1974,177 @@ namespace Sunlight.Framework.Observables
                         }
 
                         current[key] = embeddedResource;
+                        fileNames[key] = fileName;
                     }
                 }
             }
 
+            var changed = new List<string>();
             foreach (var read in _resourcesRead)
             {
                 if (!current.TryGetValue(read.Key, out var resource)
                     || !System.Security.Cryptography.SHA256.HashData(resource.GetResourceData()).AsSpan().SequenceEqual(read.Value))
                 {
-                    return "razor resource changed " + read.Key;
+                    if (resource == null)
+                    {
+                        return "razor resource changed " + read.Key;
+                    }
+
+                    changed.Add(read.Key);
+                }
+            }
+
+            if (changed.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (var read in changed.Where(key => key.StartsWith("css:", StringComparison.Ordinal)).ToList())
+            {
+                changed.Remove(read);
+                string cssMiss = PatchStylesheet(read.Substring("css:".Length), current[read]);
+                if (cssMiss != null)
+                {
+                    return cssMiss;
+                }
+
+                _resourcesRead[read] = System.Security.Cryptography.SHA256.HashData(current[read].GetResourceData());
+            }
+
+            var known = new HashSet<string>((_templateMethodReferences ?? new List<MethodReference>()).Select(method => method.FullName));
+            var patched = new List<(string Key, SkinTemplateNode IR, string Source)>();
+            foreach (var read in changed)
+            {
+                var key = read.Substring("skin:".Length);
+                var fileName = fileNames[read];
+                if (!_compiledIRs.TryGetValue(key, out var old) || !_templateNames.ContainsKey(key))
+                {
+                    return "razor skin not emitted " + fileName;
+                }
+
+                string source;
+                using (var reader = new StreamReader(current[read].GetResourceStream()))
+                {
+                    source = reader.ReadToEnd();
+                }
+
+                SkinTemplateNode ir;
+                try
+                {
+                    long ticks = 0;
+                    ir = CompileSkin(_templateShortNames[key], source, fileName, out _, ref ticks, ref ticks);
+                }
+                catch (Exception ex)
+                {
+                    return "razor skin " + fileName + ": " + ex.Message;
+                }
+
+                if (ir.ModelTypeName != old.ModelTypeName
+                    || ir.ControlTypeName != old.ControlTypeName
+                    || !ir.StylesheetResourceNames.SequenceEqual(old.StylesheetResourceNames))
+                {
+                    return "razor skin types or styles " + fileName;
+                }
+
+                try
+                {
+                    TemplateIR.TemplateIRBuilder.ValidateCssClasses(ir, _templateCssManagers.GetValueOrDefault(key), source);
+                }
+                catch (Exception ex)
+                {
+                    return "razor skin css " + fileName + ": " + ex.Message;
+                }
+
+                var methods = new List<MethodReference>();
+                var seen = new HashSet<string>();
+                CollectEventMethodReferences(ir, ir.ModelTypeName, ir.ControlTypeName, methods, seen);
+                CollectSubControlMethodReferences(ir, ir.ModelTypeName, ir.UsingNamespaces, methods, seen);
+                CollectBindingExpressionReferences(ir, ir.ModelTypeName, ir.ControlTypeName, methods, seen);
+                var added = methods.FirstOrDefault(method => !known.Contains(method.FullName));
+                if (added != null)
+                {
+                    return "razor skin calls " + added.FullName;
+                }
+
+                patched.Add((key, ir, source));
+                _resourcesRead[read] = System.Security.Cryptography.SHA256.HashData(current[read].GetResourceData());
+            }
+
+            int errors = _runtimeScopeManager.Context.Errors.Count;
+            var section = new List<Statement>();
+            foreach (var (key, ir, source) in patched)
+            {
+                _compiledIRs[key] = ir;
+                _templateSources[key] = source;
+                section.AddRange(GenerateTemplate(key, ir));
+            }
+
+            if (_runtimeScopeManager.Context.Errors.Count > errors)
+            {
+                return "razor errors";
+            }
+
+            statements.AddRange(_cssLiteralReplacer != null ? _cssLiteralReplacer.TransformStatements(section) : section);
+            // A bundle with no Razor CSS wrote no CSS line: empty is no change.
+            string css = CollectCssForEmission(_templateCssManagers.Values);
+            if (css != (_writtenCss ?? ""))
+            {
+                if (_writtenCss == null)
+                {
+                    return "razor css added";
+                }
+
+                literals[CssMarker] = css;
+                _writtenCss = css;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Dev patch emit: each skin's CSS manager that reads the stylesheet takes its new text,
+        /// keeping its class names. Returns a miss reason, or null.
+        /// </summary>
+        private string PatchStylesheet(string resourceName, EmbeddedResource resource)
+        {
+            string cssText;
+            using (var reader = new StreamReader(resource.GetResourceStream()))
+            {
+                cssText = reader.ReadToEnd();
+            }
+
+            foreach (var manager in _templateCssManagers.Values)
+            {
+                try
+                {
+                    var miss = manager.ReplaceStylesheet(resourceName, cssText);
+                    if (miss != null)
+                    {
+                        return miss;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return "razor css " + (_cssFileNames.GetValueOrDefault(resourceName) ?? resourceName) + ": " + ex.Message;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Dev patch emit: a skin reads a simple getter as its backing field and writes a
+        /// simple setter as one, so when such an accessor's body changed to anything but that
+        /// read or store, the skins must be written again.
+        /// </summary>
+        public string TryPatchBodies(IReadOnlyList<TypeDefinition> changedTypes)
+        {
+            foreach (var (type, property, field, setter) in _inlinedGetters)
+            {
+                if (changedTypes.Contains(property.DeclaringType)
+                    && (setter ? GraphDescriptorJSTEmitter.SimpleSetterField(type, property) : GraphDescriptorJSTEmitter.SimpleGetterField(type, property)) != field)
+                {
+                    return "razor inlined " + (setter ? "setter " : "getter ") + property.DeclaringType.FullName + "." + property.Name;
                 }
             }
 
@@ -1887,59 +2171,18 @@ namespace Sunlight.Framework.Observables
             {
                 var docStorageGetterStatements = EmitDocStorageGetterFunction();
                 if (docStorageGetterStatements != null)
+                {
                     statements.AddRange(docStorageGetterStatements);
+                    if (LiveHook)
+                    {
+                        statements.AddRange(CreateLiveSkinHelpers());
+                    }
+                }
             }
 
             foreach (var kvp in _compiledIRs)
             {
-                try
-                {
-                    // Generate proper JST nodes with graph descriptor emission
-                    IIdentifier preCreatedGetter = null;
-                    _templateGetterIdentifiers.TryGetValue(kvp.Key, out preCreatedGetter);
-
-                    RazorCssManager cssManager = null;
-                    if (!_templateCssManagers.TryGetValue(kvp.Key, out cssManager)
-                        && _templateCssManagers.Count > 0)
-                    {
-                        // Sub-templates without @styles inherit the parent's CSS manager
-                        // so their static HTML class names get resolved through the CSS scope.
-                        cssManager = _templateCssManagers.Values.First();
-                    }
-
-                    var jstGenerator = new RazorSkinJSTGenerator(
-                        kvp.Value,
-                        _runtimeScopeManager,
-                        _clrContext,
-                        _resolvedIdentifiers,
-                        _resolvedTypeIdentifiers,
-                        _razorKnownTypes,
-                        _nextDataIndex++,
-                        preCreatedGetter,
-                        cssManager);
-
-                    var jstStatements = jstGenerator.Generate();
-                    statements.AddRange(jstStatements);
-
-                    // Store the getter identifier for use in GetOverwrite
-                    var getterIdentifier = jstGenerator.GetGetterIdentifier();
-                    if (getterIdentifier != null)
-                    {
-                        _templateGetterIdentifiers[kvp.Key] = getterIdentifier;
-                    }
-
-                    Log.Debug("Generated {StatementCount} JST statements for template {TemplateName}",
-                        jstStatements.Count, kvp.Value.TemplateName);
-                }
-                catch (System.Exception ex)
-                {
-                    Log.Error(ex, "JST generation failed for template {TemplateName}", kvp.Value.TemplateName);
-
-                    _runtimeScopeManager.Context.AddTemplateError(
-                        (ex as RazorSubControlDiagnosticException)?.Location,
-                        $"Error generating JST for Razor template '{kvp.Value.TemplateName}': {ex.Message}",
-                        false);
-                }
+                statements.AddRange(GenerateTemplate(kvp.Key, kvp.Value));
             }
 
             // Emit CSS <style> element for templates with @styles directives
@@ -1957,6 +2200,107 @@ namespace Sunlight.Framework.Observables
                 statements.Count, _compiledIRs.Count);
 
             return statements;
+        }
+
+        /// <summary>
+        /// A template's statements, with graph descriptor emission. A template written before
+        /// (a patch) keeps its names and takes the next storage index.
+        /// </summary>
+        private List<Statement> GenerateTemplate(string key, SkinTemplateNode ir)
+        {
+            try
+            {
+                IIdentifier preCreatedGetter = null;
+                _templateGetterIdentifiers.TryGetValue(key, out preCreatedGetter);
+
+                RazorCssManager cssManager = null;
+                if (!_templateCssManagers.TryGetValue(key, out cssManager)
+                    && _templateCssManagers.Count > 0)
+                {
+                    // Sub-templates without @styles inherit the parent's CSS manager
+                    // so their static HTML class names get resolved through the CSS scope.
+                    cssManager = _templateCssManagers.Values.First();
+                }
+
+                var jstGenerator = new RazorSkinJSTGenerator(
+                    ir,
+                    _runtimeScopeManager,
+                    _clrContext,
+                    _resolvedIdentifiers,
+                    _resolvedTypeIdentifiers,
+                    _razorKnownTypes,
+                    _nextDataIndex++,
+                    preCreatedGetter,
+                    cssManager,
+                    _inlinedGetters,
+                    LiveHook,
+                    _templateNames.GetValueOrDefault(key));
+
+                var jstStatements = jstGenerator.Generate();
+                _templateNames[key] = jstGenerator.Names;
+
+                // Store the getter identifier for use in GetOverwrite
+                var getterIdentifier = jstGenerator.GetGetterIdentifier();
+                if (getterIdentifier != null)
+                {
+                    _templateGetterIdentifiers[key] = getterIdentifier;
+                }
+
+                Log.Debug("Generated {StatementCount} JST statements for template {TemplateName}",
+                    jstStatements.Count, ir.TemplateName);
+                return jstStatements;
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error(ex, "JST generation failed for template {TemplateName}", ir.TemplateName);
+
+                _runtimeScopeManager.Context.AddTemplateError(
+                    (ex as RazorSubControlDiagnosticException)?.Location,
+                    $"Error generating JST for Razor template '{ir.TemplateName}': {ex.Message}",
+                    false);
+                return new List<Statement>();
+            }
+        }
+
+        /// <summary>
+        /// The live skin helpers (<see cref="LiveSkinHook.CreateHelpers"/>), for a bundle whose
+        /// document storage getter this plugin writes.
+        /// </summary>
+        private List<Statement> CreateLiveSkinHelpers()
+        {
+            var scope = _runtimeScopeManager.Scope;
+            var skinable = _razorKnownTypes.UISkinableElement;
+            IIdentifier Field(TypeDefinition type, string name)
+                => _runtimeScopeManager.Resolve(type.Fields.First(field => field.Name == name));
+
+            // function(c, v) { c.Skin = v; }
+            var setter = skinable.Properties.First(property => property.Name == "Skin").SetMethod;
+            var setScope = new IdentifierScope(scope, new[] { "c", "v" }, false);
+            var control = new IdentifierExpression(setScope.ParameterIdentifiers[0], setScope);
+            var value = new IdentifierExpression(setScope.ParameterIdentifiers[1], setScope);
+            var call = (setter.IsVirtual && !setter.IsFinal) || !_runtimeScopeManager.ImplementInstanceAsStatic
+                ? new MethodCallExpression(
+                    null,
+                    setScope,
+                    new IndexExpression(null, setScope, control, new IdentifierExpression(_runtimeScopeManager.Resolve(setter), setScope)),
+                    value)
+                : new MethodCallExpression(
+                    null,
+                    setScope,
+                    new IdentifierExpression(_runtimeScopeManager.ResolveStatic(setter), setScope),
+                    control,
+                    value);
+            var setSkin = new FunctionExpression(null, scope, setScope, setScope.ParameterIdentifiers, null);
+            setSkin.AddStatement(new ExpressionStatement(null, setScope, call));
+
+            return LiveSkinHook.CreateHelpers(
+                scope,
+                _resolvedIdentifiers["DocStorageGetter"],
+                Field(_razorKnownTypes.SkinType, "factoryMethod"),
+                Field(_razorKnownTypes.SkinType, "id"),
+                Field(_razorKnownTypes.SkinInstanceType, "skinableParent"),
+                Field(skinable, "skinInstance"),
+                setSkin);
         }
 
         /// <summary>
