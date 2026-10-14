@@ -34,6 +34,19 @@ namespace NScript.Lib
         public static int Count => Volatile.Read(ref count);
 
         /// <summary>
+        /// The build service's live patch socket, which dev bundles with the client bake
+        /// (<see cref="Builder.HmrEndpointSource"/>). Null outside the daemon.
+        /// </summary>
+        public static Func<NScript.JST.HmrEndpoint?>? HmrEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets each build's <see cref="LivePatch"/> for open pages, with the output path,
+        /// after the build wrote the bundle. It runs under the sessions' lock, so it must only
+        /// enqueue. Null outside the daemon.
+        /// </summary>
+        public static Action<string, LivePatch>? PublishLivePatch { get; set; }
+
+        /// <summary>
         /// "kind (reason)" of the last build of <paramref name="jsFileName"/>'s session, e.g.
         /// "warm (resources-refreshed)", or null when the output has no session.
         /// </summary>
@@ -66,9 +79,11 @@ namespace NScript.Lib
                     Volatile.Write(ref count, Sessions.Count);
                 }
 
+                bool succeeded;
+                entry.Builder.HmrEndpointSource = HmrEndpoint;
                 try
                 {
-                    return entry.Builder.Execute(plugins);
+                    succeeded = entry.Builder.Execute(plugins);
                 }
                 finally
                 {
@@ -76,6 +91,43 @@ namespace NScript.Lib
                     // released as soon as it finishes.
                     entry.LastUsedMs = Clock();
                 }
+
+                Publish(options.JsFileName, entry.Builder);
+                return succeeded;
+            }
+        }
+
+        /// <summary>
+        /// Hands the build's live patch to open pages. When that fails, pages may miss the
+        /// patch: they are asked to reload, and the session goes, so the next build emits in
+        /// full (a new generation).
+        /// </summary>
+        private static void Publish(string jsFileName, Builder builder)
+        {
+            var publish = PublishLivePatch;
+            var live = builder.LastLivePatch;
+            if (publish == null || live == null)
+            {
+                return;
+            }
+
+            try
+            {
+                publish(jsFileName, live);
+            }
+            catch (Exception ex) when (!(ex is OutOfMemoryException))
+            {
+                NScript.Utils.CompilerLog.ForComponent("BuilderSessions").Warning(ex, "Hmr.PublishFailed {JsFile}", jsFileName);
+                try
+                {
+                    publish(jsFileName, LivePatch.ReloadAll("publish failed"));
+                }
+                catch (Exception)
+                {
+                    // Best effort: a page that misses this reloads at its next gap or new build.
+                }
+
+                builder.Dispose();
             }
         }
 

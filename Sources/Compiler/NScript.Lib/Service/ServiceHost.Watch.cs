@@ -63,6 +63,9 @@ namespace NScript.Lib.Service
         // How often a waiting --sync wakes without a finished batch (to see a stop).
         private static readonly TimeSpan SyncPoll = TimeSpan.FromMilliseconds(250);
         private readonly RetryBudget bundleRetries = new RetryBudget(MaxBundleRetries);
+
+        // The first error of each red project's last compile, by project name: the page's notice.
+        private readonly Dictionary<string, string> firstErrors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private string lastBatch = "none";
 
         // The result word of lastBatch: ok, failed, blocked, kept or superseded.
@@ -934,6 +937,16 @@ namespace NScript.Lib.Service
                 {
                     log.Warning("WatchNeedsBuild BatchId={BatchId} Key={Key} Reason={Reason}", batchId, projectKey, reason);
                     this.WatchLog("NEEDS BUILD {0}: {1}; run dotnet build -p:NScriptWatch=true", Path.GetFileName(projectKey), reason);
+                    IReadOnlyList<string> bundleFiles;
+                    lock (this.watchGate)
+                    {
+                        bundleFiles = this.registry.BundleFilesOf(projectKey);
+                    }
+
+                    foreach (var bundleFile in bundleFiles)
+                    {
+                        this.HmrNote(bundleFile, NeedsBuildNote(projectKey, reason));
+                    }
                 }
 
                 foreach (var path in changes.Changed)
@@ -1046,6 +1059,15 @@ namespace NScript.Lib.Service
                             this.registry.RecordCompileAttempt(project.Key, inputs, exitCode, referenceUnreadable);
                         }
 
+                        if (ok)
+                        {
+                            this.firstErrors.Remove(project.Name);
+                        }
+                        else
+                        {
+                            this.firstErrors[project.Name] = FirstError(response) ?? (response.InternalError ? "internal error" : "exit " + exitCode);
+                        }
+
                         log.Information(
                             "WatchStep BatchId={BatchId} Step={Step} Key={Key} ExitCode={ExitCode} ElapsedMs={ElapsedMs} RequestId={RequestId} Result={Result} Message={Message} Diagnostics={Diagnostics}",
                             batchId, "compile", project.Key, exitCode, step.ElapsedMilliseconds, response.RequestId, ok ? "ok" : referenceUnreadable ? "referenceUnreadable" : "failed", response.Message, diagnostics);
@@ -1118,6 +1140,7 @@ namespace NScript.Lib.Service
             {
                 log.Information("WatchStep BatchId={BatchId} Step={Step} Key={Key} Result={Result} Reason={Reason}", batchId, "emitJs", bundle.Key, "kept", kept);
                 this.WatchLog("KEPT    {0} (last good; {1})", bundle.Key, kept);
+                this.HmrNote(bundle.Key, KeptNote(kept, this.firstErrors));
                 return result == "ok" ? "kept" : result;
             }
 
@@ -1151,10 +1174,12 @@ namespace NScript.Lib.Service
                     this.bundleRetries.Succeeded(bundle.Key);
                 }
 
+                this.HmrNote(bundle.Key, null);
                 return result;
             }
 
             this.WatchLogDiagnostics(response);
+            this.HmrNote(bundle.Key, "build failed: " + (FirstError(response) ?? (response.InternalError ? "internal error" : "emit exit " + response.ExitCode)));
             this.RetryIfOutputInUse(bundle, response);
             return "failed";
         }
@@ -1349,6 +1374,43 @@ namespace NScript.Lib.Service
         }
 
         /// <summary>The compiler output lines watch.log shows for a failed step.</summary>
+        /// <summary>
+        /// The notice for a bundle kept at its last good output: a red project's first error,
+        /// a project that needs <c>dotnet build</c>, or why else it was kept.
+        /// </summary>
+        internal static string KeptNote(string kept, IReadOnlyDictionary<string, string> firstErrors)
+        {
+            if (kept.EndsWith(" red", StringComparison.Ordinal) && firstErrors.TryGetValue(kept.Substring(0, kept.Length - 4), out var error))
+            {
+                return "build failed: " + error;
+            }
+
+            // The words of the change's own notice (NeedsBuildNote), so the page sees it once.
+            int at = kept.IndexOf(NeedsBuildWords, StringComparison.Ordinal);
+            return at > 0
+                ? NeedsBuildNote(kept.Substring(0, at), kept.Substring(at + NeedsBuildWords.Length))
+                : "kept last good: " + kept;
+        }
+
+        private const string NeedsBuildWords = " needs dotnet build -p:NScriptWatch=true: ";
+
+        /// <summary>The notice for a project (its obj DLL or its name) that needs a real build.</summary>
+        internal static string NeedsBuildNote(string project, string reason)
+            => "NEEDS BUILD " + Path.GetFileNameWithoutExtension(project) + ": " + reason + "; run dotnet build -p:NScriptWatch=true";
+
+        /// <summary>
+        /// The first error line of a build's output, short for the page's console: the file
+        /// name without its folder, and no trailing <c>[project]</c>. Null when there is none.
+        /// </summary>
+        internal static string? FirstError(ServiceResponse response)
+        {
+            var line = DiagnosticLines((response.Stdout ?? string.Empty) + (response.Stderr ?? string.Empty)).FirstOrDefault(l => ErrorLine.IsMatch(l));
+            return line == null ? null : ShortError.Replace(line.Trim(), "$1");
+        }
+
+        // "<folder>\File.cs(3,4): error CS1002: ; expected [<project>]" -> "File.cs(3,4): error CS1002: ; expected".
+        private static readonly Regex ShortError = new Regex(@"^(?:.*[\\/])?([^\\/]*\(\d+,\d+\).*?)(?: \[[^\]]*\])?$", RegexOptions.CultureInvariant);
+
         public static IEnumerable<string> DiagnosticLines(string output)
         {
             foreach (var line in (output ?? string.Empty).Split('\n'))

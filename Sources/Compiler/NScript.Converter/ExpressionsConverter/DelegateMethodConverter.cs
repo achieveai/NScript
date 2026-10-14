@@ -102,10 +102,13 @@ namespace NScript.Converter.ExpressionsConverter
 
             JST.Expression objectExpression;
             List<JST.Expression> delegateConverterArgs = new List<JST.Expression>();
+            // A live patch bundle binds late, so a patch reaches a handler bound before it.
             MethodReference delegateCreateReference =
-                genericArguments.Count == 0
-                    ? converter.KnownReferences.CreateDelegate
-                    : converter.KnownReferences.CreateGenericDelegate;
+                genericArguments.Count > 0
+                    ? converter.KnownReferences.CreateGenericDelegate
+                    : converter.RuntimeManager.Context.LivePatchHook
+                        ? converter.KnownReferences.CreateLateBoundDelegate
+                        : converter.KnownReferences.CreateDelegate;
 
             delegateConverterArgs.Add(
                 converter.ResolveMethodSlotName(

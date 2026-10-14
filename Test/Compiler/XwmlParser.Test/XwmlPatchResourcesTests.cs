@@ -127,6 +127,135 @@ namespace XwmlParser.Test
             Assert.AreEqual(Build(NewSession(), out _, "changed"), full);
         }
 
+        /// <summary>
+        /// S5: with the live patch hook, a linked sheet's colour edit changes no skin code, and
+        /// its live form restyles the documents open now and the ones made later. The CSS line
+        /// keeps its one literal, so the bundle is still patched in place.
+        /// </summary>
+        [TestMethod]
+        public void SkinEdits_PatchUntilTheNextIndexIsRazors_ThenMiss()
+        {
+            // The two skins take 0 and 1; each patch of the second takes the next index. Razor's
+            // skins share the per-document DOM cache from LiveSkinHook.RazorStorageBase up.
+            var session = NewSession();
+            Build(session, out var plugin, "second");
+            string last = null, miss = null;
+            int patch = 0;
+            while (miss == null && patch < LiveSkinHook.RazorStorageBase)
+            {
+                var statements = new List<Statement>();
+                miss = plugin.TryPatchResources(statements, new Dictionary<string, string>(), WithSecond(plugin, Document("edit " + ++patch)));
+                last = miss == null ? Helper.ConvertCodeToString(statements) : last;
+            }
+
+            Assert.AreEqual(LiveSkinHook.RazorStorageBase - 1, patch, "the patch that would take index " + LiveSkinHook.RazorStorageBase + " misses");
+            Assert.AreEqual("xwml storage index " + LiveSkinHook.RazorStorageBase + " reaches Razor's", miss);
+            StringAssert.Contains(last, "\"" + (LiveSkinHook.RazorStorageBase - 1) + "\")", "the last patch took the index below Razor's");
+        }
+
+        [TestMethod]
+        public void LinkedSheet_ColourEdit_WithLiveHook_GoesLiveForOpenAndLaterDocuments()
+        {
+            const string A = "Patch.Live.css";
+            var linked = Document("linked").Replace(
+                "<style> .card { color: red; } </style>",
+                "<link rel=\"stylesheet\" href=\"" + A + "\" />");
+            string ColdBuild(bool liveHook, out XwmlTemplatingPlugin built)
+            {
+                var session = NewSession();
+                session.LivePatchHook = liveHook;
+                session.BeginBuild(null, null);
+                built = Helper.CreatePlugin(null, session);
+                built.CodeGenerator.AddResource(Resource(A, ".card { color: red; }"), A);
+                built.CodeGenerator.AddResource(Resource(First, linked), First);
+                Assert.IsNotNull(built.CodeGenerator.GetTemplateGetterIdentifier(First));
+                built.GetMethodsToEmitPass1();
+                var code = Helper.ConvertCodeToString(built.GetPostJavascript());
+                Assert.AreEqual(0, session.Errors.Count, "the build must not fail");
+                return code;
+            }
+
+            var cold = ColdBuild(true, out var plugin);
+            var getter = Regex.Match(cold, @"function (DocStorageGetter[\w$]*)\(").Groups[1].Value;
+            Assert.AreNotEqual(string.Empty, getter, cold);
+            Assert.IsTrue(
+                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssMarker) + @"\r?\n *style\.textContent = " + Regex.Escape(getter) + @"\.__nsCss \|\| ""[^""\r\n]*red[^""\r\n]*"";\r?\n"),
+                "the marked CSS line reads a live patch's CSS first, and keeps one literal: " + cold);
+            StringAssert.Contains(cold, "(" + getter + ".__nsStyles || (" + getter + ".__nsStyles = [])).push(style);");
+
+            var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [A] = Tuple.Create(Resource(A, ".card { color: green; }"), A),
+            };
+            var statements = new List<Statement>();
+            var literals = new Dictionary<string, string>();
+            Assert.IsNull(plugin.TryPatchResources(statements, literals, resources));
+            Assert.AreEqual(0, statements.Count, "a linked sheet's colour edit changes no skin code");
+            StringAssert.Contains(literals[CodeGenerator.CssMarker], "green");
+
+            var root = ((SimpleIdentifier)plugin.CodeGenerator.GetDocumentStorageGetter()).OwnerScope;
+            Assert.IsNull(plugin.LiveLiteral("/*@L Other*/", "x", root), "another plugin's literal is not XWML's to take live");
+            var live = Helper.ConvertCodeToString(plugin.LiveLiteral(CodeGenerator.CssMarker, literals[CodeGenerator.CssMarker], root));
+            StringAssert.Contains(live, getter + ".__nsCss = \"" + Utils.ToJSString(literals[CodeGenerator.CssMarker]) + "\";");
+            StringAssert.Contains(live, "(" + getter + ".__nsStyles || []).forEach(function(s){s.textContent=String(this);}, " + getter + ".__nsCss);");
+
+            // A plain dev bundle has no hook, so its CSS edit reloads.
+            var plain = ColdBuild(false, out var plainPlugin);
+            Assert.IsFalse(plain.Contains("__ns"), "no hook without live patch emit: " + plain);
+            Assert.IsNull(plainPlugin.LiveLiteral(CodeGenerator.CssMarker, "x", root));
+        }
+
+        /// <summary>
+        /// S7: with the live hook a skin edit runs live. Each factory's instance is kept on its
+        /// skin, and the patch's <c>Name_var</c> statement gives the skin made before it the
+        /// new factory and skins its open controls again. Plain dev bundles are as before.
+        /// </summary>
+        [TestMethod]
+        public void SkinEdit_WithLiveHook_SkinsOpenControlsAgain()
+        {
+            string ColdBuild(bool liveHook, out XwmlTemplatingPlugin built)
+            {
+                var session = NewSession();
+                session.LivePatchHook = liveHook;
+                session.BeginBuild(null, null);
+                built = Helper.CreatePlugin(null, session);
+                built.CodeGenerator.AddResource(Resource(First, Document("first")), First);
+                Assert.IsNotNull(built.CodeGenerator.GetTemplateGetterIdentifier(First));
+                built.GetMethodsToEmitPass1();
+                var code = Helper.ConvertCodeToString(built.GetPostJavascript());
+                Assert.AreEqual(0, session.Errors.Count, "the build must not fail");
+                return code;
+            }
+
+            var cold = ColdBuild(true, out var plugin);
+            var getter = Regex.Match(cold, @"function (DocStorageGetter[\w$]*)\(").Groups[1].Value;
+            var reskin = Regex.Match(cold, @"if \(([\w$]+_var[\w$]*)\)\s*\{?\s*" + Regex.Escape(getter) + @"\.__nsReskin\(\1, ([\w$]+_factory[\w$]*), ""(\d+)"", ""First""\);");
+            Assert.IsTrue(reskin.Success, "the skin variable's statement skins open controls again: " + cold);
+            Assert.IsFalse(cold.Contains(reskin.Groups[1].Value + " = null;"), "the hook takes the place of the null start");
+            StringAssert.Contains(cold, "return " + getter + ".__nsTrack(");
+            Assert.IsTrue(
+                Regex.IsMatch(cold, Regex.Escape(getter) + @"\.__nsReskin = \(function\(F,I,P,K,set\)[^\n]*\}\)\(""factoryMethod[\w$]*"", ""id[\w$]*"", ""skinableParent[\w$]*"", ""skinInstance[\w$]*"", function\("),
+                "the helper gets the framework's field names as resolved, and a Skin setter: " + cold);
+            Assert.IsTrue(plugin.PatchSectionLive);
+
+            var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [First] = Tuple.Create(Resource(First, Document("edited")), First),
+            };
+            var statements = new List<Statement>();
+            Assert.IsNull(plugin.TryPatchResources(statements, new Dictionary<string, string>(), resources));
+            var patch = Helper.ConvertCodeToString(statements);
+            StringAssert.Contains(patch, "edited");
+            StringAssert.Contains(patch, getter + ".__nsReskin(" + reskin.Groups[1].Value + ", " + reskin.Groups[2].Value + ", \"");
+            StringAssert.Contains(patch, "return " + getter + ".__nsTrack(", "the patch's factory keeps its instances too");
+
+            // A plain dev bundle has no hook, so its skin edit reloads.
+            var plain = ColdBuild(false, out var plainPlugin);
+            Assert.IsFalse(plain.Contains("__ns"), "no hook without live patch emit: " + plain);
+            StringAssert.Contains(plain, "_var = null;");
+            Assert.IsFalse(plainPlugin.PatchSectionLive);
+        }
+
         [TestMethod]
         public void LinkedSheet_ClassAddedThatALaterSheetDeclares_Misses()
         {

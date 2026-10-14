@@ -60,5 +60,27 @@ namespace NScript.Converter
         /// </summary>
         string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
             => "plugin " + this.GetType().Name;
+
+        /// <summary>
+        /// Dev patch emit, before a body-only change of <paramref name="changedTypes"/> is
+        /// patched: why this plugin's output from the full emit no longer matches the new
+        /// bodies, or null. A plugin that wrote what a body does in place of a call to it (a
+        /// getter read as its backing field) must miss when that body changed.
+        /// </summary>
+        string TryPatchBodies(IReadOnlyList<TypeDefinition> changedTypes) => null;
+
+        /// <summary>
+        /// Live patch emit: what an open page runs, in the bundle's closure, to take the new
+        /// <paramref name="value"/> of a literal this plugin gave <see cref="TryPatchResources"/>,
+        /// by <paramref name="marker"/>. Null when the page must reload to take it.
+        /// </summary>
+        List<Statement> LiveLiteral(string marker, string value, IdentifierScope root) => null;
+
+        /// <summary>
+        /// Live patch emit: whether an open page can run this plugin's patched section (its
+        /// statements from <see cref="TryPatchResources"/>) as it is. False reloads the page:
+        /// <c>skin</c>.
+        /// </summary>
+        bool PatchSectionLive => false;
     }
 }

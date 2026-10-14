@@ -41,6 +41,13 @@ namespace NScript.RazorSkin.CodeGen
         private readonly RazorCssManager _cssManager;
 
         /// <summary>
+        /// Every getter this emitter read as its backing field, and every setter it wrote as
+        /// one, with the type it looked the field up on, so a dev patch can tell when such an
+        /// accessor's body changed. May be null.
+        /// </summary>
+        private readonly List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> _inlinedGetters;
+
+        /// <summary>
         /// Fallback <see cref="Location"/> stamped on emitted JST nodes (function expressions,
         /// return statements, etc.) when no per-binding source position is available. Supplied
         /// by the caller (typically <see cref="RazorSkinJSTGenerator"/>) as the template root
@@ -138,9 +145,11 @@ namespace NScript.RazorSkin.CodeGen
             RazorCssManager cssManager = null,
             IEnumerable<string> usingNamespaces = null,
             Location fallbackLocation = null,
-            string controlTypeName = null)
+            string controlTypeName = null,
+            List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> inlinedGetters = null)
         {
             _topology = topology;
+            _inlinedGetters = inlinedGetters;
             _scope = scope;
             _scopeManager = scopeManager;
             _knownTypes = knownTypes;
@@ -879,13 +888,25 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
+        /// <see cref="SimpleGetterField"/>, for a getter this emitter reads as the field. Each
+        /// one is recorded, so a dev patch emits in full once the getter stops being that read.
+        /// </summary>
+        private FieldDefinition TryFindBackingFieldOnType(TypeDefinition type, PropertyDefinition property)
+        {
+            var field = SimpleGetterField(type, property);
+            if (field != null)
+                _inlinedGetters?.Add((type, property, field, false));
+            return field;
+        }
+
+        /// <summary>
         /// Finds the backing field for a property by analyzing the getter's IL to get the
         /// field name, then looking it up on the SAME TypeDefinition from _clrContext.
         /// This is critical: we must use the same TypeDefinition that the scope manager
         /// processed, otherwise Resolve() creates a new (wrong) identifier.
         /// Returns null if the getter is not a simple field-return.
         /// </summary>
-        private static FieldDefinition TryFindBackingFieldOnType(TypeDefinition type, PropertyDefinition property)
+        internal static FieldDefinition SimpleGetterField(TypeDefinition type, PropertyDefinition property)
         {
             var getter = property.GetMethod;
             if (getter?.Body == null)
@@ -937,7 +958,20 @@ namespace NScript.RazorSkin.CodeGen
             return null;
         }
 
-        private static FieldDefinition TryFindTrivialSetterFieldOnType(TypeDefinition type, PropertyDefinition property)
+        /// <summary>
+        /// <see cref="SimpleSetterField"/>, for a setter this emitter writes as the field. Each
+        /// one is recorded, as <see cref="TryFindBackingFieldOnType"/> records getters.
+        /// </summary>
+        private FieldDefinition TryFindTrivialSetterFieldOnType(TypeDefinition type, PropertyDefinition property)
+        {
+            var field = SimpleSetterField(type, property);
+            if (field != null)
+                _inlinedGetters?.Add((type, property, field, true));
+            return field;
+        }
+
+        /// <summary>The field a setter only stores its value in, or null.</summary>
+        internal static FieldDefinition SimpleSetterField(TypeDefinition type, PropertyDefinition property)
         {
             if (property.CustomAttributes.Any(attr => attr.AttributeType.Name == "AutoFireAttribute"))
                 return null;
@@ -1679,7 +1713,8 @@ namespace NScript.RazorSkin.CodeGen
                     cssManager: _cssManager,
                     usingNamespaces: _usingNamespaces,
                     fallbackLocation: ct.IrNode?.Location ?? _fallbackLocation,
-                    controlTypeName: _controlTypeName);
+                    controlTypeName: _controlTypeName,
+                    inlinedGetters: _inlinedGetters);
                 itemGraphExpr = nestedEmitter.Emit();
             }
 

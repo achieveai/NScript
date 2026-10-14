@@ -141,6 +141,16 @@ namespace NScript.Converter.TypeSystemConverter
             new HashSet<MemberReference>(MemberReferenceComparer.Instance);
 
         /// <summary>
+        /// Dev patch emit: members and types plugins resolved while writing their own output,
+        /// after the last walk (<see cref="AcceptDemand"/>). The written bundle works with them.
+        /// </summary>
+        private readonly HashSet<MemberReference> membersAccepted =
+            new HashSet<MemberReference>(MemberReferenceComparer.Instance);
+
+        private readonly HashSet<TypeReference> typesAccepted =
+            new HashSet<TypeReference>(MemberReferenceComparer.Instance);
+
+        /// <summary>
         /// Queue for typeReferences to process (used in entryPoint convert).
         /// </summary>
         private readonly Queue<TypeReference> usedTypeReferencesToProcess =
@@ -1613,6 +1623,30 @@ namespace NScript.Converter.TypeSystemConverter
         internal IReadOnlyDictionary<TypeDefinition, TypeConverter> TypeConverters => typesDefinitionsUsed;
 
         /// <summary>
+        /// Dev patch emit: takes what conversions asked for since the last walk as written.
+        /// Plugins resolve more members while writing their own output, after the walk; the
+        /// written bundle works with them, so a patch that asks for them again is no miss.
+        /// </summary>
+        internal void AcceptDemand()
+        {
+            foreach (var member in usedMembersToProcess)
+            {
+                if (member.GetDefinition() is MemberReference definition)
+                {
+                    membersAccepted.Add(definition);
+                }
+            }
+
+            foreach (var type in usedTypeReferencesToProcess)
+            {
+                typesAccepted.Add(type);
+            }
+
+            usedMembersToProcess.Clear();
+            usedTypeReferencesToProcess.Clear();
+        }
+
+        /// <summary>
         /// Dev patch emit: what conversions since the last walk asked for that the emitted
         /// code does not have yet (a member or type the walk never processed, or a new virtual
         /// call), or null. Clears the queues, as no walk will take them.
@@ -1627,7 +1661,8 @@ namespace NScript.Converter.TypeSystemConverter
 
             foreach (var member in usedMembersToProcess)
             {
-                if (demand == null && !membersProcessed.Contains(member.GetDefinition() as MemberReference))
+                var definition = member.GetDefinition() as MemberReference;
+                if (demand == null && !membersProcessed.Contains(definition) && !membersAccepted.Contains(definition))
                 {
                     demand = "member " + member.FullName;
                 }
@@ -1639,7 +1674,8 @@ namespace NScript.Converter.TypeSystemConverter
                 if (demand != null
                     || type.IsGenericParameter
                     || (type.IsArray && type.GetElementType().IsGenericParameter)
-                    || typeReferencesUsed.Contains(type))
+                    || typeReferencesUsed.Contains(type)
+                    || typesAccepted.Contains(type))
                 {
                     continue;
                 }
@@ -1668,7 +1704,7 @@ namespace NScript.Converter.TypeSystemConverter
             foreach (var member in members)
             {
                 var definition = member.GetDefinition() as MemberReference;
-                if (membersProcessed.Contains(definition))
+                if (membersProcessed.Contains(definition) || membersAccepted.Contains(definition))
                 {
                     continue;
                 }

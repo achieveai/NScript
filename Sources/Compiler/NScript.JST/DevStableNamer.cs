@@ -78,9 +78,10 @@ namespace NScript.JST
             }
 
             /// <summary>
-            /// Dev patch emit: names function scopes made under the root after it was named, as
-            /// <see cref="NameExecutionTree"/> names the root's children. Identifiers the
-            /// functions use from outside keep the names their scopes already gave them.
+            /// Dev patch emit: names function scopes made under the root, or under a named
+            /// function such as a generic type's factory, after it was named, as
+            /// <see cref="NameExecutionTree"/> names them. Identifiers the functions use from
+            /// outside keep the names their scopes already gave them.
             /// </summary>
             public static DevStableNamer NameNewFunctions(IdentifierScope root, IEnumerable<IdentifierScope> functions)
             {
@@ -88,12 +89,24 @@ namespace NScript.JST
                 var rootEnforced = new HashSet<string>(root.knownNameMap.Keys, StringComparer.Ordinal);
                 foreach (var function in functions)
                 {
-                    if (function.ParentScope != root || root.assignedNames == null)
+                    if (root.assignedNames == null
+                        || !Ancestors(function).Contains(root)
+                        || Ancestors(function).Any(scope => scope.assignedNames == null))
                     {
                         throw new ArgumentException("Expected a new function scope under the named root.", nameof(functions));
                     }
 
-                    namer.NameLocals(function, rootEnforced);
+                    // As NameLocals passes them down: the names each enclosing function declares.
+                    var enclosing = new HashSet<string>(rootEnforced, StringComparer.Ordinal);
+                    foreach (var outer in Ancestors(function).TakeWhile(scope => scope != root))
+                    {
+                        foreach (var ident in (outer.ParameterIdentifiers ?? Enumerable.Empty<SimpleIdentifier>()).Concat(outer.scopedIdentifiers))
+                        {
+                            enclosing.Add(namer.NameOf(ident));
+                        }
+                    }
+
+                    namer.NameLocals(function, enclosing);
                 }
 
                 return namer;

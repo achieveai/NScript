@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using NScript.JST;
@@ -63,7 +64,7 @@ namespace NScript.RazorSkin
             if (cssText == null)
                 throw new ArgumentNullException(nameof(cssText));
 
-            var sheet = new RazorCssSheet(resourceName) { SourceFile = sourceFile };
+            var sheet = new RazorCssSheet(resourceName) { SourceFile = sourceFile, Text = cssText };
 
             try
             {
@@ -106,6 +107,55 @@ namespace NScript.RazorSkin
                     ex.Message);
             }
         }
+
+        /// <summary>
+        /// Dev patch emit: takes a stylesheet's new text in place, keeping each class's name.
+        /// Returns why it cannot, or null: the new text fails as a fresh build would, or it
+        /// adds or drops a class (the names are set). The sheets this manager holds stand as
+        /// they were when it cannot.
+        /// </summary>
+        internal string ReplaceStylesheet(string resourceName, string cssText)
+        {
+            int index = _sheets.FindIndex(sheet => sheet.ResourceName == resourceName);
+            if (index < 0)
+            {
+                return null;
+            }
+
+            // A fresh manager runs the checks a full build would, in the same order.
+            var fresh = new RazorCssManager();
+            for (int i = 0; i < _sheets.Count; i++)
+            {
+                var sheet = _sheets[i];
+                fresh.AddStylesheet(sheet.ResourceName, i == index ? cssText : GetSourceText(sheet), sheet.SourceFile);
+            }
+
+            fresh.ValidateCssVariables();
+            var old = _sheets[index];
+            var parsed = fresh._sheets[index];
+            if (!new HashSet<string>(parsed.ClassNames.Keys).SetEquals(old.ClassNames.Keys)
+                || parsed.ClassNames.Any(pair => pair.Value.Item2 != old.ClassNames[pair.Key].Item2))
+            {
+                return "razor css classes changed " + (old.SourceFile ?? resourceName);
+            }
+
+            var replaced = new RazorCssSheet(resourceName) { SourceFile = old.SourceFile, Text = cssText };
+            replaced.Rules.AddRange(parsed.Rules);
+            replaced.KeyFrames.AddRange(parsed.KeyFrames);
+            replaced.MediaRules.AddRange(parsed.MediaRules);
+            replaced.DeclaredCssVariables.UnionWith(parsed.DeclaredCssVariables);
+            replaced.UsedCssVariables.UnionWith(parsed.UsedCssVariables);
+            foreach (var pair in old.ClassNames)
+            {
+                replaced.ClassNames[pair.Key] = pair.Value;
+            }
+
+            _sheets[index] = replaced;
+            return null;
+        }
+
+        private static string GetSourceText(RazorCssSheet sheet)
+            => sheet.Text ?? throw new InvalidOperationException("No text kept for " + sheet.ResourceName);
 
         /// <summary>
         /// Tries to resolve a CSS class name to its minified identifier.
@@ -361,6 +411,9 @@ namespace NScript.RazorSkin
 
         /// <summary>The .css path diagnostics name, or null when only the resource name is known.</summary>
         public string SourceFile { get; set; }
+
+        /// <summary>The text the sheet was parsed from.</summary>
+        public string Text { get; set; }
 
         public List<CssParser.CssRule> Rules { get; } = new List<CssParser.CssRule>();
         public List<CssParser.CssKeyframes> KeyFrames { get; } = new List<CssParser.CssKeyframes>();
