@@ -224,7 +224,10 @@ namespace NScript.Utils.Test
                     "/reference:" + typeof(object).Assembly.Location,
                     "-resource:" + Path.Combine("Views", "a.html") + ",Test.a.html",
                     "C.cs");
+                // An internal error answers exit 0 (the client then compiles itself), so check it first.
+                Assert.IsFalse(response.InternalError, "The daemon failed the compile: " + response.Message);
                 Assert.AreEqual(0, response.ExitCode, response.Stdout + response.Stderr + response.Message);
+                Assert.IsTrue(File.Exists(Path.Combine(project, "out.dll")), "No out.dll in the request cwd; stdout: " + response.Stdout + response.Stderr);
 
                 var resInfo = ReadResource(Path.Combine(project, "out.dll"), "$$ResInfo$$");
                 Assert.AreEqual(
