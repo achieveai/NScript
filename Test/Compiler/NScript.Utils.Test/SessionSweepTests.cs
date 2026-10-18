@@ -65,7 +65,8 @@ namespace NScript.Utils.Test
                 Assert.IsFalse(Build(dir, "busy", new ClockLogger(() =>
                 {
                     var read = System.Threading.Tasks.Task.Run(() => BuilderSessions.Count);
-                    answered = read.Wait(TimeSpan.FromSeconds(1));
+                    // Long enough for a host at full CPU; a Count that blocks waits it all out.
+                    answered = read.Wait(TimeSpan.FromSeconds(30));
                 })));
                 Assert.IsTrue(answered, "Count blocked until the build ended.");
             });

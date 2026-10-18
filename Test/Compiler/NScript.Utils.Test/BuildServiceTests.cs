@@ -23,6 +23,20 @@ namespace NScript.Utils.Test
     [TestClass]
     public class BuildServiceTests
     {
+        /// <summary>
+        /// How long a test waits for something that must happen: a pipe connect, a replay, a
+        /// stop. A healthy run takes milliseconds; the bound only ends a broken run, so it is
+        /// sized for a host at full CPU, where 5 s bounds failed runs that were not broken.
+        /// </summary>
+        private static readonly TimeSpan HostLoadWait = TimeSpan.FromSeconds(30);
+
+        /// <summary>
+        /// A hang guard, not a speed check. MSTest abandons a timed-out test's thread, which
+        /// may still swap the shared Console.Out under a later test, so it must not fire on
+        /// a slow host.
+        /// </summary>
+        private const int HangGuardMs = 120_000;
+
         private string logPath;
         private string savedLogEnv;
 
@@ -114,7 +128,7 @@ namespace NScript.Utils.Test
             Assert.AreEqual("none", status.Status["CurrentRequest"]);
 
             Send(pipeName, ServiceProtocol.KindStop, requestCwd);
-            Assert.IsTrue(serve.Join(TimeSpan.FromSeconds(5)), "Stop must end Serve.");
+            Assert.IsTrue(serve.Join(HostLoadWait), "Stop must end Serve.");
             Assert.AreEqual(0, serveExit);
         }
 
@@ -126,7 +140,7 @@ namespace NScript.Utils.Test
 
             Assert.AreEqual(0, host.Serve());
 
-            Assert.IsTrue(sw.Elapsed < TimeSpan.FromSeconds(3), "Idle exit took " + sw.Elapsed);
+            Assert.IsTrue(sw.Elapsed < HostLoadWait, "Idle exit took " + sw.Elapsed);
             StringAssert.Contains(File.ReadAllText(this.logPath), "\"Reason\":\"idle\"");
         }
 
@@ -221,7 +235,7 @@ namespace NScript.Utils.Test
             finally
             {
                 Send(pipeName, ServiceProtocol.KindStop, project);
-                Assert.IsTrue(serve.Join(TimeSpan.FromSeconds(5)), "Stop must end Serve.");
+                Assert.IsTrue(serve.Join(HostLoadWait), "Stop must end Serve.");
                 Directory.Delete(project, recursive: true);
             }
         }
@@ -482,7 +496,7 @@ namespace NScript.Utils.Test
             finally
             {
                 Send(pipeName, ServiceProtocol.KindStop, cwdBefore);
-                Assert.IsTrue(serve.Join(TimeSpan.FromSeconds(5)), "Stop must end Serve.");
+                Assert.IsTrue(serve.Join(HostLoadWait), "Stop must end Serve.");
             }
         }
 
@@ -564,7 +578,7 @@ namespace NScript.Utils.Test
         /// suspended or wedged daemon) hung forever. It now gives up and names the way out.
         /// </summary>
         [TestMethod]
-        [Timeout(5000)]
+        [Timeout(HangGuardMs)]
         public void SendControl_DaemonNeverAnswers_TimesOutWithHint()
         {
             var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
@@ -579,7 +593,7 @@ namespace NScript.Utils.Test
 
             int exitCode = ServiceHost.SendControl(identity, ServiceProtocol.KindStatus, output, TimeSpan.FromMilliseconds(300));
 
-            Assert.IsTrue(accepted.IsCompleted, "the fake daemon never saw the connection");
+            Assert.IsTrue(accepted.Wait(HostLoadWait), "the fake daemon never saw the connection");
             Assert.AreEqual(1, exitCode);
             StringAssert.Contains(output.ToString(), "--stop --force");
         }
@@ -607,7 +621,7 @@ namespace NScript.Utils.Test
                 {
                     var accepted = server.WaitForConnectionAsync();
                     ServiceHost.SendControl(identity, ServiceProtocol.KindStatus, new StringWriter(), TimeSpan.FromMilliseconds(300));
-                    Assert.IsTrue(accepted.IsCompleted, "the hung daemon never saw the --status connection");
+                    Assert.IsTrue(accepted.Wait(HostLoadWait), "the hung daemon never saw the --status connection");
 
                     var output = new StringWriter();
                     int exitCode = ServiceHost.SendControl(identity, ServiceProtocol.KindStop, output, Timeout.InfiniteTimeSpan);
@@ -630,7 +644,7 @@ namespace NScript.Utils.Test
         /// and the default 30 s wait, and passes the answer through as its exit code.
         /// </summary>
         [TestMethod]
-        [Timeout(5000)]
+        [Timeout(HangGuardMs)]
         public void SyncClient_PrintsAnswerAndReferenceLinesOnly()
         {
             var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
@@ -655,25 +669,26 @@ namespace NScript.Utils.Test
 
         /// <summary>F-017: <c>--build-props</c> (Sdk.targets' compile properties hash) reaches the daemon as the third argument.</summary>
         [TestMethod]
-        [Timeout(5000)]
+        [Timeout(HangGuardMs)]
         public void SyncClient_BuildProps_IsTheThirdArgument()
         {
             var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
             var key = Path.Combine(NewTempDir(), "obj", "A.dll");
             ServiceRequest seen = null;
-            RunSyncClient(identity, key, server =>
+            var output = RunSyncClient(identity, key, server =>
             {
                 seen = ServiceProtocol.ReadMessage<ServiceRequest>(server);
                 ServiceProtocol.WriteMessage(server, new ServiceResponse { ExitCode = ServiceHost.SyncExitNo, Message = "nscript service: sync no A.dll" });
             }, out int exitCode, "--build-props", "-1234");
 
-            Assert.AreEqual(ServiceHost.SyncExitNo, exitCode);
+            Assert.AreEqual(ServiceHost.SyncExitNo, exitCode, output);
+            Assert.IsNotNull(seen, "the fake daemon never got the request: " + output);
             CollectionAssert.AreEqual(new[] { key, "30", "-1234" }, seen.Args);
         }
 
         /// <summary>S2: a daemon that hangs up without a reply is a no (exit 1) with one line saying so.</summary>
         [TestMethod]
-        [Timeout(5000)]
+        [Timeout(HangGuardMs)]
         public void SyncClient_DaemonClosesWithoutReply_AnswersNo()
         {
             var identity = ServiceIdentity.FromKnown(NewTempDir(), Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
@@ -775,6 +790,7 @@ namespace NScript.Utils.Test
         private static string RunSyncClient(ServiceIdentity identity, string key, Action<Stream> daemon, out int exitCode, params string[] extraArgs)
         {
             System.Threading.Tasks.Task served = System.Threading.Tasks.Task.CompletedTask;
+            System.Threading.Tasks.Task accepted = System.Threading.Tasks.Task.CompletedTask;
             System.IO.Pipes.NamedPipeServerStream server = null;
             if (daemon != null)
             {
@@ -784,11 +800,16 @@ namespace NScript.Utils.Test
                     1,
                     System.IO.Pipes.PipeTransmissionMode.Byte,
                     System.IO.Pipes.PipeOptions.Asynchronous);
-                served = server.WaitForConnectionAsync().ContinueWith(_ =>
+                accepted = server.WaitForConnectionAsync();
+                served = accepted.ContinueWith(accept =>
                 {
                     using (server)
                     {
-                        daemon(server);
+                        // No connection (the client's run ended first): nothing to serve.
+                        if (accept.Status == System.Threading.Tasks.TaskStatus.RanToCompletion)
+                        {
+                            daemon(server);
+                        }
                     }
                 });
             }
@@ -803,10 +824,25 @@ namespace NScript.Utils.Test
             finally
             {
                 Console.SetOut(saved);
-                server?.Dispose();
+
+                // Disposing only cancels an accept nobody connected to. A connected fake
+                // daemon may still be flushing a reply the client has read; it disposes the
+                // pipe itself. Disposing it here failed that flush on a loaded host.
+                if (!accepted.IsCompleted)
+                {
+                    server.Dispose();
+                }
             }
 
-            served.Wait(TimeSpan.FromSeconds(2));
+            try
+            {
+                served.Wait(HostLoadWait);
+            }
+            catch (AggregateException e)
+            {
+                Assert.Fail("The fake daemon failed (" + e.InnerException?.Message + "); the client exited " + exitCode + " and printed: " + output);
+            }
+
             return output.ToString();
         }
 
@@ -835,14 +871,14 @@ namespace NScript.Utils.Test
             try
             {
                 stop.Start();
-                Assert.IsTrue(stop.Join(TimeSpan.FromSeconds(20)), "--stop never gave up on the hung daemon.");
+                Assert.IsTrue(stop.Join(ServiceHost.StopReplyTimeout + HostLoadWait), "--stop never gave up on the hung daemon.");
             }
             finally
             {
                 Console.SetOut(savedOut);
             }
 
-            Assert.IsTrue(accepted.IsCompleted, "--stop never connected to the hung daemon.");
+            Assert.IsTrue(accepted.Wait(HostLoadWait), "--stop never connected to the hung daemon.");
             Assert.AreEqual(1, exitCode);
             StringAssert.Contains(output.ToString(), "--stop --force");
         }
@@ -878,10 +914,10 @@ namespace NScript.Utils.Test
 
             Send(pipeName, ServiceProtocol.KindCompile, Path.GetTempPath(), "x.cs");
 
-            Assert.IsTrue(exited.Wait(TimeSpan.FromSeconds(2)), "The watchdog did not fire.");
+            Assert.IsTrue(exited.Wait(HostLoadWait), "The watchdog did not fire.");
             Assert.AreEqual("watchdog", exitReason);
             host.RequestStop("test");
-            Assert.IsTrue(serve.Join(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(serve.Join(HostLoadWait));
             StringAssert.Contains(File.ReadAllText(this.logPath), "\"Reason\":\"watchdog\"");
         }
 
@@ -970,7 +1006,7 @@ namespace NScript.Utils.Test
             File.Delete(rsp);
             watch.EditSource();
 
-            Assert.IsTrue(replayed.Wait(TimeSpan.FromSeconds(5)), "The edit did not replay the compile.");
+            Assert.IsTrue(replayed.Wait(HostLoadWait), "The edit did not replay the compile.");
             var snapshot = calls[1].Single();
             StringAssert.StartsWith(snapshot, "@" + Path.Combine(watch.Identity.RunDir, "rsp") + Path.DirectorySeparatorChar);
             CollectionAssert.AreEqual(rspBytes, File.ReadAllBytes(snapshot.Substring(1)));
@@ -997,7 +1033,7 @@ namespace NScript.Utils.Test
             watch.Register("A.cs");
             watch.EditSource();
 
-            Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon kept running on a changed toolset.");
+            Assert.IsTrue(watch.Serve.Join(HostLoadWait), "The daemon kept running on a changed toolset.");
             Assert.AreEqual(1, calls, "Only the registration ran; the batch ran no step.");
             StringAssert.Contains(File.ReadAllText(this.logPath), "\"Reason\":\"toolsetChanged\"");
         }
@@ -1018,7 +1054,7 @@ namespace NScript.Utils.Test
                 if (Interlocked.Increment(ref calls) == 2)
                 {
                     replaying.Set();
-                    release.Wait(TimeSpan.FromSeconds(5));
+                    release.Wait(HostLoadWait);
                 }
 
                 return new ServiceResponse { ExitCode = 0 };
@@ -1026,12 +1062,12 @@ namespace NScript.Utils.Test
 
             watch.Register("A.cs");
             watch.EditSource();
-            Assert.IsTrue(replaying.Wait(TimeSpan.FromSeconds(5)), "The edit did not replay the compile.");
+            Assert.IsTrue(replaying.Wait(HostLoadWait), "The edit did not replay the compile.");
             watch.Host.RequestStop("test");
             Assert.IsFalse(watch.Serve.Join(TimeSpan.FromMilliseconds(200)), "The daemon stopped in the middle of a batch.");
             release.Set();
 
-            Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(watch.Serve.Join(HostLoadWait));
             var log = File.ReadAllText(this.logPath);
             int batchEnd = log.IndexOf("WatchBatchEnd", StringComparison.Ordinal);
             int stop = log.IndexOf("ServiceStop", StringComparison.Ordinal);
@@ -1074,7 +1110,7 @@ namespace NScript.Utils.Test
                 // dotnet build -p:NScriptWatch=true of the first project only.
                 watch.Register("A.cs", "New.cs");
 
-                Assert.IsTrue(dependentCompiled.Wait(TimeSpan.FromSeconds(3)), "The dirty dependent was not replayed after the registration.");
+                Assert.IsTrue(dependentCompiled.Wait(HostLoadWait), "The dirty dependent was not replayed after the registration.");
             }
         }
 
@@ -1266,7 +1302,7 @@ namespace NScript.Utils.Test
                 else if (Interlocked.Increment(ref projectReplays) == 1)
                 {
                     firstReplay.Set();
-                    release.Wait(TimeSpan.FromSeconds(5));
+                    release.Wait(HostLoadWait);
                 }
 
                 return new ServiceResponse { ExitCode = 0 };
@@ -1276,7 +1312,7 @@ namespace NScript.Utils.Test
                 watch.RegisterIn(watch.Dependent, "B.cs");
 
                 watch.EditSource();
-                Assert.IsTrue(firstReplay.Wait(TimeSpan.FromSeconds(5)), "The edit did not replay the compile.");
+                Assert.IsTrue(firstReplay.Wait(HostLoadWait), "The edit did not replay the compile.");
                 File.WriteAllText(Path.Combine(watch.Project, "A.cs"), "class A { int y; }");
 
                 // The second save is observable only through the batch it starts; give the
@@ -1436,7 +1472,7 @@ namespace NScript.Utils.Test
                     watch.EditSource();
                     WaitForLog("\"Result\":\"kept\"", 1);
                     watch.Host.RequestStop("test");
-                    Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon did not stop.");
+                    Assert.IsTrue(watch.Serve.Join(HostLoadWait), "The daemon did not stop.");
                 }
 
                 var log = ReadShared(watchLog);
@@ -1835,7 +1871,7 @@ namespace NScript.Utils.Test
                     watch.Host.OnWatcherError(root, new IOException("The specified network name is no longer available."));
                 }
 
-                bool stopped = watch.Serve.Join(TimeSpan.FromSeconds(5));
+                bool stopped = watch.Serve.Join(HostLoadWait);
                 watch.EditSource();
                 var answer = stopped ? null : watch.Sync(key);
                 Assert.IsTrue(stopped, "the daemon kept watching with a dead watcher; sync answered " + answer?.ExitCode + ": " + answer?.Message);
@@ -1930,7 +1966,7 @@ namespace NScript.Utils.Test
                 Directory.CreateDirectory(Path.GetDirectoryName(key));
                 watch.Register("A.cs");
 
-                Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "the daemon kept a watch whose watcher never started");
+                Assert.IsTrue(watch.Serve.Join(HostLoadWait), "the daemon kept a watch whose watcher never started");
                 Assert.IsFalse(File.Exists(ServiceHost.WatchMarkerPath(key)), "a marker makes dotnet build ask a daemon that sees no saves");
             }
         }
@@ -2000,7 +2036,7 @@ namespace NScript.Utils.Test
                 if (request.Kind == ServiceProtocol.KindCompile && hold.IsSet)
                 {
                     held.Set();
-                    release.Wait(TimeSpan.FromSeconds(10));
+                    release.Wait(HostLoadWait);
                 }
 
                 return new ServiceResponse { ExitCode = 0 };
@@ -2010,7 +2046,7 @@ namespace NScript.Utils.Test
                 watch.Register("A.cs");
                 hold.Set();
                 watch.EditSource();
-                Assert.IsTrue(held.Wait(TimeSpan.FromSeconds(5)), "The batch never compiled the save.");
+                Assert.IsTrue(held.Wait(HostLoadWait), "The batch never compiled the save.");
                 try
                 {
                     var busy = watch.Sync(key, "1");
@@ -2018,7 +2054,7 @@ namespace NScript.Utils.Test
                     StringAssert.Contains(busy.Message, "a batch still running after 1 s");
 
                     // Connected and asked before the stop: the daemon still answers it.
-                    using var pipe = ServiceClient.TryConnect(watch.PipeName, 5000);
+                    using var pipe = ServiceClient.TryConnect(watch.PipeName, (int)HostLoadWait.TotalMilliseconds);
                     ServiceProtocol.WriteMessage(pipe, new ServiceRequest
                     {
                         Kind = ServiceProtocol.KindSync,
@@ -2059,7 +2095,7 @@ namespace NScript.Utils.Test
                 watch.ToolsetHashNow = new string('f', 64);
                 watch.EditSource();
 
-                Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon kept running on a changed toolset.");
+                Assert.IsTrue(watch.Serve.Join(HostLoadWait), "The daemon kept running on a changed toolset.");
                 StringAssert.Contains(ReadShared(watchLog), "STALE   " + Path.Combine(watch.Project, "app.js"));
             }
         }
@@ -2104,7 +2140,7 @@ namespace NScript.Utils.Test
                     watch.EditSource();
                     WaitForLogLines(1, "WatchBatchEnd");
                     watch.Host.RequestStop("test");
-                    Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon did not stop.");
+                    Assert.IsTrue(watch.Serve.Join(HostLoadWait), "The daemon did not stop.");
                 }
 
                 var log = ReadShared(watchLog);
@@ -2141,7 +2177,7 @@ namespace NScript.Utils.Test
                 watch.ToolsetHashNow = new string('f', 64);
                 watch.EditSource();
 
-                Assert.IsTrue(watch.Serve.Join(TimeSpan.FromSeconds(5)), "The daemon kept running on a changed toolset.");
+                Assert.IsTrue(watch.Serve.Join(HostLoadWait), "The daemon kept running on a changed toolset.");
                 StringAssert.Contains(ReadShared(watchLog), "STALE   " + Path.Combine(watch.Project, "app.js"));
             }
         }
@@ -2151,7 +2187,7 @@ namespace NScript.Utils.Test
             var clock = Stopwatch.StartNew();
             while (!condition())
             {
-                Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(5), message);
+                Assert.IsTrue(clock.Elapsed < HostLoadWait, message);
                 Thread.Sleep(20);
             }
         }
@@ -2207,7 +2243,7 @@ namespace NScript.Utils.Test
                     return;
                 }
 
-                Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(5), "Timed out waiting for " + count + " x " + text);
+                Assert.IsTrue(clock.Elapsed < HostLoadWait, "Timed out waiting for " + count + " x " + text);
                 Thread.Sleep(20);
             }
         }
@@ -2218,7 +2254,7 @@ namespace NScript.Utils.Test
             var clock = Stopwatch.StartNew();
             while (ReadShared(this.logPath).Split('\n').Count(line => parts.All(p => line.Contains(p, StringComparison.Ordinal))) < count)
             {
-                Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(5), "Timed out waiting for " + count + " log lines with " + string.Join(" + ", parts));
+                Assert.IsTrue(clock.Elapsed < HostLoadWait, "Timed out waiting for " + count + " log lines with " + string.Join(" + ", parts));
                 Thread.Sleep(20);
             }
         }
@@ -2368,7 +2404,7 @@ namespace NScript.Utils.Test
             public void Dispose()
             {
                 this.Host.RequestStop("test");
-                Assert.IsTrue(this.Serve.Join(TimeSpan.FromSeconds(10)), "The daemon did not stop.");
+                Assert.IsTrue(this.Serve.Join(HostLoadWait), "The daemon did not stop.");
                 Directory.Delete(this.Identity.ServiceRoot, recursive: true);
                 Directory.Delete(this.Identity.ToolsetDir, recursive: true);
                 Directory.Delete(this.Project, recursive: true);
@@ -2413,7 +2449,7 @@ namespace NScript.Utils.Test
 
         private static ServiceResponse Send(string pipeName, ServiceRequest request)
         {
-            using var pipe = ServiceClient.TryConnect(pipeName, 5000);
+            using var pipe = ServiceClient.TryConnect(pipeName, (int)HostLoadWait.TotalMilliseconds);
             Assert.IsNotNull(pipe, "The daemon is not listening on " + pipeName);
             ServiceProtocol.WriteMessage(pipe, request);
             var response = ServiceProtocol.ReadMessage<ServiceResponse>(pipe);
