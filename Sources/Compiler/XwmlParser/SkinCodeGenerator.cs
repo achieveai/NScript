@@ -328,9 +328,16 @@ namespace XwmlParser
                     false);
 
             this.codeGenerator.AddStatement(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IdentifierExpression(this.skinStorageVariable, codeGenerator.ScopeManager.Scope),
-                    new NullLiteralExpression(codeGenerator.ScopeManager.Scope)));
+                this.codeGenerator.LiveHook
+                    ? this.codeGenerator.CreateReskin(
+                        codeGenerator.ScopeManager.Scope,
+                        this.skinStorageVariable,
+                        this.skinFactoryMethodIdentifier,
+                        this.dataIndex.ToString(),
+                        this.parser.GetUniqueTemplateId())
+                    : ExpressionStatement.CreateAssignmentExpression(
+                        new IdentifierExpression(this.skinStorageVariable, codeGenerator.ScopeManager.Scope),
+                        new NullLiteralExpression(codeGenerator.ScopeManager.Scope)));
 
             IdentifierScope methodScope = new IdentifierScope(
                 this.codeGenerator.ScopeManager.Scope,
@@ -601,9 +608,7 @@ namespace XwmlParser
                 }
             }
 
-            return new ReturnStatement(
-                null,
-                this.Scope,
+            Expression instance =
                 new MethodCallExpression(
                     null,
                     this.Scope,
@@ -646,7 +651,17 @@ namespace XwmlParser
                         this.binderInfoToIndexMap.Count),
                     new NumberLiteralExpression(
                         this.Scope,
-                        this.binderInfoToExtraObjectMap.Count)));
+                        this.binderInfoToExtraObjectMap.Count));
+
+            return new ReturnStatement(
+                null,
+                this.Scope,
+                this.codeGenerator.LiveHook
+                    ? this.codeGenerator.CreateTrack(
+                        this.Scope,
+                        instance,
+                        new IdentifierExpression(this.Scope.ParameterIdentifiers[0], this.Scope))
+                    : instance);
         }
 
         internal int GetBinderIndex(BinderInfo binderInfo)

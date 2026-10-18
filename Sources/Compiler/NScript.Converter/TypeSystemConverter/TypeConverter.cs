@@ -2053,6 +2053,8 @@ namespace NScript.Converter.TypeSystemConverter
                 addDependenciesCallback(this, returnValue);
             }
 
+            this.AddFactoryPatchHook(returnValue);
+
             // Generate register instruction.
             // static classes do not have registration info.
             var typeRegistrationStatement = this.RegisterType();

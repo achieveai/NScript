@@ -87,6 +87,26 @@
             string functionName,
             object instance);
 
+        /// <summary>
+        /// Dev mode's <see cref="Create(string, object)"/>: the delegate reads the method from
+        /// the instance at each call, so a live patch reaches handlers bound before it.
+        /// </summary>
+        [Script(@"
+            var fn = ""__@"" + functionName;
+            if (!(fn in instance)) {
+                instance[fn] = function() {
+                    return instance[functionName].apply(instance, arguments);
+                };
+                instance[fn].@{[mscorlib]System.Type::FullName} = instance.constructor.toString() + '::' + functionName;
+                instance[fn].@{[mscorlib]System.Type::IsDelegate} = true;
+            }
+
+            return instance[fn];
+        ")]
+        internal static extern Delegate CreateLateBound(
+            string functionName,
+            object instance);
+
         [Script(@"
             var fn = ""__@"" + functionName;
             if (!(fn in instance)) {

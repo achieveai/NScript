@@ -185,7 +185,7 @@ namespace RazorSkinParser.Test
         }
 
         private static string Key(ModuleDefinition module, string resource)
-            => module.Mvid.ToString("N") + "|" + resource;
+            => RazorTemplatingPlugin.GetTemplateKey(module, resource);
 
         private static Dictionary<string, SkinTemplateNode> Templates(params (string Key, string Control)[] entries)
         {

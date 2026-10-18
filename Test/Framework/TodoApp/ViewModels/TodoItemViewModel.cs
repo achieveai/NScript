@@ -56,6 +56,20 @@ namespace TodoApp.ViewModels
             return "id_" + nextId.ToString();
         }
 
+        /// <summary>
+        /// Moves the id counter past a stored id ("id_7", "folder_id_7"), so that
+        /// <see cref="GenerateId"/> never hands out an id already in the store.
+        /// </summary>
+        public static void ReserveId(string id)
+        {
+            int at = id.LastIndexOf("id_");
+            if (at < 0) return;
+
+            // Foreign ids parse to NaN, which is never greater.
+            int n = int.Parse(id.Substring(at + 3));
+            if (n > nextId) nextId = n;
+        }
+
         public string Id
         {
             get { return this.id; }

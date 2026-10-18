@@ -62,6 +62,78 @@ Saves within a short debounce window form one batch.
 - **A watcher that cannot start** (such as the Linux inotify watch limit): watch.log says `watcher could not start (...); watch stopped, dotnet build runs in full`. No marker is written, so builds do not sync.
 - **A DLL another build rewrote** since the daemon wrote it: the next batch logs `foreign <dll> rewritten outside watch; recompiling`. A skin or CSS save then compiles that project instead of patching the other build's DLL.
 
+## Live patching in the open page
+
+With `NSCRIPT_PATCH_EMIT=1` on the daemon, a `.cs` body save reaches the open page without a reload. The page keeps its state: typed text, open panes, objects.
+
+```bash
+# Start the daemon with patch emit (stop a running one first: it reads its settings once).
+NSCRIPT_PATCH_EMIT=1 dotnet build Test/Framework/TodoApp/TodoApp.csproj -p:NScriptWatch=true
+# Serve Test/Framework/TestWebApplication with any static server. Open TodoApp.htm. Edit, save.
+```
+
+- **No host code.** Each dev bundle carries a small client after its closure. Any server works: node, IIS, ASP.NET Core, a webpack copy.
+  - The bundle's last lines: `/*@L NScript.Hmr*/`, then `__nsHmrBoot("<file>|<bundle id>|<ws url>|<token>|<gen>:<seq>");`.
+  - They run in the `finally` of a `try` around the closure. So a bundle whose start throws still has a client: `load failed: <error>; the next build reloads`. It takes no patch; the next save reloads it onto its script.
+  - The client connects to the daemon: `ws://127.0.0.1:<port>/nscript-hmr`. It never goes through the page's host.
+  - Each patch rewrites `<gen>:<seq>` in the same write as the patch. So any copy of the bundle says which code it holds.
+- **A body save that patches** (`patched N methods`): the page runs the new methods at once. Console: `[nscript-hmr] applied <gen>:<seq> (N methods)`.
+  - Objects that already exist keep their state and run the new methods.
+  - Event handlers bound before the save (`this.OnClick += this.HandleClick`) run the new body: patch-emit bundles bind instance methods late, reading the method at each call. Other bundles bind as before.
+  - Code that already ran keeps its old result. A changed constructor or a method with lambdas gives a note: `note: ctor <type>..ctor keeps old code until it runs again`, or `closure ...`.
+  - A changed static used as a value (a delegate to a static method, a callback) keeps the function it was given: `note: stored <type>.<method> ...`.
+  - A generic type's methods go live too (`List<T>.Add`, `ObservableCollection<T>.Add`). Each instantiation (`List<int>`, `List<string>`) builds its prototype in its own closure of the type's factory.
+    - In a patch-emit bundle each factory has a marker, `/*@G <type>*/`, and an eval hook in its closure. The patch goes before the marker, so each later load and new tab runs it.
+    - The page runs it in every instantiation made so far (`factory.__nsInsts`) and keeps it for the ones made later (`factory.__nsPatches`).
+    - A generic method (`M<T>`), a generic struct or interface, or a body that needs a type the closure has no local for (`T[]` in a type that never used it) emits in full: `new build`.
+- **An XWML CSS save** (a colour in a linked `.css`) goes live: `applied <gen>:<seq> (0 methods)`.
+  - Each document's style element takes the new CSS. So does a document made later (an iframe), and a new tab reads it from the bundle.
+  - In a patch-emit bundle the CSS line reads `DocStorageGetter.__nsCss || "<css>"`, and each style element is kept on `DocStorageGetter.__nsStyles`.
+- **An XWML skin save** goes live too, with or without CSS (a class added and used): each open control that shows the skin is skinned again. Console: `reskinned <N> <template>`, then `applied`.
+  - Each skin written again takes the next storage index. XWML's stay below Razor's (from 100), which share the per-document DOM cache. The patch that would reach 100 emits in full: `Miss=xwml storage index 100 reaches Razor's`.
+  - The control and its view model stay. The DOM inside the skin is made again, so state that lives only in that DOM goes: focus, a caret, text typed and not yet bound, scroll. The page may flash.
+  - The skin object stays the same, with the new factory. A list's item skin, or any other holder, makes the new look for items added later.
+  - In a patch-emit bundle each skin factory keeps what it made (`DocStorageGetter.__nsTrack`, weak references), and the line `Name_var = null` reads `if (Name_var) DocStorageGetter.__nsReskin(...)`: nothing at load, the re-skin when a patch runs it.
+- **A Razor skin save** (`.skin.cshtml`) goes live the same way: `reskinned <N> <template>`. In TodoApp the rows (`TodoItemControl`) and the shell (`AppShell`) are skinned again around the same rows.
+  - The skin is written again with its old names and a new storage index.
+  - A bundle with no Razor CSS stays without it; a skin save there still goes live.
+  - It emits in full (`new build`) when the save adds or removes a skin, changes its `@model`, control or `@styles`, uses a class its CSS does not declare (the build error shows as `build failed`), or calls a method no skin called before (`Miss=razor skin calls <method>`).
+- **A Razor CSS save** (a skin's `@styles` sheet) goes live when its classes stay the same: the style element takes the new CSS, and a new tab reads it from the bundle. A class added or removed emits in full (`Miss=razor css classes changed <file>`).
+  - In a patch-emit bundle the CSS line reads `DocStorageGetter.__nsRazorCss || "<css>"`, and the style element is kept on `DocStorageGetter.__nsRazorStyle`.
+- **A save the watch cannot build keeps the page running**, with no reload. The console says why the page's code is not current, once per new reason:
+  - `build failed: TodoItemControl.cs(52,30): error CS1002: ; expected`: the first compiler error. A later save with another error logs the new one.
+  - `NEEDS BUILD TodoApp: new file <path>; run dotnet build -p:NScriptWatch=true`: that build reloads the page onto the new code.
+  - `kept last good: <why>`: any other reason the watch kept the last good JS, e.g. `copy pending <dll>`.
+  - The fix goes live as a patch, with any good edit saved alongside the break. The notice ends with it. A notice that ends with no patch logs `build ok`.
+  - A page that opens or reconnects while a notice stands gets it after its hello.
+- **Anything else reloads the page by itself**, with the reason on the console (`reloading: <reason>`, then `reloaded: <reason>`):
+  - `new build`: any full emit (a miss, a new field or type, compaction, a new daemon).
+  - `load-time <method>`: a static constructor, the entry point or a module initializer.
+  - `skin`: a skin change a plugin cannot take live. `literal <name>`: a literal the page cannot take live.
+  - `delegate <method>`: a method a capturing delegate holds (`StaticInstanceCreate`, generic delegates). The delegate keeps the old function. Rare in dev bundles.
+  - `gap`: the page missed a patch.
+  - `behind the replay window`: the page reconnected after the patches it lacks were dropped. The daemon keeps the newest 100 records per bundle, at most 1M chars of script.
+  - `bundle <gen>:<seq>`: the page found newer code in its script without a message, e.g. after a daemon restart.
+  - `live patch failed`: the patch threw in the page. Console: `live patch failed: <error>` first.
+  - `publish failed`: the daemon could not hand the patch to the socket. Its next build emits in full.
+  - `plain bundle`: the page's script has no live patch hook, e.g. a build without `NSCRIPT_PATCH_EMIT` replaced it.
+  - A new method or a new static initializer changes the type's shape: `new build`, not a live patch.
+- **The page reloads only when its own script holds other code.** It fetches its script again (`cache: "no-cache"`) and reads the stamp.
+  - The copy is still old (a webpack copy that lags): `waiting for bundle <gen>`. It tries again with backoff, 1 s to 30 s, paused while the tab is hidden.
+  - A fetch error, a non-200 or an HTML page: `self-check failed: <status>`. It waits too.
+  - At most 2 automatic reloads in 60 s. Then `reload-only: 2 reloads in 60 s; live patches still apply`. The socket stays. The page checks again once the oldest of those reloads is 60 s old, socket or not; that reload goes through.
+- **The daemon stops or restarts:** `disconnected; reconnecting in Ns`, then `cannot reach the build service; retrying` (state `disconnected`). The next watch build has a new port, token and gen; the page finds it at its next check (up to 30 s) and reloads onto it.
+- **Turn it off for one browser:** `localStorage.nscriptHmr = "off"`, then reload. Console: `off (localStorage)`.
+- **State in the page:** `window.__nsHmr["<file>"]` has `gen`, `seq`, `baseSeq` (the stamp at load), `applied`, `notes`, `note` (the notice that stands, or null), `lastReload`, `failed` (the error the closure threw while it loaded), `state` (`connected`, `disconnected`, `waiting`, `off`, `reload-only`).
+- **The daemon side:** watch.log `hmr listening ws://127.0.0.1:<port>/nscript-hmr`, `hmr connect <file> at <gen>:<seq> clients=N`, `hmr send <file> <gen>:<s>..<t> clients=N`, `hmr reload <file> <reason> clients=N`, `hmr note <file> <note|cleared> clients=N`, `hmr close <file> clients=N`. service.jsonl `Hmr*` events. `--status` prints `HmrUrl`, without the token.
+- **Security:** the socket listens on 127.0.0.1 only, refuses any other `Host` (a DNS-rebinding page), and needs the daemon's 128-bit token, which the bundle holds. Any site can load a bundle with a script tag and read that token, so a browser page must also come from a local origin: a loopback host, `*.localhost`, `*.test`, or one `NSCRIPT_HMR_ORIGINS` lists; any other `Origin` (`null` too) gets 403. It is read-only: it ignores what pages send. At most 16 pages at once. **Never deploy a `NSCRIPT_PATCH_EMIT` bundle**: it carries the token.
+  - These checks prove the page to the daemon, not the daemon to the page. The page has no proof of the listener's identity.
+  - A local process that takes the port after the daemon exits can send an open page patches. The page runs them.
+  - So HMR is not a security boundary against local processes. A process running as you can already write the bundle.
+- A bundle built with `NSCRIPT_PATCH_EMIT=1` outside the daemon has no socket url. Its client only checks its script, and reloads when it changes.
+- Chromium (Chrome, Edge) is what was tested. Firefox is best effort.
+- **Tests:** `Test/Framework/TestWebApplication/hmr-client.test.mjs` (the client in a fake page, part of `npm run test:unit`) and `HmrServerTests` (the socket). `node e2e-hmr.mjs` in that folder runs the save-to-page path for real (a method body, then an event handler on old and new rows, then a generic method on old and new instantiations and a new tab); it needs the watch above running and exits 2 (skipped) without it. `node e2e-hmr-css.mjs` does the same for an XWML CSS save on the UI test page; it needs the watch on `Test/Framework/Sunlight.Framework.UI.Test`. `node e2e-hmr-skin.mjs` saves an XWML skin there (an element added, then a class added and used) and checks the open control, a held skin and a new tab. CI runs these two with that watch, last (`.github/workflows/ci.yml`, phase 4); there, exit 2 fails. `node e2e-hmr-razor-skin.mjs` saves TodoApp's Razor skins (a row, the shell) and `AppShell.css`, with the TodoApp watch running. `node e2e-hmr-notice.mjs` breaks a TodoApp build (a syntax error, then a type error), fixes it, and adds a file, with the TodoApp watch running. `node e2e-hmr-load-error.mjs` makes TodoApp's Main throw, checks the client still boots, then saves the fix, with the TodoApp watch running.
+
 ## `dotnet build` while watching
 
 - The daemon keeps a marker, `nscript.watch`, next to each watched project's obj DLL (`obj/<Config>/<TFM>/`).
@@ -104,7 +176,7 @@ With the NuGet packages, the toolset is the `Mcqdb.NScript.Cs2Jsc` tool, and its
 
 | Command | Does | Exit code |
 |---|---|---|
-| `nscript service --status` | Prints pid, toolset, `LogPath`, `WatchLog`, watched projects and bundles, red projects, `WatchNeedsBuild`, last batch. Resets the idle timer. | 0; 1 = no daemon |
+| `nscript service --status` | Prints pid, toolset, `LogPath`, `WatchLog`, watched projects and bundles, red projects, `WatchNeedsBuild`, last batch, `HmrUrl` (the live patch socket and its pages, or `off`). Resets the idle timer. | 0; 1 = no daemon |
 | `nscript service --stop` | Stops after in-flight requests. Deletes the markers. watch.log names each output left `STALE`. | 0; 1 = no daemon |
 | `nscript service --stop --force` | Kills a wedged daemon. Only when its lock is held and the pid and start time match. | 0 = killed; 1 = no live daemon |
 | `nscript service --sync <obj dll> --build-props <hash>` | What `dotnet build` runs. Without `--build-props` the answer is no. Prints the answer, then `nscript-ref` and `nscript-jsforeign` lines. | 0 yes; 1 no; 2 busy |
@@ -114,7 +186,7 @@ With the NuGet packages, the toolset is the `Mcqdb.NScript.Cs2Jsc` tool, and its
 
 - **watch.log**: one readable line per event.
   - Path: `%LOCALAPPDATA%\NScript\service\<key>\<hash16>.run\watch.log`. `--status` prints it as `WatchLog`.
-  - Lines start with words like `register`, `sync`, `change`, `compile`, `patch`, `emit`, `done`, `watcher`, `watch stopped`, `NEEDS BUILD`, `KEPT`, `STALE`.
+  - Lines start with words like `register`, `sync`, `change`, `compile`, `patch`, `emit`, `done`, `hmr`, `watcher`, `watch stopped`, `NEEDS BUILD`, `KEPT`, `STALE`.
 - **service.jsonl**: structured JSONL (Serilog compact format).
   - Path: `%LOCALAPPDATA%\NScript\service\<key>\service.jsonl`. `--status` prints it as `LogPath`.
   - Events include `WatchChange`, `WatchStep`, `WatchBatchEnd`, `WatchSync`, `WatchForeignOutput`, `WatchOverflow`, `WatchStop`, `WatchStale`.
@@ -137,6 +209,7 @@ With the NuGet packages, the toolset is the `Mcqdb.NScript.Cs2Jsc` tool, and its
 | `NSCRIPT_WATCH_IDLE_SECONDS` | `28800` (8 h) | Idle exit while watching. Positive whole seconds. | Setting |
 | `NSCRIPT_SERVICE_REQUEST_TIMEOUT` | `600` | Per-request watchdog. Positive whole seconds. | Setting |
 | `NSCRIPT_SESSION_IDLE_SECONDS` | `1800` | How long an unused JS session stays warm. `0` keeps it until exit. A bad value warns and uses the default. | Setting |
+| `NSCRIPT_HMR_ORIGINS` | unset | Comma-separated page origins (`https://dev.example.com`) that may open the live patch socket, besides loopback, `*.localhost` and `*.test`. Read when the daemon starts. | Dev-only |
 | `NSCRIPT_SERVICE_LOG_LEVEL` | `Information` | Level for service.jsonl: `Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`. | Setting |
 | `NSCRIPT_SERVICE_LOG` | `%LOCALAPPDATA%\NScript\service\<key>\service.jsonl` | Path of service.jsonl. | Setting |
 | `NSCRIPT_SYNC_WAIT_SECONDS` | `30` | How long `--sync` waits before busy. Read per build. A bad value prints one line; the build runs in full. | Setting |
@@ -148,7 +221,7 @@ With the NuGet packages, the toolset is the `Mcqdb.NScript.Cs2Jsc` tool, and its
 | `NSCRIPT_METHOD_CACHE` | on in dev mode | `off`: a warm emit converts every method again instead of replaying unchanged ones. Output is the same. | Diagnostic |
 | `NSCRIPT_PLUGIN_METHOD_CACHE` | on | `off`: the method cache stops replaying plugin conversions that say they can be replayed ([AutoFire] accessors); they convert every build. Output is the same. | Diagnostic |
 | `NSCRIPT_XWML_REUSE` | on in dev mode | `off`: a warm emit parses every XWML template again instead of reusing the last parse. Reuse needs every template and style sheet unchanged; a new request order retries the build once (service.jsonl `Builder.Retry Reason=xwml-document-order`). `Probe.XwmlInit` logs `Reused` and `ReuseMiss`. Output is the same. | Diagnostic |
-| `NSCRIPT_PATCH_EMIT` | off | `1`: after a body-only `.cs` save, a dev-mode emit writes only the changed methods into the last bundle, before each type's `/*@T <type>*/` marker line, and moves the map's lines to match. watch.log shows `(bodies-refreshed; patched N methods)`. A method the bundle never emitted is added the same way when a changed body calls it. Anything it cannot patch (a type or field the bundle never emitted, a new virtual call, a generic type or method, a skin getter) emits in full: service.jsonl `Patch.Emit Patched=False Miss=<reason>`. A skin, CSS or XWML save patches too (`resources-refreshed`): only the changed XWML documents are written again, before the `/*@S XwmlParser*/` marker line, with the same function names and CSS class names; when the page's CSS changed it is written again in place, as the string on the line after the `/*@L XwmlParser.Css*/` marker, so the bundle does not grow (dev builds prefix each sheet apart, so only a changed sheet is prefixed again), and the new skin takes a storage index past the old ones. A `.cs` save and a skin or CSS save in one batch patch both. A change a full build would refuse (a class removed or renamed, a template removed) emits in full and reports the error. A patched bundle runs like a cold one but is not byte-equal to it; a full emit starts over. Dev bundles also register `window.__nsPatch["<file>.js"]`, which evals a fragment inside the bundle's closure, for live patching later (unused yet). Read when the daemon starts. | Dev-only |
+| `NSCRIPT_PATCH_EMIT` | off | `1`: after a body-only `.cs` save, a dev-mode emit writes only the changed methods into the last bundle, before each type's `/*@T <type>*/` marker line (a generic type's: its factory's `/*@G <type>*/` line), and moves the map's lines to match. watch.log shows `(bodies-refreshed; patched N methods)`. A method the bundle never emitted is added the same way when a changed body calls it. Anything it cannot patch (a type or field the bundle never emitted, a new virtual call, a generic method, a type a generic factory's closure has no local for, a skin's inlined getter or setter) emits in full: service.jsonl `Patch.Emit Patched=False Miss=<reason>`. A skin, CSS or XWML save patches too (`resources-refreshed`): only the changed XWML documents are written again, before the `/*@S XwmlParser*/` marker line, with the same function names and CSS class names; when the page's CSS changed it is written again in place, as the string on the line after the `/*@L XwmlParser.Css*/` marker, so the bundle does not grow (dev builds prefix each sheet apart, so only a changed sheet is prefixed again), and the new skin takes a storage index past the old ones. Razor skins work the same way, before `/*@S RazorSkinParser*/`, and their CSS after `/*@L RazorSkinParser.Css*/`. A `.cs` save and a skin or CSS save in one batch patch both. A change a full build would refuse (a class removed or renamed, a template removed) emits in full and reports the error. A patched bundle runs like a cold one but is not byte-equal to it; a full emit starts over. Dev bundles also register `window.__nsPatch["<file>.js"]`, which evals a fragment inside the bundle's closure, and carry the live patch client (see "Live patching in the open page"). Read when the daemon starts. | Dev-only |
 | `NSCRIPT_PATCH_COMPACT_PERCENT` | `50` | With `NSCRIPT_PATCH_EMIT`: once patches grow the bundle more than this percent past its last full emit, the next save emits in full (`Miss=compaction`), dropping the old code. Whole number, `0` or more. Read per build. | Setting |
 | `NSCRIPT_VERIFY_INCREMENTAL` | off | `1`: after each warm emit, builds the same inputs cold into `%TEMP%\nscript-verify\` and compares .js and .map. A difference prints a warning; service.jsonl logs `VerifyIncremental` with the first differing line. Doubles each warm emit. A patched emit (`NSCRIPT_PATCH_EMIT`) is not meant to equal a cold build, so it always reports a difference. | Diagnostic |
 | `NSCRIPT_LOG_PATH` | unset | Compiler JSONL log path when `--log` is not passed. See README, "Compiler Structured Logging". | Setting |

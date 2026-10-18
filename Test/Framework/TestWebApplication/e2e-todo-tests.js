@@ -908,9 +908,35 @@ function sel(classMap, selector) {
     // Assert sample data is still present after reload
     titles = await page.$$eval(s('.todo-title'), els => els.map(e => e.textContent));
     assert(titles.includes(knownTitle), 'Sample todo should persist after reload, got: ' + titles.join(', '));
-    // NOTE: Newly added todos do NOT persist yet (known LIMIT — AddTodo
-    // doesn't call SaveTodo). A future fix should add a test that creates
-    // a unique item, reloads, and verifies it survived.
+  });
+
+  await runTest('A todo added after a reload gets a new id and keeps the stored ones', async (page, s) => {
+    // The sample todos are stored as id_1..id_3. After a reload the id counter
+    // must start past them, or the new todo overwrites "Buy groceries".
+    await waitForPersistedTodos(page, () => true, 'sample todos stored');
+    const before = await getPersistedTodos(page);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector(s('.folder-item'), { timeout: 10000 });
+    await waitForSelectorCount(page, s('.todo-item'));
+
+    const input = await page.$(s('.add-task-input'));
+    await input.fill('Added after reload');
+    await input.press('Enter');
+    await waitForTodoTitle(page, s, 'Added after reload');
+
+    const deadline = Date.now() + 10000;
+    let after = [];
+    while (Date.now() < deadline) {
+      after = await getPersistedTodos(page);
+      if (after.some(t => t && t.Title === 'Added after reload')) break;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    const ids = after.map(t => t.Id);
+    assert(after.length === before.length + 1,
+      'Stored todos should grow by one, got: ' + after.map(t => t.Id + '=' + t.Title).join(', '));
+    assert(new Set(ids).size === ids.length, 'Stored ids should be unique, got: ' + ids.join(', '));
+    before.forEach(b => assert(after.some(a => a.Id === b.Id && a.Title === b.Title),
+      'Stored todo ' + b.Id + ' "' + b.Title + '" should survive, got: ' + after.map(t => t.Id + '=' + t.Title).join(', ')));
   });
 
   // ─── PARENT-METHOD EVENT BINDING (Model.OnSelect) ─────────────────────────

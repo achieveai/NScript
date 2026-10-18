@@ -407,6 +407,13 @@ namespace NScript.Converter
         public bool DevChunks { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the bundle can take live patches (dev patch
+        /// emit, <c>NSCRIPT_PATCH_EMIT=1</c>, not optimized): each generic type's factory then
+        /// gets its own marker and eval hook, so a patch can reach its closure.
+        /// </summary>
+        public bool LivePatchHook { get; set; }
+
+        /// <summary>
         /// Gets or sets the session's method cache; null when the build does not reuse methods
         /// (only warm-able dev builds with chunks do).
         /// </summary>

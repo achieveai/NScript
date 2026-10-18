@@ -202,6 +202,21 @@ namespace NScript.Converter
         public string LastPatchMiss { get; private set; }
 
         /// <summary>
+        /// Dev patch emit: the build service's live patch socket, asked at each full emit that
+        /// bakes the client. Null, or null from it, bakes a client that only checks its script.
+        /// </summary>
+        public System.Func<HmrEndpoint> HmrEndpointSource { get; set; }
+
+        /// <summary>
+        /// What the last <see cref="Execute()"/> wrote means for open pages: a full emit with
+        /// the client, or a patch. Null when it wrote no bundle with a client.
+        /// </summary>
+        public LivePatch LastLivePatch { get; private set; }
+
+        /// <summary>The last full emit's generation, which its patches carry.</summary>
+        private string hmrGen;
+
+        /// <summary>
         /// Whether builds keep a session: dev mode, unless <c>NSCRIPT_SESSION=off</c>.
         /// </summary>
         private bool UseSession =>
@@ -415,6 +430,7 @@ namespace NScript.Converter
             if (patched)
             {
                 this.patchSession = session;
+                this.LastLivePatch = session.LastLive;
                 this.LastBuildReason += changedTypes != null
                     ? "; patched " + methods + " methods"
                     : "; patched resources" + (methods > 0 ? " and " + methods + " methods" : string.Empty);
@@ -515,6 +531,7 @@ namespace NScript.Converter
         {
             this.SetPlugins(buildPlugins);
             this.retryBuild = false;
+            this.LastLivePatch = null;
             bool succeeded = false;
             try
             {
@@ -655,6 +672,7 @@ namespace NScript.Converter
                 }
 
                 converterContext.DevMode = this.devMode;
+                converterContext.LivePatchHook = DevPatchSession.IsEnabled && this.devMode && !this.scriptGenerateSettings.optimize;
                 converterContext.DevChunks = this.devMode
                     && System.Environment.GetEnvironmentVariable("NSCRIPT_DEV_CHUNKS") != "off";
                 if (converterContext.DevChunks
@@ -854,7 +872,18 @@ namespace NScript.Converter
 
                 var writerSw = System.Diagnostics.Stopwatch.StartNew();
                 var writer = new JSWriter(true, scriptGenerateSettings.uglify);
-                writer.LivePatchHook = DevPatchSession.IsEnabled && this.devMode && !scriptGenerateSettings.optimize;
+                writer.LivePatchHook = converterContext.LivePatchHook;
+                string hmrPrefix = null;
+                if (writer.LivePatchHook)
+                {
+                    this.hmrGen = HmrClient.NewGen();
+                    hmrPrefix = HmrClient.BootPrefix(
+                        Path.GetFileName(this.jsScript),
+                        HmrClient.BundleId(this.jsScript),
+                        this.HmrEndpointSource?.Invoke());
+                    writer.HmrBoot = hmrPrefix + this.hmrGen + ":0";
+                }
+
                 var initializerStatement = runtimeManager.GetVariableDeclarations();
                 if (initializerStatement != null)
                 {
@@ -923,7 +952,10 @@ namespace NScript.Converter
                             converterContext.DevChunks,
                             this.jsScript,
                             script,
-                            map);
+                            map,
+                            hmrPrefix,
+                            this.hmrGen,
+                            new HashSet<MethodDefinition>(moduleInitializers.Append(entryPoint).Where(method => method != null)));
                     }
                     else
                     {
@@ -934,6 +966,11 @@ namespace NScript.Converter
                             repoRoot: this.repoRoot,
                             secondaryRepoRoot: this.secondaryRepoRoot,
                             secondarySourceRoot: this.secondarySourceRoot);
+                    }
+
+                    if (hmrPrefix != null)
+                    {
+                        this.LastLivePatch = LivePatch.NewBuild(this.hmrGen);
                     }
 
                     log.Information("JSWriter.End {JsScript} {ElapsedMs}ms", this.jsScript, writerSw.ElapsedMilliseconds);
