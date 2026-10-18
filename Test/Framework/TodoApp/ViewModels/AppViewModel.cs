@@ -956,6 +956,7 @@ namespace TodoApp.ViewModels
                     continue;
                 }
 
+                TodoItemViewModel.ReserveId(entity.Id);
                 var folder = new FolderViewModel(this);
                 folder.Id = entity.Id;
                 folder.Name = entity.Name;
@@ -985,6 +986,7 @@ namespace TodoApp.ViewModels
                         continue;
                     }
 
+                    TodoItemViewModel.ReserveId(entity.Id);
                     var todo = new TodoItemViewModel(this);
                     todo.Id = entity.Id;
                     todo.FolderId = entity.FolderId;
@@ -1002,6 +1004,7 @@ namespace TodoApp.ViewModels
                         var subTaskEntity = subTasks[j];
                         if (subTaskEntity == null) continue;
 
+                        if (subTaskEntity.Id != null) TodoItemViewModel.ReserveId(subTaskEntity.Id);
                         var subTask = new SubTaskViewModel();
                         subTask.Id = subTaskEntity.Id;
                         subTask.Title = subTaskEntity.Title;
