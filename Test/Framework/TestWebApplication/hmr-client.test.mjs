@@ -260,6 +260,32 @@ test('a bundle built outside the daemon has no url: it only checks its script, a
   assert.equal(p.reloads, 1);
 });
 
+test('a page with no url at the reload cap checks again once the oldest reload leaves the 60 s', async () => {
+  // Without a socket no event wakes a capped page; its own timer must, and the cap still holds.
+  const p = page('g1:0', bundle('g1:1'), win => win.sessionStorage.setItem('nscriptHmr:reloads', JSON.stringify([999_000, 999_500])), `${FILE}|abc123|||g1:0`);
+  await p.flush();
+  assert.equal(p.reloads, 0);
+  assert.equal(p.state().state, 'reload-only');
+  await p.advance(58_000);
+  assert.equal(p.fetches.length, 1, 'no checks while the cap holds');
+  assert.equal(p.reloads, 0);
+
+  await p.advance(2_000);
+  assert.equal(p.fetches.length, 2, 'it checks again with no socket event or new boot');
+  assert.equal(p.reloads, 1, 'the oldest reload left the 60 s');
+});
+
+test('a page behind the records the server keeps is told to reload, and reloads onto its script', async () => {
+  // HmrServer drops old records past its bound; a hello in the page's own gen then names a reload.
+  const p = page('g1:3', bundle('g1:150'));
+  p.sockets[0].open();
+  p.sockets[0].deliver({ gen: 'g1', reload: 'behind the replay window' });
+  await p.flush();
+  assert.deepEqual(p.applied, []);
+  assert.equal(p.reloads, 1);
+  assert.ok(p.logs.includes('[nscript-hmr] reloading: behind the replay window'), p.logs.join(' | '));
+});
+
 test('a script behind the page (same gen, lower seq) never reloads it backwards', async () => {
   // The copy lags: the page took records 1 and 2 live while its script is still g1:0.
   const p = page('g1:0');

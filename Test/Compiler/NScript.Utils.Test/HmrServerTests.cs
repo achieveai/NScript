@@ -149,6 +149,56 @@ namespace NScript.Utils.Test
             Assert.AreEqual("new build", reload.GetProperty("reload").GetString());
         }
 
+        /// <summary>
+        /// Equal-size CSS saves keep the bundle on disk small, but each record holds a whole
+        /// stylesheet: a generation keeps only its newest records, by count and by script size.
+        /// A late page that lacks a dropped record is told to reload, never sent a gap.
+        /// </summary>
+        [TestMethod]
+        public async Task Publish_KeepsBoundedRecords_APageBehindThemReloads()
+        {
+            void Save(string gen, int seq, string css) => this.server.Publish(JsFile, new LivePatch(gen, seq, css, 0, null, Array.Empty<string>()));
+
+            this.server.Publish(JsFile, LivePatch.NewBuild("g1"));
+            for (int seq = 1; seq <= HmrServer.MaxRecords + 5; seq++)
+            {
+                Save("g1", seq, "css" + seq);
+            }
+
+            using (var behind = await this.Connect("g1:4"))
+            {
+                var hello = await Receive(behind);
+                Assert.AreEqual("g1", hello.GetProperty("gen").GetString());
+                Assert.AreEqual(HmrServer.BehindReason, hello.GetProperty("reload").GetString());
+                Assert.IsFalse(hello.TryGetProperty("records", out _), "no records with a gap");
+            }
+
+            using (var oldest = await this.Connect("g1:5"))
+            {
+                var records = (await Receive(oldest)).GetProperty("records").EnumerateArray().ToList();
+                Assert.AreEqual(HmrServer.MaxRecords, records.Count);
+                Assert.AreEqual(6, records[0].GetProperty("seq").GetInt32(), "the oldest kept record follows the page's seq");
+            }
+
+            // Four saves fill the size bound; the fifth drops the first.
+            var css = new string('a', HmrServer.MaxRecordChars / 4);
+            this.server.Publish(JsFile, LivePatch.NewBuild("g2"));
+            for (int seq = 1; seq <= 5; seq++)
+            {
+                Save("g2", seq, css);
+            }
+
+            using (var behind = await this.Connect("g2:0"))
+            {
+                Assert.AreEqual(HmrServer.BehindReason, (await Receive(behind)).GetProperty("reload").GetString());
+            }
+
+            using (var oldest = await this.Connect("g2:1"))
+            {
+                Assert.AreEqual(4, (await Receive(oldest)).GetProperty("records").GetArrayLength());
+            }
+        }
+
         /// <summary>At most <see cref="HmrServer.MaxClients"/> pages: the next upgrade gets 503 before the socket opens.</summary>
         [TestMethod]
         public async Task Connect_PastTheCap_Gets503()

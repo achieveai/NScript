@@ -23,13 +23,22 @@ namespace NScript.Lib.Service
     /// baked client (<see cref="HmrClient"/>) connects with the daemon's token, its bundle id
     /// and the <c>gen:seq</c> it holds; the server sends the patches since then, and each new
     /// one as its build writes it. Read-only: frames from pages are ignored. Records live in
-    /// memory per bundle and generation; a full emit starts a new generation and asks open
-    /// pages to reload.
+    /// memory per bundle and generation, the newest within a bound; a full emit starts a new
+    /// generation and asks open pages to reload.
     /// </summary>
     public sealed class HmrServer : IDisposable
     {
         /// <summary>Pages connected at once, over all bundles.</summary>
         public const int MaxClients = 16;
+
+        /// <summary>Records kept per bundle for late pages; older ones drop, and a page that lacks one reloads.</summary>
+        internal const int MaxRecords = 100;
+
+        /// <summary>Script chars kept per bundle for late pages, so equal-size CSS saves cannot pile up.</summary>
+        internal const int MaxRecordChars = 1024 * 1024;
+
+        /// <summary>Why a page behind the kept records reloads.</summary>
+        internal const string BehindReason = "behind the replay window";
 
         /// <summary>Messages waiting for one page; a page that falls further behind is dropped and checks its script.</summary>
         private const int QueueLimit = 64;
@@ -166,7 +175,7 @@ namespace NScript.Lib.Service
                     Reload = live.Reload,
                     Notes = live.Notes.Count > 0 ? live.Notes : null,
                 };
-                bundle.Records.Add(record);
+                bundle.Add(record);
                 int clients = this.Broadcast(id, Serialize(new Message { Gen = live.Gen, Records = new[] { record } }));
                 this.log.Information(
                     "HmrSend File={File} Gen={Gen} From={From} To={To} Reload={Reload} Clients={Clients}",
@@ -389,7 +398,15 @@ namespace NScript.Lib.Service
                 var hello = new Message { Gen = bundle?.Gen ?? string.Empty };
                 if (bundle != null && bundle.Gen == gen)
                 {
-                    hello.Records = bundle.Records.Where(record => record.Seq > seq).ToArray();
+                    // A page that lacks a dropped record cannot catch up; its script holds them all.
+                    if (seq < bundle.Dropped)
+                    {
+                        hello.Reload = BehindReason;
+                    }
+                    else
+                    {
+                        hello.Records = bundle.Records.Where(record => record.Seq > seq).ToArray();
+                    }
                 }
 
                 client.Queue.Writer.TryWrite(Serialize(hello));
@@ -407,7 +424,7 @@ namespace NScript.Lib.Service
                     hello.Records?.Length ?? 0,
                     count,
                     request.Headers["Origin"]);
-                this.watchLog("hmr connect " + client.File + " at " + at + " clients=" + count);
+                this.watchLog("hmr connect " + client.File + " at " + at + " clients=" + count + (hello.Reload != null ? " reload " + hello.Reload : string.Empty));
                 if (hello.Records?.Length > 0)
                 {
                     this.watchLog("hmr send " + client.File + " " + gen + ":" + hello.Records[0].Seq + ".." + hello.Records[^1].Seq + " clients=1");
@@ -484,8 +501,30 @@ namespace NScript.Lib.Service
 
             public string Gen { get; }
 
-            /// <summary>Every patch of this generation, in seq order; the next full emit drops them.</summary>
+            /// <summary>
+            /// This generation's newest patches, in seq order, within <see cref="MaxRecords"/> and
+            /// <see cref="MaxRecordChars"/>; the next full emit drops them.
+            /// </summary>
             public List<Record> Records { get; } = new List<Record>();
+
+            /// <summary>The seq of the newest record dropped to stay in the bounds; 0 when none.</summary>
+            public int Dropped { get; private set; }
+
+            private int chars;
+
+            /// <summary>Keeps <paramref name="record"/>, dropping the oldest ones past the bounds. The newest always stays.</summary>
+            public void Add(Record record)
+            {
+                this.Records.Add(record);
+                this.chars += record.Js?.Length ?? 0;
+                while (this.Records.Count > MaxRecords || (this.chars > MaxRecordChars && this.Records.Count > 1))
+                {
+                    var old = this.Records[0];
+                    this.Records.RemoveAt(0);
+                    this.chars -= old.Js?.Length ?? 0;
+                    this.Dropped = old.Seq;
+                }
+            }
         }
 
         private sealed class Client

@@ -23,8 +23,9 @@ function stop(state,m){stopped=true;if(state)st.state=state;if(m)log(m);if(timer
 function reload(reason){
 var now=Date.now(),times=[];
 try{times=JSON.parse(store.getItem('nscriptHmr:reloads')||'[]').filter(function(t){return now-t<60000;});}catch(e){}
-// The cap refuses a reload, not patches: the socket stays, and a reload after the 60 s goes through.
-if(times.length>=2){st.state='reload-only';again=null;if(!capped){capped=true;log('reload-only: 2 reloads in 60 s; live patches still apply');}return;}
+// The cap refuses a reload, not patches: the socket stays, and the check runs again once the
+// oldest reload leaves the 60 s (a page with no socket has no event to wake it).
+if(times.length>=2){st.state='reload-only';if(!capped){capped=true;log('reload-only: 2 reloads in 60 s; live patches still apply');}retry(60001-(now-times[0]));return;}
 capped=false;times.push(now);
 try{store.setItem('nscriptHmr:reloads',JSON.stringify(times));store.setItem(key+':reason',reason);}catch(e){}
 log('reloading: '+reason);stop(null,null);W.location.reload();
@@ -32,9 +33,10 @@ log('reloading: '+reason);stop(null,null);W.location.reload();
 // With a socket, the next step checks the script again (a lagging copy updates with no
 // socket event); without one, it connects. One timer, backoff 1 s to 30 s, paused while hidden.
 function next(){if(stopped)return;if(!ws){connect();return;}if(again)check(again[0],again[1]);}
-function retry(){
+// ms: a set wait, outside the backoff.
+function retry(ms){
 if(stopped||timer)return;
-var d=delay;delay=Math.min(delay*2,30000);
+var d=ms||delay;if(!ms)delay=Math.min(delay*2,30000);
 timer=setTimeout(function(){timer=null;if(!document.hidden){next();return;}document.addEventListener('visibilitychange',function v(){if(!document.hidden){document.removeEventListener('visibilitychange',v);next();}});},d);
 }
 // The state says whether the page has a socket; waitMsg says what it waits for.

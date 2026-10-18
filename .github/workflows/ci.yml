@@ -77,3 +77,26 @@ jobs:
       - name: Run E2E tests
         working-directory: Test/Framework/TestWebApplication
         run: npm run test:e2e
+
+      # ─── Phase 4: Live patching E2E ───────────────────────────────────
+      # An XWML skin save skins an open control again, and a CSS save restyles the page, with
+      # no reload. They need the watch with patch emit, which rewrites the UI test bundle, so
+      # they run last. A script that exits 2 (skipped: no live patch client) fails here too.
+      - name: Start UI test watch (patch emit)
+        env:
+          NSCRIPT_PATCH_EMIT: '1'
+        run: dotnet build Test/Framework/Sunlight.Framework.UI.Test/Sunlight.Framework.UI.Test.csproj -c Debug --no-restore -p:NScriptWatch=true
+
+      - name: Run live patching E2E (XWML skin, CSS)
+        working-directory: Test/Framework/TestWebApplication
+        run: |
+          node e2e-hmr-skin.mjs
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          node e2e-hmr-css.mjs
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # --stop exits 1 when no daemon runs, e.g. the watch never started.
+      - name: Stop build service
+        if: always()
+        continue-on-error: true
+        run: ./NScriptToolSet/bin/Debug/net8.0/nscript.exe service --stop
