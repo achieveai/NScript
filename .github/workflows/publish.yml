@@ -1,0 +1,86 @@
+name: Publish to NuGet.org
+
+# Publishes the Mcqdb.NScript.* packages to nuget.org using Trusted Publishing
+# (OIDC) — no long-lived API key is stored in GitHub.
+#
+# NuGet.org side: a "Trusted Publishing" policy must exist for the package
+# owner, pointing at this workflow file (see account settings on nuget.org).
+#
+# A push to master always *attempts* to publish; versions already on
+# nuget.org are skipped (--skip-duplicate). To actually release, bump
+# NScriptPackageVersion in Directory.Build.props.
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  # Build the solution in Release; GeneratePackageOnBuild drops every
+  # Mcqdb.NScript.*.nupkg into NScriptToolSet/ (see Directory.Build.props).
+  pack:
+    name: Build packages
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build solution (generates .nupkg files)
+        run: dotnet build NScript_Full.sln -c Release
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: NScriptToolSet/*.nupkg
+          if-no-files-found: error
+
+  # Exchange the GitHub OIDC token for a short-lived NuGet API key and push.
+  publish:
+    name: Publish to nuget.org
+    needs: pack
+    runs-on: windows-latest
+
+    permissions:
+      contents: read
+      id-token: write # required for Trusted Publishing (OIDC)
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: nupkgs
+          path: nupkgs
+
+      - name: NuGet login (OIDC -> temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          # nuget.org profile (user or organization) name — NOT an email.
+          # Set as a repository variable (or secret) named NUGET_USER.
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push packages
+        shell: pwsh
+        run: |
+          Get-ChildItem nupkgs -Filter *.nupkg | ForEach-Object {
+            Write-Host "Publishing: $($_.Name)"
+            dotnet nuget push $_.FullName `
+              --source https://api.nuget.org/v3/index.json `
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" `
+              --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
