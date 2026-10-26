@@ -224,7 +224,9 @@ namespace Sunlight.Framework.UI.Helpers
 
                 this.liveObjects[0] = this.source;
 
-                if (!object.IsNullOrUndefined(this.liveObjects[0]))
+                // A null name means the root is not observable: read it, don't listen.
+                if (!object.IsNullOrUndefined(this.liveObjects[0])
+                    && this.binderInfo.PropertyNames[0] != null)
                 {
                     ((INotifyPropertyChanged)this.liveObjects[0]).AddPropertyChangedListener(
                         this.binderInfo.PropertyNames[0],
@@ -356,9 +358,13 @@ namespace Sunlight.Framework.UI.Helpers
                     var item = liveObjects[iPath];
                     if (!object.IsNullOrUndefined(item))
                     {
-                        ((INotifyPropertyChanged)item).RemovePropertyChangedListener(
-                            this.binderInfo.PropertyNames[iPath],
-                            this.OnSourcePropertyChanged);
+                        if (this.binderInfo.PropertyNames[iPath] != null)
+                        {
+                            ((INotifyPropertyChanged)item).RemovePropertyChangedListener(
+                                this.binderInfo.PropertyNames[iPath],
+                                this.OnSourcePropertyChanged);
+                        }
+
                         liveObjects[iPath] = null;
                     }
                 }

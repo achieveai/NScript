@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:vm="Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test"
+    xmlns:ctrl="Sunlight.Framework.UI!Sunlight.Framework.UI">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+    </head>
+    <body>
+        <skin ControlType="ctrl:UISkinableElement" DataContextType="vm:NonObservableObject">
+            <div test='foo' test1="{Child.PropStr1, Mode=OneWay}" test2="{PropStr, Mode=OneTime}">Test Me</div>
+        </skin>
+    </body>
+</html>

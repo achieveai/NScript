@@ -92,17 +92,17 @@ namespace XwmlParser.Binding
             List<string> rvNames = new List<string>();
             IIdentifier rvSetter = null;
 
+            var resolver = codeGenerator.CodeGenerator.ParserContext.ClrResolver;
+            var observableInterface = codeGenerator.CodeGenerator.KnownTypes.ObservableInterface;
+
             observablePaths.Add(new List<MemberReference>());
             for (int iProp = 0; iProp < this.PropertyReferencePath.Count - 1; iProp++)
             {
                 observablePaths[observablePaths.Count-1].Add(this.PropertyReferencePath[iProp]);
-                TypeReference returnType = 
-                    this.PropertyReferencePath[iProp] is PropertyReference
-                        ? ((PropertyReference)this.PropertyReferencePath[iProp]).PropertyType
-                        : ((FieldReference)this.PropertyReferencePath[iProp]).FieldType;
-                if (codeGenerator.CodeGenerator.ParserContext.ClrResolver.TypeImplements(
-                    returnType,
-                    codeGenerator.CodeGenerator.KnownTypes.ObservableInterface))
+                if (PropertySourceBindingInfo.IsObservable(
+                    PropertySourceBindingInfo.GetMemberType(this.PropertyReferencePath[iProp]),
+                    resolver,
+                    observableInterface))
                 {
                     observablePaths.Add(new List<MemberReference>());
                 }
@@ -119,6 +119,12 @@ namespace XwmlParser.Binding
                 rvNames.Add(observablePaths[iPathPart][0].Name);
             }
 
+            // A plain (or static) root can't notify; null tells LiveBinder to read it without listening.
+            if (!this.IsRootObservable(resolver, observableInterface))
+            {
+                rvNames[0] = null;
+            }
+
             if (mode == BindingMode.TwoWay)
             {
                 rvSetter = codeGenerator.CodeGenerator.GetSetterForProperty(
@@ -129,6 +135,53 @@ namespace XwmlParser.Binding
                 (IList<string>)rvNames,
                 (IList<IIdentifier>)rvGetter,
                 rvSetter);
+        }
+
+        /// <summary>
+        /// True when a live binding can listen somewhere: the root or any object it walks through.
+        /// The last member's value is never listened to, so its type does not count.
+        /// </summary>
+        internal bool HasObservablePart(IClrResolver resolver, TypeReference observableInterface)
+        {
+            if (this.IsRootObservable(resolver, observableInterface))
+            {
+                return true;
+            }
+
+            for (int iProp = 0; iProp < this.PropertyReferencePath.Count - 1; iProp++)
+            {
+                if (PropertySourceBindingInfo.IsObservable(
+                    PropertySourceBindingInfo.GetMemberType(this.PropertyReferencePath[iProp]),
+                    resolver,
+                    observableInterface))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsRootObservable(IClrResolver resolver, TypeReference observableInterface)
+        {
+            return this.SourceType != null
+                && PropertySourceBindingInfo.IsObservable(this.SourceType, resolver, observableInterface);
+        }
+
+        private static bool IsObservable(
+            TypeReference type,
+            IClrResolver resolver,
+            TypeReference observableInterface)
+        {
+            return type.IsSame(observableInterface)
+                || resolver.TypeImplements(type, observableInterface);
+        }
+
+        private static TypeReference GetMemberType(MemberReference member)
+        {
+            return member is PropertyReference
+                ? ((PropertyReference)member).PropertyType
+                : ((FieldReference)member).FieldType;
         }
     }
 }

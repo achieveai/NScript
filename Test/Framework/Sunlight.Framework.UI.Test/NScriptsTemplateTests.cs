@@ -145,6 +145,33 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal("TTTest", elem.GetAttribute("test1"), "Attribute 'test' should be set if PropStr1 is set.");
         }
 
+        /// <summary>
+        /// OneWay on a plain DataContext: reads the root once, stays live from the observable child on.
+        /// </summary>
+        [Test]
+        public static void TestOneWayOnPlainRootBinder(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            UISkinableElement control = new UISkinableElement(element);
+
+            var dc = new NonObservableObject();
+            dc.PropStr = "plain";
+            dc.Child = new TestViewModelA();
+            dc.Child.PropStr1 = "first";
+            control.DataContext = dc;
+            control.Skin = NScriptsTemplatesClass.TestTemplate_PlainRootAttrBinding;
+
+            control.Activate();
+
+            var elem = element.QuerySelector("[test]");
+            assert.NotEqual(elem, null, "After applying skin, skin element should be loaded");
+            assert.Equal(elem.GetAttribute("test1"), "first", "OneWay value from a plain root should be set.");
+            assert.Equal(elem.GetAttribute("test2"), "plain", "OneTime value from a plain root should be set.");
+
+            dc.Child.PropStr1 = "second";
+            assert.Equal(elem.GetAttribute("test1"), "second", "Changes on the observable child should flow.");
+        }
+
         [Test]
         public static void TestPropertyBinder(Assert assert)
         {

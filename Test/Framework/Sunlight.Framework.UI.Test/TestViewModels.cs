@@ -283,6 +283,9 @@ namespace Sunlight.Framework.UI.Test
     {
         public string PropStr
         { get; set; }
+
+        public TestViewModelA Child
+        { get; set; }
     }
 
     public interface TestInterface

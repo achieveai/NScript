@@ -50,6 +50,13 @@ namespace Sunlight.Framework.UI.Test
             { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplate_PlainRootAttrBinding.html")]
+        public static Skin TestTemplate_PlainRootAttrBinding
+        {
+            get
+            { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.Templates.TestTemplateVMB_CssBinding.html")]
         public static Skin TestTemplateVMB_CssBinding
         {

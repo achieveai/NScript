@@ -344,6 +344,64 @@ namespace XwmlParser.Test
         }
 
         [DataTestMethod]
+        [DataRow("{PropStr, Mode=OneWay}")]
+        [DataRow("{Mode=OneWay, Path=PropStr}")]
+        public void TestOneWayWithNothingObservableFails(string bindingStr)
+        {
+            var dataContextType =
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.NonObservableObject");
+            var controlType =
+                resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
+
+            var ex = Assert.ThrowsException<System.ApplicationException>(
+                () => Binding.BindingParser.ParseBinding(
+                    new TempTargetBinding(clrKnownReferences.String),
+                    bindingStr,
+                    new MockDocumentContext(parserContext, resolver),
+                    dataContextType,
+                    controlType));
+
+            StringAssert.Contains(ex.Message, "Mode=OneWay");
+            StringAssert.Contains(ex.Message, "NonObservableObject");
+        }
+
+        [DataTestMethod]
+        [DataRow("{Child.PropStr1, Mode=OneWay}")]
+        [DataRow("{Child.TestVMA.PropStr1, Mode=OneWay}")]
+        public void TestOneWayWithObservablePartAfterPlainRoot(string bindingStr)
+        {
+            var dataContextType =
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.NonObservableObject");
+            var controlType =
+                resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
+            var propertyBinding = Binding.BindingParser.ParseBinding(
+                new TempTargetBinding(clrKnownReferences.String),
+                bindingStr,
+                new MockDocumentContext(parserContext, resolver),
+                dataContextType,
+                controlType);
+
+            Assert.AreEqual(BindingMode.OneWay, propertyBinding.Mode);
+        }
+
+        [TestMethod]
+        public void TestDefaultOneWayWithNothingObservableIsAllowed()
+        {
+            var dataContextType =
+                resolver.GetTypeReference("Sunlight.Framework.UI.Test!Sunlight.Framework.UI.Test.NonObservableObject");
+            var controlType =
+                resolver.GetTypeReference("Sunlight.Framework.UI!Sunlight.Framework.UI.UISkinableElement");
+            var propertyBinding = Binding.BindingParser.ParseBinding(
+                new DefaultOneWayTargetBinding(clrKnownReferences.String),
+                "{PropStr}",
+                new MockDocumentContext(parserContext, resolver),
+                dataContextType,
+                controlType);
+
+            Assert.AreEqual(BindingMode.OneWay, propertyBinding.Mode);
+        }
+
+        [DataTestMethod]
         [DataRow("{testVM:TestViewModelB.StaticProp.PropStrB, Converter=testVM:ConverterCollection.ParseStuff}")]
         public void TestParseConverter(string bindingStr)
         {
@@ -377,6 +435,26 @@ namespace XwmlParser.Test
         public TempTargetBinding(TypeReference stringType)
             : base(stringType)
         {
+        }
+    }
+
+    /// <summary>
+    /// Target whose default mode is OneWay, like UIElement.DataContext.
+    /// </summary>
+    public class DefaultOneWayTargetBinding : TargetBindingInfo
+    {
+        public DefaultOneWayTargetBinding(TypeReference stringType)
+            : base(stringType)
+        {
+        }
+
+        internal override BindingMode GetBindingMode(
+            BindingMode specifiedMode,
+            KnownTemplateTypes knownTypes)
+        {
+            return specifiedMode == BindingMode.Default
+                ? BindingMode.OneWay
+                : specifiedMode;
         }
     }
 }

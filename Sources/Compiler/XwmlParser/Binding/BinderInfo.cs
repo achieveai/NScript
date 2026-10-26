@@ -184,9 +184,11 @@ namespace XwmlParser
                 tmpExprArray = new List<Expression>();
                 foreach (var str in sourceInfo.Item1)
                 {
-                    tmpExprArray.Add(new StringLiteralExpression(
-                        codeGenerator.Scope,
-                        str));
+                    tmpExprArray.Add(str == null
+                        ? (Expression)new NullLiteralExpression(codeGenerator.Scope)
+                        : new StringLiteralExpression(
+                            codeGenerator.Scope,
+                            str));
                 }
 
                 args.Add(new InlineNewArrayInitialization(

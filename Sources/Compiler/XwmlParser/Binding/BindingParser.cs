@@ -149,17 +149,57 @@ namespace XwmlParser.Binding
                     sourceBindingInfo,
                     targetBinding);
 
+            var specifiedMode = BindingParser.GetBindingMode(
+                dict,
+                bindingValue);
+
+            BindingParser.EnsureOneWayCanListen(
+                specifiedMode,
+                sourceBindingInfo,
+                sourceInfo.Item1,
+                bindingValue,
+                documentContext);
+
             return new BinderInfo(
                 targetBinding,
                 sourceBindingInfo,
                 converterInfo,
                 targetBinding.GetBindingMode(
-                    BindingParser.GetBindingMode(
-                        dict,
-                        bindingValue),
+                    specifiedMode,
                     documentContext.ParserContext.KnownTypes),
                 sourceInfo.Item2,
                 null);
+        }
+
+        /// <summary>
+        /// An explicit Mode=OneWay must have something to listen to. A mode that comes
+        /// from a target default (e.g. DataContext) is not checked: it can't be changed
+        /// in markup, and with nothing observable it just behaves like OneTime.
+        /// </summary>
+        private static void EnsureOneWayCanListen(
+            BindingMode specifiedMode,
+            SourceBindingInfo sourceBindingInfo,
+            TypeReference sourceType,
+            string bindingStr,
+            IDocumentContext documentContext)
+        {
+            var propertySource = sourceBindingInfo as PropertySourceBindingInfo
+                ?? (sourceBindingInfo as MethodSourceBindingInfo)?.PropertySourceBinding;
+
+            if (specifiedMode != BindingMode.OneWay
+                || propertySource == null
+                || propertySource.HasObservablePart(
+                    documentContext.Resolver,
+                    documentContext.ParserContext.KnownTypes.ObservableInterface))
+            {
+                return;
+            }
+
+            throw new ApplicationException(
+                string.Format(
+                    "Binding '{0}' uses Mode=OneWay, but nothing in its path is observable: '{1}' and the types along the path do not implement INotifyPropertyChanged. Use Mode=OneTime, or make a type in the path observable.",
+                    bindingStr,
+                    sourceType != null ? sourceType.FullName : "static source"));
         }
 
         /// <summary>

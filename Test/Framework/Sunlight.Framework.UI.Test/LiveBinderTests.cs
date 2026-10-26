@@ -242,6 +242,59 @@ namespace Sunlight.Framework.UI.Test
         }
 
         /// <summary>
+        /// A null first name marks a plain (non-observable) root: read it, never listen to it.
+        /// </summary>
+        [Test]
+        public static void TestLiveBinderPlainRootObservableChild(Assert assert)
+        {
+            var binderInfo = new SkinBinderInfo(
+                new Func<object, object>[]
+                {
+                    delegate(object obj)
+                    {
+                        return ((NonObservableObject)obj).Child;
+                    },
+                    delegate(object obj)
+                    {
+                        return ((TestViewModelA)obj).PropStr1;
+                    }
+                },
+                new string[]
+                {
+                    null,
+                    "PropStr1"
+                },
+                delegate(object tar, object val)
+                {
+                    ((TestViewModelA)tar).PropStr1 = (string)val;
+                },
+                BinderType.PropertyBinder | BinderType.DataContext,
+                0,
+                0,
+                null,
+                null);
+
+            NonObservableObject src = new NonObservableObject();
+            src.Child = new TestViewModelA();
+            src.Child.PropStr1 = "test";
+            TestViewModelA target = new TestViewModelA();
+            var liveBinder = new LiveBinder(binderInfo);
+            liveBinder.Source = src;
+            liveBinder.Target = target;
+            liveBinder.IsActive = true;
+            assert.Equal(target.PropStr1, "test", "value from a plain root should flow on activate.");
+
+            src.Child.PropStr1 = "testChanged";
+            assert.Equal(target.PropStr1, "testChanged", "changes on the observable child should flow.");
+
+            NonObservableObject src2 = new NonObservableObject();
+            src2.Child = new TestViewModelA();
+            src2.Child.PropStr1 = "second";
+            liveBinder.Source = src2;
+            assert.Equal(target.PropStr1, "second", "a new plain root should flow.");
+        }
+
+        /// <summary>
         /// Tests live binder on activate.
         /// </summary>
         [Test]
