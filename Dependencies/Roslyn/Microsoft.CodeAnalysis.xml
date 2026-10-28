@@ -4724,6 +4724,21 @@
             Called after <see cref="M:Microsoft.CodeAnalysis.CommonCompiler.OnBeforeCompilation(Microsoft.CodeAnalysis.Compilation)"/> to obtain the manifest resources that should be emitted.
             </summary>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.CheckCache(Microsoft.CodeAnalysis.Compilation,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.ISourceGenerator},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.AdditionalText},System.Threading.CancellationToken,System.Object@)">
+            <summary>
+            Attempts to satisfy this compilation from a cache, using already-computed compilation
+            inputs. Override in server compiler subclasses to provide caching. Return a non-null
+            value to short-circuit compilation with a cached exit code.
+            </summary>
+            <param name="cacheState">Opaque state to be passed to <see cref="M:Microsoft.CodeAnalysis.CommonCompiler.OnCompilationSucceeded(Microsoft.CodeAnalysis.Compilation,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.ISourceGenerator},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.AdditionalText},System.Object,System.Threading.CancellationToken)"/> on success.</param>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CommonCompiler.OnCompilationSucceeded(Microsoft.CodeAnalysis.Compilation,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.ISourceGenerator},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.AdditionalText},System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Notifies the compiler that a compilation completed successfully. Override in server
+            compiler subclasses to store the result in a cache.
+            </summary>
+            <param name="cacheState">Opaque state returned from <see cref="M:Microsoft.CodeAnalysis.CommonCompiler.CheckCache(Microsoft.CodeAnalysis.Compilation,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.ISourceGenerator},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.AdditionalText},System.Threading.CancellationToken,System.Object@)"/>.</param>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.CommonCompiler.ExistingReferencesResolver">
             <summary>
             Looks for metadata references among the assembly file references given to the compilation when constructed.
@@ -6222,6 +6237,20 @@
             <summary>
             CandidateSymbols are members of a group of results. This is used when there isn't a problem,
             but there is more than one result, for example nameof(int.ToString).
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.ClosedDerivedTypeInfo">
+            <summary>Information about derived types of a closed type.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.ClosedDerivedTypeInfo.ClosedDerivedTypes">
+            <summary>
+            Possible direct derived types of the closed type.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.ClosedDerivedTypeInfo.IsComplete">
+            <summary>
+            Indicates whether <see cref="P:Microsoft.CodeAnalysis.ClosedDerivedTypeInfo.ClosedDerivedTypes" /> represents all possible derived types (i.e. it is a complete set).
+            This will be false, for example, when a generic closed type has an unspeakable derived type.
             </summary>
         </member>
         <member name="F:Microsoft.CodeAnalysis.ModuleCompilationState`2._lazyStateMachineTypes">
@@ -17448,7 +17477,7 @@
             Appends actions from another <see cref="T:Microsoft.CodeAnalysis.Diagnostics.AnalyzerActions"/> instance.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerActions.Builder.ToAnalyzerActionsAndFree">
+        <member name="M:Microsoft.CodeAnalysis.Diagnostics.AnalyzerActions.Builder.ToAnalyzerActionsAndFreeUnderlyingIfNeeded">
             <summary>
             Creates an <see cref="T:Microsoft.CodeAnalysis.Diagnostics.AnalyzerActions"/> from the accumulated actions.
             This method should be called once after all Append operations are complete.
@@ -20313,6 +20342,11 @@
         <member name="P:Microsoft.CodeAnalysis.Text.TextLine.Start">
             <summary>
             Gets the start position of the line.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Text.TextLine.LineBreakLength">
+            <summary>
+            Gets the length of the line break sequence at the end of this line (0, 1, or 2).
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.Text.TextLine.End">
@@ -25702,6 +25736,74 @@
             Resolves references to source files specified in source code.
             </summary>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.CompilationCache">
+            <summary>
+            Caches the compilation produced by the pre-compilation phase, keyed on the inputs that
+            determine its content. When a subsequent run produces the same inputs the cached
+            <see cref="P:Microsoft.CodeAnalysis.CompilationCache.Compilation"/> reference is reused, which preserves reference-equality on
+            <c>SharedInputNodes.Compilation</c> and therefore keeps every generator's
+            <c>CompilationProvider</c>-derived caching valid across runs.
+            </summary>
+            <remarks>
+            Always present on <see cref="T:Microsoft.CodeAnalysis.GeneratorDriverState"/> (initially <see cref="F:Microsoft.CodeAnalysis.CompilationCache.Empty"/>).
+            Driver code accumulates the run's inputs into a <see cref="T:Microsoft.CodeAnalysis.CompilationCache.Builder"/> obtained via
+            <see cref="M:Microsoft.CodeAnalysis.CompilationCache.ToBuilder(Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.Compilation)"/>, then calls <see cref="M:Microsoft.CodeAnalysis.CompilationCache.Builder.ToImmutableAndFree"/> to obtain
+            either this same instance (cache hit) or a new one (cache miss / no caching needed).
+            The result's <see cref="P:Microsoft.CodeAnalysis.CompilationCache.Compilation"/> is always the compilation the driver should pass
+            to standard-phase generators.
+            </remarks>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.CompilationCache.Empty">
+            <summary>
+            Initial sentinel used as the seed before any driver run has populated the cache.
+            Its <see cref="P:Microsoft.CodeAnalysis.CompilationCache.Compilation"/> is <c>null</c> and is never read by the driver, since
+            every run replaces the seed via <see cref="M:Microsoft.CodeAnalysis.CompilationCache.Builder.ToImmutableAndFree"/> before reading.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.CompilationCache.Compilation">
+            <summary>
+            The compilation the driver should pass to standard-phase generators. Only valid to
+            read after a <see cref="M:Microsoft.CodeAnalysis.CompilationCache.Builder.ToImmutableAndFree"/> call has produced this cache;
+            reading it on the <see cref="F:Microsoft.CodeAnalysis.CompilationCache.Empty"/> sentinel will assert.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilationCache.ToBuilder(Microsoft.CodeAnalysis.Compilation,Microsoft.CodeAnalysis.Compilation)">
+            <summary>
+            Starts accumulating inputs for the current run. The builder takes the input
+            compilation reference (used for cache identity) and the compilation after post-init
+            trees have been added (used as the base for any pre-compilation augmentation).
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilationCache.Builder.AddPostInitTree(Microsoft.CodeAnalysis.SyntaxTree)">
+            <summary>
+            Records a post-init <see cref="T:Microsoft.CodeAnalysis.SyntaxTree"/> in driver order. The flat list of
+            post-init trees participates in the cache key.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilationCache.Builder.AddPreCompTree(System.Int32,Microsoft.CodeAnalysis.GeneratedSyntaxTree)">
+            <summary>
+            Records a pre-compilation tree: contributes to the cache key (via generator
+            index, hint name, text reference, and parse options) and to the set of trees
+            appended to <c>compilationWithPostInit</c> on a cache miss.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CompilationCache.Builder.ToImmutableAndFree">
+            <summary>
+            Decides between reusing the previous run's cache (when its inputs match) or
+            producing a new entry. Always returns a cache whose <see cref="P:Microsoft.CodeAnalysis.CompilationCache.Compilation"/>
+            is the compilation the driver should use; reference equality with the source
+            <see cref="T:Microsoft.CodeAnalysis.CompilationCache"/> indicates the cache state is unchanged.
+            </summary>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.PreCompCacheKey">
+            <summary>
+            Identity for a single pre-compilation source as fed into the compilation cache.
+            Equality is reference-based on <see cref="P:Microsoft.CodeAnalysis.PreCompCacheKey.Text"/> and <see cref="P:Microsoft.CodeAnalysis.PreCompCacheKey.Options"/>; this matches
+            what <c>AbstractSourceOutputNode</c> already does — when the pre-compilation output's
+            inputs are unchanged it returns the previous <see cref="T:Microsoft.CodeAnalysis.GeneratedSourceText"/> with the
+            same <see cref="T:Microsoft.CodeAnalysis.Text.SourceText"/> reference, so reference equality is the right level here.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.GeneratedSourceText">
             <summary>
             A source text created by an <see cref="T:Microsoft.CodeAnalysis.ISourceGenerator"/>
@@ -25950,6 +26052,23 @@
             <param name="cancellationToken">Used to cancel an in progress operation.</param>
             <returns>An updated driver that contains the results of the generators running.</returns>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.GeneratorDriver.ReuseOrParsePreCompilationSources(Microsoft.CodeAnalysis.ISourceGenerator,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.GeneratedSourceText},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.GeneratedSyntaxTree},System.Threading.CancellationToken)">
+            <summary>
+            Like <see cref="M:Microsoft.CodeAnalysis.GeneratorDriver.ParseAdditionalSources(Microsoft.CodeAnalysis.ISourceGenerator,System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.GeneratedSourceText},System.Threading.CancellationToken)"/>, but reuses a previously-parsed
+            <see cref="T:Microsoft.CodeAnalysis.GeneratedSyntaxTree"/> when the corresponding new <see cref="T:Microsoft.CodeAnalysis.GeneratedSourceText"/>
+            has the same <see cref="T:Microsoft.CodeAnalysis.Text.SourceText"/> reference and hint name at the same position --
+            indicating the upstream pre-compilation callback was cached.
+            </summary>
+            <remarks>
+            This serves two purposes: it skips wasted re-parsing of unchanged generator output,
+            and it keeps the trees seen by the standard phase reference-stable across runs. The
+            latter matters because the compilation cache reuses the previous run's
+            <see cref="T:Microsoft.CodeAnalysis.Compilation"/> (and the syntax trees it contains) on a hit; if we
+            re-parsed pre-compilation sources, a cached standard-phase output's diagnostic could
+            still hold a <see cref="T:Microsoft.CodeAnalysis.Location"/> pointing at a tree that's no longer present in
+            the run's output compilation.
+            </remarks>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.GeneratorDriverCache.AddOrUpdateMostRecentlyUsed(System.String,Microsoft.CodeAnalysis.GeneratorDriver)">
             <summary>
             Attempts to find a driver based on <paramref name="cacheKey"/>. If a matching driver is found in the 
@@ -26037,6 +26156,11 @@
             A bit field containing the output kinds that should not be produced by this generator driver.
             </summary>
         </member>
+        <member name="F:Microsoft.CodeAnalysis.GeneratorDriverState.CompilationCache">
+            <summary>
+            Caches the compilation produced by the pre-compilation phase.
+            </summary>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.GeneratorExtensions.GetGeneratorType(Microsoft.CodeAnalysis.ISourceGenerator)">
             <summary>
             Returns the underlying type of a given generator
@@ -26083,6 +26207,16 @@
         <member name="M:Microsoft.CodeAnalysis.GeneratorState.#ctor(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.GeneratedSyntaxTree},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.SyntaxInputNode},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.IIncrementalGeneratorOutputNode})">
             <summary>
             Creates a new generator state that contains information, constant trees and an execution pipeline
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.GeneratorState.#ctor(System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.GeneratedSyntaxTree},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.SyntaxInputNode},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.IIncrementalGeneratorOutputNode},System.Collections.Immutable.ImmutableArray{Microsoft.CodeAnalysis.GeneratedSyntaxTree})">
+            <summary>
+            Creates a new generator state that contains information, constant trees (including pre-compilation) and an execution pipeline
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.GeneratorState.PreCompilationFailed">
+            <summary>
+            True iff this generator's most recent pre-compilation evaluation threw.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.SourceGeneration.GlobalAliases">
@@ -26221,6 +26355,36 @@
             <param name="source">An <see cref="T:Microsoft.CodeAnalysis.IncrementalValuesProvider`1"/> that provides input values</param>
             <param name="action">An action that receives a <see cref="T:Microsoft.CodeAnalysis.HostOutputProductionContext"/> and an input value, and can add host-specific outputs</param>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterPreCompilationSourceOutput``1(Microsoft.CodeAnalysis.IncrementalValueProvider{``0},System.Action{Microsoft.CodeAnalysis.PreCompilationSourceProductionContext,``0})">
+            <summary>
+            Registers a source output that will execute before the compilation is available.
+            The produced source will be added to the initial compilation, making it visible
+            to subsequent phases and other generators.
+            </summary>
+            <typeparam name="TSource">The type of the value provided by the source provider</typeparam>
+            <param name="source">An <see cref="T:Microsoft.CodeAnalysis.IncrementalValueProvider`1"/> that provides the input value</param>
+            <param name="action">An action that receives a <see cref="T:Microsoft.CodeAnalysis.PreCompilationSourceProductionContext"/> and the input value, and can add source files</param>
+            <remarks>
+            The source value provider must not depend on compilation or syntax node inputs.
+            Attempting to access the compilation or syntax trees during this phase will throw
+            an <see cref="T:System.InvalidOperationException"/>.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterPreCompilationSourceOutput``1(Microsoft.CodeAnalysis.IncrementalValuesProvider{``0},System.Action{Microsoft.CodeAnalysis.PreCompilationSourceProductionContext,``0})">
+            <summary>
+            Registers a source output that will execute before the compilation is available.
+            The produced source will be added to the initial compilation, making it visible
+            to subsequent phases and other generators.
+            </summary>
+            <typeparam name="TSource">The type of each value provided by the source provider</typeparam>
+            <param name="source">An <see cref="T:Microsoft.CodeAnalysis.IncrementalValuesProvider`1"/> that provides input values</param>
+            <param name="action">An action that receives a <see cref="T:Microsoft.CodeAnalysis.PreCompilationSourceProductionContext"/> and an input value, and can add source files</param>
+            <remarks>
+            The source value provider must not depend on compilation or syntax node inputs.
+            Attempting to access the compilation or syntax trees during this phase will throw
+            an <see cref="T:System.InvalidOperationException"/>.
+            </remarks>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.IncrementalGeneratorPostInitializationContext">
             <summary>
             Context passed to an incremental generator when it has registered an output via <see cref="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterPostInitializationOutput(System.Action{Microsoft.CodeAnalysis.IncrementalGeneratorPostInitializationContext})"/>
@@ -26292,6 +26456,36 @@
             <paramref name="diagnostic"/> is located in a syntax tree which is not part of the compilation,
             its location span is outside of the given file, or its identifier is not valid.
             </exception>
+        </member>
+        <member name="T:Microsoft.CodeAnalysis.PreCompilationSourceProductionContext">
+            <summary>
+            Context passed to an incremental generator when it has registered an output via
+            <see cref="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterPreCompilationSourceOutput``1(Microsoft.CodeAnalysis.IncrementalValueProvider{``0},System.Action{Microsoft.CodeAnalysis.PreCompilationSourceProductionContext,``0})"/>.
+            Pre-compilation source outputs execute before the compilation is available and can only add source files,
+            not report diagnostics.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.PreCompilationSourceProductionContext.CancellationToken">
+            <summary>
+            A <see cref="T:System.Threading.CancellationToken"/> that can be checked to see if the generation should be cancelled.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.PreCompilationSourceProductionContext.AddSource(System.String,System.String)">
+            <summary>
+            Adds source code in the form of a <see cref="T:System.String"/> to the compilation.
+            </summary>
+            <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator</param>
+            <param name="source">The source code to add to the compilation</param>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.PreCompilationSourceProductionContext.AddSource(System.String,Microsoft.CodeAnalysis.Text.SourceText)">
+            <summary>
+            Adds a <see cref="T:Microsoft.CodeAnalysis.Text.SourceText"/> to the compilation
+            </summary>
+            <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator</param>
+            <param name="sourceText">The <see cref="T:Microsoft.CodeAnalysis.Text.SourceText"/> to add to the compilation</param>
+            <remarks>
+            Directory separators "/" and "\" are allowed in <paramref name="hintName"/>, they are normalized to "/" regardless of host platform.
+            </remarks>
         </member>
         <member name="T:Microsoft.CodeAnalysis.GeneratorFilterContext">
             <summary>
@@ -26518,6 +26712,20 @@
             </summary>
             <returns>An instance of an <see cref="T:Microsoft.CodeAnalysis.ISyntaxContextReceiver"/></returns>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.DriverStateTable.Builder.InitialCompilationOptions">
+            <summary>
+            The compilation options from the user-supplied compilation. Available in all
+            phases, including pre-compilation, because options are unaffected by source
+            generation.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.DriverStateTable.Builder.InitialMetadataReferences">
+            <summary>
+            The metadata references from the user-supplied compilation. Available in all
+            phases, including pre-compilation, because references are unaffected by source
+            generation.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.IIncrementalGeneratorNode`1">
             <summary>
             Represents a node in the execution pipeline of an incremental generator
@@ -26563,6 +26771,14 @@
             <summary>
             A host specific output, registered via <see cref="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterHostOutput``1(Microsoft.CodeAnalysis.IncrementalValueProvider{``0},System.Action{Microsoft.CodeAnalysis.HostOutputProductionContext,``0})"/> 
             or <see cref="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterHostOutput``1(Microsoft.CodeAnalysis.IncrementalValuesProvider{``0},System.Action{Microsoft.CodeAnalysis.HostOutputProductionContext,``0})"/>
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind.PreCompilation">
+            <summary>
+            A pre-compilation source output, registered via
+            <see cref="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterPreCompilationSourceOutput``1(Microsoft.CodeAnalysis.IncrementalValueProvider{``0},System.Action{Microsoft.CodeAnalysis.PreCompilationSourceProductionContext,``0})"/>
+            or <see cref="M:Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext.RegisterPreCompilationSourceOutput``1(Microsoft.CodeAnalysis.IncrementalValuesProvider{``0},System.Action{Microsoft.CodeAnalysis.PreCompilationSourceProductionContext,``0})"/>.
+            Source is added to the initial compilation before compilation-dependent phases execute.
             </summary>
         </member>
         <member name="T:Microsoft.CodeAnalysis.InputNode`1">
@@ -26912,8 +27128,11 @@
             An <see cref="T:System.Exception"/> instance that was thrown by the generator, or <c>null</c> if the generator completed without error.
             </summary>
             <remarks>
-            When this property has a value, <see cref="P:Microsoft.CodeAnalysis.GeneratorRunResult.GeneratedSources"/> property is guaranteed to be empty, and the <see cref="P:Microsoft.CodeAnalysis.GeneratorRunResult.Diagnostics"/>
-            collection will contain a single diagnostic indicating that the generator failed.
+            When this property has a value, the <see cref="P:Microsoft.CodeAnalysis.GeneratorRunResult.Diagnostics"/> collection will contain a single
+            diagnostic indicating that the generator failed. Generally <see cref="P:Microsoft.CodeAnalysis.GeneratorRunResult.GeneratedSources"/> will be empty
+            in this case, however, sources produced by a pre-compilation phase that completed successfully prior to
+            the failure are preserved (because they were already observed by other generators in the augmented
+            compilation, so dropping them would produce inconsistent results).
             </remarks>
         </member>
         <member name="P:Microsoft.CodeAnalysis.GeneratorRunResult.ElapsedTime">
@@ -31519,6 +31738,22 @@
             Returns false for record structs in metadata since they don't have any distinctive marker.
             </remarks>
         </member>
+        <member name="P:Microsoft.CodeAnalysis.ITypeSymbol.IsUnion">
+            <summary>
+            True if language treats the type as a Union.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.ITypeSymbol.IsClosed">
+            <summary>
+            Indicates that the type is restricted from being inherited from outside its containing module.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.ITypeSymbol.GetClosedDerivedTypeInfo(System.Threading.CancellationToken)">
+            <summary>
+            Gets the direct derived types of a closed type.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">If this is not a closed type.</exception>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.ITypeSymbol.ToDisplayString(Microsoft.CodeAnalysis.NullableFlowState,Microsoft.CodeAnalysis.SymbolDisplayFormat)">
             <summary>
             Converts an <c>ITypeSymbol</c> and a nullable flow state to a string representation.
@@ -33973,13 +34208,13 @@
         </member>
         <member name="M:Microsoft.CodeAnalysis.SyntaxNode.GetFirstToken(System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
-            Gets the first token of the tree rooted by this node. Skips zero-width tokens.
+            Gets the first token of the tree rooted by this node. Skips zero-width tokens by default.
             </summary>
             <returns>The first token or <c>default(SyntaxToken)</c> if it doesn't exist.</returns>
         </member>
         <member name="M:Microsoft.CodeAnalysis.SyntaxNode.GetLastToken(System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
-            Gets the last token of the tree rooted by this node. Skips zero-width tokens.
+            Gets the last token of the tree rooted by this node. Skips zero-width tokens by default.
             </summary>
             <returns>The last token or <c>default(SyntaxToken)</c> if it doesn't exist.</returns>
         </member>
@@ -37639,6 +37874,23 @@
             </summary>
             <param name="size">The size of the pool.</param>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.PooledObjects.PoolTracker.OnAllocate(System.Object,System.String,System.String,System.Int32)">
+            <summary>
+            Records that a pooled object has been allocated.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.PooledObjects.PoolTracker.OnFree(System.Object)">
+            <summary>
+            Records that a pooled object has been freed / forgotten.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.PooledObjects.PoolTracker.ForgiveLeaks">
+            <summary>
+            Forgives all currently outstanding pooled object allocations, treating them as non-leaks.
+            Use this when an exception path is known to abandon pooled objects and that is acceptable
+            (e.g., MissingPredefinedMember exception unwinding through intermediate lowering methods).
+            </summary>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.IListExtensions.HasDuplicates``2(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,``1},System.Collections.Generic.IEqualityComparer{``1})">
             <summary>
             Determines whether duplicates exist using given equality comparer.
@@ -38586,6 +38838,12 @@
         </member>
         <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.HintNameUniquePerGenerator">
             <summary>The hintName '{0}' of the added source file must be unique within a generator.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.CompilationNotAvailableInPreCompilationPhase">
+            <summary>The compilation is not available during the pre-compilation phase, so {0} cannot be used as an input to a pre-compilation source output.</summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.SyntaxProvidersNotAvailableInPreCompilationPhase">
+            <summary>Syntax-based providers (e.g. SyntaxProvider, ForAttributeWithMetadataName) cannot be used as inputs to a pre-compilation source output, because the compilation has not yet been built.</summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.CodeAnalysisResources.HintNameInvalidChar">
             <summary>The hintName '{0}' contains an invalid character '{1}' at position {2}.</summary>
@@ -42568,6 +42826,49 @@
             Takes ownership of the given <see cref="T:System.IO.TextWriter" /> at construction and handles its disposal.
             </summary>
         </member>
+        <member name="T:Roslyn.Utilities.NoMessagePumpSyncContext">
+            <summary>
+            A SynchronizationContext whose synchronously blocking Wait method does not allow
+            any reentrancy via the message pump.
+            </summary>
+        </member>
+        <member name="F:Roslyn.Utilities.NoMessagePumpSyncContext.DefaultInstance">
+            <summary>
+            A shared singleton.
+            </summary>
+        </member>
+        <member name="M:Roslyn.Utilities.NoMessagePumpSyncContext.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Roslyn.Utilities.NoMessagePumpSyncContext"/> class.
+            </summary>
+        </member>
+        <member name="P:Roslyn.Utilities.NoMessagePumpSyncContext.Default">
+            <summary>
+            Gets a shared instance of this class.
+            </summary>
+        </member>
+        <member name="M:Roslyn.Utilities.NoMessagePumpSyncContext.Wait(System.IntPtr[],System.Boolean,System.Int32)">
+            <summary>
+            Synchronously blocks without a message pump.
+            </summary>
+            <param name="waitHandles">An array of type <see cref="T:System.IntPtr" /> that contains the native operating system handles.</param>
+            <param name="waitAll">true to wait for all handles; false to wait for any handle.</param>
+            <param name="millisecondsTimeout">The number of milliseconds to wait, or <see cref="F:System.Threading.Timeout.Infinite" /> (-1) to wait indefinitely.</param>
+            <returns>
+            The array index of the object that satisfied the wait.
+            </returns>
+        </member>
+        <member name="M:Roslyn.Utilities.NoMessagePumpSyncContext.WaitForMultipleObjects(System.UInt32,System.IntPtr[],System.Boolean,System.UInt32)">
+            <summary>
+            Really truly non pumping wait.
+            Raw IntPtrs have to be used, because the marshaller does not support arrays of SafeHandle, only
+            single SafeHandles.
+            </summary>
+            <param name="handleCount">The number of handles in the <paramref name="waitHandles"/> array.</param>
+            <param name="waitHandles">The handles to wait for.</param>
+            <param name="waitAll">A flag indicating whether all handles must be signaled before returning.</param>
+            <param name="millisecondsTimeout">A timeout that will cause this method to return.</param>
+        </member>
         <member name="T:Roslyn.Utilities.PlatformInformation">
             <summary>
             This class provides simple properties for determining whether the current platform is Windows or Unix-based.
@@ -42651,6 +42952,48 @@
             resilient to failure paths (including cancellation), ensuring that the type reset itself <em>safely</em> to the
             initial state so that other threads were not perpetually stuck in the busy state.
             </remarks>
+        </member>
+        <member name="T:Roslyn.Utilities.SpecializedSyncContext">
+            <summary>
+            A structure that applies and reverts changes to the <see cref="T:System.Threading.SynchronizationContext"/>.
+            </summary>
+        </member>
+        <member name="F:Roslyn.Utilities.SpecializedSyncContext._initialized">
+            <summary>
+            A flag indicating whether the non-default constructor was invoked.
+            </summary>
+        </member>
+        <member name="F:Roslyn.Utilities.SpecializedSyncContext._prior">
+            <summary>
+            The SynchronizationContext to restore when <see cref="M:Roslyn.Utilities.SpecializedSyncContext.Dispose"/> is invoked.
+            </summary>
+        </member>
+        <member name="F:Roslyn.Utilities.SpecializedSyncContext._appliedContext">
+            <summary>
+            The SynchronizationContext applied when this struct was constructed.
+            </summary>
+        </member>
+        <member name="F:Roslyn.Utilities.SpecializedSyncContext._checkForChangesOnRevert">
+            <summary>
+            A value indicating whether to check that the applied SyncContext is still the current one when the original is restored.
+            </summary>
+        </member>
+        <member name="M:Roslyn.Utilities.SpecializedSyncContext.#ctor(System.Threading.SynchronizationContext,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Roslyn.Utilities.SpecializedSyncContext"/> struct.
+            </summary>
+        </member>
+        <member name="M:Roslyn.Utilities.SpecializedSyncContext.Apply(System.Threading.SynchronizationContext,System.Boolean)">
+            <summary>
+            Applies the specified <see cref="T:System.Threading.SynchronizationContext"/> to the caller's context.
+            </summary>
+            <param name="syncContext">The synchronization context to apply.</param>
+            <param name="checkForChangesOnRevert">A value indicating whether to check that the applied SyncContext is still the current one when the original is restored.</param>
+        </member>
+        <member name="M:Roslyn.Utilities.SpecializedSyncContext.Dispose">
+            <summary>
+            Reverts the SynchronizationContext to its previous instance.
+            </summary>
         </member>
         <member name="M:Roslyn.Utilities.StreamExtensions.TryReadAll(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
             <summary>
@@ -43284,6 +43627,22 @@
             This class should not be used by developers in source code.
             </summary>
         </member>
+        <member name="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute">
+            <summary>
+            Specifies the priority of a member in overload resolution. When unspecified, the default priority is 0.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute"/> class.
+            </summary>
+            <param name="priority">The priority of the attributed member. Higher numbers are prioritized, lower numbers are deprioritized. 0 is the default if no attribute is present.</param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute.Priority">
+            <summary>
+            The priority of the member.
+            </summary>
+        </member>
         <member name="T:System.Runtime.CompilerServices.RequiredMemberAttribute">
             <summary>Specifies that a type has required members or that a member is required.</summary>
         </member>
@@ -43891,7 +44250,7 @@
             </list>
             If any of the above are not true (for example, the capacity is a rough hint, or the exact number of elements may not
             match the capacity specified, or if it's intended as a scratch buffer, and won't realize a final array), then <see
-            cref="M:Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder`1.GetInstance(System.Int32,`0)"/> should be used instead.
+            cref="T:Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder`1"/>.<c>GetInstance</c> should be used instead.
             </remarks>
         </member>
         <member name="M:FixedSizeArrayBuilder`1.#ctor(System.Int32)">
@@ -43920,7 +44279,7 @@
             </list>
             If any of the above are not true (for example, the capacity is a rough hint, or the exact number of elements may not
             match the capacity specified, or if it's intended as a scratch buffer, and won't realize a final array), then <see
-            cref="M:Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder`1.GetInstance(System.Int32,`0)"/> should be used instead.
+            cref="T:Microsoft.CodeAnalysis.PooledObjects.ArrayBuilder`1"/>.<c>GetInstance</c> should be used instead.
             </remarks>
         </member>
         <member name="M:FixedSizeArrayBuilder`1.MoveToImmutable">
