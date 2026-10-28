@@ -118,6 +118,7 @@
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
     <None Remove="MethodConverterTests\MethodArgument\LocalMethod.js" />
+    <None Remove="MethodConverterTests\MethodArgument\NestedReorderedArgs.js" />
     <None Remove="MethodConverterTests\MethodArgument\StaticMethods.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\AddNum.static.js" />
     <None Remove="MethodConverterTests\NewLanguageFeatures\DefaultLiteralExpression.js" />
@@ -263,6 +264,7 @@
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\LocalMethod.js" />
+    <EmbeddedResource Include="MethodConverterTests\MethodArgument\NestedReorderedArgs.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\StaticMethods.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\AddNum.static.js" />
     <EmbeddedResource Include="MethodConverterTests\NewLanguageFeatures\InitProp.static.js" />

@@ -50,7 +50,21 @@
             ClassMethod2(b: MutatedIntGV(), a: MutatedIntGV(), d: GetString());
         }
 
+        public static void TestNestedReorderedArgs()
+        {
+            // The first argument is in order, but it holds another call
+            // whose arguments are reordered too.
+            Chain(Chain(gv, b: GetString(), a: MutatedIntGV()), b: GetString(), a: MutatedIntGV());
+
+            // Same, with the nested call as the receiver.
+            Make(b: GetString(), a: MutatedIntGV()).Method1(b: MutatedIntGV(), a: 2);
+        }
+
         public static int MutatedIntGV() => ++gv;
+
+        private static int Chain(int x, int a, string b) => x + a;
+
+        private static TestMethodArguments Make(int a, string b) => new TestMethodArguments();
 
         public static string GetString() => "asdf";
 

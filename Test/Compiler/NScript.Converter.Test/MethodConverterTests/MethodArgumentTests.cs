@@ -24,6 +24,7 @@
         [DataRow(TestClassNameStr, "TestInstanceMethods", "InstanceMethod.static.js", TestType.All, true)]
         [DataRow(TestClassNameStr, "TestStaticMethods", "StaticMethods.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "TestStaticMethods", "StaticMethods.js", TestType.All, true)]
+        [DataRow(TestClassNameStr, "TestNestedReorderedArgs", "NestedReorderedArgs.js", TestType.All, false)]
         public void TestMcs(
             string className,
             string methodName,

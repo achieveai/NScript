@@ -158,6 +158,7 @@ namespace NScript.Converter.ExpressionsConverter
             if (methodReferenceExpression != null)
             {
                 MethodCallContext methodCallContext;
+                List<JST.Expression> args, toPreInject;
 
                 if (methodReferenceExpression.LeftExpression != null)
                 {
@@ -182,6 +183,12 @@ namespace NScript.Converter.ExpressionsConverter
                                 methodReferenceExpression.LeftExpression);
                     }
 
+                    (args, toPreInject) = ReorderArgs(
+                        methodConverter,
+                        ref thisExpression,
+                        methodCallExpression.Parameters,
+                        methodCallExpression.ArgumentOrderOpt);
+
                     methodCallContext =
                         new MethodCallContext(
                             thisExpression,
@@ -190,16 +197,16 @@ namespace NScript.Converter.ExpressionsConverter
                 }
                 else
                 {
+                    (args, toPreInject) = ReorderArgs(
+                        methodConverter,
+                        methodCallExpression.Parameters,
+                        methodCallExpression.ArgumentOrderOpt);
+
                     methodCallContext = new MethodCallContext(
                         methodReferenceExpression.MethodReference,
                         methodReferenceExpression.Location,
                         methodConverter.Scope);
                 }
-
-                var (args, toPreInject) = ReorderArgs(
-                    methodConverter,
-                    methodCallExpression.Parameters,
-                    methodCallExpression.ArgumentOrderOpt);
 
                 var methodCall = CreateMethodCallExpression(
                     methodCallContext,
@@ -720,54 +727,87 @@ namespace NScript.Converter.ExpressionsConverter
             IList<Expression> arguments,
             IList<int> argumentOrderOpt)
         {
-            var args = arguments
-                .Select(exp => ExpressionConverterBase.Convert(methodConverter, exp))
-                .ToList();
+            JST.Expression receiver = null;
+            return ReorderArgs(methodConverter, ref receiver, arguments, argumentOrderOpt);
+        }
 
+        /// <summary>
+        /// Converts the arguments and puts them in parameter order. A receiver
+        /// and every argument up to the last reordered one are copied into
+        /// temps first, in source order, so they are evaluated in C# order.
+        /// A temp is taken after its argument is converted and held until all
+        /// arguments are converted, so a call nested in a later argument
+        /// can't overwrite it.
+        /// </summary>
+        public static (List<JST.Expression> Args, List<JST.Expression> ToPreInject) ReorderArgs(
+            IMethodScopeConverter methodConverter,
+            ref JST.Expression receiver,
+            IList<Expression> arguments,
+            IList<int> argumentOrderOpt)
+        {
             if (argumentOrderOpt == null)
             {
                 // Early return in case arguments are in the right order.
-                return (args, null);
+                return (
+                    arguments
+                        .Select(exp => ExpressionConverterBase.Convert(methodConverter, exp))
+                        .ToList(),
+                    null);
             }
 
             var argumentOrder = argumentOrderOpt;
             var tmpIdentifiders = new List<JST.IIdentifier>();
-
-            // Create temp vars for all those arguments not in order
-            // and replace the argument at that position with the temp var
-
             var expressionList = new List<JST.Expression>();
-            for (int i = 0; i < argumentOrder.Count; i++)
+
+            JST.Expression Spill(JST.Expression value)
             {
-                if (argumentOrder[i] != i)
+                if (value is JST.LiteralExpression || value is JST.ThisExpression)
                 {
-                    if (args[i] is JST.LiteralExpression)
-                    {
-                        // No temp var required when dealing with literals
-                        // since no side effect will be observed
-
-                        continue;
-                    }
-
-                    var tmpIdentifier = methodConverter.GetTempVariable();
-                    var tmpVar = new JST.IdentifierExpression(
-                        tmpIdentifier,
-                        methodConverter.Scope);
-
-                    tmpIdentifiders.Add(tmpIdentifier);
-
-                    var assignment = new JST.BinaryExpression(
-                        null,
-                        methodConverter.Scope,
-                        JST.BinaryOperator.Assignment,
-                        tmpVar,
-                        args[i]);
-
-                    // Inject side-effect calls in left-to-right order
-                    expressionList.Add(assignment);
-
-                    args[i] = tmpVar;
+                    // No temp var required, since nothing can change them.
+                    return value;
                 }
+
+                var tmpIdentifier = methodConverter.GetTempVariable();
+                tmpIdentifiders.Add(tmpIdentifier);
+
+                // Inject side-effect calls in left-to-right order
+                expressionList.Add(new JST.BinaryExpression(
+                    null,
+                    methodConverter.Scope,
+                    JST.BinaryOperator.Assignment,
+                    new JST.IdentifierExpression(tmpIdentifier, methodConverter.Scope),
+                    value));
+
+                return new JST.IdentifierExpression(tmpIdentifier, methodConverter.Scope);
+            }
+
+            // Arguments after this one are in order and are evaluated after
+            // every temp has been read, so they stay in place.
+            int lastReordered = argumentOrder.Count - 1;
+            while (lastReordered >= 0 && argumentOrder[lastReordered] == lastReordered)
+            {
+                lastReordered--;
+            }
+
+            // Literals need no temps, so neither does the receiver.
+            bool needsTemps = arguments
+                .Take(lastReordered + 1)
+                .Any(arg => !(arg is LiteralExpression));
+
+            if (!needsTemps)
+            {
+                lastReordered = -1;
+            }
+            else if (receiver != null)
+            {
+                receiver = Spill(receiver);
+            }
+
+            var args = new List<JST.Expression>(arguments.Count);
+            for (int i = 0; i < arguments.Count; i++)
+            {
+                var arg = ExpressionConverterBase.Convert(methodConverter, arguments[i]);
+                args.Add(i <= lastReordered ? Spill(arg) : arg);
             }
 
             // Make arguments in correct order
