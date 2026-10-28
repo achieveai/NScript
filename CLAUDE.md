@@ -104,7 +104,7 @@ Forked binaries are checked into `Dependencies/Roslyn/`. See `roslyn/CLAUDE.md` 
 
 ### Framework projects compile with a custom CSC
 
-The `Sources/Framework/Directory.Build.props` sets `NoStdLib=true`, `CscToolPath` pointing to the NScript compiler in `NScriptToolSet/bin/`, and `LangVersion=13`. Framework projects target `netstandard2.1` but are compiled by NScript's custom compiler to produce DLLs with embedded AST resources.
+The `Sources/Framework/Directory.Build.props` sets `NoStdLib=true`, `CscToolPath` pointing to the NScript compiler in `NScriptToolSet/bin/`, and `LangVersion=14`. Framework projects target `netstandard2.1` but are compiled by NScript's custom compiler to produce DLLs with embedded AST resources.
 
 ### Framework tests require Debug build first
 
@@ -189,9 +189,9 @@ Architecture Decision Records in `docs/adr/` document all major design decisions
 
 ## C# Feature Support
 
-Supported: classes, interfaces, generics, LINQ, lambdas, async/await, null-coalescing, pattern matching, indices/ranges, C# 8 features.
+Supported: classes, interfaces, generics, LINQ, lambdas, async/await, null-coalescing, pattern matching, indices/ranges, most C# 8–14 features (C# 14: `field`, extension members, user-defined `+=`/`++`, `?.` assignment).
 
-NOT supported: `dynamic`, `yield break`/`yield return`, reflection, P/Invoke. See `csharp8-todos.md` for detailed C# 8 status.
+NOT supported: `dynamic`, `yield break`/`yield return`, reflection, P/Invoke. See `docs/language/csharp9-13-status.md` (covers C# 9–14) and `csharp8-todos.md` for detailed status.
 
 ## JST Code Generation Rules (CRITICAL)
 

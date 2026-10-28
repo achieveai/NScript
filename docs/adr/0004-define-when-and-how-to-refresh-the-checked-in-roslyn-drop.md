@@ -144,6 +144,7 @@ Negative:
   - Not run: Cs2JsCTest and SourceMap.Server.E2E.Test. Neither is in the solution.
   - Browser suites: QUnit 358/358, e2e-todo 55/55, e2e-sheet 11/11, `bench-spreadsheet.mjs --check` OK (DOM write counts match; absolute-ms warnings only).
 - Scope: `LangVersion` stays 13 in the Framework props. C# 14 features need converter tests before they are enabled.
+  - Follow-up in the same PR: #115 and #116 fixed the two crashes, and #117 raised `LangVersion` to 14 with browser and converter tests. The generated framework and demo-app JS was byte-identical before and after.
 - C# 14 probe (LangVersion 14, run in Chromium): `field` keyword, null-conditional assignment, `nameof` on unbound generics, `ref`/`out` on simple lambda parameters, and partial constructors/events work. Extension members and user-defined compound assignment operators crash `nscript.exe`. First-class span does not apply (no `Span<T>` in NScript's mscorlib).
 - Next refresh: when .NET 11 ships C# 15 as GA.
 

@@ -7,6 +7,47 @@
 namespace RealScript;
 
 using System;
+using System.Collections.Generic;
+
+/// <summary>
+/// C# 14 <c>field</c> keyword: accessors use the synthesized backing field.
+/// </summary>
+public class Lang14FieldHolder
+{
+    public int Doubled { get => field; set => field = value * 2; }
+}
+
+/// <summary>
+/// Target for C# 14 null-conditional assignment.
+/// </summary>
+public class Lang14Node
+{
+    public int V;
+
+    public int P { get; set; }
+}
+
+public delegate bool Lang14TryGet(string s, out int v);
+
+/// <summary>
+/// C# 14 partial constructor and partial event.
+/// </summary>
+public partial class Lang14Widget
+{
+    public partial Lang14Widget(int v);
+
+    public partial event Action Changed;
+}
+
+public partial class Lang14Widget
+{
+    public int V;
+    private Action handlers;
+
+    public partial Lang14Widget(int v) { V = v; }
+
+    public partial event Action Changed { add { handlers += value; } remove { handlers -= value; } }
+}
 
 /// <summary>
 /// The receiver type for the C# 14 extension members in <see cref="Lang14Extensions"/>.
@@ -124,4 +165,14 @@ public class Lang14Features
     {
         b += 7;
     }
+
+    public void NullConditionalAssignment(Lang14Node n)
+    {
+        n?.V = 7;
+        n?.P += 2;
+    }
+
+    public string NameofUnboundGeneric() => nameof(List<>) + nameof(Dictionary<,>.Count);
+
+    public Lang14TryGet LambdaOutModifier() => (s, out v) => { v = s.Length; return true; };
 }

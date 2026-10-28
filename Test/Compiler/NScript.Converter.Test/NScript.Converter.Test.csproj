@@ -89,6 +89,13 @@
     <None Remove="MethodConverterTests\Lang8Features\TestIsPattern.js" />
     <None Remove="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />
     <None Remove="MethodConverterTests\Lang14Features\ExtensionProperty.js" />
+    <None Remove="MethodConverterTests\Lang14Features\FieldGetter.js" />
+    <None Remove="MethodConverterTests\Lang14Features\FieldSetter.js" />
+    <None Remove="MethodConverterTests\Lang14Features\NullConditionalAssignment.js" />
+    <None Remove="MethodConverterTests\Lang14Features\NameofUnboundGeneric.js" />
+    <None Remove="MethodConverterTests\Lang14Features\LambdaOutModifier.js" />
+    <None Remove="MethodConverterTests\Lang14Features\PartialConstructor.js" />
+    <None Remove="MethodConverterTests\Lang14Features\PartialEvent.js" />
     <None Remove="MethodConverterTests\Lang14Features\ExtensionMethod.js" />
     <None Remove="MethodConverterTests\Lang14Features\ExtensionStaticMethod.js" />
     <None Remove="MethodConverterTests\Lang14Features\ExtensionSetter.js" />
@@ -214,6 +221,13 @@
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestIsPattern.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang8Features\TestNullCoalescing.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionProperty.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\FieldGetter.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\FieldSetter.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\NullConditionalAssignment.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\NameofUnboundGeneric.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\LambdaOutModifier.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\PartialConstructor.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\PartialEvent.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionStaticMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionSetter.js" />
