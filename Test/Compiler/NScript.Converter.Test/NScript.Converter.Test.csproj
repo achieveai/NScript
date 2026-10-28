@@ -108,6 +108,12 @@
     <None Remove="MethodConverterTests\Lang14Features\CompoundStaticFallback.js" />
     <None Remove="MethodConverterTests\Lang14Features\IncrementStatic.js" />
     <None Remove="MethodConverterTests\Lang14Features\CompoundExtension.js" />
+    <None Remove="MethodConverterTests\Lang14Features\ExtensionPropertyCompound.js" />
+    <None Remove="MethodConverterTests\Lang14Features\ExtensionPropertyValue.js" />
+    <None Remove="MethodConverterTests\Lang14Features\CompoundInstanceValue.js" />
+    <None Remove="MethodConverterTests\Lang14Features\IncrementInstanceValue.js" />
+    <None Remove="MethodConverterTests\Lang14Features\CompoundStaticReceiver.js" />
+    <None Remove="MethodConverterTests\Lang14Features\IncrementStaticValue.js" />
     <None Remove="MethodConverterTests\MethodArgument\Constructor.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
@@ -240,6 +246,12 @@
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundStaticFallback.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementStatic.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundExtension.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionPropertyCompound.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionPropertyValue.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundInstanceValue.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementInstanceValue.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundStaticReceiver.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementStaticValue.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\Constructor.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />

@@ -39,6 +39,12 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "LambdaOutModifier", "LambdaOutModifier.js", TestType.All, false)]
         [DataRow(WidgetClassNameStr, ".ctor", "PartialConstructor.js", TestType.All, false)]
         [DataRow(WidgetClassNameStr, "add_Changed", "PartialEvent.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "ExtensionPropertyCompound", "ExtensionPropertyCompound.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "ExtensionPropertyValue", "ExtensionPropertyValue.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "CompoundInstanceValue", "CompoundInstanceValue.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IncrementInstanceValue", "IncrementInstanceValue.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "CompoundStaticReceiver", "CompoundStaticReceiver.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IncrementStaticValue", "IncrementStaticValue.js", TestType.All, false)]
         public void TestMcs(
             string className,
             string methodName,

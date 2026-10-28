@@ -164,6 +164,7 @@
                 switch (this.Operator)
                 {
                     case BinaryOperator.Assignment:
+                    case BinaryOperator.Comma:
                         return this.Right.ResultType;
                     case BinaryOperator.BitwiseAnd:
                     case BinaryOperator.BitwiseAndAssignment:

@@ -112,6 +112,11 @@ namespace Sunlight.Framework.Test
             public static Money operator ++(Money a) => new Money { Cents = a.Cents + 1 };
         }
 
+        private class Wallet
+        {
+            public Money M = new Money();
+        }
+
         [Test]
         public static void FieldKeyword(Assert assert)
         {
@@ -204,6 +209,40 @@ namespace Sunlight.Framework.Test
             assert.Equal(m.Cents, 5, "+= falls back to static +");
             m++;
             assert.Equal(m.Cents, 6, "++ falls back to static ++");
+        }
+
+        [Test]
+        public static void CompoundAssignmentShapes(Assert assert)
+        {
+            var b = Cs14Box.Make(4);
+            b.Half += 3;
+            assert.Equal(b.V, 10, "extension property +=");
+            b.Half++;
+            assert.Equal(b.V, 12, "extension property ++");
+            int old = b.Half++;
+            assert.Equal(old, 6, "extension property postfix yields the old value");
+            assert.Equal(b.V, 14, "extension property postfix stores");
+            assert.Equal(b.Half -= 1, 6, "extension property compound yields the new value");
+
+            var a = new Acc();
+            var r = a += 5;
+            assert.IsTrue(r == a, "instance += yields the target");
+            assert.Equal(a.Total, 5, "instance += used as a value runs once");
+            assert.IsTrue(++a == a, "instance prefix ++ yields the target");
+            assert.Equal(a.Total, 105, "instance prefix ++ used as a value runs once");
+
+            int picks = 0;
+            var w = new Wallet();
+            Func<Wallet> pick = () => { picks++; return w; };
+            pick().M += 5;
+            pick().M++;
+            assert.Equal(w.M.Cents, 6, "static fallback on a call receiver");
+            assert.Equal(picks, 2, "the receiver is evaluated once per operator");
+
+            var m = new Money();
+            var before = m++;
+            assert.Equal(before.Cents, 0, "static postfix ++ yields the old value");
+            assert.Equal(m.Cents, 1, "static postfix ++ stores the new value");
         }
 
         private static int Count(ref int c)

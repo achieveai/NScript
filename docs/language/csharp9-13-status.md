@@ -174,8 +174,8 @@ Converter snapshots: `Lang14FeatureTests.cs` over `Test/Framework/RealScript/Lan
 | `nameof` on unbound generics | ✅ Supported | `nameof(List<>)` folds to `"List"` at compile time. |
 | Modifiers on simple lambda parameters | ✅ Supported | `(s, out v) => ...` and `(ref x) => ...`. |
 | Partial constructors and events | ✅ Supported | Roslyn merges the halves; the bound tree sees ordinary members. |
-| Extension members | ✅ Supported (#115) | Properties, methods, static members, generic blocks, and operators. Each call targets Roslyn's static implementation method. Not yet: `x.P += 1` on an extension property, which fails with a clear `NotSupportedException`. Write `x.P = x.P + 1`. |
-| User-defined compound assignment | ✅ Supported (#116) | Instance `operator +=` / `++` / `--`, plus the static fallbacks (`a = a + b`, `a = ++a`). Limits: an instance operator used as a value, or a static fallback on a target with side effects (`Get().M += 1`), fails with a clear `NotSupportedException`. |
+| Extension members | ✅ Supported (#115) | Properties, methods, static members, generic blocks, and operators. Each call targets Roslyn's static implementation method. `x.P += 1` and `x.P++` on an extension property become getter and setter calls, with `x` evaluated once. |
+| User-defined compound assignment | ✅ Supported (#116) | Instance `operator +=` / `++` / `--`, plus the static fallbacks (`a = a + b`, `a = ++a`). Works as a value too: `r = a += 5` yields `a`, and postfix `m++` yields the old value. A receiver with side effects (`Get().M += 1`) runs once, via a compiler temp. Still a clear `NotSupportedException`: an operand that needs a conversion, and an indexer or other unusual target. |
 | First-class span | ❌ Not applicable | NScript's `mscorlib` has no `Span<T>`. |
 | Named/optional args in expression trees | ❌ Not applicable | Any method call in an expression tree already fails (`CS0656`, `MethodBase.GetMethodFromHandle`). |
 

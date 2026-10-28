@@ -21,6 +21,12 @@
         /// </summary>
         private BoundExpression statementExpression;
 
+        /// <summary>
+        /// Numbers the compiler temps. C# names cannot hold <c>$</c>, so a
+        /// temp never clashes with a user local.
+        /// </summary>
+        private int tempId = 0;
+
         private LinkedList<(int id, BoundNode nodeBlock, List<string> localFunctions)> scopeBlockStack
             = new LinkedList<(int, BoundNode, List<string>)>();
 
@@ -986,12 +992,28 @@
             var isLifted = IsLifted(op);
             _ = IsChecked(op);
             var typeMask = op & BinaryOperatorKind.TypeMask;
-            RejectExtensionPropertyTarget(node.Left);
 
             // Roslyn leaves the type bits empty for a C# 14 instance operator.
             if (typeMask == BinaryOperatorKind.UserDefined
                 || node.Operator.Method is { IsStatic: false })
             { return UserDefinedCompoundAssignment(node, isLifted, arg); }
+
+            if (IsExtensionProperty(node.Left))
+            {
+                return AssignBack(
+                    node,
+                    node.Left,
+                    false,
+                    read => new BinaryExpression
+                    {
+                        IsLifted = isLifted,
+                        Left = read,
+                        Right = (ExpressionSer)Visit(node.Right, arg),
+                        Operator = (int)GetNScriptOperator(op),
+                        Location = node.Syntax.Location.GetSerLoc()
+                    },
+                    arg);
+            }
 
             var nscriptOp = GetNScriptOperator(op) + 1;
             if (typeMask <= BinaryOperatorKind.Bool
@@ -1444,14 +1466,40 @@
 
         public override AstBase VisitIncrementOperator(BoundIncrementOperator node, SerializationContext arg)
         {
-            RejectExtensionPropertyTarget(node.Operand);
-            return (node.OperatorKind & UnaryOperatorKind.TypeMask) == UnaryOperatorKind.UserDefined
-                ? UserDefinedIncrement(node, arg)
-                : ConvertUnaryOperator(
+            var typeMask = node.OperatorKind & UnaryOperatorKind.TypeMask;
+            if (typeMask == UnaryOperatorKind.UserDefined)
+            { return UserDefinedIncrement(node, arg); }
+
+            if (IsExtensionProperty(node.Operand))
+            {
+                if (typeMask > UnaryOperatorKind.Bool && typeMask != UnaryOperatorKind.Enum)
+                { throw new NotImplementedException(); }
+
+                var opKind = node.OperatorKind & UnaryOperatorKind.OpMask;
+                var isIncrement = opKind == UnaryOperatorKind.PrefixIncrement
+                    || opKind == UnaryOperatorKind.PostfixIncrement;
+                return AssignBack(
+                    node,
                     node.Operand,
-                    node.MethodOpt,
-                    node.OperatorKind,
+                    IsPostfix(node),
+                    read => new BinaryExpression
+                    {
+                        IsLifted = IsLifted(node.OperatorKind),
+                        Left = read,
+                        Right = new IntLiteralExpression { Value = 1 },
+                        Operator = (int)(isIncrement
+                            ? CLR.AST.BinaryOperator.Plus
+                            : CLR.AST.BinaryOperator.Minus),
+                        Location = node.Syntax.Location.GetSerLoc()
+                    },
                     arg);
+            }
+
+            return ConvertUnaryOperator(
+                node.Operand,
+                node.MethodOpt,
+                node.OperatorKind,
+                arg);
         }
 
         /// <summary>
@@ -1467,39 +1515,35 @@
             var method = node.Operator.Method;
             if (!method.IsStatic)
             {
-                RequireStatement(node, "A user-defined compound assignment operator");
-                if (method.IsExtensionBlockMember())
-                {
-                    return ToExtensionCall(method, node.Left, new[] { node.Right }, null, node.Syntax, arg);
-                }
-
-                return new MethodCallExpression
-                {
-                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
-                    Arguments = ToArgs(method, new[] { node.Right }, arg),
-                    Instance = (ExpressionSer)Visit(node.Left, arg),
-                    Location = node.Syntax.Location.GetSerLoc()
-                };
+                return InstanceOperatorCall(
+                    node,
+                    node.Left,
+                    method,
+                    new[] { node.Right },
+                    arg);
             }
 
-            RequireRepeatable(node.Left, node);
             RequireIdentity(node.LeftConversion, node);
             RequireIdentity(node.FinalConversion, node);
-            return new BinaryExpression
-            {
-                Left = (ExpressionSer)Visit(node.Left, arg),
-                Right = new UserDefinedBinaryOrUnaryOpExpression
+            return AssignBack(
+                node,
+                node.Left,
+                false,
+                read =>
                 {
-                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
-                    Arguments = ToArgs(method, new[] { node.Left, node.Right }, arg),
-                    IsLifted = isLifted,
-                    Operator = (int)GetNScriptOperator(
-                        node.Operator.Kind & (BinaryOperatorKind.OpMask | BinaryOperatorKind.Logical)),
-                    Location = node.Syntax.Location.GetSerLoc()
+                    var args = ToArgs(method, new[] { node.Left, node.Right }, arg);
+                    args[0].Value = read;
+                    return new UserDefinedBinaryOrUnaryOpExpression
+                    {
+                        Method = arg.SymbolSerializer.GetMethodSpecId(method),
+                        Arguments = args,
+                        IsLifted = isLifted,
+                        Operator = (int)GetNScriptOperator(
+                            node.Operator.Kind & (BinaryOperatorKind.OpMask | BinaryOperatorKind.Logical)),
+                        Location = node.Syntax.Location.GetSerLoc()
+                    };
                 },
-                Operator = (int)CLR.AST.BinaryOperator.Assignment,
-                Location = node.Syntax.Location.GetSerLoc()
-            };
+                arg);
         }
 
         /// <summary>
@@ -1513,73 +1557,303 @@
             var method = node.MethodOpt;
             if (!method.IsStatic)
             {
-                RequireStatement(node, "A user-defined instance increment operator");
-                if (method.IsExtensionBlockMember())
-                {
-                    return ToExtensionCall(method, node.Operand, Array.Empty<BoundExpression>(), null, node.Syntax, arg);
-                }
-
-                return new MethodCallExpression
-                {
-                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
-                    Arguments = new List<MethodCallArg>(),
-                    Instance = (ExpressionSer)Visit(node.Operand, arg),
-                    Location = node.Syntax.Location.GetSerLoc()
-                };
+                return InstanceOperatorCall(
+                    node,
+                    node.Operand,
+                    method,
+                    Array.Empty<BoundExpression>(),
+                    arg);
             }
 
-            // A postfix value is the old value, which `a = op(a)` loses.
-            var opKind = node.OperatorKind & UnaryOperatorKind.OpMask;
-            if (opKind == UnaryOperatorKind.PostfixIncrement
-                || opKind == UnaryOperatorKind.PostfixDecrement)
-            { RequireStatement(node, "A postfix user-defined increment operator"); }
-
-            RequireRepeatable(node.Operand, node);
             RequireIdentity(node.OperandConversion, node);
             RequireIdentity(node.ResultConversion, node);
-            return new BinaryExpression
-            {
-                Left = (ExpressionSer)Visit(node.Operand, arg),
-                Right = new UserDefinedBinaryOrUnaryOpExpression
+            return AssignBack(
+                node,
+                node.Operand,
+                IsPostfix(node),
+                read =>
                 {
-                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
-                    Arguments = ToArgs(method, new[] { node.Operand }, arg),
-                    IsLifted = IsLifted(node.OperatorKind),
-                    Operator = (int)GetNScriptOperator(node.OperatorKind),
-                    Location = node.Syntax.Location.GetSerLoc()
+                    var args = ToArgs(method, new[] { node.Operand }, arg);
+                    args[0].Value = read;
+                    return new UserDefinedBinaryOrUnaryOpExpression
+                    {
+                        Method = arg.SymbolSerializer.GetMethodSpecId(method),
+                        Arguments = args,
+                        IsLifted = IsLifted(node.OperatorKind),
+                        Operator = (int)GetNScriptOperator(node.OperatorKind),
+                        Location = node.Syntax.Location.GetSerLoc()
+                    };
                 },
-                Operator = (int)CLR.AST.BinaryOperator.Assignment,
-                Location = node.Syntax.Location.GetSerLoc()
-            };
-        }
-
-        private void RequireStatement(BoundExpression node, string what)
-        {
-            if (!ReferenceEquals(node, statementExpression))
-            {
-                throw new NotSupportedException(
-                    $"{what} can only be used as a statement, not as a value, at {node.Syntax.Location}.");
-            }
+                arg);
         }
 
         /// <summary>
-        /// <c>a = op(a)</c> evaluates <c>a</c> twice, so it must have no side effects.
+        /// A C# 14 instance operator mutates its target in place. Used as a
+        /// value, it yields the target: <c>(t = x, t.op(y), t)</c>.
         /// </summary>
-        private static void RequireRepeatable(BoundExpression target, BoundExpression node)
+        private ExpressionSer InstanceOperatorCall(
+            BoundExpression node,
+            BoundExpression target,
+            MethodSymbol method,
+            BoundExpression[] arguments,
+            SerializationContext arg)
         {
-            if (!IsRepeatable(target))
+            var effects = new List<ExpressionSer>();
+            var valueUsed = !ReferenceEquals(node, statementExpression);
+            var receiver = valueUsed
+                ? Once(target, effects, arg)
+                : () => (ExpressionSer)Visit(target, arg);
+
+            if (method.IsExtensionBlockMember())
             {
-                throw new NotSupportedException(
-                    $"This user-defined operator needs a local, parameter, field or property target, at {node.Syntax.Location}.");
+                var call = ToExtensionCall(method, target, arguments, null, node.Syntax, arg);
+                call.Arguments[0].Value = receiver();
+                effects.Add(call);
             }
+            else
+            {
+                effects.Add(new MethodCallExpression
+                {
+                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
+                    Arguments = ToArgs(method, arguments, arg),
+                    Instance = receiver(),
+                    Location = node.Syntax.Location.GetSerLoc()
+                });
+            }
+
+            if (valueUsed)
+            { effects.Add(receiver()); }
+
+            return Sequence(effects, node);
         }
 
+        /// <summary>
+        /// Lowers <c>x op= y</c> and <c>x++</c> to <c>x = f(x)</c>. Parts of
+        /// <c>x</c> with side effects go into temps, so they run once. A
+        /// postfix value is the old value, kept in a temp.
+        /// </summary>
+        private ExpressionSer AssignBack(
+            BoundExpression node,
+            BoundExpression target,
+            bool isPostfix,
+            Func<ExpressionSer, ExpressionSer> compute,
+            SerializationContext arg)
+        {
+            var effects = new List<ExpressionSer>();
+            var access = SpillTarget(target, effects, arg);
+            var valueUsed = !ReferenceEquals(node, statementExpression);
+
+            if (valueUsed && isPostfix)
+            {
+                var old = NewTemp(target.Type, arg);
+                effects.Add(Assign(old(), access.Read(), node));
+                effects.Add(access.Write(compute(old())));
+                effects.Add(old());
+            }
+            else if (valueUsed && access.WriteIsCall)
+            {
+                // A setter call has no value, so keep the new value.
+                var value = NewTemp(target.Type, arg);
+                effects.Add(Assign(value(), compute(access.Read()), node));
+                effects.Add(access.Write(value()));
+                effects.Add(value());
+            }
+            else
+            {
+                effects.Add(access.Write(compute(access.Read())));
+            }
+
+            return Sequence(effects, node);
+        }
+
+        private sealed class TargetAccess
+        {
+            public Func<ExpressionSer> Read;
+
+            public Func<ExpressionSer, ExpressionSer> Write;
+
+            /// <summary>
+            /// The write is a setter call, which has no value.
+            /// </summary>
+            public bool WriteIsCall;
+        }
+
+        private TargetAccess SpillTarget(
+            BoundExpression target,
+            List<ExpressionSer> effects,
+            SerializationContext arg)
+        {
+            var location = target.Syntax.Location.GetSerLoc();
+            Func<ExpressionSer> read;
+            switch (target)
+            {
+                case BoundPropertyAccess { PropertySymbol: var property } extension
+                    when property.IsExtensionBlockMember():
+                    var extReceiver = property.IsStatic ? null : Once(extension.ReceiverOpt, effects, arg);
+                    return new TargetAccess
+                    {
+                        Read = () => AccessorCall(property.GetMethod, extReceiver, null, location, arg),
+                        Write = value => AccessorCall(property.SetMethod, extReceiver, value, location, arg),
+                        WriteIsCall = true
+                    };
+
+                case BoundLocal or BoundParameter:
+                    read = () => (ExpressionSer)Visit(target, arg);
+                    break;
+
+                case BoundFieldAccess field:
+                    var fieldReceiver = field.FieldSymbol.IsStatic ? null : Once(field.ReceiverOpt, effects, arg);
+                    read = () => new FieldExpression
+                    {
+                        Field = arg.SymbolSerializer.GetFieldSpecId(
+                            field.FieldSymbol.CorrespondingTupleField
+                            ?? field.FieldSymbol),
+                        Instance = fieldReceiver?.Invoke(),
+                        Location = location
+                    };
+                    break;
+
+                case BoundPropertyAccess property:
+                    var propertyReceiver = property.PropertySymbol.IsStatic ? null : Once(property.ReceiverOpt, effects, arg);
+                    read = () => new PropertyExpression
+                    {
+                        Property = arg.SymbolSerializer.GetPropertySpecId(property.PropertySymbol),
+                        Instance = propertyReceiver?.Invoke(),
+                        IsNotVirtual = property.SuppressVirtualCalls,
+                        Location = location
+                    };
+                    break;
+
+                case BoundArrayAccess array:
+                    var arrayRef = Once(array.Expression, effects, arg);
+                    var indices = array.Indices.Select(index => Once(index, effects, arg)).ToList();
+                    read = () => new ElementAccessExpression
+                    {
+                        Left = arrayRef(),
+                        Arguments = indices
+                            .Select(index => new MethodCallArg { IsByRef = false, Value = index() })
+                            .ToList(),
+                        Location = location
+                    };
+                    break;
+
+                default:
+                    throw new NotSupportedException(
+                        $"A compound assignment to '{target.Syntax}' is not supported, at {target.Syntax.Location}.");
+            }
+
+            return new TargetAccess
+            {
+                Read = read,
+                Write = value => Assign(read(), value, target)
+            };
+        }
+
+        /// <summary>
+        /// Calls an extension property accessor's implementation method.
+        /// </summary>
+        private MethodCallExpression AccessorCall(
+            MethodSymbol accessor,
+            Func<ExpressionSer> receiverOpt,
+            ExpressionSer valueOpt,
+            LocationSer location,
+            SerializationContext arg)
+        {
+            var args = new List<MethodCallArg>();
+            if (receiverOpt != null)
+            { args.Add(new MethodCallArg { Value = receiverOpt() }); }
+
+            if (valueOpt != null)
+            { args.Add(new MethodCallArg { Value = valueOpt }); }
+
+            return new MethodCallExpression
+            {
+                Method = arg.SymbolSerializer.GetMethodSpecId(ToExtensionImplementation(accessor)),
+                Arguments = args,
+                Location = location
+            };
+        }
+
+        /// <summary>
+        /// Returns a reader for <paramref name="expression"/>. One with side
+        /// effects is evaluated once, into a temp.
+        /// </summary>
+        private Func<ExpressionSer> Once(
+            BoundExpression expression,
+            List<ExpressionSer> effects,
+            SerializationContext arg)
+        {
+            if (IsRepeatable(expression) || expression.ConstantValueOpt != null)
+            { return () => (ExpressionSer)Visit(expression, arg); }
+
+            var temp = NewTemp(expression.Type, arg);
+            effects.Add(Assign(temp(), (ExpressionSer)Visit(expression, arg), expression));
+            return temp;
+        }
+
+        /// <summary>
+        /// A compiler temp in the innermost scope block. Stage 2 declares it
+        /// on first use.
+        /// </summary>
+        private Func<ExpressionSer> NewTemp(TypeSymbol type, SerializationContext arg)
+        {
+            var name = "$t" + (++tempId);
+            var typeId = arg.SymbolSerializer.GetTypeSpecId(type);
+            var blockId = scopeBlockStack.First.Value.id;
+            return () => new LocalVariableRefExpression
+            {
+                LocalVariable = new LocalVariableSer
+                {
+                    Name = name,
+                    Type = typeId,
+                    BlockId = blockId
+                }
+            };
+        }
+
+        private static BinaryExpression Assign(ExpressionSer left, ExpressionSer right, BoundNode node)
+            => new BinaryExpression
+            {
+                Left = left,
+                Right = right,
+                Operator = (int)CLR.AST.BinaryOperator.Assignment,
+                Location = node.Syntax.Location.GetSerLoc()
+            };
+
+        /// <summary>
+        /// Joins expressions with the comma operator. The last one is the value.
+        /// </summary>
+        private static ExpressionSer Sequence(List<ExpressionSer> expressions, BoundNode node)
+            => expressions.Aggregate((left, right) => new BinaryExpression
+            {
+                Left = left,
+                Right = right,
+                Operator = (int)CLR.AST.BinaryOperator.Comma,
+                Location = node.Syntax.Location.GetSerLoc()
+            });
+
+        private static bool IsPostfix(BoundIncrementOperator node)
+        {
+            var opKind = node.OperatorKind & UnaryOperatorKind.OpMask;
+            return opKind == UnaryOperatorKind.PostfixIncrement
+                || opKind == UnaryOperatorKind.PostfixDecrement;
+        }
+
+        private static bool IsExtensionProperty(BoundExpression expression)
+            => expression is BoundPropertyAccess { PropertySymbol: var property }
+                && property.IsExtensionBlockMember();
+
+        /// <summary>
+        /// True when reading <paramref name="expression"/> again has no side
+        /// effects. An extension property getter is a call, so it is not.
+        /// </summary>
         private static bool IsRepeatable(BoundExpression expression)
             => expression switch
             {
                 BoundLocal or BoundParameter or BoundThisReference => true,
                 BoundFieldAccess field => field.ReceiverOpt == null || IsRepeatable(field.ReceiverOpt),
-                BoundPropertyAccess property => property.ReceiverOpt == null || IsRepeatable(property.ReceiverOpt),
+                BoundPropertyAccess property => !IsExtensionProperty(property)
+                    && (property.ReceiverOpt == null || IsRepeatable(property.ReceiverOpt)),
                 _ => false
             };
 
@@ -1589,16 +1863,6 @@
             {
                 throw new NotSupportedException(
                     $"A user-defined operator whose operand needs a conversion is not supported, at {node.Syntax.Location}.");
-            }
-        }
-
-        private static void RejectExtensionPropertyTarget(BoundExpression target)
-        {
-            if (target is BoundPropertyAccess { PropertySymbol: var property }
-                && property.IsExtensionBlockMember())
-            {
-                throw new NotSupportedException(
-                    $"Compound assignment to extension property '{property.ToDisplayString()}' is not supported yet. Write 'x.P = x.P + y' instead, at {target.Syntax.Location}.");
             }
         }
 

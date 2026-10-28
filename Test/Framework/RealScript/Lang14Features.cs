@@ -92,6 +92,14 @@ public class Lang14Money
 }
 
 /// <summary>
+/// Holds a <see cref="Lang14Money"/>, so a call can be the receiver of a compound target.
+/// </summary>
+public class Lang14Wallet
+{
+    public Lang14Money M;
+}
+
+/// <summary>
 /// C# 14 extension members (#115). Roslyn emits each member as a static
 /// implementation method on this class, with the receiver as the first parameter.
 /// </summary>
@@ -175,4 +183,26 @@ public class Lang14Features
     public string NameofUnboundGeneric() => nameof(List<>) + nameof(Dictionary<,>.Count);
 
     public Lang14TryGet LambdaOutModifier() => (s, out v) => { v = s.Length; return true; };
+
+    public void ExtensionPropertyCompound(Lang14Box b)
+    {
+        b.Half += 3;
+        b.Half++;
+    }
+
+    public int ExtensionPropertyValue(Lang14Box b) => b.Half++ + (b.Half -= 1);
+
+    public Lang14Acc CompoundInstanceValue(Lang14Acc a) => a += 5;
+
+    public Lang14Acc IncrementInstanceValue(Lang14Acc a) => ++a;
+
+    public void CompoundStaticReceiver()
+    {
+        Pick().M += 5;
+        Pick().M++;
+    }
+
+    public Lang14Money IncrementStaticValue(Lang14Money m) => m++;
+
+    private Lang14Wallet Pick() => new Lang14Wallet();
 }
