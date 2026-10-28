@@ -6,7 +6,7 @@
         <CscToolExe>$(NScriptCompilerToolName)</CscToolExe>
         <NScriptExe>$(NScriptToolsetDebugBinDir)$(NScriptEmitterToolFileName)</NScriptExe>
         <!-- Match Sources/Framework/Directory.Build.props — see comment there. -->
-        <LangVersion>13</LangVersion>
+        <LangVersion>14</LangVersion>
     </PropertyGroup>
 
     <Target Name="EnsureNScriptDebugToolsetBuilt"

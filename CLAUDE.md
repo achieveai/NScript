@@ -85,8 +85,9 @@ The compilation is a **two-stage process with an assembly as the handoff artifac
 The `roslyn/` submodule is a **narrow, surgical fork** — not a broad compiler fork. Changes are limited to:
 1. `OnBoundExpressionGenerated` callback in `CSharpCompilation` / `MethodCompiler`
 2. `OnBeforeCompilation` hook in `CommonCompiler`
-3. `InternalsVisibleTo` for `NScript.csc.lib`
-4. Disabled assembly signing for private builds
+3. `GetManifestResources` hook in `CommonCompiler`, so NScript can emit its embedded AST resources
+4. `InternalsVisibleTo` for `NScript.csc.lib`
+5. Disabled assembly signing for private builds
 
 Forked binaries are checked into `Dependencies/Roslyn/`. See `roslyn/CLAUDE.md` for fork maintenance details. See `docs/adr/0002-*` through `docs/adr/0005-*` for architectural decisions.
 
@@ -104,7 +105,7 @@ Forked binaries are checked into `Dependencies/Roslyn/`. See `roslyn/CLAUDE.md` 
 
 ### Framework projects compile with a custom CSC
 
-The `Sources/Framework/Directory.Build.props` sets `NoStdLib=true`, `CscToolPath` pointing to the NScript compiler in `NScriptToolSet/bin/`, and `LangVersion=8.0`. Framework projects target `netstandard2.1` but are compiled by NScript's custom compiler to produce DLLs with embedded AST resources.
+The `Sources/Framework/Directory.Build.props` sets `NoStdLib=true`, `CscToolPath` pointing to the NScript compiler in `NScriptToolSet/bin/`, and `LangVersion=14`. Framework projects target `netstandard2.1` but are compiled by NScript's custom compiler to produce DLLs with embedded AST resources.
 
 ### Framework tests require Debug build first
 
@@ -189,9 +190,9 @@ Architecture Decision Records in `docs/adr/` document all major design decisions
 
 ## C# Feature Support
 
-Supported: classes, interfaces, generics, LINQ, lambdas, async/await, null-coalescing, pattern matching, indices/ranges, C# 8 features.
+Supported: classes, interfaces, generics, LINQ, lambdas, async/await, null-coalescing, pattern matching, indices/ranges, most C# 8–14 features (C# 14: `field`, extension members, user-defined `+=`/`++`, `?.` assignment).
 
-NOT supported: `dynamic`, `yield break`/`yield return`, reflection, P/Invoke. See `csharp8-todos.md` for detailed C# 8 status.
+NOT supported: `dynamic`, `yield break`/`yield return`, reflection, P/Invoke. See `docs/language/csharp9-13-status.md` (covers C# 9–14) and `csharp8-todos.md` for detailed status.
 
 ## JST Code Generation Rules (CRITICAL)
 

@@ -32,6 +32,7 @@ namespace XwmlParser.Test
         static ClrContext context;
         static TypeResolver resolver;
         static RuntimeScopeManager runtimeScopeManager;
+        static string libPath;
 
 #if DEBUG
         const string TestConfiguration = "Debug";
@@ -48,7 +49,7 @@ namespace XwmlParser.Test
                     System.IO.Path.Combine(testAssemblyDir, @"..\..\..\.."));
 
                 // Framework DLLs compiled by NScript custom compiler
-                var libPath = System.IO.Path.Combine(repoRoot, @"NScriptToolSet\lib", TestConfiguration);
+                libPath = System.IO.Path.Combine(repoRoot, @"NScriptToolSet\lib", TestConfiguration);
 
                 // Test framework DLLs (output includes TFM subfolder)
                 var testLibPath = System.IO.Path.Combine(
@@ -129,6 +130,22 @@ namespace XwmlParser.Test
                 resolver,
                 resolver,
                 new List<string>());
+        }
+
+        /// <summary>A new context with the framework DLLs, less <paramref name="missingDll"/>.</summary>
+        internal static ClrContext CreateClrContextWithout(string missingDll)
+        {
+            Initialize();
+            var rv = new ClrContext();
+            foreach (var dll in new[] { MsCorLib, SystemWeb, SystemWebHtml, SunlightFramework, SunlightUnit, SunlightFrameworkUi })
+            {
+                if (dll != missingDll)
+                {
+                    rv.LoadAssembly(System.IO.Path.Combine(libPath, dll), false);
+                }
+            }
+
+            return rv;
         }
 
         internal static ClrContext GetClrContext()

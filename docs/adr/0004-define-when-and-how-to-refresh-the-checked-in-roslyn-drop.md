@@ -122,6 +122,37 @@ Negative:
 - maintainers must document refresh reasons and validation results consistently
 - scoped validation requires judgment when the full repo is not green
 
+## Refresh Log
+
+### 2026-10-28: Roslyn 5.9.0 (C# 14)
+
+- Reason: newer Roslyn fixes and the upstream compiler-output cache hooks for faster builds (#112, unblocks #113).
+- Language: the C# 14 feature set is the same as in the previous fork (`b2297ec5` already had `CSharp14`). This refresh adds only newer preview-only features.
+- Source: upstream commit `35d9211b841e`, the commit named in the 5.9.0 NuGet nuspec. Upstream has no tag for it.
+- Process: merged (not rebased) into `features/physhi-5.9.0`, then fast-forwarded `features/physhi-updated` to the same commit `21bcede73fc`. The canonical branch from ADR 0002 is unchanged.
+- Conflicts: `global.json` took upstream. `CommonCompiler.cs` kept both the NScript hooks (`OnBeforeCompilation`, `GetManifestResources`) and upstream's `CheckCache` / `OnCompilationSucceeded`.
+- Build fixes, all fork-local:
+  - `git config core.longpaths true` before merging on Windows.
+  - `roslyn/NuGet.Config` clears `packageSourceMapping`, so a user-level mapping cannot hide the dnceng feeds.
+  - The full `Restore.cmd` fails on a Razor test path over 260 characters. Build `src/Compilers/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.csproj` in Release directly. From `roslyn/`: `.\.dotnet\dotnet.exe build src/Compilers/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.csproj -c Release`. This also builds `Microsoft.CodeAnalysis`.
+  - Run `Dependencies/Roslyn/copyRoslyn.bat` with the real `cmd.exe`. In PowerShell, `cmd` can resolve to msys and silently do nothing. It takes the roslyn folder and the build flavor. From the repo root: `& "$env:SystemRoot\System32\cmd.exe" /c Dependencies\Roslyn\copyRoslyn.bat roslyn Release`.
+- Output: both DLLs are unsigned, version 42.42.42.42, with `InternalsVisibleTo` for `NScript.csc.lib`. A second Release build, with the same two commands, was byte-identical to the checked-in drop.
+  - Built from fork commit `21bcede73fcc3e40b4121cd4e9f399fc26da63ae`.
+  - SHA-256 `Microsoft.CodeAnalysis.dll`: `155878f0ec9db938a47540bcc3cbc8d271da925095d4655dac675782ff64d117`.
+  - SHA-256 `Microsoft.CodeAnalysis.CSharp.dll`: `177cbc26fc31d9802cfea3d78cdf74d738478bd79a2361f6c21ffc157ef4bd79`.
+- API change from upstream: `SyntaxFactory.StructDeclaration(SyntaxKind, ...)` is gone. The old fork listed it as experimental (`RSEXPERIMENTAL006`) in `PublicAPI.Unshipped.txt`; upstream removed it before 5.9.0, and the fork does not change Syntax or the public API files. NScript does not call it.
+- NScript code changes: none.
+- Validation of the refresh commit, before the C# 14 work in the same PR. PR #114's description has the final counts.
+  - `NScript_Full.sln` Debug build, including `--no-incremental`: green.
+  - Compiler tests, one project at a time: CssParser 25, CLR 127, Converter 413, Csc.Lib 70 (+2 pre-existing skips), JSParser 54, Utils 163, RazorSkinParser 281, SourceMap.Server 72, SourceMap 96, SunlightTestAdapter.Integration 2, XwmlParser 44. All passed.
+  - XwmlParser.Test is not in the solution, but it was run because it covers the XWML plugin.
+  - Not run: Cs2JsCTest, a legacy `net40` project outside the solution.
+  - Not run: SourceMap.Server.E2E.Test. It is outside the solution and only runs with `ENABLE_PLAYWRIGHT_E2E=true`.
+  - Browser suites: QUnit 358/358, e2e-todo 55/55, e2e-sheet 11/11, `bench-spreadsheet.mjs --check` OK (DOM write counts match; absolute-ms warnings only).
+- Scope: the refresh commit kept `LangVersion` 13 until C# 14 had converter tests. Later commits in the same PR raised it to 14 (#117). The generated framework and demo-app JS was byte-identical before and after.
+- C# 14 probe at refresh time (LangVersion 14, run in Chromium): `field` keyword, null-conditional assignment, `nameof` on unbound generics, `ref`/`out` on simple lambda parameters, and partial constructors/events worked. Extension members and user-defined compound assignment operators crashed `nscript.exe`; #115 and #116 fixed both in the same PR. First-class span does not apply (no `Span<T>` in NScript's mscorlib).
+- Next refresh: when .NET 11 ships C# 15 as GA.
+
 ## References
 
 - [docs/adr/0002-maintain-a-minimal-roslyn-fork-for-nscript-hooks.md](0002-maintain-a-minimal-roslyn-fork-for-nscript-hooks.md)

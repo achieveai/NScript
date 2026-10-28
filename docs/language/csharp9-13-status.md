@@ -17,6 +17,10 @@ empirically confirm what is *transparent* (Roslyn lowers to bound nodes the
 existing Stage-1 visitor already handles) versus what still needs implementation
 work in the compiler pipeline.
 
+Issue #117 raises the pin to **`<LangVersion>14</LangVersion>`**. See the
+C# 14 table below. The framework and demo-app JS was byte-identical before
+and after the bump.
+
 Phase status (all under issue #47):
 
 - ~~Phase B (lift the LangVersion pin)~~ ✅ landed.
@@ -154,9 +158,26 @@ is *transparent*; otherwise it is a planned phase.
 | Method group natural type | ⚠️ Compile-only for C# 13 overload-pruning (runtime gap) | C# 10's single-overload natural type validated in `Lang10Features.cs::MethodGroupNaturalType`. C# 13's overload-pruning extension (constraint-failing generic candidates pruned during natural-type inference) validated in `Lang13Features.cs::MethodGroupOverloadPruning`. Both compile transparently — Roslyn finalises the delegate symbol at bind time. **Runtime gap surfaced by WI-63:** end-to-end V8 execution of `MethodGroupOverloadPruning` raises `ConverterLocationException: Can't access generic type (!!0) if they are ignored` — the constraint-pruned generic candidate is dead-code-eliminated yet a downstream type reference still resolves to its `!!0` type parameter. The C# 10 single-overload form remains runtime-clean; only the C# 13 pruning fixture is excluded from `Lang13ExecutionTests`. Deferred to a follow-up under #47. |
 | `params` collections | ⚠️ Partial (runtime-clean for `List<T>` / `IEnumerable<T>`; compile-only for `IList<T>` / `ICollection<T>` / `IReadOnlyList<T>` / `IReadOnlyCollection<T>`) | `params T[]` continues to work via the existing path. **Phase F4** lights up `params List<T>` (rides the same `NewCollectionInitializerExpression` lowering as direct `List<T>` collection-expression targets); validated in `Lang13Features.cs::ParamsCollections`. `params IEnumerable<T>` is also runtime-clean (the foreach lowering against the underlying `List<T>` facade works). **Phase F5 BCL-interface targets (`IList<T>`/`ICollection<T>`/`IReadOnlyList<T>`/`IReadOnlyCollection<T>`) bind cleanly but have a runtime gap on member access:** `xs.Count` against an interface-typed receiver dispatches through the interface-suffixed getter slot (e.g. `V_get_Count_<suffix>`) at runtime, which the synthesised `List<T>` instance does not expose — V8 raises `TypeError`. Compile-only coverage retained in `Lang13Features.cs::ParamsCollectionsInterfaceCount_RuntimeGap`. `params Span<T>` / `params ReadOnlySpan<T>` are Non-Goals. Runtime-gated by `Lang13ExecutionTests` for the `params List<T>` and `params IEnumerable<T>` shapes (V8 execution snapshot — exercises the synthesised collection construction and `foreach` consumption at the call site). |
 | `System.Threading.Lock` | ❌ Out of scope | Issue #47 Non-Goals — depends on the new BCL primitive that does not exist in NScript's `mscorlib`. |
-| `field` keyword in property accessors (preview) | ❌ Out of scope | Reserved by C# 14 to mean "synthesised backing field"; pinning `<LangVersion>13</LangVersion>` deliberately avoids the rebinding. |
+| `field` keyword in property accessors (preview) | ✅ Supported in C# 14 | See the C# 14 table. |
 | Implicit index access on initializers | ⚠️ Untested (Stage 1 gap surfaced) | Compile attempt under `<LangVersion>13</LangVersion>` of `new Buffer { Items = { [^1] = 0 } }` trips `SymbolSerializer.Serialize(TypeSymbol)` with `NotSupportedException` (`type.Kind` is neither `NamedType` nor `Array/Pointer/TypeParameter`) — the nested-initializer composition with `^N` produces a Stage 1 bound shape the serializer does not yet model. The standalone `arr[^1] = 0` form is already covered by `Lang8IndexRangeTests.cs`. Fixture deferred to sub-issue #73; a future Stage 1 audit can promote this row once the unsupported `TypeSymbol` shape is identified. |
 | `partial` properties | ✅ Supported | Validated by `Lang13PartialPropertyTests.cs::RoundTripPartialProperty` via one *declaring* partial property and one *implementing* partial property across two `partial class` declarations in the same file. Roslyn merges the two halves into a single property symbol at bind time, so the bound tree sees an ordinary property — no new Stage 1 shape reaches `BoundAstToAstBase`. |
+
+## C# 14 (2025)
+
+Browser tests: `Test/Framework/Sunlight.Framework.Test/CSharp14Tests.cs` (QUnit, Framework suite).
+Converter snapshots: `Lang14FeatureTests.cs` over `Test/Framework/RealScript/Lang14Features.cs`.
+
+| Feature | Status | Notes |
+|---|---|---|
+| `field` keyword | ✅ Supported | Reads and writes the synthesized backing field. **Breaking:** inside an accessor, `field` no longer means a member named `field`. Write `this.field` for that. |
+| Null-conditional assignment | ✅ Supported | `a?.b = x` and `a?.b += x`. The right side is skipped when `a` is null. |
+| `nameof` on unbound generics | ✅ Supported | `nameof(List<>)` folds to `"List"` at compile time. |
+| Modifiers on simple lambda parameters | ✅ Supported | `(s, out v) => ...` and `(ref x) => ...`. |
+| Partial constructors and events | ✅ Supported | Roslyn merges the halves; the bound tree sees ordinary members. |
+| Extension members | ✅ Supported (#115) | Properties, methods, static members, generic blocks, and operators. Each call targets Roslyn's static implementation method. `x.P += 1` and `x.P++` on an extension property become getter and setter calls, with `x` evaluated once. `r = x.P = v` yields `v`. Still a clear `NotSupportedException`: a narrowing type, like `x.P += 1` on a `byte` property. |
+| User-defined compound assignment | ✅ Supported (#116) | Instance `operator +=` / `++` / `--`, plus the static fallbacks (`a = a + b`, `a = ++a`). Works as a value too: `r = a += 5` yields `a`, and postfix `m++` yields the old value. Each part of the target runs once and in C# order, via compiler temps: `Get().M += 1` calls `Get()` once, and a property getter counts as a side effect. Instance operators accept any target. Still a clear `NotSupportedException` for a static fallback: an operand that needs a conversion, or an indexer or other unusual target (`list[i] += 1` with only a static `operator +`). |
+| First-class span | ❌ Not applicable | NScript's `mscorlib` has no `Span<T>`. |
+| Named/optional args in expression trees | ❌ Not applicable | Any method call in an expression tree already fails (`CS0656`, `MethodBase.GetMethodFromHandle`). |
 
 ## Empirical evidence — failure modes encountered while writing fixtures
 
