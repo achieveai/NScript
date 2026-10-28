@@ -11,6 +11,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # The roslyn submodule has paths over 260 characters. Without this,
+      # Windows checkout fails with "Filename too long".
+      - name: Enable long paths
+        run: git config --system core.longpaths true
+
       - name: Checkout
         uses: actions/checkout@v4
         with:

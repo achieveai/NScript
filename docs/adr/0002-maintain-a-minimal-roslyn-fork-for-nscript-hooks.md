@@ -17,6 +17,7 @@ The current forked Roslyn branch adds:
 
 - `CSharpCompilation.OnBoundExpressionGenerated` to expose bound method bodies after binding
 - `CommonCompiler.OnBeforeCompilation(Compilation compilation)` as a pre-compilation extension point
+- `CommonCompiler.GetManifestResources(Compilation compilation)`, so NScript can replace the emitted manifest resources with its embedded AST resources
 - `InternalsVisibleTo` for `NScript.csc.lib`
 - private-build adjustments so the custom Roslyn binaries can be built without the standard signing pipeline
 
@@ -95,6 +96,7 @@ The accepted hooks described in [roslyn/CLAUDE.md](../../roslyn/CLAUDE.md) are p
 
 - bound-body callback through `CSharpCompilation.OnBoundExpressionGenerated`
 - pre-compilation hook through `CommonCompiler.OnBeforeCompilation`
+- manifest-resource hook through `CommonCompiler.GetManifestResources`
 - `InternalsVisibleTo` for `NScript.csc.lib`
 
 Any future Roslyn fork changes beyond this narrow scope should trigger a new ADR.

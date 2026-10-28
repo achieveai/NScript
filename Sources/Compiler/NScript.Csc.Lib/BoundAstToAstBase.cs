@@ -260,15 +260,8 @@
         public override AstBase VisitAssignmentOperator(BoundAssignmentOperator node, SerializationContext arg)
             => node.Left is BoundDiscardExpression
             ? (ExpressionSer)Visit(node.Right, arg)
-            : node.Left is BoundPropertyAccess { PropertySymbol: var property }
-                && property.IsExtensionBlockMember()
-            ? ToExtensionCall(
-                property.SetMethod,
-                ((BoundPropertyAccess)node.Left).ReceiverOpt,
-                new[] { node.Right },
-                null,
-                node.Syntax,
-                arg)
+            : IsExtensionProperty(node.Left)
+            ? ExtensionPropertyAssignment(node, arg)
             : new BinaryExpression
             {
                 Left = (ExpressionSer)Visit(node.Left, arg),
@@ -276,6 +269,32 @@
                 Operator = (int)CLR.AST.BinaryOperator.Assignment,
                 Location = node.Syntax.Location.GetSerLoc()
             };
+
+        /// <summary>
+        /// <c>x.P = v</c> calls the setter. A setter call has no value, so used
+        /// as a value it becomes <c>(t = v, set(x, t), t)</c>.
+        /// </summary>
+        private ExpressionSer ExtensionPropertyAssignment(BoundAssignmentOperator node, SerializationContext arg)
+        {
+            var property = ((BoundPropertyAccess)node.Left).PropertySymbol;
+            if (ReferenceEquals(node, statementExpression))
+            {
+                return ToExtensionCall(
+                    property.SetMethod,
+                    ((BoundPropertyAccess)node.Left).ReceiverOpt,
+                    new[] { node.Right },
+                    null,
+                    node.Syntax,
+                    arg);
+            }
+
+            var effects = new List<ExpressionSer>();
+            var access = SpillTarget(node.Left, effects, HasEffects(node.Right), arg);
+            var value = Once(node.Right, effects, true, arg);
+            effects.Add(access.Write(value()));
+            effects.Add(value());
+            return Sequence(effects, node);
+        }
 
         public override AstBase VisitAttribute(BoundAttribute node, SerializationContext arg) => throw new NotImplementedException();
 
@@ -1000,9 +1019,12 @@
 
             if (IsExtensionProperty(node.Left))
             {
+                RequireIdentity(node.LeftConversion, node);
+                RequireIdentity(node.FinalConversion, node);
                 return AssignBack(
                     node,
                     node.Left,
+                    node.Right,
                     false,
                     read => new BinaryExpression
                     {
@@ -1475,12 +1497,16 @@
                 if (typeMask > UnaryOperatorKind.Bool && typeMask != UnaryOperatorKind.Enum)
                 { throw new NotImplementedException(); }
 
+                RequireIdentity(node.OperandConversion, node);
+                RequireIdentity(node.ResultConversion, node);
+
                 var opKind = node.OperatorKind & UnaryOperatorKind.OpMask;
                 var isIncrement = opKind == UnaryOperatorKind.PrefixIncrement
                     || opKind == UnaryOperatorKind.PostfixIncrement;
                 return AssignBack(
                     node,
                     node.Operand,
+                    null,
                     IsPostfix(node),
                     read => new BinaryExpression
                     {
@@ -1528,6 +1554,7 @@
             return AssignBack(
                 node,
                 node.Left,
+                node.Right,
                 false,
                 read =>
                 {
@@ -1570,6 +1597,7 @@
             return AssignBack(
                 node,
                 node.Operand,
+                null,
                 IsPostfix(node),
                 read =>
                 {
@@ -1601,7 +1629,7 @@
             var effects = new List<ExpressionSer>();
             var valueUsed = !ReferenceEquals(node, statementExpression);
             var receiver = valueUsed
-                ? Once(target, effects, arg)
+                ? Once(target, effects, !arguments.Any(HasEffects), arg)
                 : () => (ExpressionSer)Visit(target, arg);
 
             if (method.IsExtensionBlockMember())
@@ -1635,12 +1663,13 @@
         private ExpressionSer AssignBack(
             BoundExpression node,
             BoundExpression target,
+            BoundExpression valueOpt,
             bool isPostfix,
             Func<ExpressionSer, ExpressionSer> compute,
             SerializationContext arg)
         {
             var effects = new List<ExpressionSer>();
-            var access = SpillTarget(target, effects, arg);
+            var access = SpillTarget(target, effects, HasEffects(valueOpt), arg);
             var valueUsed = !ReferenceEquals(node, statementExpression);
 
             if (valueUsed && isPostfix)
@@ -1678,18 +1707,26 @@
             public bool WriteIsCall;
         }
 
+        /// <summary>
+        /// Splits <paramref name="target"/> into a reader and a writer. When a
+        /// later part has side effects (<paramref name="laterEffects"/>, or an
+        /// index), every earlier part goes into a temp, so a later part that
+        /// reassigns it cannot change what C# already evaluated.
+        /// </summary>
         private TargetAccess SpillTarget(
             BoundExpression target,
             List<ExpressionSer> effects,
+            bool laterEffects,
             SerializationContext arg)
         {
+            var stable = !laterEffects;
             var location = target.Syntax.Location.GetSerLoc();
             Func<ExpressionSer> read;
             switch (target)
             {
                 case BoundPropertyAccess { PropertySymbol: var property } extension
                     when property.IsExtensionBlockMember():
-                    var extReceiver = property.IsStatic ? null : Once(extension.ReceiverOpt, effects, arg);
+                    var extReceiver = property.IsStatic ? null : Once(extension.ReceiverOpt, effects, stable, arg);
                     return new TargetAccess
                     {
                         Read = () => AccessorCall(property.GetMethod, extReceiver, null, location, arg),
@@ -1702,7 +1739,7 @@
                     break;
 
                 case BoundFieldAccess field:
-                    var fieldReceiver = field.FieldSymbol.IsStatic ? null : Once(field.ReceiverOpt, effects, arg);
+                    var fieldReceiver = field.FieldSymbol.IsStatic ? null : Once(field.ReceiverOpt, effects, stable, arg);
                     read = () => new FieldExpression
                     {
                         Field = arg.SymbolSerializer.GetFieldSpecId(
@@ -1714,7 +1751,7 @@
                     break;
 
                 case BoundPropertyAccess property:
-                    var propertyReceiver = property.PropertySymbol.IsStatic ? null : Once(property.ReceiverOpt, effects, arg);
+                    var propertyReceiver = property.PropertySymbol.IsStatic ? null : Once(property.ReceiverOpt, effects, stable, arg);
                     read = () => new PropertyExpression
                     {
                         Property = arg.SymbolSerializer.GetPropertySpecId(property.PropertySymbol),
@@ -1725,8 +1762,11 @@
                     break;
 
                 case BoundArrayAccess array:
-                    var arrayRef = Once(array.Expression, effects, arg);
-                    var indices = array.Indices.Select(index => Once(index, effects, arg)).ToList();
+                    var indexEffects = array.Indices.Any(HasEffects);
+                    var arrayRef = Once(array.Expression, effects, stable && !indexEffects, arg);
+                    var indices = array.Indices
+                        .Select(index => Once(index, effects, stable, arg))
+                        .ToList();
                     read = () => new ElementAccessExpression
                     {
                         Left = arrayRef(),
@@ -1776,14 +1816,19 @@
 
         /// <summary>
         /// Returns a reader for <paramref name="expression"/>. One with side
-        /// effects is evaluated once, into a temp.
+        /// effects is evaluated once, into a temp. When not
+        /// <paramref name="stable"/>, later code may reassign it, so only a
+        /// constant or <c>this</c> is read again.
         /// </summary>
         private Func<ExpressionSer> Once(
             BoundExpression expression,
             List<ExpressionSer> effects,
+            bool stable,
             SerializationContext arg)
         {
-            if (IsRepeatable(expression) || expression.ConstantValueOpt != null)
+            if (expression.ConstantValueOpt != null
+                || expression is BoundThisReference
+                || (stable && IsRepeatable(expression)))
             { return () => (ExpressionSer)Visit(expression, arg); }
 
             var temp = NewTemp(expression.Type, arg);
@@ -1845,24 +1890,27 @@
 
         /// <summary>
         /// True when reading <paramref name="expression"/> again has no side
-        /// effects. An extension property getter is a call, so it is not.
+        /// effects. A property getter is a call, so it is not.
         /// </summary>
         private static bool IsRepeatable(BoundExpression expression)
             => expression switch
             {
                 BoundLocal or BoundParameter or BoundThisReference => true,
                 BoundFieldAccess field => field.ReceiverOpt == null || IsRepeatable(field.ReceiverOpt),
-                BoundPropertyAccess property => !IsExtensionProperty(property)
-                    && (property.ReceiverOpt == null || IsRepeatable(property.ReceiverOpt)),
                 _ => false
             };
+
+        private static bool HasEffects(BoundExpression expressionOpt)
+            => expressionOpt != null
+                && expressionOpt.ConstantValueOpt == null
+                && !IsRepeatable(expressionOpt);
 
         private static void RequireIdentity(BoundExpression conversionOpt, BoundExpression node)
         {
             if (conversionOpt is BoundConversion { Conversion.IsIdentity: false })
             {
                 throw new NotSupportedException(
-                    $"A user-defined operator whose operand needs a conversion is not supported, at {node.Syntax.Location}.");
+                    $"A compound assignment whose operand needs a conversion is not supported, at {node.Syntax.Location}.");
             }
         }
 

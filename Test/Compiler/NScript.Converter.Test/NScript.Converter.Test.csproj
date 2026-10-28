@@ -252,6 +252,10 @@
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementInstanceValue.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundStaticReceiver.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementStaticValue.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionPropertyAssignValue.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\PropertyReceiverCompound.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\ArrayIndexEffects.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\InstanceArgEffects.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\Constructor.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />

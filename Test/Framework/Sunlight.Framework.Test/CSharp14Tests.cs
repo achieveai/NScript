@@ -115,6 +115,17 @@ namespace Sunlight.Framework.Test
         private class Wallet
         {
             public Money M = new Money();
+
+            public int SelfReads;
+
+            public Wallet Self
+            {
+                get
+                {
+                    SelfReads++;
+                    return this;
+                }
+            }
         }
 
         [Test]
@@ -243,6 +254,42 @@ namespace Sunlight.Framework.Test
             var before = m++;
             assert.Equal(before.Cents, 0, "static postfix ++ yields the old value");
             assert.Equal(m.Cents, 1, "static postfix ++ stores the new value");
+        }
+
+        [Test]
+        public static void CompoundAssignmentEvaluationOrder(Assert assert)
+        {
+            var b = Cs14Box.Make(0);
+            int v = b.Half = 5;
+            assert.Equal(v, 5, "extension property assignment yields the value");
+            assert.Equal(b.V, 10, "extension property assignment stores");
+
+            var w = new Wallet();
+            w.Self.M += 5;
+            assert.Equal(w.M.Cents, 5, "static fallback through a property receiver");
+            assert.Equal(w.SelfReads, 1, "the property receiver is read once");
+
+            var first = new[] { new Money() };
+            var xs = first;
+            Func<int> shift = () => { xs = new[] { new Money() }; return 0; };
+            xs[shift()] += 5;
+            assert.Equal(first[0].Cents, 5, "the array is read before the index runs");
+            assert.Equal(xs[0].Cents, 0, "the new array is untouched");
+
+            var box = Cs14Box.Make(4);
+            var kept = box;
+            Func<int> rebind = () => { box = Cs14Box.Make(0); return 1; };
+            int half = box.Half += rebind();
+            assert.Equal(half, 3, "extension property += yields the new value");
+            assert.Equal(kept.V, 6, "the receiver is read before the right side runs");
+            assert.Equal(box.V, 0, "the rebound receiver is untouched");
+
+            var a = new Acc();
+            var original = a;
+            Func<int> swap = () => { a = new Acc(); return 1; };
+            var r = a += swap();
+            assert.IsTrue(r == original, "instance += yields the target read before the argument");
+            assert.Equal(original.Total, 1, "instance += runs on the original target");
         }
 
         private static int Count(ref int c)

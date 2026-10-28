@@ -195,6 +195,41 @@ namespace Repro
             Assert.IsFalse(outcome.Success);
         }
 
+        [TestMethod]
+        public void ExtensionPropertyCompound_WithConversion_ThrowsNotSupported()
+        {
+            // `b.P += 1` on a byte adds as int, then narrows back to byte. The
+            // extension getter/setter lowering does not model that narrowing,
+            // so it must reject it instead of storing 256.
+            const string source = @"
+namespace Repro
+{
+    public class Box { public byte V; }
+
+    public static class Ext
+    {
+        extension(Box b)
+        {
+            public byte P { get => b.V; set => b.V = value; }
+        }
+    }
+
+    public class User
+    {
+        public void Run(Box b) { b.P += 1; }
+    }
+}";
+            var outcome = Pipeline.Invoke(source, "ExtConversionRepro");
+
+            Assert.IsNotNull(
+                outcome.ThrownException,
+                "A converted extension compound must be rejected. Diagnostics: "
+                    + string.Join(", ", outcome.Diagnostics.Select(d => d.Id + ":" + d.GetMessage())));
+            Assert.IsTrue(
+                outcome.ThrownException.ToString().Contains("needs a conversion is not supported"),
+                "Expected the conversion NotSupportedException. Actual: " + outcome.ThrownException);
+        }
+
         private static class Pipeline
         {
             public sealed class Outcome

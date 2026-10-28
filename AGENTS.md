@@ -47,8 +47,9 @@ The compilation is a **two-stage process with an assembly as the handoff artifac
 The `roslyn/` submodule is a **narrow, surgical fork** — not a broad compiler fork. Changes are limited to:
 1. `OnBoundExpressionGenerated` callback in `CSharpCompilation` / `MethodCompiler`
 2. `OnBeforeCompilation` hook in `CommonCompiler`
-3. `InternalsVisibleTo` for `NScript.csc.lib`
-4. Disabled assembly signing for private builds
+3. `GetManifestResources` hook in `CommonCompiler`, so NScript can emit its embedded AST resources
+4. `InternalsVisibleTo` for `NScript.csc.lib`
+5. Disabled assembly signing for private builds
 
 Forked binaries are checked into `Dependencies/Roslyn/`. See `roslyn/AGENTS.md` for fork maintenance details. See `docs/adr/0002-*` through `docs/adr/0005-*` for architectural decisions.
 

@@ -97,6 +97,8 @@ public class Lang14Money
 public class Lang14Wallet
 {
     public Lang14Money M;
+
+    public Lang14Wallet Self => this;
 }
 
 /// <summary>
@@ -203,6 +205,36 @@ public class Lang14Features
     }
 
     public Lang14Money IncrementStaticValue(Lang14Money m) => m++;
+
+    public int ExtensionPropertyAssignValue(Lang14Box b) => b.Half = 5;
+
+    public void PropertyReceiverCompound(Lang14Wallet w)
+    {
+        w.Self.M += 5;
+    }
+
+    public void ArrayIndexEffects()
+    {
+        items[Shift()] += 5;
+    }
+
+    public Lang14Acc InstanceArgEffects() => acc += Swap();
+
+    private Lang14Money[] items;
+
+    private Lang14Acc acc;
+
+    private int Shift()
+    {
+        items = new Lang14Money[1];
+        return 0;
+    }
+
+    private int Swap()
+    {
+        acc = new Lang14Acc();
+        return 1;
+    }
 
     private Lang14Wallet Pick() => new Lang14Wallet();
 }
