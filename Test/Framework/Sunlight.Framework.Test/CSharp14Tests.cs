@@ -20,6 +20,11 @@ namespace Sunlight.Framework.Test
         public T Value;
     }
 
+    public static class Cs14State
+    {
+        public static int N;
+    }
+
     /// <summary>
     /// C# 14 extension members. Extension blocks must sit in a top-level
     /// static class.
@@ -38,6 +43,12 @@ namespace Sunlight.Framework.Test
             {
                 get => b.V / 2;
                 set => b.V = value * 2;
+            }
+
+            public int Stored
+            {
+                get => Cs14State.N;
+                set => Cs14State.N = value * 2;
             }
 
             public void operator +=(int x) { b.V += x; }
@@ -101,6 +112,24 @@ namespace Sunlight.Framework.Test
             public void operator ++() { Total += 100; }
 
             public void operator --() { Total -= 100; }
+        }
+
+        private class Swap
+        {
+            public SwapBox Owner;
+
+            public int Total;
+
+            public void operator +=(int x)
+            {
+                Total += x;
+                Owner.Item = new Swap { Owner = Owner };
+            }
+        }
+
+        private class SwapBox
+        {
+            public Swap Item;
         }
 
         private class Money
@@ -268,6 +297,18 @@ namespace Sunlight.Framework.Test
             int mv = m.Half = m.V;
             assert.Equal(mv, 5, "the value is read before the setter changes it");
             assert.Equal(m.V, 10, "the setter got the old value");
+
+            Cs14State.N = 5;
+            int sv = m.Stored = Cs14State.N;
+            assert.Equal(sv, 5, "a static field is read before the setter changes it");
+            assert.Equal(Cs14State.N, 10, "the setter got the old static value");
+
+            var swapBox = new SwapBox();
+            var oldSwap = swapBox.Item = new Swap { Owner = swapBox };
+            var swapped = swapBox.Item += 5;
+            assert.IsTrue(swapped == oldSwap, "instance += yields the target, not a re-read of the field");
+            assert.Equal(oldSwap.Total, 5, "the operator ran on the old target");
+            assert.IsTrue(swapBox.Item != oldSwap, "the operator replaced the field");
 
             var w = new Wallet();
             w.Self.M += 5;

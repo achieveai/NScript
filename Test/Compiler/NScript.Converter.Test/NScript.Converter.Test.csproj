@@ -254,6 +254,8 @@
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementStaticValue.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionPropertyAssignValue.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionPropertyAssignMutable.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\ExtensionPropertyAssignStatic.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\InstanceReplacesTarget.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\PropertyReceiverCompound.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ArrayIndexEffects.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\InstanceArgEffects.js" />

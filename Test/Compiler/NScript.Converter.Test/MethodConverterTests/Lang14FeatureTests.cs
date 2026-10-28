@@ -47,6 +47,8 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(TestClassNameStr, "IncrementStaticValue", "IncrementStaticValue.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "ExtensionPropertyAssignValue", "ExtensionPropertyAssignValue.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "ExtensionPropertyAssignMutable", "ExtensionPropertyAssignMutable.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "ExtensionPropertyAssignStatic", "ExtensionPropertyAssignStatic.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "InstanceReplacesTarget", "InstanceReplacesTarget.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "PropertyReceiverCompound", "PropertyReceiverCompound.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "ArrayIndexEffects", "ArrayIndexEffects.js", TestType.All, false)]
         [DataRow(TestClassNameStr, "InstanceArgEffects", "InstanceArgEffects.js", TestType.All, false)]

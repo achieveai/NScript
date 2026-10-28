@@ -80,6 +80,35 @@ public class Lang14Acc
 }
 
 /// <summary>
+/// An instance operator that replaces the field it was called through.
+/// </summary>
+public class Lang14Swap
+{
+    public Lang14SwapBox Owner;
+
+    public int Total;
+
+    public void operator +=(int x)
+    {
+        Total += x;
+        Owner.Item = new Lang14Swap { Owner = Owner };
+    }
+}
+
+public class Lang14SwapBox
+{
+    public Lang14Swap Item;
+}
+
+/// <summary>
+/// A static field that an extension property setter writes.
+/// </summary>
+public static class Lang14State
+{
+    public static int N;
+}
+
+/// <summary>
 /// Only static operators, so <c>+=</c> and <c>++</c> fall back to them.
 /// </summary>
 public class Lang14Money
@@ -122,6 +151,12 @@ public static class Lang14Extensions
         }
 
         public void operator +=(int x) { b.V += x; }
+
+        public int Stored
+        {
+            get => Lang14State.N;
+            set => Lang14State.N = value * 2;
+        }
     }
 
     extension<T>(Lang14Holder<T> h)
@@ -209,6 +244,10 @@ public class Lang14Features
     public int ExtensionPropertyAssignValue(Lang14Box b) => b.Half = 5;
 
     public int ExtensionPropertyAssignMutable(Lang14Box b) => b.Half = b.V;
+
+    public int ExtensionPropertyAssignStatic(Lang14Box b) => b.Stored = Lang14State.N;
+
+    public Lang14Swap InstanceReplacesTarget(Lang14SwapBox box) => box.Item += 5;
 
     public void PropertyReceiverCompound(Lang14Wallet w)
     {

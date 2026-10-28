@@ -1,3 +1,4 @@
 function Lang14Features__IncrementInstanceValue(a) {
-  return a.op_IncrementAssignment(), a;
+  var $24t1;
+  return $24t1 = a, $24t1.op_IncrementAssignment(), $24t1;
 }

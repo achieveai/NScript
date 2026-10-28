@@ -1619,7 +1619,8 @@
 
         /// <summary>
         /// A C# 14 instance operator mutates its target in place. Used as a
-        /// value, it yields the target: <c>(t = x, t.op(y), t)</c>.
+        /// value, it yields the target: <c>(t = x, t.op(y), t)</c>. The
+        /// operator may reassign <c>x</c>, so the target is never re-read.
         /// </summary>
         private ExpressionSer InstanceOperatorCall(
             BoundExpression node,
@@ -1631,7 +1632,7 @@
             var effects = new List<ExpressionSer>();
             var valueUsed = !ReferenceEquals(node, statementExpression);
             var receiver = valueUsed
-                ? Once(target, effects, !arguments.Any(HasEffects), arg)
+                ? Once(target, effects, false, arg)
                 : () => (ExpressionSer)Visit(target, arg);
 
             if (method.IsExtensionBlockMember())
