@@ -290,7 +290,9 @@
 
             var effects = new List<ExpressionSer>();
             var access = SpillTarget(node.Left, effects, HasEffects(node.Right), arg);
-            var value = Once(node.Right, effects, true, arg);
+            // The setter can change what the right side reads, so only a
+            // constant is read again after it.
+            var value = Once(node.Right, effects, false, arg);
             effects.Add(access.Write(value()));
             effects.Add(value());
             return Sequence(effects, node);

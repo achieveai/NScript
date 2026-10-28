@@ -134,12 +134,13 @@ Negative:
 - Build fixes, all fork-local:
   - `git config core.longpaths true` before merging on Windows.
   - `roslyn/NuGet.Config` clears `packageSourceMapping`, so a user-level mapping cannot hide the dnceng feeds.
-  - The full `Restore.cmd` fails on a Razor test path over 260 characters. Build `src/Compilers/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.csproj` in Release directly.
-  - Run `Dependencies/Roslyn/copyRoslyn.bat` with the real `cmd.exe`. In PowerShell, `cmd` can resolve to msys and silently do nothing. From the repo root: `& "$env:SystemRoot\System32\cmd.exe" /c Dependencies/Roslyn/copyRoslyn.bat`.
-- Output: both DLLs are unsigned, version 42.42.42.42, with `InternalsVisibleTo` for `NScript.csc.lib`. A second Release build was byte-identical to the checked-in drop.
+  - The full `Restore.cmd` fails on a Razor test path over 260 characters. Build `src/Compilers/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.csproj` in Release directly. From `roslyn/`: `.\.dotnet\dotnet.exe build src/Compilers/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.csproj -c Release`. This also builds `Microsoft.CodeAnalysis`.
+  - Run `Dependencies/Roslyn/copyRoslyn.bat` with the real `cmd.exe`. In PowerShell, `cmd` can resolve to msys and silently do nothing. It takes the roslyn folder and the build flavor. From the repo root: `& "$env:SystemRoot\System32\cmd.exe" /c Dependencies\Roslyn\copyRoslyn.bat roslyn Release`.
+- Output: both DLLs are unsigned, version 42.42.42.42, with `InternalsVisibleTo` for `NScript.csc.lib`. A second Release build, with the same two commands, was byte-identical to the checked-in drop.
   - Built from fork commit `21bcede73fcc3e40b4121cd4e9f399fc26da63ae`.
   - SHA-256 `Microsoft.CodeAnalysis.dll`: `155878f0ec9db938a47540bcc3cbc8d271da925095d4655dac675782ff64d117`.
   - SHA-256 `Microsoft.CodeAnalysis.CSharp.dll`: `177cbc26fc31d9802cfea3d78cdf74d738478bd79a2361f6c21ffc157ef4bd79`.
+- API change from upstream: `SyntaxFactory.StructDeclaration(SyntaxKind, ...)` is gone. The old fork listed it as experimental (`RSEXPERIMENTAL006`) in `PublicAPI.Unshipped.txt`; upstream removed it before 5.9.0, and the fork does not change Syntax or the public API files. NScript does not call it.
 - NScript code changes: none.
 - Validation of the refresh commit, before the C# 14 work in the same PR. PR #114's description has the final counts.
   - `NScript_Full.sln` Debug build, including `--no-incremental`: green.

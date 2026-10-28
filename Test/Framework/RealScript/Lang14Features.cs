@@ -208,6 +208,8 @@ public class Lang14Features
 
     public int ExtensionPropertyAssignValue(Lang14Box b) => b.Half = 5;
 
+    public int ExtensionPropertyAssignMutable(Lang14Box b) => b.Half = b.V;
+
     public void PropertyReceiverCompound(Lang14Wallet w)
     {
         w.Self.M += 5;

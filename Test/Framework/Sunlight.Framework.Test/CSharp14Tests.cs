@@ -264,6 +264,11 @@ namespace Sunlight.Framework.Test
             assert.Equal(v, 5, "extension property assignment yields the value");
             assert.Equal(b.V, 10, "extension property assignment stores");
 
+            var m = Cs14Box.Make(5);
+            int mv = m.Half = m.V;
+            assert.Equal(mv, 5, "the value is read before the setter changes it");
+            assert.Equal(m.V, 10, "the setter got the old value");
+
             var w = new Wallet();
             w.Self.M += 5;
             assert.Equal(w.M.Cents, 5, "static fallback through a property receiver");
