@@ -104,7 +104,7 @@ Forked binaries are checked into `Dependencies/Roslyn/`. See `roslyn/CLAUDE.md` 
 
 ### Framework projects compile with a custom CSC
 
-The `Sources/Framework/Directory.Build.props` sets `NoStdLib=true`, `CscToolPath` pointing to the NScript compiler in `NScriptToolSet/bin/`, and `LangVersion=8.0`. Framework projects target `netstandard2.1` but are compiled by NScript's custom compiler to produce DLLs with embedded AST resources.
+The `Sources/Framework/Directory.Build.props` sets `NoStdLib=true`, `CscToolPath` pointing to the NScript compiler in `NScriptToolSet/bin/`, and `LangVersion=13`. Framework projects target `netstandard2.1` but are compiled by NScript's custom compiler to produce DLLs with embedded AST resources.
 
 ### Framework tests require Debug build first
 
