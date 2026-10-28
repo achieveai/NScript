@@ -122,6 +122,29 @@ Negative:
 - maintainers must document refresh reasons and validation results consistently
 - scoped validation requires judgment when the full repo is not green
 
+## Refresh Log
+
+### 2026-10-28: Roslyn 5.9.0 (C# 14)
+
+- Reason: NScript wants newer Roslyn behavior (C# 14) and the upstream compiler-output cache hooks for faster builds (#112, unblocks #113).
+- Source: upstream commit `35d9211b841e`, the commit named in the 5.9.0 NuGet nuspec. Upstream has no tag for it.
+- Process: merged (not rebased) into `features/physhi-5.9.0`, then fast-forwarded `features/physhi-updated` to the same commit `21bcede73fc`. The canonical branch from ADR 0002 is unchanged.
+- Conflicts: `global.json` took upstream. `CommonCompiler.cs` kept both the NScript hooks (`OnBeforeCompilation`, `GetManifestResources`) and upstream's `CheckCache` / `OnCompilationSucceeded`.
+- Build fixes, all fork-local:
+  - `git config core.longpaths true` before merging on Windows.
+  - `roslyn/NuGet.Config` clears `packageSourceMapping`, so a user-level mapping cannot hide the dnceng feeds.
+  - The full `Restore.cmd` fails on a Razor test path over 260 characters. Build `src/Compilers/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.csproj` in Release directly.
+  - Run `Dependencies/Roslyn/copyRoslyn.bat` with the real `cmd.exe`. In PowerShell, `cmd` can resolve to msys and silently do nothing.
+- Output: both DLLs are unsigned, version 42.42.42.42, with `InternalsVisibleTo` for `NScript.csc.lib`. A second Release build was byte-identical to the checked-in drop.
+- NScript code changes: none.
+- Validation:
+  - `NScript_Full.sln` Debug build, including `--no-incremental`: green.
+  - Compiler tests, one project at a time: CssParser 25, CLR 127, Converter 413, Csc.Lib 70 (+2 pre-existing skips), JSParser 54, Utils 163, RazorSkinParser 281, SourceMap.Server 72, SourceMap 96, SunlightTestAdapter.Integration 2, XwmlParser 44. All passed.
+  - Not run: Cs2JsCTest and SourceMap.Server.E2E.Test. Neither is in the solution.
+  - Browser suites: QUnit 358/358, e2e-todo 55/55, e2e-sheet 11/11, `bench-spreadsheet.mjs --check` OK (DOM write counts match; absolute-ms warnings only).
+- Scope: `LangVersion` stays 13 in the Framework props. C# 14 features need converter tests before they are enabled.
+- Next refresh: when .NET 11 ships C# 15 as GA.
+
 ## References
 
 - [docs/adr/0002-maintain-a-minimal-roslyn-fork-for-nscript-hooks.md](0002-maintain-a-minimal-roslyn-fork-for-nscript-hooks.md)
