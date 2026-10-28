@@ -95,6 +95,10 @@
                     return;
                 }
 
+                // C# 14 extension members arrive as members of the hidden
+                // extension grouping type; key them by their implementation.
+                methodSymbol = BoundAstToAstBase.ToExtensionImplementation(methodSymbol);
+
                 var serializer = new BoundAstToAstBase();
                 var methodBody =
                     serializer.GetMethodBody(

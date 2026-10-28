@@ -248,6 +248,15 @@
         public override AstBase VisitAssignmentOperator(BoundAssignmentOperator node, SerializationContext arg)
             => node.Left is BoundDiscardExpression
             ? (ExpressionSer)Visit(node.Right, arg)
+            : node.Left is BoundPropertyAccess { PropertySymbol: var property }
+                && property.IsExtensionBlockMember()
+            ? ToExtensionCall(
+                property.SetMethod,
+                ((BoundPropertyAccess)node.Left).ReceiverOpt,
+                new[] { node.Right },
+                null,
+                node.Syntax,
+                arg)
             : new BinaryExpression
             {
                 Left = (ExpressionSer)Visit(node.Left, arg),
@@ -408,6 +417,17 @@
                     Location = node.Syntax.Location.GetSerLoc(),
                     ArgumentOrderOpt = argumentOrdering
                 };
+            }
+
+            if (node.Method.IsExtensionBlockMember())
+            {
+                return ToExtensionCall(
+                    node.Method,
+                    node.ReceiverOpt,
+                    node.Arguments,
+                    argumentOrdering,
+                    node.Syntax,
+                    arg);
             }
 
             return new MethodCallExpression
@@ -2267,7 +2287,15 @@
         public override AstBase VisitPreviousSubmissionReference(BoundPreviousSubmissionReference node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitPropertyAccess(BoundPropertyAccess node, SerializationContext arg)
-            => new PropertyExpression
+            => node.PropertySymbol.IsExtensionBlockMember()
+            ? ToExtensionCall(
+                node.PropertySymbol.GetMethod,
+                node.ReceiverOpt,
+                Array.Empty<BoundExpression>(),
+                null,
+                node.Syntax,
+                arg)
+            : new PropertyExpression
             {
                 Property = arg.SymbolSerializer.GetPropertySpecId(node.PropertySymbol),
                 Instance = !node.PropertySymbol.IsStatic ? (ExpressionSer)Visit(node.ReceiverOpt, arg) : null,
@@ -2841,6 +2869,58 @@
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// C# 14 extension members bind to a member of the hidden extension
+        /// grouping type. Roslyn lowers them to the static implementation
+        /// method on the enclosing static class, so serialize against that.
+        /// </summary>
+        internal static MethodSymbol ToExtensionImplementation(MethodSymbol method)
+        {
+            if (!method.IsExtensionBlockMember())
+            { return method; }
+
+            var implementation = method.OriginalDefinition.TryGetCorrespondingExtensionImplementationMethod()
+                ?? throw new NotSupportedException(
+                    $"No implementation method for extension member '{method.ToDisplayString()}'.");
+
+            return implementation
+                .AsMember(method.ContainingSymbol.ContainingType)
+                .ConstructIfGeneric(
+                    method.ContainingType.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics
+                        .Concat(method.TypeArgumentsWithAnnotations));
+        }
+
+        /// <summary>
+        /// Instance extension members take the receiver as the implementation
+        /// method's first parameter.
+        /// </summary>
+        private MethodCallExpression ToExtensionCall(
+            MethodSymbol method,
+            BoundExpression receiverOpt,
+            IList<BoundExpression> arguments,
+            List<int> argumentOrdering,
+            SyntaxNode syntax,
+            SerializationContext arg)
+        {
+            var implementation = ToExtensionImplementation(method);
+            if (!method.IsStatic)
+            {
+                arguments = new[] { receiverOpt }.Concat(arguments).ToList();
+                argumentOrdering = argumentOrdering == null
+                    ? null
+                    : new[] { 0 }.Concat(argumentOrdering.Select(i => i + 1)).ToList();
+            }
+
+            return new MethodCallExpression
+            {
+                Method = arg.SymbolSerializer.GetMethodSpecId(implementation),
+                Arguments = ToArgs(implementation, arguments, arg),
+                Location = syntax.Location.GetSerLoc(),
+                Instance = null,
+                ArgumentOrderOpt = argumentOrdering
+            };
         }
 
         public List<MethodCallArg> ToArgs(
