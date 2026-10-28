@@ -55,8 +55,6 @@ namespace XwmlParser
 
         public readonly TypeReference ArrayType;
 
-        public readonly TypeReference IListType;
-
         public readonly TypeReference SkinAttribute;
 
         public readonly TypeReference AutoFireAttribute;
@@ -137,80 +135,102 @@ namespace XwmlParser
 
             this.ClrKnownReference = clrKnownReferences;
 
-            var nativeArray = clrContext.GetTypeDefinition(
+            var nativeArray = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.NativeArray"));
 
-            var nativeArray1 = clrContext.GetTypeDefinition(
+            var nativeArray1 = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.NativeArray`1"));
 
-            this.UIElement = clrContext.GetTypeDefinition(
+            this.UIElement = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".UIElement"));
 
-            this.UIPanel = clrContext.GetTypeDefinition(
+            this.UIPanel = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".UIPanel"));
 
-            this.UISkinableElement = clrContext.GetTypeDefinition(
+            this.UISkinableElement = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".UISkinableElement"));
 
-            this.ObservableObject = clrContext.GetTypeDefinition(
+            this.ObservableObject = RequireType(
+                clrContext,
                 Tuple.Create(frameworkDll, observableNamespace + ".ObservableObject"));
 
-            this.ObservableInterface = clrContext.GetTypeDefinition(
+            this.ObservableInterface = RequireType(
+                clrContext,
                 Tuple.Create(frameworkDll, observableNamespace + ".INotifyPropertyChanged"));
 
-            this.ExtensibleObject = clrContext.GetTypeDefinition(
+            this.ExtensibleObject = RequireType(
+                clrContext,
                 Tuple.Create(frameworkDll, observableNamespace + ".ExtensibleObservableObject"));
 
-            this.ContextBindableObject = clrContext.GetTypeDefinition(
+            this.ContextBindableObject = RequireType(
+                clrContext,
                 Tuple.Create(frameworkDll, "Sunlight.Framework.Binders.ContextBindableObject"));
 
             this.ArrayType = clrKnownReferences.SystemArray;
-            this.IListType = clrContext.GetTypeDefinition(
-                Tuple.Create("NScript.MsCorlib", "System.Collections.Generic.IList`1"));
 
-            this.SkinAttribute = clrContext.GetTypeDefinition(
+            this.SkinAttribute = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".SkinAttribute"));
 
-            this.AutoFireAttribute = clrContext.GetTypeDefinition(
+            this.AutoFireAttribute = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".AutoFireAttribute"));
 
-            this.CssNameAttribute = clrContext.GetTypeDefinition(
+            this.CssNameAttribute = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".CssNameAttribute"));
 
-            this.DefaultDataBindingAttribute = clrContext.GetTypeDefinition(
+            this.DefaultDataBindingAttribute = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".DefaultDataBindingAttribute"));
 
-            this.DomAttributeAttribute = clrContext.GetTypeDefinition(
+            this.DomAttributeAttribute = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".DomAttributeAttribute"));
 
-            this.TagNameAttribute = clrContext.GetTypeDefinition(
+            this.TagNameAttribute = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".TagNameAttribute"));
 
-            this.SkinPartAttribute = clrContext.GetTypeDefinition(
+            this.SkinPartAttribute = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, attributesNamespace + ".SkinPartAttribute"));
 
-            this.DocumentRef = clrContext.GetTypeDefinition(
+            this.DocumentRef = RequireType(
+                clrContext,
                 Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Document"));
 
-            this.ElementRef = clrContext.GetTypeDefinition(
+            this.ElementRef = RequireType(
+                clrContext,
                 Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Element"));
 
-            this.NodeRef = clrContext.GetTypeDefinition(
+            this.NodeRef = RequireType(
+                clrContext,
                 Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".Node"));
 
-            this.BinderHelper = clrContext.GetTypeDefinition(
+            this.BinderHelper = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderHelper"));
 
-            this.BinderType = clrContext.GetTypeDefinition(
+            this.BinderType = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.BinderType"));
 
-            this.SkinBinderInfo = clrContext.GetTypeDefinition(
+            this.SkinBinderInfo = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinBinderInfo"));
 
-            this.SkinInstance = clrContext.GetTypeDefinition(
+            this.SkinInstance = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Helpers.SkinInstance"));
 
-            this.Skin = clrContext.GetTypeDefinition(
+            this.Skin = RequireType(
+                clrContext,
                 Tuple.Create(uiFrameworkDll, uiFrameworkDll + ".Skin"));
 
             this.AttributeSetter = clrContext.GetMethodReference(
@@ -265,22 +285,28 @@ namespace XwmlParser
                 this.ElementRef,
                 clrKnownReferences.Boolean);
 
-            var func2 = clrContext.GetTypeDefinition(
+            var func2 = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Func`2"));
 
-            var func3 = clrContext.GetTypeDefinition(
+            var func3 = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Func`3"));
 
-            var act0 = clrContext.GetTypeDefinition(
+            var act0 = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action"));
 
-            var act1 = clrContext.GetTypeDefinition(
+            var act1 = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`1"));
 
-            var act2 = clrContext.GetTypeDefinition(
+            var act2 = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`2"));
 
-            var act3 = clrContext.GetTypeDefinition(
+            var act3 = RequireType(
+                clrContext,
                 Tuple.Create(ClrKnownReferences.MSCorlibStr, "System.Action`3"));
 
             var funcObjObj = new GenericInstanceType(func2);
@@ -418,13 +444,24 @@ namespace XwmlParser
 
             this.DomEventType2 = new GenericInstanceType(act2);
             this.DomEventType2.GenericArguments.Add(this.ElementRef);
-            var elementEvent = clrContext.GetTypeDefinition(Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".ElementEvent"));
+            var elementEvent = RequireType(clrContext, Tuple.Create(systemWebHtmlDll, systemWebHtmlDll + ".ElementEvent"));
             this.DomEventType2.GenericArguments.Add(elementEvent);
 
             this.DomEventType1 = new GenericInstanceType(act1);
             this.DomEventType1.GenericArguments.Add(this.ElementRef);
 
             this.DomEventType0 = act0;
+        }
+
+        /// <summary>
+        /// Looks up a type the templating plugin needs. A missing one throws an error naming the
+        /// type and its DLL, instead of a null that fails later as "declaringType".
+        /// </summary>
+        private static TypeDefinition RequireType(ClrContext clrContext, Tuple<string, string> typeName)
+        {
+            return clrContext.GetTypeDefinition(typeName)
+                ?? throw new InvalidOperationException(
+                    $"XWML templating needs type '{typeName.Item2}' from '{typeName.Item1}', which the build did not load. Add a reference to {typeName.Item1}.");
         }
     }
 }
