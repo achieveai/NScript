@@ -96,6 +96,11 @@
     <None Remove="MethodConverterTests\Lang14Features\ImplGetter.js" />
     <None Remove="MethodConverterTests\Lang14Features\ImplSetter.js" />
     <None Remove="MethodConverterTests\Lang14Features\ImplGeneric.js" />
+    <None Remove="MethodConverterTests\Lang14Features\CompoundInstance.js" />
+    <None Remove="MethodConverterTests\Lang14Features\IncrementInstance.js" />
+    <None Remove="MethodConverterTests\Lang14Features\CompoundStaticFallback.js" />
+    <None Remove="MethodConverterTests\Lang14Features\IncrementStatic.js" />
+    <None Remove="MethodConverterTests\Lang14Features\CompoundExtension.js" />
     <None Remove="MethodConverterTests\MethodArgument\Constructor.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
@@ -216,6 +221,11 @@
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ImplGetter.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ImplSetter.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ImplGeneric.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundInstance.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementInstance.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundStaticFallback.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\IncrementStatic.js" />
+    <EmbeddedResource Include="MethodConverterTests\Lang14Features\CompoundExtension.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\Constructor.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />

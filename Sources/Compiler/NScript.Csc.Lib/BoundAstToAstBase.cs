@@ -15,6 +15,12 @@
     {
         private int id = 0;
 
+        /// <summary>
+        /// The expression of the innermost expression statement, so a
+        /// void-returning operator can tell whether its value is used.
+        /// </summary>
+        private BoundExpression statementExpression;
+
         private LinkedList<(int id, BoundNode nodeBlock, List<string> localFunctions)> scopeBlockStack
             = new LinkedList<(int, BoundNode, List<string>)>();
 
@@ -980,8 +986,12 @@
             var isLifted = IsLifted(op);
             _ = IsChecked(op);
             var typeMask = op & BinaryOperatorKind.TypeMask;
-            if (typeMask == BinaryOperatorKind.UserDefined)
-            { throw new NotImplementedException(); }
+            RejectExtensionPropertyTarget(node.Left);
+
+            // Roslyn leaves the type bits empty for a C# 14 instance operator.
+            if (typeMask == BinaryOperatorKind.UserDefined
+                || node.Operator.Method is { IsStatic: false })
+            { return UserDefinedCompoundAssignment(node, isLifted, arg); }
 
             var nscriptOp = GetNScriptOperator(op) + 1;
             if (typeMask <= BinaryOperatorKind.Bool
@@ -1344,7 +1354,10 @@
             };
 
         public override AstBase VisitExpressionStatement(BoundExpressionStatement node, SerializationContext arg)
-            => new StatementExpressionSer { Expression = (ExpressionSer)Visit(node.Expression, arg) };
+        {
+            statementExpression = node.Expression;
+            return new StatementExpressionSer { Expression = (ExpressionSer)Visit(node.Expression, arg) };
+        }
 
         public override AstBase VisitFieldAccess(BoundFieldAccess node, SerializationContext arg)
 
@@ -1430,11 +1443,164 @@
         public override AstBase VisitImplicitReceiver(BoundImplicitReceiver node, SerializationContext arg) => throw new NotImplementedException();
 
         public override AstBase VisitIncrementOperator(BoundIncrementOperator node, SerializationContext arg)
-            => ConvertUnaryOperator(
-                node.Operand,
-                node.MethodOpt,
-                node.OperatorKind,
-                arg);
+        {
+            RejectExtensionPropertyTarget(node.Operand);
+            return (node.OperatorKind & UnaryOperatorKind.TypeMask) == UnaryOperatorKind.UserDefined
+                ? UserDefinedIncrement(node, arg)
+                : ConvertUnaryOperator(
+                    node.Operand,
+                    node.MethodOpt,
+                    node.OperatorKind,
+                    arg);
+        }
+
+        /// <summary>
+        /// C# 14 <c>operator +=</c> is an instance void method that mutates
+        /// the left operand. Without one, <c>a += b</c> means
+        /// <c>a = a + b</c> with the static operator.
+        /// </summary>
+        private AstBase UserDefinedCompoundAssignment(
+            BoundCompoundAssignmentOperator node,
+            bool isLifted,
+            SerializationContext arg)
+        {
+            var method = node.Operator.Method;
+            if (!method.IsStatic)
+            {
+                RequireStatement(node, "A user-defined compound assignment operator");
+                if (method.IsExtensionBlockMember())
+                {
+                    return ToExtensionCall(method, node.Left, new[] { node.Right }, null, node.Syntax, arg);
+                }
+
+                return new MethodCallExpression
+                {
+                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
+                    Arguments = ToArgs(method, new[] { node.Right }, arg),
+                    Instance = (ExpressionSer)Visit(node.Left, arg),
+                    Location = node.Syntax.Location.GetSerLoc()
+                };
+            }
+
+            RequireRepeatable(node.Left, node);
+            RequireIdentity(node.LeftConversion, node);
+            RequireIdentity(node.FinalConversion, node);
+            return new BinaryExpression
+            {
+                Left = (ExpressionSer)Visit(node.Left, arg),
+                Right = new UserDefinedBinaryOrUnaryOpExpression
+                {
+                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
+                    Arguments = ToArgs(method, new[] { node.Left, node.Right }, arg),
+                    IsLifted = isLifted,
+                    Operator = (int)GetNScriptOperator(
+                        node.Operator.Kind & (BinaryOperatorKind.OpMask | BinaryOperatorKind.Logical)),
+                    Location = node.Syntax.Location.GetSerLoc()
+                },
+                Operator = (int)CLR.AST.BinaryOperator.Assignment,
+                Location = node.Syntax.Location.GetSerLoc()
+            };
+        }
+
+        /// <summary>
+        /// C# 14 instance <c>operator ++</c> mutates the operand. A static
+        /// <c>operator ++</c> returns the new value, which is assigned back.
+        /// </summary>
+        private AstBase UserDefinedIncrement(
+            BoundIncrementOperator node,
+            SerializationContext arg)
+        {
+            var method = node.MethodOpt;
+            if (!method.IsStatic)
+            {
+                RequireStatement(node, "A user-defined instance increment operator");
+                if (method.IsExtensionBlockMember())
+                {
+                    return ToExtensionCall(method, node.Operand, Array.Empty<BoundExpression>(), null, node.Syntax, arg);
+                }
+
+                return new MethodCallExpression
+                {
+                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
+                    Arguments = new List<MethodCallArg>(),
+                    Instance = (ExpressionSer)Visit(node.Operand, arg),
+                    Location = node.Syntax.Location.GetSerLoc()
+                };
+            }
+
+            // A postfix value is the old value, which `a = op(a)` loses.
+            var opKind = node.OperatorKind & UnaryOperatorKind.OpMask;
+            if (opKind == UnaryOperatorKind.PostfixIncrement
+                || opKind == UnaryOperatorKind.PostfixDecrement)
+            { RequireStatement(node, "A postfix user-defined increment operator"); }
+
+            RequireRepeatable(node.Operand, node);
+            RequireIdentity(node.OperandConversion, node);
+            RequireIdentity(node.ResultConversion, node);
+            return new BinaryExpression
+            {
+                Left = (ExpressionSer)Visit(node.Operand, arg),
+                Right = new UserDefinedBinaryOrUnaryOpExpression
+                {
+                    Method = arg.SymbolSerializer.GetMethodSpecId(method),
+                    Arguments = ToArgs(method, new[] { node.Operand }, arg),
+                    IsLifted = IsLifted(node.OperatorKind),
+                    Operator = (int)GetNScriptOperator(node.OperatorKind),
+                    Location = node.Syntax.Location.GetSerLoc()
+                },
+                Operator = (int)CLR.AST.BinaryOperator.Assignment,
+                Location = node.Syntax.Location.GetSerLoc()
+            };
+        }
+
+        private void RequireStatement(BoundExpression node, string what)
+        {
+            if (!ReferenceEquals(node, statementExpression))
+            {
+                throw new NotSupportedException(
+                    $"{what} can only be used as a statement, not as a value, at {node.Syntax.Location}.");
+            }
+        }
+
+        /// <summary>
+        /// <c>a = op(a)</c> evaluates <c>a</c> twice, so it must have no side effects.
+        /// </summary>
+        private static void RequireRepeatable(BoundExpression target, BoundExpression node)
+        {
+            if (!IsRepeatable(target))
+            {
+                throw new NotSupportedException(
+                    $"This user-defined operator needs a local, parameter, field or property target, at {node.Syntax.Location}.");
+            }
+        }
+
+        private static bool IsRepeatable(BoundExpression expression)
+            => expression switch
+            {
+                BoundLocal or BoundParameter or BoundThisReference => true,
+                BoundFieldAccess field => field.ReceiverOpt == null || IsRepeatable(field.ReceiverOpt),
+                BoundPropertyAccess property => property.ReceiverOpt == null || IsRepeatable(property.ReceiverOpt),
+                _ => false
+            };
+
+        private static void RequireIdentity(BoundExpression conversionOpt, BoundExpression node)
+        {
+            if (conversionOpt is BoundConversion { Conversion.IsIdentity: false })
+            {
+                throw new NotSupportedException(
+                    $"A user-defined operator whose operand needs a conversion is not supported, at {node.Syntax.Location}.");
+            }
+        }
+
+        private static void RejectExtensionPropertyTarget(BoundExpression target)
+        {
+            if (target is BoundPropertyAccess { PropertySymbol: var property }
+                && property.IsExtensionBlockMember())
+            {
+                throw new NotSupportedException(
+                    $"Compound assignment to extension property '{property.ToDisplayString()}' is not supported yet. Write 'x.P = x.P + y' instead, at {target.Syntax.Location}.");
+            }
+        }
 
         public override AstBase VisitIndexerAccess(BoundIndexerAccess node, SerializationContext arg)
             => new IndexExpression

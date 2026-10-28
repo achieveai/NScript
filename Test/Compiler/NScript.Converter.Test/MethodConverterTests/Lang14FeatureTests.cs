@@ -25,6 +25,11 @@ namespace NScript.Converter.Test.MethodConverterTests
         [DataRow(ExtensionsClassNameStr, "get_Twice", "ImplGetter.js", TestType.All, false)]
         [DataRow(ExtensionsClassNameStr, "set_Half", "ImplSetter.js", TestType.All, false)]
         [DataRow(ExtensionsClassNameStr, "Get", "ImplGeneric.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "CompoundInstance", "CompoundInstance.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IncrementInstance", "IncrementInstance.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "CompoundStaticFallback", "CompoundStaticFallback.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "IncrementStatic", "IncrementStatic.js", TestType.All, false)]
+        [DataRow(TestClassNameStr, "CompoundExtension", "CompoundExtension.js", TestType.All, false)]
         public void TestMcs(
             string className,
             string methodName,
