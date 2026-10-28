@@ -126,7 +126,8 @@ Negative:
 
 ### 2026-10-28: Roslyn 5.9.0 (C# 14)
 
-- Reason: NScript wants newer Roslyn behavior (C# 14) and the upstream compiler-output cache hooks for faster builds (#112, unblocks #113).
+- Reason: newer Roslyn fixes and the upstream compiler-output cache hooks for faster builds (#112, unblocks #113).
+- Language: the C# 14 feature set is the same as in the previous fork (`b2297ec5` already had `CSharp14`). This refresh adds only newer preview-only features.
 - Source: upstream commit `35d9211b841e`, the commit named in the 5.9.0 NuGet nuspec. Upstream has no tag for it.
 - Process: merged (not rebased) into `features/physhi-5.9.0`, then fast-forwarded `features/physhi-updated` to the same commit `21bcede73fc`. The canonical branch from ADR 0002 is unchanged.
 - Conflicts: `global.json` took upstream. `CommonCompiler.cs` kept both the NScript hooks (`OnBeforeCompilation`, `GetManifestResources`) and upstream's `CheckCache` / `OnCompilationSucceeded`.
@@ -143,6 +144,7 @@ Negative:
   - Not run: Cs2JsCTest and SourceMap.Server.E2E.Test. Neither is in the solution.
   - Browser suites: QUnit 358/358, e2e-todo 55/55, e2e-sheet 11/11, `bench-spreadsheet.mjs --check` OK (DOM write counts match; absolute-ms warnings only).
 - Scope: `LangVersion` stays 13 in the Framework props. C# 14 features need converter tests before they are enabled.
+- C# 14 probe (LangVersion 14, run in Chromium): `field` keyword, null-conditional assignment, `nameof` on unbound generics, `ref`/`out` on simple lambda parameters, and partial constructors/events work. Extension members and user-defined compound assignment operators crash `nscript.exe`. First-class span does not apply (no `Span<T>` in NScript's mscorlib).
 - Next refresh: when .NET 11 ships C# 15 as GA.
 
 ## References
