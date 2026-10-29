@@ -352,7 +352,8 @@ namespace Sunlight.Framework.UI.Helpers
             if (this.pathTraversed < this.liveObjects.Length)
             {
                 liveObjects[liveObjects.Length - 1] = null;
-                for (int iPath = this.binderInfo.PropertyGetterPath.Length - 2, till = this.pathTraversed;
+                // The last live object is the value; every one before it holds a listener.
+                for (int iPath = liveObjects.Length - 2, till = this.pathTraversed;
                     iPath >= till; iPath--)
                 {
                     var item = liveObjects[iPath];

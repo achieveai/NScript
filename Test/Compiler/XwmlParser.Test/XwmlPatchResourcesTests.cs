@@ -133,24 +133,56 @@ namespace XwmlParser.Test
         /// keeps its one literal, so the bundle is still patched in place.
         /// </summary>
         [TestMethod]
-        public void SkinEdits_PatchUntilTheNextIndexIsRazors_ThenMiss()
+        public void SkinEdits_PatchPastAHundred_EachTakesTheNextIndex()
         {
-            // The two skins take 0 and 1; each patch of the second takes the next index. Razor's
-            // skins share the per-document DOM cache from LiveSkinHook.RazorStorageBase up.
+            // The two skins take 0 and 1; each patch of the second takes the next index. The
+            // per-document DOM cache is XWML's alone, so the numbering has no ceiling.
             var session = NewSession();
             Build(session, out var plugin, "second");
-            string last = null, miss = null;
-            int patch = 0;
-            while (miss == null && patch < LiveSkinHook.RazorStorageBase)
+            for (int patch = 1; patch <= 150; patch++)
             {
                 var statements = new List<Statement>();
-                miss = plugin.TryPatchResources(statements, new Dictionary<string, string>(), WithSecond(plugin, Document("edit " + ++patch)));
-                last = miss == null ? Helper.ConvertCodeToString(statements) : last;
+                Assert.IsNull(
+                    plugin.TryPatchResources(statements, new Dictionary<string, string>(), WithSecond(plugin, Document("edit " + patch))),
+                    "patch " + patch);
+                StringAssert.Contains(Helper.ConvertCodeToString(statements), "\"" + (1 + patch) + "\")", "patch " + patch + " takes the next index");
+            }
+        }
+
+        /// <summary>
+        /// A large app's CSS save: a bundle with more than a hundred skins takes a linked
+        /// sheet's colour edit as a patch.
+        /// </summary>
+        [TestMethod]
+        public void LinkedSheet_ColourEdit_InABundleOfMoreThanAHundredSkins_IsAPatch()
+        {
+            const string A = "Patch.Large.css";
+            var session = NewSession();
+            session.BeginBuild(null, null);
+            var plugin = Helper.CreatePlugin(null, session);
+            plugin.CodeGenerator.AddResource(Resource(A, ".card { color: red; }"), A);
+            for (int i = 0; i < 101; i++)
+            {
+                var name = "Patch.Large" + i + ".html";
+                plugin.CodeGenerator.AddResource(
+                    Resource(name, Document("large" + i).Replace(
+                        "<style> .card { color: red; } </style>",
+                        "<link rel=\"stylesheet\" href=\"" + A + "\" />")),
+                    name);
+                Assert.IsNotNull(plugin.CodeGenerator.GetTemplateGetterIdentifier(name));
             }
 
-            Assert.AreEqual(LiveSkinHook.RazorStorageBase - 1, patch, "the patch that would take index " + LiveSkinHook.RazorStorageBase + " misses");
-            Assert.AreEqual("xwml storage index " + LiveSkinHook.RazorStorageBase + " reaches Razor's", miss);
-            StringAssert.Contains(last, "\"" + (LiveSkinHook.RazorStorageBase - 1) + "\")", "the last patch took the index below Razor's");
+            plugin.GetMethodsToEmitPass1();
+            StringAssert.Contains(Helper.ConvertCodeToString(plugin.GetPostJavascript()), "\"100\")", "the 101st skin takes index 100");
+            Assert.AreEqual(0, session.Errors.Count, "the build must not fail");
+
+            var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [A] = Tuple.Create(Resource(A, ".card { color: green; }"), A),
+            };
+            var literals = new Dictionary<string, string>();
+            Assert.IsNull(plugin.TryPatchResources(new List<Statement>(), literals, resources));
+            StringAssert.Contains(Css(literals), "green");
         }
 
         [TestMethod]
@@ -237,6 +269,15 @@ namespace XwmlParser.Test
                 Regex.IsMatch(cold, Regex.Escape(getter) + @"\.__nsReskin = \(function\(F,I,P,K,set\)[^\n]*\}\)\(""factoryMethod[\w$]*"", ""id[\w$]*"", ""skinableParent[\w$]*"", ""skinInstance[\w$]*"", function\("),
                 "the helper gets the framework's field names as resolved, and a Skin setter: " + cold);
             Assert.IsTrue(plugin.PatchSectionLive);
+
+            // The console line says what a re-skin resets, and names the template, not its path.
+            Assert.IsTrue(cold.Contains("(n?' (reset: focus, caret, scroll, unbound typed text)':'')"), "the console line names what a re-skin resets, only when it re-skinned something");
+            var getterId = plugin.CodeGenerator.GetDocumentStorageGetter();
+            var named = Helper.ConvertCodeToString(new List<Statement>
+            {
+                plugin.CodeGenerator.CreateReskin(((SimpleIdentifier)getterId).OwnerScope, getterId, getterId, "0", @"Test\Templates\L60"),
+            });
+            Assert.IsTrue(named.Contains(", \"0\", \"L60\");"), "a watch build's template id is its path: " + named.Replace("{", "{{").Replace("}", "}}"));
 
             var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
             {

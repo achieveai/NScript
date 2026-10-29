@@ -11,17 +11,11 @@ namespace NScript.Converter
 
     /// <summary>
     /// Live patch emit: the code a template plugin writes so that a patched skin goes live in
-    /// the open page (<see cref="ConverterContext.LivePatchHook"/>). The helpers hang off the
-    /// document storage getter, which every template plugin shares.
+    /// the open page (<see cref="ConverterContext.LivePatchHook"/>). The helpers hang off each
+    /// template plugin's own document storage getter.
     /// </summary>
     public static class LiveSkinHook
     {
-        /// <summary>
-        /// The first document storage index Razor's skins take; XWML's take 0 up. Both cache a
-        /// skin's DOM in one per-document array, so XWML's patches must stay below it.
-        /// </summary>
-        public const int RazorStorageBase = 100;
-
         private const string TrackKey = "__nsTrack";
 
         private const string ReskinKey = "__nsReskin";
@@ -67,7 +61,7 @@ namespace NScript.Converter
                             root,
                             "(function(F,I,P,K,set){return function(s,f,id,name){s[F]=f;s[I]=id;var a=s.__nsInsts||[],n=0;s.__nsInsts=[];"
                             + "a.forEach(function(w){var si=w.deref(),c=si&&si[P];if(c&&c[K]===si){set(c,null);set(c,s);n++;}});"
-                            + "console.info('[nscript-hmr] reskinned '+n+' '+name);};})"),
+                            + "console.info('[nscript-hmr] reskinned '+n+' '+name+(n?' (reset: focus, caret, scroll, unbound typed text)':''));};})"),
                         FieldName(factoryField),
                         FieldName(idField),
                         FieldName(parentField),
@@ -107,7 +101,9 @@ namespace NScript.Converter
                             new IdentifierExpression(skinVariable, scope),
                             new IdentifierExpression(factory, scope),
                             new StringLiteralExpression(scope, id),
-                            new StringLiteralExpression(scope, name)),
+
+                            // A watch build's XWML template id is its path: the console names the file.
+                            new StringLiteralExpression(scope, name.Substring(name.LastIndexOfAny(new[] { '\\', '/' }) + 1))),
                     }),
                 null);
 

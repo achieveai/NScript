@@ -97,7 +97,7 @@ try {
   fs.writeFileSync(SKIN, source.replace(OLD, NEW));
   edited = true;
   check(await until(() => applied() >= 1), 'the skin save is applied live');
-  check(logs.some(line => /reskinned [1-9]\d* TodoItemControl$/.test(line)), 'the console says the rows were skinned again');
+  check(logs.some(line => /reskinned [1-9]\d* TodoItemControl \(reset: focus, caret, scroll, unbound typed text\)$/.test(line)), 'the console says the rows were skinned again');
   const after = await rows(page);
   check(after.live === after.titles.length && JSON.stringify(after.titles) === JSON.stringify(before.titles),
     `every open row shows the new skin and keeps its view model (${JSON.stringify(after)})`);
@@ -132,7 +132,7 @@ try {
   fs.writeFileSync(SHELL, shell.replace(SHELL_OLD, SHELL_NEW));
   shellEdited = true;
   check(await until(() => applied() >= 3), 'the AppShell save is applied live');
-  check(logs.some(line => /reskinned 1 AppShell$/.test(line)), 'the console says the shell was skinned again');
+  check(logs.some(line => /reskinned 1 AppShell \(reset: focus, caret, scroll, unbound typed text\)$/.test(line)), 'the console says the shell was skinned again');
   const shelled = await rows(page);
   check(await page.$('[hmr=shell]') !== null && JSON.stringify(shelled.titles) === JSON.stringify(reverted.titles),
     `the new shell shows the same rows (${JSON.stringify(shelled)})`);

@@ -173,6 +173,12 @@ namespace Sunlight.Framework.UI.Test
             { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorDisposeProbe.skin.cshtml")]
+        public static Skin RazorDisposeProbe
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorOneTimeText.skin.cshtml")]
         public static Skin RazorOneTimeText
         {

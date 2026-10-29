@@ -126,6 +126,23 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
+        public void ColdBundle_OwnsItsDocumentStore_FromZero_EvenWhenXwmlsGetterExists()
+        {
+            // XWML's getter, made first: Razor's skins must not cache their DOM in its array.
+            var clrContext = UiTestAssemblies.Load();
+            var context = new ConverterContext(clrContext, null, null) { DevMode = true, LivePatchHook = true };
+            var manager = new RuntimeScopeManager(context);
+            SimpleIdentifier.CreateScopeIdentifier(manager.Scope, "DocStorageGetter", false);
+            var cold = UiTestAssemblies.Build(new RazorTemplatingPlugin(), clrContext, manager);
+
+            var getters = Regex.Matches(cold, @"\(domStore[\w$]* = ([\w$]+)\(doc[\w$]*\)\)\[\d+\]").Select(match => match.Groups[1].Value).Distinct().ToList();
+            getters.Should().ContainSingle("every Razor skin reads one document store");
+            cold.Should().Contain("function " + getters[0] + "(", "Razor writes the getter its skins call");
+            Indexes(cold).Min().Should().Be(0, "Razor numbers its own store from 0");
+            cold.Should().Contain(".razorStore", "Razor's store is its own document field").And.NotContain(".stateStore");
+        }
+
+        [TestMethod]
         public void SkinEdit_AfterTheAssemblyIsCompiledAgain_IsStillAPatch()
         {
             // A .cs save compiles the assembly again: same skins, a new Mvid.

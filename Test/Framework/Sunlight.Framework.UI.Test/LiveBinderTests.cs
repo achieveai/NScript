@@ -295,6 +295,92 @@ namespace Sunlight.Framework.UI.Test
         }
 
         /// <summary>
+        /// A binder on Child.Child.Name stops listening to the objects its path no longer
+        /// reaches, keeps listening to the ones it still reaches, and to none once disposed.
+        /// </summary>
+        [Test]
+        public static void TestLiveBinderRemovesListenersOffThePath(Assert assert)
+        {
+            var binderInfo = new SkinBinderInfo(
+                new Func<object, object>[]
+                {
+                    delegate(object obj)
+                    {
+                        return ((ListenerProbeVM)obj).Child;
+                    },
+                    delegate(object obj)
+                    {
+                        return ((ListenerProbeVM)obj).Child;
+                    },
+                    delegate(object obj)
+                    {
+                        return ((ListenerProbeVM)obj).Name;
+                    }
+                },
+                new string[]
+                {
+                    "Child",
+                    "Child",
+                    "Name"
+                },
+                delegate(object tar, object val)
+                {
+                    ((ListenerProbeVM)tar).Name = (string)val;
+                },
+                BinderType.PropertyBinder | BinderType.DataContext,
+                0,
+                0,
+                null,
+                null);
+
+            var src = new ListenerProbeVM();
+            var child = new ListenerProbeVM();
+            var grandChild = new ListenerProbeVM();
+            src.Child = child;
+            child.Child = grandChild;
+            grandChild.Name = "test";
+            var target = new ListenerProbeVM();
+            var liveBinder = new LiveBinder(binderInfo);
+            liveBinder.Source = src;
+            liveBinder.Target = target;
+            liveBinder.IsActive = true;
+            assert.Equal(target.Name, "test", "the value flows on activate.");
+            assert.Equal(grandChild.Listeners, 1, "the binder listens to the last object on the path.");
+
+            src.Child = null;
+            assert.Equal(child.Listeners, 0, "a cut path stops listening to the old child.");
+            assert.Equal(grandChild.Listeners, 0, "a cut path stops listening to the old grandchild.");
+
+            src.Child = child;
+            assert.Equal(target.Name, "test", "a restored path flows again.");
+            assert.Equal(child.Listeners, 1, "a restored path listens to the child again.");
+            assert.Equal(grandChild.Listeners, 1, "a restored path listens to the grandchild again.");
+            grandChild.Name = "changed";
+            assert.Equal(target.Name, "changed", "the restored path's last object still flows.");
+
+            var otherChild = new ListenerProbeVM();
+            var otherGrandChild = new ListenerProbeVM();
+            otherChild.Child = otherGrandChild;
+            otherGrandChild.Name = "other";
+            src.Child = otherChild;
+            assert.Equal(target.Name, "other", "a new mid-path object flows.");
+            assert.Equal(child.Listeners + grandChild.Listeners, 0, "the old mid-path objects are let go.");
+            assert.Equal(otherChild.Listeners, 1, "the new child is listened to.");
+            assert.Equal(otherGrandChild.Listeners, 1, "the new grandchild is listened to.");
+            otherGrandChild.Name = "other changed";
+            assert.Equal(target.Name, "other changed", "the new path's last object flows.");
+            assert.Equal(src.Listeners, 1, "the source keeps its one listener throughout.");
+
+            liveBinder.IsActive = false;
+            liveBinder.Source = null;
+            liveBinder.Target = null;
+            liveBinder.Cleanup();
+            assert.Equal(src.Listeners, 0, "a disposed binder stops listening to the source.");
+            assert.Equal(otherChild.Listeners, 0, "a disposed binder stops listening to the child.");
+            assert.Equal(otherGrandChild.Listeners, 0, "a disposed binder stops listening to the grandchild.");
+        }
+
+        /// <summary>
         /// Tests live binder on activate.
         /// </summary>
         [Test]
