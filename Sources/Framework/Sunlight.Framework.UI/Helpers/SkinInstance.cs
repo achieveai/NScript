@@ -347,6 +347,12 @@ namespace Sunlight.Framework.UI.Helpers
         /// </summary>
         private void QueuedActivation()
         {
+            // Disposed before the queue ran: wiring now would listen for a skin that is gone.
+            if (this.isDiposed)
+            {
+                return;
+            }
+
             this.bindingStrategy.WireSubscriptions(
                 this.skinableParent != null ? this.skinableParent.DataContext : null,
                 this.skinableParent);
