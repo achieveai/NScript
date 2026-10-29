@@ -58,9 +58,17 @@ namespace NScript.Converter.TypeSystemConverter
         private readonly ConverterContext context;
 
         /// <summary>
-        /// Queue for free temp variables.
+        /// Free temp variables, per JS scope. A temp belongs to the scope that
+        /// declared it, so a lambda's temps can't be used outside the lambda.
         /// </summary>
-        private readonly Queue<IIdentifier> freeTempVariables = new Queue<IIdentifier>();
+        private readonly Dictionary<IdentifierScope, Queue<IIdentifier>> freeTempVariables =
+            new Dictionary<IdentifierScope, Queue<IIdentifier>>();
+
+        /// <summary>
+        /// The free queue each temp variable is released into.
+        /// </summary>
+        private readonly Dictionary<IIdentifier, Queue<IIdentifier>> tempVariablePools =
+            new Dictionary<IIdentifier, Queue<IIdentifier>>();
 
         /// <summary>
         /// Tracker for if this method has Generic Arguments.
@@ -876,18 +884,20 @@ namespace NScript.Converter.TypeSystemConverter
         /// <returns>Temporary variable for current statement.</returns>
         public IIdentifier GetTempVariable()
         {
-            if (freeTempVariables.Count == 0)
+            var freeTemps = FreeTempVariables;
+            if (freeTemps.Count == 0)
             {
                 IIdentifier identifier = SimpleIdentifier.CreateScopeIdentifier(
                     Scope,
-                    string.Format("stmtTemp{0}", freeTempVariables.Count + 1),
+                    string.Format("stmtTemp{0}", freeTemps.Count + 1),
                     false);
 
                 statementTemporaryVariables.Add(identifier);
-                freeTempVariables.Enqueue(identifier);
+                tempVariablePools.Add(identifier, freeTemps);
+                freeTemps.Enqueue(identifier);
             }
 
-            return freeTempVariables.Dequeue();
+            return freeTemps.Dequeue();
         }
 
         public IIdentifier GetConditionalAccessTempVariable()
@@ -895,14 +905,31 @@ namespace NScript.Converter.TypeSystemConverter
                 conditionalAccessTempVariable
                 ?? SimpleIdentifier.CreateScopeIdentifier(
                     Scope,
-                    string.Format("stmtTemp{0}", freeTempVariables.Count + 1),
+                    string.Format("stmtTemp{0}", FreeTempVariables.Count + 1),
                     false);
 
         /// <summary>
         /// Releases the temp variable.
         /// </summary>
         /// <param name="identifier">The identifier.</param>
-        public void ReleaseTempVariable(IIdentifier identifier) => freeTempVariables.Enqueue(identifier);
+        public void ReleaseTempVariable(IIdentifier identifier) => tempVariablePools[identifier].Enqueue(identifier);
+
+        /// <summary>
+        /// Gets the free temp variables of the current scope.
+        /// </summary>
+        private Queue<IIdentifier> FreeTempVariables
+        {
+            get
+            {
+                if (!freeTempVariables.TryGetValue(Scope, out var freeTemps))
+                {
+                    freeTemps = new Queue<IIdentifier>();
+                    freeTempVariables.Add(Scope, freeTemps);
+                }
+
+                return freeTemps;
+            }
+        }
 
         /// <summary>
         /// Gets the replacement expression.

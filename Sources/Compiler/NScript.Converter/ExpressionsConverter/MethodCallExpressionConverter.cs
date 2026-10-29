@@ -54,7 +54,8 @@ namespace NScript.Converter.ExpressionsConverter
                         methodConverter.Scope),
                     null,
                     methodCallExpression.Parameters,
-                    methodCallExpression.ArgumentOrderOpt);
+                    methodCallExpression.ArgumentOrderOpt,
+                    readTargetFirst: false);
             }
 
             return MethodCallExpressionConverter.ConvertInternal(
@@ -243,16 +244,23 @@ namespace NScript.Converter.ExpressionsConverter
                     ? genericMethod.GenericArguments
                     : null,
                 methodCallExpression.Parameters,
-                methodCallExpression.ArgumentOrderOpt);
+                methodCallExpression.ArgumentOrderOpt,
+                readTargetFirst: true);
         }
 
+        /// <param name="readTargetFirst">
+        /// True when the target is a delegate value, which an argument may
+        /// reassign. C# reads it before the arguments run. A delegate is
+        /// bound when created, so calling it from a temp keeps its target.
+        /// </param>
         private static JST.Expression SimpleMethodCallConverter(
             IMethodScopeConverter methodConverter,
             Location location,
             JST.Expression methodReference,
             IList<TypeReference> methodGenericArguments,
             IList<Expression> parameters,
-            IList<int> argumentOrderOpt)
+            IList<int> argumentOrderOpt,
+            bool readTargetFirst)
         {
             List<JST.Expression> genericArguments = null;
             List<JST.Expression> argumentExpressions = null;
@@ -276,7 +284,9 @@ namespace NScript.Converter.ExpressionsConverter
                 argumentExpressions = new List<JST.Expression>();
             }
 
-            var (args, toPreInject) = ReorderArgs(methodConverter, parameters, argumentOrderOpt);
+            JST.Expression target = readTargetFirst ? methodReference : null;
+            var (args, toPreInject) = ReorderArgs(methodConverter, ref target, parameters, argumentOrderOpt);
+            methodReference = target ?? methodReference;
 
             argumentExpressions.AddRange(args);
 

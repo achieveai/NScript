@@ -115,8 +115,10 @@
     <None Remove="MethodConverterTests\Lang14Features\CompoundStaticReceiver.js" />
     <None Remove="MethodConverterTests\Lang14Features\IncrementStaticValue.js" />
     <None Remove="MethodConverterTests\MethodArgument\Constructor.js" />
+    <None Remove="MethodConverterTests\MethodArgument\DelegateArgs.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <None Remove="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
+    <None Remove="MethodConverterTests\MethodArgument\LambdaArgs.js" />
     <None Remove="MethodConverterTests\MethodArgument\LocalMethod.js" />
     <None Remove="MethodConverterTests\MethodArgument\NestedReorderedArgs.js" />
     <None Remove="MethodConverterTests\MethodArgument\StaticMethods.js" />
@@ -261,8 +263,10 @@
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\ArrayIndexEffects.js" />
     <EmbeddedResource Include="MethodConverterTests\Lang14Features\InstanceArgEffects.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\Constructor.js" />
+    <EmbeddedResource Include="MethodConverterTests\MethodArgument\DelegateArgs.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\InstanceMethod.static.js" />
+    <EmbeddedResource Include="MethodConverterTests\MethodArgument\LambdaArgs.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\LocalMethod.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\NestedReorderedArgs.js" />
     <EmbeddedResource Include="MethodConverterTests\MethodArgument\StaticMethods.js" />

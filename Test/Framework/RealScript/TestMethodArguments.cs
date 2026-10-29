@@ -4,6 +4,10 @@
     {
         private static int gv = 0;
 
+        private static ArgDelegate del;
+
+        private delegate int ArgDelegate(int x, int a, int b);
+
         public static void TestConstructor()
         {
             var n = new NestedClass(d: "d", c: "c", a: "a", b: 2);
@@ -60,7 +64,25 @@
             Make(b: GetString(), a: MutatedIntGV()).Method1(b: MutatedIntGV(), a: 2);
         }
 
+        public static void TestLambdaArgs()
+        {
+            // The lambda stays in place but is copied to a temp. Its body
+            // takes a temp of its own, which the outer call can't use.
+            Lambda(() => Chain(gv, b: GetString(), a: MutatedIntGV()), b: GetString(), a: 1);
+
+            // Same, with the lambda moved.
+            Lambda(b: GetString(), f: () => Chain(gv, b: GetString(), a: MutatedIntGV()), a: 1);
+        }
+
+        public static void TestDelegateArgs()
+        {
+            // C# reads the delegate before its arguments run.
+            del(MutatedIntGV(), b: 2, a: 1);
+        }
+
         public static int MutatedIntGV() => ++gv;
+
+        private static int Lambda(System.Func<int> f, int a, string b) => f() + a;
 
         private static int Chain(int x, int a, string b) => x + a;
 
