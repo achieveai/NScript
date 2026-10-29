@@ -271,7 +271,7 @@ namespace XwmlParser.Test
             Assert.IsTrue(plugin.PatchSectionLive);
 
             // The console line says what a re-skin resets, and names the template, not its path.
-            Assert.IsTrue(cold.Contains("(reset: focus, caret, scroll, unbound typed text)"), "the console line names what a re-skin resets");
+            Assert.IsTrue(cold.Contains("(n?' (reset: focus, caret, scroll, unbound typed text)':'')"), "the console line names what a re-skin resets, only when it re-skinned something");
             var getterId = plugin.CodeGenerator.GetDocumentStorageGetter();
             var named = Helper.ConvertCodeToString(new List<Statement>
             {

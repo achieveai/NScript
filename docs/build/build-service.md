@@ -89,6 +89,8 @@ NSCRIPT_PATCH_EMIT=1 dotnet build Test/Framework/TodoApp/TodoApp.csproj -p:NScri
 - **An XWML CSS save** (a colour in a linked `.css`) goes live: `applied <gen>:<seq> (0 methods)`.
   - Each document's style element takes the new CSS. So does a document made later (an iframe), and a new tab reads it from the bundle.
   - In a patch-emit bundle the CSS line reads `DocStorageGetter.__nsCss || "<css>"`, and each style element is kept on `DocStorageGetter.__nsStyles`.
+  - The cost does not grow with the number of skins. In a generated 650-skin app a CSS save showed on the page in 150-200 ms, a 220 KB sheet included (`Patch.Emit` 40-80 ms, `Probe.XwmlPatch CssMs` 10 ms or less).
+  - Each CSS patch carries the whole sheet. With a 220 KB sheet about 4 saves fill the 1M-char replay window, so a tab that reconnects after them reloads (`behind the replay window`).
 - **An XWML skin save** goes live too, with or without CSS (a class added and used): each open control that shows the skin is skinned again. Console: `reskinned <N> <template> (reset: focus, caret, scroll, unbound typed text)`, then `applied`. `<template>` is the file name without its folder or extension; with `<N>` = 0 the reset note is left off.
   - Each skin written again takes the next storage index, with no cap. XWML and Razor each keep their own per-document DOM cache (`stateStore`, `razorStore`), both indexed from 0, so a large app's patches never meet the other plugin's slots.
   - The control and its view model stay. The DOM inside the skin is made again, so state that lives only in that DOM goes: focus, a caret, text typed and not yet bound, scroll. The page may flash.
