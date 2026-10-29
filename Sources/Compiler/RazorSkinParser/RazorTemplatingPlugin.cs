@@ -55,10 +55,10 @@ namespace NScript.RazorSkin
         private CecilModelStubGenerator _stubGenerator;
 
         /// <summary>
-        /// Per-compilation data index counter for Razor templates.
-        /// Starts at <see cref="LiveSkinHook.RazorStorageBase"/>, past XWML's sequential indices (from 0).
+        /// Per-compilation data index counter for Razor templates, from 0. The indexes are into
+        /// Razor's own per-document store, so they never meet XWML's.
         /// </summary>
-        private int _nextDataIndex = LiveSkinHook.RazorStorageBase;
+        private int _nextDataIndex;
 
         /// <summary>
         /// Map of assembly module and full resource name to compiled template IR.
@@ -159,13 +159,6 @@ namespace NScript.RazorSkin
         /// Whether any .skin.cshtml resources were found during initialization.
         /// </summary>
         private bool _hasRazorTemplates;
-
-        /// <summary>
-        /// Flag set when the Razor plugin had to create its own DocStorageGetter
-        /// identifier because XWML was not active. When true,
-        /// <see cref="GetPostJavascript"/> must also emit the function body.
-        /// </summary>
-        private bool _needsDocStorageGetterEmission;
 
         /// <summary>
         /// Resolved runtime types needed for graph descriptor JST emission.
@@ -303,12 +296,11 @@ namespace Sunlight.Framework.Observables
             // Reset per-compilation state. A retried build initializes this plugin again with a
             // new RuntimeScopeManager: start as a new plugin would, so no identifier of the
             // discarded scope and no "already reported" CSS error carries into the retry.
-            _nextDataIndex = LiveSkinHook.RazorStorageBase;
+            _nextDataIndex = 0;
             _templateMethodReferences = null;
             _compiledIRs.Clear();
             _templateShortNames.Clear();
             _hasRazorTemplates = false;
-            _needsDocStorageGetterEmission = false;
             _razorKnownTypes = null;
             _templateCssManagers.Clear();
             _cssClassMap.Clear();
@@ -420,6 +412,11 @@ namespace Sunlight.Framework.Observables
                 }
 
                 probeKnownMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
+
+                // Razor's own document store getter, written by GetPostJavascript. XWML has its
+                // own: the two never share a skin's cached DOM.
+                _resolvedIdentifiers["DocStorageGetter"] = SimpleIdentifier.CreateScopeIdentifier(
+                    runtimeScopeManager.Scope, "DocStorageGetter", false);
                 ResolveRuntimeIdentifiers(clrContext, runtimeScopeManager);
                 probeResolveMs = probePhase.ElapsedMilliseconds; probePhase.Restart();
 
@@ -1387,13 +1384,6 @@ namespace Sunlight.Framework.Observables
 
         public List<MethodReference> GetMethodsToEmitPassN()
         {
-            // After XWML's pass has run and created DocStorageGetter, look it up
-            // in the shared scope so Razor templates can reference it by the correct name.
-            if (_hasRazorTemplates && !_resolvedIdentifiers.ContainsKey("DocStorageGetter"))
-            {
-                TryResolveDocStorageGetter();
-            }
-
             // Collect methods referenced by template event handlers so the demand-driven
             // converter emits their bodies. Without this, methods called only from
             // templates (e.g., onclick="@Model.OnSelectTodo(todo)") would be dead-code-eliminated.
@@ -1419,31 +1409,6 @@ namespace Sunlight.Framework.Observables
 
             _templateMethodReferences = methods;
             return new List<MethodReference>(methods);
-        }
-
-        /// <summary>
-        /// Searches the runtime scope for the DocStorageGetter identifier created by
-        /// the XWML CodeGenerator. This must be called after XWML's GetMethodsToEmitPassN
-        /// has run so the identifier exists in the scope.
-        /// </summary>
-        private void TryResolveDocStorageGetter()
-        {
-            var scope = _runtimeScopeManager.Scope;
-            foreach (var identifier in scope.ScopedIdentifiers)
-            {
-                if (identifier.OriginalSuggestedName == "DocStorageGetter")
-                {
-                    _resolvedIdentifiers["DocStorageGetter"] = identifier;
-                    Log.Debug("Found DocStorageGetter identifier in scope");
-                    return;
-                }
-            }
-
-            // Not found — create it ourselves so the emitted call is minification-safe.
-            var newId = SimpleIdentifier.CreateScopeIdentifier(scope, "DocStorageGetter", false);
-            _resolvedIdentifiers["DocStorageGetter"] = newId;
-            _needsDocStorageGetterEmission = true;
-            Log.Debug("Created DocStorageGetter identifier (XWML not active); will emit function body");
         }
 
         /// <summary>
@@ -2156,27 +2121,16 @@ namespace Sunlight.Framework.Observables
             if (!_hasRazorTemplates)
                 return new List<Statement>();
 
-            // Re-attempt DocStorageGetter resolution here because XWML's GetPostJavascript()
-            // creates the identifier lazily during template emission.  GetMethodsToEmitPassN()
-            // runs before GetPostJavascript(), so the first attempt may have been too early.
-            if (!_resolvedIdentifiers.ContainsKey("DocStorageGetter"))
-            {
-                TryResolveDocStorageGetter();
-            }
-
             var statements = new List<Statement>();
 
-            // If Razor created its own DocStorageGetter identifier (no XWML), emit the function body.
-            if (_needsDocStorageGetterEmission)
+            // Razor's own document store getter, which its skins and live helpers use.
+            var docStorageGetterStatements = EmitDocStorageGetterFunction();
+            if (docStorageGetterStatements != null)
             {
-                var docStorageGetterStatements = EmitDocStorageGetterFunction();
-                if (docStorageGetterStatements != null)
+                statements.AddRange(docStorageGetterStatements);
+                if (LiveHook)
                 {
-                    statements.AddRange(docStorageGetterStatements);
-                    if (LiveHook)
-                    {
-                        statements.AddRange(CreateLiveSkinHelpers());
-                    }
+                    statements.AddRange(CreateLiveSkinHelpers());
                 }
             }
 
@@ -2313,7 +2267,7 @@ namespace Sunlight.Framework.Observables
                 var scope = _runtimeScopeManager.Scope;
                 IIdentifier docStorageGetterId = _resolvedIdentifiers["DocStorageGetter"];
 
-                // Look up the Document type so we can create the stateStore field identifier on it.
+                // Look up the Document type so we can create the razorStore field identifier on it.
                 var documentTypeDef = _clrContext.GetTypeDefinition(
                     Tuple.Create("System.Web.Html", "System.Web.Html.Document"));
 
@@ -2323,11 +2277,11 @@ namespace Sunlight.Framework.Observables
                     return null;
                 }
 
-                // Get or create the 'stateStore' extension field on Document's type scope.
-                IIdentifier stateStoreId = _runtimeScopeManager.GetTypeScope(documentTypeDef)
-                    .GetIdentifier("stateStore", true, false);
+                // Razor's own extension field on Document's type scope; XWML's is stateStore.
+                IIdentifier razorStoreId = _runtimeScopeManager.GetTypeScope(documentTypeDef)
+                    .GetIdentifier("razorStore", true, false);
 
-                // Build: function DocStorageGetter(doc) { if (!doc.stateStore) { doc.stateStore = []; } return doc.stateStore; }
+                // Build: function DocStorageGetter(doc) { if (!doc.razorStore) { doc.razorStore = []; } return doc.razorStore; }
                 var methodScope = new IdentifierScope(
                     scope,
                     new string[] { "doc" },
@@ -2335,16 +2289,16 @@ namespace Sunlight.Framework.Observables
 
                 IIdentifier docParam = methodScope.ParameterIdentifiers[0];
 
-                // doc.stateStore = []
+                // doc.razorStore = []
                 var initStmts = new List<Statement>();
                 initStmts.Add(
                     ExpressionStatement.CreateAssignmentExpression(
                         IdentifierExpression.Create(
                             null, methodScope,
-                            new IIdentifier[] { docParam, stateStoreId }),
+                            new IIdentifier[] { docParam, razorStoreId }),
                         new NewArrayExpression(null, methodScope, null)));
 
-                // if (!doc.stateStore) { doc.stateStore = []; }
+                // if (!doc.razorStore) { doc.razorStore = []; }
                 var ifStmt = new IfBlockStatement(
                     null, methodScope,
                     new UnaryExpression(
@@ -2352,7 +2306,7 @@ namespace Sunlight.Framework.Observables
                         UnaryOperator.LogicalNot,
                         IdentifierExpression.Create(
                             null, methodScope,
-                            new IIdentifier[] { docParam, stateStoreId })),
+                            new IIdentifier[] { docParam, razorStoreId })),
                     new ScopeBlock(null, methodScope, initStmts),
                     null);
 
@@ -2364,13 +2318,13 @@ namespace Sunlight.Framework.Observables
 
                 funcExpr.AddStatement(ifStmt);
 
-                // return doc.stateStore;
+                // return doc.razorStore;
                 funcExpr.AddStatement(
                     new ReturnStatement(
                         null, methodScope,
                         IdentifierExpression.Create(
                             null, methodScope,
-                            new IIdentifier[] { docParam, stateStoreId })));
+                            new IIdentifier[] { docParam, razorStoreId })));
 
                 return new List<Statement>
                 {

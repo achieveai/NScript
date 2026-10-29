@@ -58,8 +58,8 @@ namespace NScript.RazorSkin.CodeGen
         private IIdentifier _htmlRootIdentifier;
         private IIdentifier _objStorageIdentifier;
 
-        // Data index for doc.stateStore — must be unique across ALL templates (XWML + Razor).
-        // The starting offset is passed in from the plugin to avoid collision with XWML indices.
+        // Data index into Razor's per-document store (doc.razorStore): unique across Razor's
+        // templates. XWML keeps its own store, so its indices never collide with these.
         private readonly int _dataIndex;
 
         /// <summary>

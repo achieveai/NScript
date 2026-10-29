@@ -848,13 +848,8 @@ namespace XwmlParser
                 }
 
                 var generatorsBefore = System.Linq.Enumerable.ToList(this.skinCodeGenerators);
-                this.IterateParsing();
-
                 // Each skin written again takes a new index; a full emit numbers them from 0 again.
-                if (this.skinCodeGeneratorStorageIndexs.Count > LiveSkinHook.RazorStorageBase)
-                {
-                    return "xwml storage index " + (this.skinCodeGeneratorStorageIndexs.Count - 1) + " reaches Razor's";
-                }
+                this.IterateParsing();
 
                 // Same order as before, so the CSS keeps its order; skins asked for anew go last.
                 var generators = new Dictionary<TemplateParser, SkinCodeGenerator>();

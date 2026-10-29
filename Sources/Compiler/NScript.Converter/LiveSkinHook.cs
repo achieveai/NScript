@@ -11,17 +11,11 @@ namespace NScript.Converter
 
     /// <summary>
     /// Live patch emit: the code a template plugin writes so that a patched skin goes live in
-    /// the open page (<see cref="ConverterContext.LivePatchHook"/>). The helpers hang off the
-    /// document storage getter, which every template plugin shares.
+    /// the open page (<see cref="ConverterContext.LivePatchHook"/>). The helpers hang off each
+    /// template plugin's own document storage getter.
     /// </summary>
     public static class LiveSkinHook
     {
-        /// <summary>
-        /// The first document storage index Razor's skins take; XWML's take 0 up. Both cache a
-        /// skin's DOM in one per-document array, so XWML's patches must stay below it.
-        /// </summary>
-        public const int RazorStorageBase = 100;
-
         private const string TrackKey = "__nsTrack";
 
         private const string ReskinKey = "__nsReskin";
