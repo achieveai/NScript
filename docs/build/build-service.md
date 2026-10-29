@@ -89,12 +89,12 @@ NSCRIPT_PATCH_EMIT=1 dotnet build Test/Framework/TodoApp/TodoApp.csproj -p:NScri
 - **An XWML CSS save** (a colour in a linked `.css`) goes live: `applied <gen>:<seq> (0 methods)`.
   - Each document's style element takes the new CSS. So does a document made later (an iframe), and a new tab reads it from the bundle.
   - In a patch-emit bundle the CSS line reads `DocStorageGetter.__nsCss || "<css>"`, and each style element is kept on `DocStorageGetter.__nsStyles`.
-- **An XWML skin save** goes live too, with or without CSS (a class added and used): each open control that shows the skin is skinned again. Console: `reskinned <N> <template>`, then `applied`.
-  - Each skin written again takes the next storage index. XWML's stay below Razor's (from 100), which share the per-document DOM cache. The patch that would reach 100 emits in full: `Miss=xwml storage index 100 reaches Razor's`.
+- **An XWML skin save** goes live too, with or without CSS (a class added and used): each open control that shows the skin is skinned again. Console: `reskinned <N> <template> (reset: focus, caret, scroll, unbound typed text)`, then `applied`. `<template>` is the file name without its folder or extension; with `<N>` = 0 the reset note is left off.
+  - Each skin written again takes the next storage index, with no cap. XWML and Razor each keep their own per-document DOM cache (`stateStore`, `razorStore`), both indexed from 0, so a large app's patches never meet the other plugin's slots.
   - The control and its view model stay. The DOM inside the skin is made again, so state that lives only in that DOM goes: focus, a caret, text typed and not yet bound, scroll. The page may flash.
   - The skin object stays the same, with the new factory. A list's item skin, or any other holder, makes the new look for items added later.
   - In a patch-emit bundle each skin factory keeps what it made (`DocStorageGetter.__nsTrack`, weak references), and the line `Name_var = null` reads `if (Name_var) DocStorageGetter.__nsReskin(...)`: nothing at load, the re-skin when a patch runs it.
-- **A Razor skin save** (`.skin.cshtml`) goes live the same way: `reskinned <N> <template>`. In TodoApp the rows (`TodoItemControl`) and the shell (`AppShell`) are skinned again around the same rows.
+- **A Razor skin save** (`.skin.cshtml`) goes live the same way: `reskinned <N> <template> (reset: ...)`. In TodoApp the rows (`TodoItemControl`) and the shell (`AppShell`) are skinned again around the same rows.
   - The skin is written again with its old names and a new storage index.
   - A bundle with no Razor CSS stays without it; a skin save there still goes live.
   - It emits in full (`new build`) when the save adds or removes a skin, changes its `@model`, control or `@styles`, uses a class its CSS does not declare (the build error shows as `build failed`), or calls a method no skin called before (`Miss=razor skin calls <method>`).

@@ -270,6 +270,15 @@ namespace XwmlParser.Test
                 "the helper gets the framework's field names as resolved, and a Skin setter: " + cold);
             Assert.IsTrue(plugin.PatchSectionLive);
 
+            // The console line says what a re-skin resets, and names the template, not its path.
+            Assert.IsTrue(cold.Contains("(reset: focus, caret, scroll, unbound typed text)"), "the console line names what a re-skin resets");
+            var getterId = plugin.CodeGenerator.GetDocumentStorageGetter();
+            var named = Helper.ConvertCodeToString(new List<Statement>
+            {
+                plugin.CodeGenerator.CreateReskin(((SimpleIdentifier)getterId).OwnerScope, getterId, getterId, "0", @"Test\Templates\L60"),
+            });
+            Assert.IsTrue(named.Contains(", \"0\", \"L60\");"), "a watch build's template id is its path: " + named.Replace("{", "{{").Replace("}", "}}"));
+
             var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
             {
                 [First] = Tuple.Create(Resource(First, Document("edited")), First),

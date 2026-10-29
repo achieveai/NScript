@@ -61,7 +61,7 @@ namespace NScript.Converter
                             root,
                             "(function(F,I,P,K,set){return function(s,f,id,name){s[F]=f;s[I]=id;var a=s.__nsInsts||[],n=0;s.__nsInsts=[];"
                             + "a.forEach(function(w){var si=w.deref(),c=si&&si[P];if(c&&c[K]===si){set(c,null);set(c,s);n++;}});"
-                            + "console.info('[nscript-hmr] reskinned '+n+' '+name);};})"),
+                            + "console.info('[nscript-hmr] reskinned '+n+' '+name+(n?' (reset: focus, caret, scroll, unbound typed text)':''));};})"),
                         FieldName(factoryField),
                         FieldName(idField),
                         FieldName(parentField),
@@ -101,7 +101,9 @@ namespace NScript.Converter
                             new IdentifierExpression(skinVariable, scope),
                             new IdentifierExpression(factory, scope),
                             new StringLiteralExpression(scope, id),
-                            new StringLiteralExpression(scope, name)),
+
+                            // A watch build's XWML template id is its path: the console names the file.
+                            new StringLiteralExpression(scope, name.Substring(name.LastIndexOfAny(new[] { '\\', '/' }) + 1))),
                     }),
                 null);
 

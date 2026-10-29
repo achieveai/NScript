@@ -84,7 +84,7 @@ try {
   fs.writeFileSync(SKIN, source.replace(OLD, NEW));
   edited = true;
   check(await until(() => applied() >= 1), 'the skin save is applied live');
-  check(logs.some(l => /reskinned [1-9]\d* \S*TestTemplateVMB1/.test(l)), 'the console says the control was skinned again');
+  check(logs.some(l => /reskinned [1-9]\d* TestTemplateVMB1 \(reset: focus, caret, scroll, unbound typed text\)$/.test(l)), 'the console names the skin and says what a re-skin resets');
   const after = await probe(page);
   check(after.live && after.text === 'probe', `the open control shows the new skin and keeps its view model (${JSON.stringify(after)})`);
   check(after.sameElement && !after.sameDom, 'same control element, new DOM inside the skin');
