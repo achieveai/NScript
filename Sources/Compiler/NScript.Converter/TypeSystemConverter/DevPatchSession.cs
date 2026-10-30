@@ -92,6 +92,9 @@ namespace NScript.Converter.TypeSystemConverter
         /// <summary>Script length now, in chars.</summary>
         public int ScriptLength => this.script.Length;
 
+        /// <summary>Whether the bundle on disk is still the one this session last wrote.</summary>
+        public bool BundleOnDisk => Stamp(this.jsFileName) == this.written;
+
         /// <summary>The string literals the plugins write again in place, by marker (this patch).</summary>
         private readonly Dictionary<string, string> literals = new Dictionary<string, string>();
 
@@ -554,6 +557,9 @@ namespace NScript.Converter.TypeSystemConverter
             }
 
             this.liveLiterals.ForEach(statement => writer.Write(statement));
+
+            // Last: the skins the patch gave new factories build their open controls, once each.
+            writer.Write(LiveSkinHook.CreateFlush(this.runtimeManager.Scope));
             using var text = new StringWriter();
             writer.Write(text);
             return text + Environment.NewLine + "//# sourceURL=nscript-hmr:///" + Path.GetFileName(this.jsFileName) + "/" + this.gen + "-" + this.Patches + ".js";

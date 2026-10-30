@@ -51,6 +51,9 @@ namespace XwmlParser
             this.resourceName = resourceName;
         }
 
+        /// <summary>The document's resource name.</summary>
+        internal string ResourceName => this.resourceName;
+
         /// <summary>
         /// Gets the resolver.
         /// </summary>

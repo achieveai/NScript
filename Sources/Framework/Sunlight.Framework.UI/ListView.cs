@@ -127,6 +127,8 @@ namespace Sunlight.Framework.UI
 
                 if (this.IsActive)
                 {
+                    // FixedList and ObservableList both feed the rows through attachedObservableList.
+                    var observableList = this.attachedObservableList;
                     var items = this.items;
                     int itemCount = items.Count;
                     for (int iItem = 0; iItem < itemCount; iItem++)

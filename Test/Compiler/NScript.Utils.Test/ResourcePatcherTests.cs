@@ -202,8 +202,9 @@ namespace NScript.Utils.Test
 
         /// <summary>
         /// Build-session refresh (M3 slice 3, L1) on a loaded module. A patched image gives the
-        /// module its new resources, and so does the patch that reverts it. Nothing changes, and
-        /// the reason says why, for: the same image again, a recompile (new MVID), a changed
+        /// module its new resources, and so does the patch that reverts it. The same image again
+        /// succeeds with nothing replaced. Nothing changes, and the reason says why, for: a
+        /// recompile (new MVID), a changed
         /// $$BstInfo$$, an added, renamed or re-attributed resource (all with the MVID kept, as a
         /// Cecil rewrite does), or an image of a module that is not loaded.
         /// </summary>
@@ -231,7 +232,10 @@ namespace NScript.Utils.Test
                 CollectionAssert.AreEqual(File.ReadAllBytes(this.skin), Resource(module, "Fx.Shell.skin.cshtml"), expected);
             }
 
-            Refused(patched, "no-resource-change");
+            // The same patch again is no swap and no miss (#125).
+            Assert.IsTrue(clr.TryRefreshResources(new[] { patched }, out var same, out reason), reason);
+            Assert.AreEqual(0, same);
+            CollectionAssert.AreEqual(File.ReadAllBytes(this.skin), Resource(module, "Fx.Shell.skin.cshtml"));
 
             var map = new Dictionary<string, string> { ["Fx.Shell.skin.cshtml"] = this.skin, ["Fx.Site.css"] = this.css };
             Emit(Path.Combine(this.dir, "recompiled"), map, out var recompiled, out _, Source.Replace("fixture", "fixture 2"));

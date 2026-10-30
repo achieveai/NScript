@@ -94,7 +94,7 @@ namespace RazorSkinParser.Test
         {
             var (plugin, clrContext, manager, cold) = BuildSkins(liveHook: true);
             cold.Should().Contain(".__nsTrack = function(si,s)", "a Razor-only bundle writes the live helpers with its document storage getter");
-            cold.Should().Contain(".__nsReskin = (function(F,I,P,K,set)");
+            cold.Should().Contain(".__nsReskin = (function(F,I,P,K,E,set)");
             cold.Should().NotMatchRegex(@"GraphSimpleText_var[\w$]* = null", "the storage line is the re-skin");
             var reskin = new Regex(@"if \((GraphSimpleText_var[\w$]*)\)\s*\{?\s*([\w$]+)\.__nsReskin\(\1, (GraphSimpleText_factory[\w$]*), ""(\d+)"", ""GraphSimpleText""\);");
             var before = reskin.Match(cold);

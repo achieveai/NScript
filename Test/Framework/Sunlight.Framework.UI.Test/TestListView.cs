@@ -131,6 +131,42 @@ namespace Sunlight.Framework.UI.Test
 
         }
 
+        [Test]
+        /// <summary>
+        /// Changing HeaderSkin on an active FixedList list re-skins the rows (#124).
+        /// </summary>
+        public static void TestHeaderSkinChangeOnActiveFixedList(Assert assert)
+        {
+            Document document = Window.Instance.Document;
+            ListView listView = new ListView(document.CreateElement("div"));
+            listView.ItemSkin = NScriptsTemplatesClass.TestTemplateVMB1_int;
+            listView.HeaderSkin = NScriptsTemplatesClass.TestTemplateVMC1;
+
+            var rows = new InjectedElement<TestViewModelB, TestViewModelC>[]
+            {
+                new InjectedElement<TestViewModelB, TestViewModelC> { Header = new TestViewModelC { PropStr3 = "Header : 0" } },
+                new InjectedElement<TestViewModelB, TestViewModelC> { Item = new TestViewModelB { PropInt2 = 4 } },
+                new InjectedElement<TestViewModelB, TestViewModelC> { Item = new TestViewModelB { PropInt2 = 6 } }
+            };
+
+            listView.FixedList = rows;
+            listView.InactiveIfNullContext = false;
+            listView.Activate();
+
+            Skin vmc1 = NScriptsTemplatesClass.TestTemplateVMC1;
+            listView.HeaderSkin = new Skin(
+                vmc1.SkinableType,
+                vmc1.DataContextType,
+                (skin, doc) => vmc1.CreateInstance(),
+                "HeaderSkinCopy");
+
+            var elems = listView.Element.QuerySelectorAll("[test]");
+            assert.Equal(elems.Length, 3, "number of children should be 3");
+            assert.Equal(elems[0].InnerText, "Header : 0", "header row uses the header skin");
+            assert.Equal(elems[1].InnerText, "4", "item row uses the item skin");
+            assert.Equal(elems[2].InnerText, "6", "item row uses the item skin");
+        }
+
         private static void TestCase(Assert assert)
         {
             var count = _headerTransformer.TransformedCollection.Count;

@@ -192,10 +192,11 @@ namespace NScript.Csc.Lib.Test
                     Assert.AreEqual("warm", builder.LastBuildKind, "A touch that keeps the content must reuse the session.");
                     CollectionAssert.AreEqual(coldJs, touchedJs, "A warm build after a touch differs from the cold build.");
 
-                    // Same length and same mtime, different content (cp -p, restored packages, two
-                    // writes in one tick): one byte of the PE TimeDateStamp, which the output does
-                    // not use. First a reference (a framework rebuild), then the entry DLL. Each
-                    // build must be cold, and the reset drops the old context.
+                    // A reference whose resource set changes (a framework rebuild) is cold, and the
+                    // reset drops the old context. Then same length and same mtime, different
+                    // content (cp -p, restored packages, two writes in one tick): one byte of the
+                    // PE TimeDateStamp of the entry DLL. The hash sees it, and with the same MVID
+                    // and resources the session takes it as unchanged (#125).
                     static void FlipTimeDateStamp(string path)
                     {
                         var bytes = File.ReadAllBytes(path);
@@ -205,18 +206,20 @@ namespace NScript.Csc.Lib.Test
                         File.SetLastWriteTimeUtc(path, mtime);
                     }
 
-                    FlipTimeDateStamp(refs[2]);
+                    SetOracleResource(refs[2], "a new resource");
                     BuildOnce(builder, outJs, out var refChangedJs, out _);
                     Assert.AreEqual("cold", builder.LastBuildKind, "A changed reference DLL must not reuse the session.");
-                    CollectionAssert.AreEqual(coldJs, refChangedJs, "The reference's TimeDateStamp byte must not change the output.");
+                    CollectionAssert.AreEqual(coldJs, refChangedJs, "An unused resource in a reference must not change the output.");
+
+                    CollectGarbage();
+                    Assert.IsFalse(cold.context.IsAlive, "After a reset the session still holds the old ConverterContext.");
 
                     FlipTimeDateStamp(main);
                     var again = BuildOnce(builder, outJs, out var againJs, out _);
-                    Assert.AreEqual("cold", builder.LastBuildKind, "A same-length, same-mtime rewrite must not reuse the session.");
+                    Assert.AreEqual("warm", builder.LastBuildKind, "A same-MVID rewrite with the same resources changes nothing.");
+                    Assert.AreEqual("resources-unchanged", builder.LastBuildReason);
                     CollectionAssert.AreEqual(coldJs, againJs, "The TimeDateStamp byte must not change the output.");
-                    CollectGarbage();
-                    Assert.IsFalse(cold.context.IsAlive, "After a reset the session still holds the old ConverterContext.");
-                    Assert.IsTrue(again.context.IsAlive, "The new session must keep its ConverterContext.");
+                    Assert.IsTrue(again.context.IsAlive, "The session must keep its ConverterContext.");
                 }
             }
             finally
@@ -229,8 +232,8 @@ namespace NScript.Csc.Lib.Test
         /// M3 slice 3 (L1): a change to the entry DLL that only changes a resource keeps the
         /// session. The build is warm on the same ConverterContext, the plugin reads the new
         /// resource, the output equals the cold build, and the next unchanged build is warm, so
-        /// the session took the new stamps. A same-MVID change that is not a resource change
-        /// stays cold (Session_WarmBuildEqualsCold...: TimeDateStamp flip).
+        /// the session took the new stamps. A same-MVID change with the same resources is
+        /// warm and unchanged (Session_WarmBuildEqualsCold...: TimeDateStamp flip, #125).
         /// </summary>
         [TestMethod]
         [TestCategory("Integration")] // ~17 s fixture setup plus 4 builds.
@@ -307,11 +310,15 @@ namespace NScript.Csc.Lib.Test
         /// source checksums in $$SrcInfo$$.
         /// </summary>
         private static string CompileLib(string dir, string[] refs, params (string name, string text)[] files)
+            => CompileNamed(dir, "lib", refs, files);
+
+        /// <summary>Like <see cref="CompileLib"/>, into <paramref name="assembly"/>.dll.</summary>
+        private static string CompileNamed(string dir, string assembly, string[] refs, params (string name, string text)[] files)
         {
-            var path = Path.Combine(dir, "lib.dll");
+            var path = Path.Combine(dir, assembly + ".dll");
             File.Delete(path);
             var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create(
-                "lib",
+                assembly,
                 files.Select(file => Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
                     file.text,
                     Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.Default,
@@ -321,7 +328,7 @@ namespace NScript.Csc.Lib.Test
                 new Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions(
                     Microsoft.CodeAnalysis.OutputKind.DynamicallyLinkedLibrary,
                     concurrentBuild: false));
-            Assert.IsNotNull(SerializationHelper.ExpressionVisitMap(compilation, dir, "lib.dll"), "The fixture library must compile.");
+            Assert.IsNotNull(SerializationHelper.ExpressionVisitMap(compilation, dir, assembly + ".dll"), "The fixture library must compile.");
             return path;
         }
 
@@ -601,6 +608,11 @@ namespace NScript.Csc.Lib.Test
                         // Not StringAssert: its message formats the braces in the script.
                         var url = "\r\n//# sourceURL=nscript-hmr:///bundle.js/" + gen + "-" + seq + ".js";
                         Assert.AreEqual(url, live.Js.Substring(Math.Max(0, live.Js.Length - url.Length)), what + ": the sourceURL.");
+
+                        // The skins the patch gave new factories build their open controls last, once each.
+                        var flush = "globalThis.__nsFlush&&globalThis.__nsFlush();";
+                        var body = live.Js.Substring(0, live.Js.Length - url.Length).TrimEnd();
+                        Assert.IsTrue(body.EndsWith(flush), what + ": the patch ends with the re-skin flush.");
                     }
                     else
                     {
@@ -989,6 +1001,165 @@ namespace NScript.Csc.Lib.Test
             }
             finally
             {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// #125: a watch batch that ran after another batch already patched the bundle finds
+        /// nothing new. With a patch session that build writes nothing and sends nothing: no new
+        /// gen, so open pages do not reload. That holds for inputs with the same stamps, and for
+        /// a rewritten entry DLL with the same MVID and resources (a resource patch that wrote
+        /// the same bytes again). A bundle changed on disk still emits in full, and a later
+        /// body edit still patches on the same gen.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 6 builds of a small library.
+        public void Session_PatchEmit_NothingChanged_WritesNothing_KeepsGen()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-nochange-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            string Compile(string text) => CompileLib(dir, refs, ("Program.cs", ProgramSource("return \"" + text + "\".Length;")));
+
+            var previous = Environment.GetEnvironmentVariable("NSCRIPT_PATCH_EMIT");
+            Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", "1");
+            var main = Compile("v1");
+            try
+            {
+                using var builder = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true);
+                void Build(string what)
+                {
+                    Builder.ResetProcessState();
+                    Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), what + ": the build failed.");
+                }
+
+                Build("The first build");
+                Assert.AreEqual("cold", builder.LastBuildKind);
+                var gen = Stamp(File.ReadAllText(outJs)).Split(':')[0];
+
+                Compile("v2");
+                Build("A body edit");
+                Assert.AreEqual("bodies-refreshed; patched 1 methods", builder.LastBuildReason, builder.LastPatchMiss);
+                var patched = File.ReadAllText(outJs);
+                Assert.AreEqual(gen + ":1", Stamp(patched));
+
+                void Nothing(string reason, string what)
+                {
+                    var written = File.GetLastWriteTimeUtc(outJs);
+                    Build(what);
+                    Assert.AreEqual("warm", builder.LastBuildKind, what);
+                    Assert.AreEqual(reason + "; nothing to emit", builder.LastBuildReason, what);
+                    Assert.IsNull(builder.LastLivePatch, what + ": open pages must get nothing, so they keep the gen.");
+                    Assert.AreEqual(patched, File.ReadAllText(outJs), what + ": the bundle must stay as the patch wrote it.");
+                    Assert.AreEqual(written, File.GetLastWriteTimeUtc(outJs), what + ": the bundle must not be written again.");
+                }
+
+                Nothing("unchanged", "A build with the same inputs");
+
+                // Same MVID and resources, other bytes: the PE TimeDateStamp.
+                var bytes = File.ReadAllBytes(main);
+                bytes[BitConverter.ToInt32(bytes, 0x3C) + 8] ^= 0x5A;
+                File.WriteAllBytes(main, bytes);
+                Nothing("resources-unchanged", "A rewritten DLL with the same MVID and resources");
+
+                Compile("v3");
+                Build("A body edit after builds with nothing to emit");
+                Assert.AreEqual("bodies-refreshed; patched 1 methods", builder.LastBuildReason, builder.LastPatchMiss);
+                patched = File.ReadAllText(outJs);
+                Assert.AreEqual(gen + ":2", Stamp(patched), "The patch must keep the gen and count on.");
+
+                File.AppendAllText(outJs, "\r\n");
+                Build("A build after the bundle changed on disk");
+                Assert.AreEqual("unchanged", builder.LastBuildReason, "A bundle changed on disk must be emitted in full.");
+                Assert.AreEqual("new build", builder.LastLivePatch?.Reload);
+                Assert.AreNotEqual(gen, Stamp(File.ReadAllText(outJs)).Split(':')[0], "A full emit starts a new gen.");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", previous);
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// One watch batch where a reference is recompiled (a second watch rebuilt the shared
+        /// framework) and the entry DLL takes a resource patch (a CSS save). The patch must
+        /// give the resource change to the plugins, not only patch the changed bodies: before
+        /// the fix the CSS change was dropped and the page kept the old style. RootsPlugin
+        /// cannot patch resources, so here the change reaching it is a miss and a full emit.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 2 builds of two small libraries.
+        public void Session_PatchEmit_RecompiledReferenceAndResourcePatch_PatchesResources()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-mixed-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            string CompileHelper(string source) => CompileNamed(dir, "helper", refs, ("Helper.cs", source));
+
+            var previous = Environment.GetEnvironmentVariable("NSCRIPT_PATCH_EMIT");
+            Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", "1");
+            var helper = CompileHelper(HelperSource);
+            var appRefs = refs.Append(helper).ToArray();
+            var main = CompileLib(dir, appRefs, ("Program.cs", ProgramSource("return Helper.Say(\"v1\");")));
+            SetOracleResource(main, "v1");
+            try
+            {
+                using var builder = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    appRefs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true);
+                void Build(string what)
+                {
+                    Builder.ResetProcessState();
+                    Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), what + ": the build failed.");
+                }
+
+                Build("The first build");
+                Assert.AreEqual("cold", builder.LastBuildKind);
+
+                CompileHelper(HelperSource.Replace("return text.Length;", "return text.Length + 1;"));
+                SetOracleResource(main, "v2");
+                Build("A recompiled reference and a resource patch in one batch");
+                Assert.AreEqual("warm", builder.LastBuildKind);
+                Assert.AreEqual("plugin RootsPlugin", builder.LastPatchMiss, "The resource change must reach the plugins.");
+                Assert.AreEqual("v2", RootsPlugin.LastOracleText);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", previous);
                 Directory.Delete(dir, recursive: true);
             }
         }

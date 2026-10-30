@@ -43,7 +43,8 @@ const server = http.createServer((req, res) => {
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const url = `http://127.0.0.1:${server.address().port}/Sunlight.Framework.UI.TestPage.htm`;
 
-const browser = await chromium.launch({ headless: true });
+// gc() lets the test collect garbage before a save: an open control must outlive it.
+const browser = await chromium.launch({ headless: true, args: ['--js-flags=--expose-gc'] });
 const page = await browser.newPage();
 const logs = [], errors = [];
 let loads = 0, edited = false;
@@ -73,6 +74,7 @@ try {
   check(await page.$('#qunit-banner.qunit-pass') !== null, 'the UI suite passes');
   check(await until(() => logs.some(l => l.includes('connected ' + BUNDLE)), 15000), 'connects');
   await page.evaluate(() => {
+    gc();
     window.__keep = 42;
     window.__probe = document.querySelector('#hmr-skin-probe');
     window.__probeDiv = window.__probe && window.__probe.querySelector('[test]');

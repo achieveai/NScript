@@ -236,7 +236,7 @@
 
         /// <inheritdoc/>
         public List<Statement> LiveLiteral(string marker, string value, IdentifierScope root)
-            => marker == CodeGenerator.CssMarker ? this.codeGenerator.CreateLiveCss(value, root) : null;
+            => this.codeGenerator.CreateLiveCss(marker, value, root);
 
         /// <inheritdoc/>
         public bool PatchSectionLive => this.codeGenerator.LiveHook;
