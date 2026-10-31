@@ -89,7 +89,7 @@ NSCRIPT_PATCH_EMIT=1 dotnet build Test/Framework/TodoApp/TodoApp.csproj -p:NScri
 - **An XWML CSS save** (a colour in a linked `.css`) goes live: `applied <gen>:<seq> (0 methods)`.
   - Each document's style element takes the new CSS. So does a document made later (an iframe), and a new tab reads it from the bundle.
   - A dev bundle writes one style element per CSS part: each linked sheet, then each document's own `<style>`, then other plugins' CSS, in cascade order. A save sends only the parts that changed.
-  - In a patch-emit bundle a part's CSS line reads `DocStorageGetter.__nsCss && DocStorageGetter.__nsCss[<part>] || "<css>"`. Each style element carries `__nsPart` and is kept on `DocStorageGetter.__nsStyles`.
+  - In a patch-emit bundle a part's CSS line reads `DocStorageGetter.__nsCss && <part> in DocStorageGetter.__nsCss ? DocStorageGetter.__nsCss[<part>] : "<css>"`. An emptied part stays empty in a later document. Each style element carries `__nsPart` and is kept on `DocStorageGetter.__nsStyles`.
   - Every document keeps its part, even with no CSS, so a save that adds or drops a `<style>` still patches live. A new or deleted document changes the parts, so that save emits in full (`Miss=xwml css parts`).
   - Release bundles keep one style element.
   - The cost does not grow with the number of skins. In a generated 650-skin app a CSS save showed on the page in 150-200 ms, a 220 KB sheet included (`Patch.Emit` 40-80 ms, `Probe.XwmlPatch CssMs` 10 ms or less).

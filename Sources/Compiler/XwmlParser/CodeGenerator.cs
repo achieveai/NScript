@@ -1901,21 +1901,26 @@ namespace XwmlParser
                 }
 
                 // style.textContent = "CSS", or with the live hook
-                // DocStorageGetter.__nsCss && DocStorageGetter.__nsCss[part] || "CSS":
-                // a document made after a live patch takes the patch's CSS.
+                // DocStorageGetter.__nsCss && part in DocStorageGetter.__nsCss ? DocStorageGetter.__nsCss[part] : "CSS":
+                // a document made after a live patch takes the patch's CSS, an emptied part too.
                 Expression cssValue = new StringLiteralExpression(methodScope, cssParts[iPart].Css);
                 if (this.liveCssHook)
                 {
-                    cssValue = new BinaryExpression(
+                    cssValue = new ConditionalOperatorExpression(
                         null,
                         methodScope,
-                        BinaryOperator.LogicalOr,
                         new BinaryExpression(
                             null,
                             methodScope,
                             BinaryOperator.LogicalAnd,
                             this.GetterKey(methodScope, CssKey),
-                            new IndexExpression(null, methodScope, this.GetterKey(methodScope, CssKey), new NumberLiteralExpression(methodScope, iPart))),
+                            new BinaryExpression(
+                                null,
+                                methodScope,
+                                BinaryOperator.In,
+                                new NumberLiteralExpression(methodScope, iPart),
+                                this.GetterKey(methodScope, CssKey))),
+                        new IndexExpression(null, methodScope, this.GetterKey(methodScope, CssKey), new NumberLiteralExpression(methodScope, iPart)),
                         cssValue);
                 }
 

@@ -39,6 +39,7 @@ namespace NScript.Converter.TypeSystemConverter
         private readonly ISet<MethodDefinition> loadTime;
         private string script;
         private (long Length, DateTime WriteTimeUtc) written;
+        private (long Length, DateTime WriteTimeUtc) mapWritten;
 
         public DevPatchSession(
             RuntimeScopeManager runtimeManager,
@@ -66,6 +67,7 @@ namespace NScript.Converter.TypeSystemConverter
             this.fullLength = script.Length;
             this.map = map;
             this.written = Stamp(this.jsFileName);
+            this.mapWritten = Stamp(this.MapFileName);
 
             // Plugins resolve more members while writing their own output, after the last walk;
             // the written bundle works with them. A patch counts only what is new to it.
@@ -94,6 +96,27 @@ namespace NScript.Converter.TypeSystemConverter
 
         /// <summary>Whether the bundle on disk is still the one this session last wrote.</summary>
         public bool BundleOnDisk => Stamp(this.jsFileName) == this.written;
+
+        /// <summary>The map <see cref="OwaSourceMapper.SourceMap.Write"/> writes next to the bundle.</summary>
+        private string MapFileName
+            => Path.Combine(Path.GetDirectoryName(this.jsFileName), Path.GetFileNameWithoutExtension(this.map.File) + ".map");
+
+        /// <summary>
+        /// Writes the map again when it is not the one this session last wrote (deleted or
+        /// replaced), so a build with nothing to emit leaves a bundle and map that match.
+        /// </summary>
+        /// <returns>Whether the map was written.</returns>
+        public bool RestoreMap()
+        {
+            if (Stamp(this.MapFileName) == this.mapWritten)
+            {
+                return false;
+            }
+
+            this.map.Write(Path.GetDirectoryName(this.jsFileName));
+            this.mapWritten = Stamp(this.MapFileName);
+            return true;
+        }
 
         /// <summary>The string literals the plugins write again in place, by marker (this patch).</summary>
         private readonly Dictionary<string, string> literals = new Dictionary<string, string>();
@@ -805,6 +828,7 @@ namespace NScript.Converter.TypeSystemConverter
             this.map.Write(Path.GetDirectoryName(this.jsFileName));
             this.script = patched;
             this.written = Stamp(this.jsFileName);
+            this.mapWritten = Stamp(this.MapFileName);
             this.ProbeFragmentMs = (probeFragments - probeStart) * 1000 / System.Diagnostics.Stopwatch.Frequency;
             this.ProbeWriteMs = (System.Diagnostics.Stopwatch.GetTimestamp() - probeFragments) * 1000 / System.Diagnostics.Stopwatch.Frequency;
             return null;

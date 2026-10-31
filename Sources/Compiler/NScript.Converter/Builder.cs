@@ -637,8 +637,14 @@ namespace NScript.Converter
                 && this.patchSession.BundleOnDisk)
             {
                 // A watch batch after one that already patched (#125): the bundle is current. A
-                // full emit would start a new gen, and open pages would reload.
+                // full emit would start a new gen, and open pages would reload. A deleted or
+                // replaced map is written again.
                 this.LastBuildReason += "; nothing to emit";
+                if (this.patchSession.RestoreMap())
+                {
+                    log.Information("Builder map restored");
+                }
+
                 log.Information("Builder.End {ElapsedMs}ms nothing to emit", totalSw.ElapsedMilliseconds);
                 return true;
             }

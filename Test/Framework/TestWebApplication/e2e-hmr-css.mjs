@@ -1,7 +1,7 @@
 // XWML CSS live patching end to end (docs/build/build-service.md, "Live patching in the open
 // page"): with the UI test page open, a colour edit in the linked TestTemplateVMB_CssBinding.css
 // restyles the page with no reload. A document made after the save and a new tab get the new
-// CSS too, and the revert goes live as well. Needs the watch running with patch emit:
+// CSS too, and an emptied part stays empty there. The revert goes live as well. Needs the watch running with patch emit:
 //   NSCRIPT_PATCH_EMIT=1 dotnet build Test/Framework/Sunlight.Framework.UI.Test/Sunlight.Framework.UI.Test.csproj -p:NScriptWatch=true
 // Exit 0 pass, 1 fail, 2 skipped (the bundle has no live patch client).
 import http from 'node:http';
@@ -81,7 +81,8 @@ try {
   const after = await probe(page);
   check(after.colour === 'rgb(1, 2, 3)' && after.styles === 1, `the open page restyles, one style element (${JSON.stringify(after)})`);
   check(loads === 1 && await page.evaluate(() => window.__keep) === 42, `no reload, state kept (loads=${loads})`);
-  const later = await page.evaluate(([file, name]) => {
+  // The CSS of a document made now, through the bundle's document initializer.
+  const laterCss = () => page.evaluate(([file, name]) => {
     const frame = document.createElement('iframe');
     document.body.appendChild(frame);
     window.__nsPatch[file](name + '(window.__frameDoc = document.querySelector("iframe:last-of-type").contentDocument);');
@@ -89,12 +90,30 @@ try {
     frame.remove();
     return text;
   }, [BUNDLE, getter[1]]);
+  const later = await laterCss();
   check(later.includes('rgb(1, 2, 3)') || later.includes('rgb(1,2,3)'), 'a document made after the save gets the new CSS');
   const tab = await browser.newPage();
   await tab.goto(url);
   await tab.waitForSelector('#qunit-banner.qunit-pass, #qunit-banner.qunit-fail', { timeout: 60000 });
   check((await probe(tab)).colour === 'rgb(1, 2, 3)', 'a new tab gets the new CSS from the bundle');
   await tab.close();
+
+  // An emptied part stays empty in a later document: it must not fall back to the bundle's CSS.
+  // (The sheet itself cannot be emptied: the template uses .black, so that build fails.)
+  const emptied = await page.evaluate(([file, name]) => {
+    const part = [...document.querySelectorAll('style')].find(s => s.textContent.includes('.black')).__nsPart;
+    window.__nsPatch[file]('window.__nsGetter = ' + name + ';');
+    const live = window.__nsGetter.__nsCss, had = live[part];
+    live[part] = '';
+    const frame = document.createElement('iframe');
+    document.body.appendChild(frame);
+    window.__nsPatch[file](name + '(window.__frameDoc = document.querySelector("iframe:last-of-type").contentDocument);');
+    const text = [...window.__frameDoc.querySelectorAll('style')].map(s => s.textContent).join('');
+    frame.remove();
+    live[part] = had;
+    return text;
+  }, [BUNDLE, getter[1]]);
+  check(!emptied.includes('.black'), 'a document made after its part was emptied has no CSS in that part');
 
   fs.writeFileSync(CSS, source);
   edited = false;

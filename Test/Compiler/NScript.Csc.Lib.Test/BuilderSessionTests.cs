@@ -88,6 +88,60 @@ namespace NScript.Csc.Lib.Test
         }
 
         /// <summary>
+        /// Roots <c>Main</c> as <see cref="RootsPlugin"/> does, and writes the main module's
+        /// <see cref="OracleResource"/> as a marked literal that a resource patch writes again
+        /// in place: the shape of a dev bundle's CSS part (#123).
+        /// </summary>
+        private sealed class LiteralPlugin : IRuntimeConverterPlugin
+        {
+            public static readonly string Marker = MarkerStatement.ForLiteral("Test.Oracle");
+            private ClrContext clrContext;
+            private RuntimeScopeManager runtimeScopeManager;
+
+            public void Initialize(ClrContext clrContext, RuntimeScopeManager runtimeScopeManager)
+            {
+                this.clrContext = clrContext;
+                this.runtimeScopeManager = runtimeScopeManager;
+            }
+
+            public void ParseArgs(IList<Tuple<string, string>> args) { }
+
+            public List<MethodReference> GetMethodsToEmitPass1()
+                => this.clrContext.GetTypeDefinitions()
+                    .Where(t => t.Namespace == "RealScript")
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.IsStatic && m.Name == "Main" && !m.HasParameters)
+                    .Cast<MethodReference>()
+                    .ToList();
+
+            public List<MethodReference> GetMethodsToEmitPassN() => null;
+
+            public List<Statement> GetPreJavascript() => null;
+
+            public List<Statement> GetPostJavascript()
+            {
+                var scope = this.runtimeScopeManager.Scope;
+                return new List<Statement>
+                {
+                    new MarkerStatement(scope, Marker),
+                    new ExpressionStatement(null, scope, new StringLiteralExpression(scope, this.Oracle())),
+                };
+            }
+
+            public string TryPatchResources(List<Statement> statements, Dictionary<string, string> literals)
+            {
+                literals[Marker] = this.Oracle();
+                return null;
+            }
+
+            private string Oracle()
+                => Encoding.UTF8.GetString(this.clrContext.Modules
+                    .SelectMany(m => m.Resources.OfType<EmbeddedResource>())
+                    .First(r => r.Name == OracleResource)
+                    .GetResourceData());
+        }
+
+        /// <summary>
         /// Builds once with a new plugin and returns weak references to it and to the build's
         /// ConverterContext. Not inlined, so no local of the caller roots either.
         /// </summary>
@@ -1074,6 +1128,16 @@ namespace NScript.Csc.Lib.Test
 
                 Nothing("unchanged", "A build with the same inputs");
 
+                // A deleted or replaced map is written again, the bundle left as it is.
+                var map = Path.Combine(dir, "bundle.map");
+                var mapText = File.ReadAllText(map);
+                File.Delete(map);
+                Nothing("unchanged", "A build after the map was deleted");
+                Assert.AreEqual(mapText, File.ReadAllText(map), "A deleted map must be written again.");
+                File.WriteAllText(map, "{}");
+                Nothing("unchanged", "A build after the map was replaced");
+                Assert.AreEqual(mapText, File.ReadAllText(map), "A replaced map must be written again.");
+
                 // Same MVID and resources, other bytes: the PE TimeDateStamp.
                 var bytes = File.ReadAllBytes(main);
                 bytes[BitConverter.ToInt32(bytes, 0x3C) + 8] ^= 0x5A;
@@ -1156,6 +1220,76 @@ namespace NScript.Csc.Lib.Test
                 Assert.AreEqual("warm", builder.LastBuildKind);
                 Assert.AreEqual("plugin RootsPlugin", builder.LastPatchMiss, "The resource change must reach the plugins.");
                 Assert.AreEqual("v2", RootsPlugin.LastOracleText);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", previous);
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+
+        /// <summary>
+        /// #123: a CSS save writes its part's literal again in place. Saves of the same length
+        /// keep the bundle's length, and the bundle differs from the first build's only in
+        /// that literal, however many saves came before.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")]
+        public void Session_PatchEmit_RepeatedLiteralSaves_RewriteInPlace_BundleDoesNotGrow()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-literal-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            var previous = Environment.GetEnvironmentVariable("NSCRIPT_PATCH_EMIT");
+            Environment.SetEnvironmentVariable("NSCRIPT_PATCH_EMIT", "1");
+            var main = CompileLib(dir, refs, ("Program.cs", ProgramSource("return 1;")));
+            SetOracleResource(main, ".a{color:red}");
+            try
+            {
+                using var builder = new Builder(
+                    outJs,
+                    1,
+                    main,
+                    refs,
+                    Array.Empty<IConverterPlugin>(),
+                    (minify: false, uglify: false, optimize: false),
+                    devMode: true);
+                void Build(string what)
+                {
+                    Builder.ResetProcessState();
+                    Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new LiteralPlugin() }), what + ": the build failed.");
+                }
+
+                Build("The first build");
+                Assert.AreEqual("cold", builder.LastBuildKind);
+                var cold = File.ReadAllText(outJs);
+                StringAssert.Contains(cold, LiteralPlugin.Marker);
+                var gen = Stamp(cold).Split(':')[0];
+
+                var saves = new[] { ".a{color:blu}", ".a{color:grn}", ".a{color:red}", ".a{color:blk}" };
+                for (int i = 0; i < saves.Length; i++)
+                {
+                    SetOracleResource(main, saves[i]);
+                    Build("Save " + (i + 1));
+                    Assert.AreEqual("resources-refreshed; patched resources", builder.LastBuildReason, builder.LastPatchMiss);
+                    var patched = File.ReadAllText(outJs);
+                    Assert.AreEqual(gen + ":" + (i + 1), Stamp(patched), "Each save is a patch of the same gen.");
+                    Assert.AreEqual(cold.Length, patched.Length, "Save " + (i + 1) + " must not grow the bundle.");
+                    Assert.AreEqual(
+                        cold.Replace(".a{color:red}", saves[i]).Replace(Stamp(cold), Stamp(patched)),
+                        patched,
+                        "Save " + (i + 1) + " must change only the literal.");
+                }
             }
             finally
             {

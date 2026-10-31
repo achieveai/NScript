@@ -223,8 +223,8 @@ namespace XwmlParser.Test
             var getter = Regex.Match(cold, @"function (DocStorageGetter[\w$]*)\(").Groups[1].Value;
             Assert.AreNotEqual(string.Empty, getter, cold);
             Assert.IsTrue(
-                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssPartMarker(0)) + @"\r?\n *style\.textContent = " + Regex.Escape(getter) + @"\.__nsCss && " + Regex.Escape(getter) + @"\.__nsCss\[0\] \|\| ""[^""\r\n]*red[^""\r\n]*"";\r?\n"),
-                "the marked CSS line reads a live patch's CSS first, and keeps one literal: " + cold);
+                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssPartMarker(0)) + @"\r?\n *style\.textContent = " + Regex.Escape(getter) + @"\.__nsCss && 0 in " + Regex.Escape(getter) + @"\.__nsCss \? " + Regex.Escape(getter) + @"\.__nsCss\[0\] : ""[^""\r\n]*red[^""\r\n]*"";\r?\n"),
+                "the marked CSS line reads a live patch's CSS first, even an emptied part, and keeps one literal: " + cold);
             StringAssert.Contains(cold, "(" + getter + ".__nsStyles || (" + getter + ".__nsStyles = [])).push(style);");
 
             var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
@@ -288,7 +288,7 @@ namespace XwmlParser.Test
             var parts = Regex.Matches(
                 cold,
                 @"/\*@L XwmlParser\.Css\.(\d+)\*/\r?\n *style\.textContent = " + Regex.Escape(getter)
-                    + @"\.__nsCss && " + Regex.Escape(getter) + @"\.__nsCss\[(\d+)\] \|\| ""([^""\r\n]*)"";\r?\n *style\.__nsPart = (\d+);");
+                    + @"\.__nsCss && \1 in " + Regex.Escape(getter) + @"\.__nsCss \? " + Regex.Escape(getter) + @"\.__nsCss\[(\d+)\] : ""([^""\r\n]*)"";\r?\n *style\.__nsPart = (\d+);");
             Assert.AreEqual(4, parts.Count, "a part for each sheet and each document: " + cold);
             var texts = new List<string>();
             for (int i = 0; i < parts.Count; i++)
