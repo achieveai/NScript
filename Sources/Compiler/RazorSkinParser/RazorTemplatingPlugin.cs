@@ -2254,6 +2254,7 @@ namespace Sunlight.Framework.Observables
                 Field(_razorKnownTypes.SkinType, "id"),
                 Field(_razorKnownTypes.SkinInstanceType, "skinableParent"),
                 Field(skinable, "skinInstance"),
+                Field(skinable.BaseType.Resolve(), "element"),
                 setSkin);
         }
 

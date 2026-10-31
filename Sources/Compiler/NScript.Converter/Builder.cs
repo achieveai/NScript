@@ -291,9 +291,9 @@ namespace NScript.Converter
         /// taken is the bytes the stamps describe. The refresh is an optimisation: any failure
         /// is a logged miss (a cold build, which drops the session), never a new way to fail.
         /// </summary>
-        /// <param name="kind">"resources-refreshed" or "bodies-refreshed" on success.</param>
+        /// <param name="kind">"resources-refreshed", "resources-unchanged" (same MVID and resources) or "bodies-refreshed" on success.</param>
         /// <param name="changed">The changed types (kept definitions), empty unless bodies were refreshed.</param>
-        /// <param name="withResources">Whether a recompiled module's resources changed too.</param>
+        /// <param name="withResources">Whether resources changed too: a recompiled module's, or a resource-only image's.</param>
         private bool TryRefreshSession(List<(string path, string sha256)> stamps, byte[][] changedImages, Serilog.ILogger log, out string kind, out string miss, out IReadOnlyList<TypeDefinition> changed, out bool withResources)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -339,7 +339,7 @@ namespace NScript.Converter
                     if (recompiled == 0)
                     {
                         refresh.Commit();
-                        kind = "resources-refreshed";
+                        kind = replaced == 0 ? "resources-unchanged" : "resources-refreshed";
                     }
                     else
                     {
@@ -351,7 +351,9 @@ namespace NScript.Converter
                         {
                             kind = "bodies-refreshed";
                             changed = refresh.ChangedTypes;
-                            withResources = refresh.RecompiledResourcesChanged;
+                            // A resource-only image in the same batch counts too: a CSS save
+                            // next to a reference another watch rebuilt.
+                            withResources = refresh.RecompiledResourcesChanged || replaced > 0;
                         }
                     }
 
@@ -629,6 +631,23 @@ namespace NScript.Converter
                 "Session.Build Kind={Kind} Reason={Reason}",
                 this.LastBuildKind,
                 sessionReason);
+
+            if ((sessionReason == "unchanged" || sessionReason == "resources-unchanged")
+                && this.patchSession != null
+                && this.patchSession.BundleOnDisk)
+            {
+                // A watch batch after one that already patched (#125): the bundle is current. A
+                // full emit would start a new gen, and open pages would reload. A deleted or
+                // replaced map is written again.
+                this.LastBuildReason += "; nothing to emit";
+                if (this.patchSession.RestoreMap())
+                {
+                    log.Information("Builder map restored");
+                }
+
+                log.Information("Builder.End {ElapsedMs}ms nothing to emit", totalSw.ElapsedMilliseconds);
+                return true;
+            }
 
             if ((sessionReason == "bodies-refreshed" || sessionReason == "resources-refreshed")
                 && this.TryPatchEmit(sessionReason == "bodies-refreshed" ? changedTypes : null, withResources, log))

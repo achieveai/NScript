@@ -77,9 +77,21 @@ namespace XwmlParser.Test
         private static string Css(string code)
             => Regex.Match(code, "textContent = (\".*?\");").Groups[1].Value;
 
-        /// <summary>The CSS a patch writes again in place, as the bundle's literal.</summary>
+        /// <summary>A dev bundle's CSS part, as its literal.</summary>
+        private static string CssPart(string code, int part)
+            => Regex.Match(code, Regex.Escape(CodeGenerator.CssPartMarker(part)) + "\\r?\\n *style\\.textContent = (\".*?\");").Groups[1].Value;
+
+        /// <summary>The one CSS part a patch writes again in place, as the bundle's literal.</summary>
         private static string Css(Dictionary<string, string> literals)
-            => literals.TryGetValue(CodeGenerator.CssMarker, out var css) ? "\"" + Utils.ToJSString(css) + "\"" : string.Empty;
+        {
+            Assert.IsTrue(literals.Count <= 1, "one CSS part changed");
+            foreach (var css in literals.Values)
+            {
+                return "\"" + Utils.ToJSString(css) + "\"";
+            }
+
+            return string.Empty;
+        }
 
         [TestMethod]
         public void ChangedDocument_PatchKeepsNamesAndClasses_RefusedChangeMisses_NextFullBuildIsFresh()
@@ -88,8 +100,8 @@ namespace XwmlParser.Test
             var cold = Build(session, out var plugin, "second");
 
             Assert.IsTrue(
-                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssMarker) + @"\r?\n *style\.textContent = """),
-                "the CSS line is marked");
+                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssPartMarker(1)) + @"\r?\n *style\.textContent = """),
+                "each document's CSS line is marked");
             var statements = new List<Statement>();
             var literals = new Dictionary<string, string>();
             Assert.IsNull(plugin.TryPatchResources(statements, literals, WithSecond(plugin, Document("changed"))));
@@ -112,9 +124,9 @@ namespace XwmlParser.Test
             statements = new List<Statement>();
             Assert.IsNull(plugin.TryPatchResources(statements, literals, WithSecond(plugin, Document("changed", ".card { color: green; }"))));
             Assert.IsFalse(Helper.ConvertCodeToString(statements).Contains("textContent"), "the document initializer stands");
-            Assert.AreNotEqual(string.Empty, Css(cold));
-            Assert.AreNotEqual(Css(cold), Css(literals));
-            Assert.AreEqual(Css(cold), Css(literals).Replace("green", "red"), "the classes must keep their names");
+            Assert.AreNotEqual(string.Empty, CssPart(cold, 1));
+            Assert.AreNotEqual(CssPart(cold, 1), Css(literals));
+            Assert.AreEqual(CssPart(cold, 1), Css(literals).Replace("green", "red"), "the classes must keep their names");
 
             // The skin uses a class its style no longer declares: a full build reports it.
             Assert.IsNotNull(plugin.TryPatchResources(
@@ -211,8 +223,8 @@ namespace XwmlParser.Test
             var getter = Regex.Match(cold, @"function (DocStorageGetter[\w$]*)\(").Groups[1].Value;
             Assert.AreNotEqual(string.Empty, getter, cold);
             Assert.IsTrue(
-                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssMarker) + @"\r?\n *style\.textContent = " + Regex.Escape(getter) + @"\.__nsCss \|\| ""[^""\r\n]*red[^""\r\n]*"";\r?\n"),
-                "the marked CSS line reads a live patch's CSS first, and keeps one literal: " + cold);
+                Regex.IsMatch(cold, Regex.Escape(CodeGenerator.CssPartMarker(0)) + @"\r?\n *style\.textContent = " + Regex.Escape(getter) + @"\.__nsCss && 0 in " + Regex.Escape(getter) + @"\.__nsCss \? " + Regex.Escape(getter) + @"\.__nsCss\[0\] : ""[^""\r\n]*red[^""\r\n]*"";\r?\n"),
+                "the marked CSS line reads a live patch's CSS first, even an emptied part, and keeps one literal: " + cold);
             StringAssert.Contains(cold, "(" + getter + ".__nsStyles || (" + getter + ".__nsStyles = [])).push(style);");
 
             var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
@@ -223,18 +235,125 @@ namespace XwmlParser.Test
             var literals = new Dictionary<string, string>();
             Assert.IsNull(plugin.TryPatchResources(statements, literals, resources));
             Assert.AreEqual(0, statements.Count, "a linked sheet's colour edit changes no skin code");
-            StringAssert.Contains(literals[CodeGenerator.CssMarker], "green");
+            var marker = CodeGenerator.CssPartMarker(0);
+            StringAssert.Contains(literals[marker], "green");
 
             var root = ((SimpleIdentifier)plugin.CodeGenerator.GetDocumentStorageGetter()).OwnerScope;
             Assert.IsNull(plugin.LiveLiteral("/*@L Other*/", "x", root), "another plugin's literal is not XWML's to take live");
-            var live = Helper.ConvertCodeToString(plugin.LiveLiteral(CodeGenerator.CssMarker, literals[CodeGenerator.CssMarker], root));
-            StringAssert.Contains(live, getter + ".__nsCss = \"" + Utils.ToJSString(literals[CodeGenerator.CssMarker]) + "\";");
-            StringAssert.Contains(live, "(" + getter + ".__nsStyles || []).forEach(function(s){s.textContent=String(this);}, " + getter + ".__nsCss);");
+            var live = Helper.ConvertCodeToString(plugin.LiveLiteral(marker, literals[marker], root));
+            StringAssert.Contains(live, getter + ".__nsCss[0] = \"" + Utils.ToJSString(literals[marker]) + "\";");
+            StringAssert.Contains(live, "(" + getter + ".__nsStyles || []).forEach(function(s){if(s.__nsPart===0)s.textContent=this[0];}, " + getter + ".__nsCss);");
 
             // A plain dev bundle has no hook, so its CSS edit reloads.
             var plain = ColdBuild(false, out var plainPlugin);
             Assert.IsFalse(plain.Contains("__ns"), "no hook without live patch emit: " + plain);
-            Assert.IsNull(plainPlugin.LiveLiteral(CodeGenerator.CssMarker, "x", root));
+            Assert.IsNull(plainPlugin.LiveLiteral(marker, "x", root));
+        }
+
+        /// <summary>
+        /// #123: a dev bundle writes each style sheet and document's CSS in its own style
+        /// element, in cascade order, so a sheet's save sends that sheet's CSS alone. A release
+        /// bundle keeps one style element.
+        /// </summary>
+        [TestMethod]
+        public void TwoLinkedSheets_DevBundleWritesAPartEach_ASaveSendsItsPartAlone()
+        {
+            const string A = "Patch.PartA.css";
+            const string B = "Patch.PartB.css";
+            string Linked(string text, string sheet)
+                => Document(text, ".inline" + text + " { margin: 0; }").Replace(
+                    "</style>",
+                    "</style><link rel=\"stylesheet\" href=\"" + sheet + "\" />");
+            string ColdBuild(bool devMode, out XwmlTemplatingPlugin built)
+            {
+                var session = NewSession();
+                session.DevMode = devMode;
+                session.LivePatchHook = devMode;
+                session.BeginBuild(null, null);
+                built = Helper.CreatePlugin(null, session);
+                built.CodeGenerator.AddResource(Resource(A, ".card { color: red; }"), A);
+                built.CodeGenerator.AddResource(Resource(B, ".card { border: solid blue; }"), B);
+                built.CodeGenerator.AddResource(Resource(First, Linked("first", A)), First);
+                built.CodeGenerator.AddResource(Resource(Second, Linked("second", B)), Second);
+                Assert.IsNotNull(built.CodeGenerator.GetTemplateGetterIdentifier(First));
+                Assert.IsNotNull(built.CodeGenerator.GetTemplateGetterIdentifier(Second));
+                built.GetMethodsToEmitPass1();
+                var code = Helper.ConvertCodeToString(built.GetPostJavascript());
+                Assert.AreEqual(0, session.Errors.Count, "the build must not fail");
+                return code;
+            }
+
+            var cold = ColdBuild(true, out var plugin);
+            var getter = Regex.Match(cold, @"function (DocStorageGetter[\w$]*)\(").Groups[1].Value;
+            var parts = Regex.Matches(
+                cold,
+                @"/\*@L XwmlParser\.Css\.(\d+)\*/\r?\n *style\.textContent = " + Regex.Escape(getter)
+                    + @"\.__nsCss && \1 in " + Regex.Escape(getter) + @"\.__nsCss \? " + Regex.Escape(getter) + @"\.__nsCss\[(\d+)\] : ""([^""\r\n]*)"";\r?\n *style\.__nsPart = (\d+);");
+            Assert.AreEqual(4, parts.Count, "a part for each sheet and each document: " + cold);
+            var texts = new List<string>();
+            for (int i = 0; i < parts.Count; i++)
+            {
+                Assert.AreEqual(i.ToString(), parts[i].Groups[1].Value);
+                Assert.AreEqual(i.ToString(), parts[i].Groups[2].Value);
+                Assert.AreEqual(i.ToString(), parts[i].Groups[4].Value);
+                texts.Add(parts[i].Groups[3].Value);
+            }
+
+            Assert.IsTrue(texts[0].Contains("red") && !texts[0].Contains("blue"), "sheets first, in order: " + texts[0]);
+            Assert.IsTrue(texts[1].Contains("blue") && !texts[1].Contains("red"), texts[1]);
+            StringAssert.Contains(texts[2], "inlinefirst");
+            StringAssert.Contains(texts[3], "inlinesecond");
+            Assert.AreEqual(4, Regex.Matches(cold, Regex.Escape(".push(style);")).Count, "each part's element is kept");
+
+            // B's save sends B's part alone.
+            var resources = new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [B] = Tuple.Create(Resource(B, ".card { border: solid green; }"), B),
+            };
+            var literals = new Dictionary<string, string>();
+            Assert.IsNull(plugin.TryPatchResources(new List<Statement>(), literals, resources));
+            Assert.AreEqual(1, literals.Count, "only the changed sheet's part");
+            var marker = MarkerStatement.ForLiteral("XwmlParser.Css.1");
+            StringAssert.Contains(literals[marker], "green");
+            Assert.IsFalse(literals[marker].Contains("red"), "A's CSS is not sent again");
+
+            var root = ((SimpleIdentifier)plugin.CodeGenerator.GetDocumentStorageGetter()).OwnerScope;
+            var live = Helper.ConvertCodeToString(plugin.LiveLiteral(marker, literals[marker], root));
+            StringAssert.Contains(live, getter + ".__nsCss = " + getter + ".__nsCss || { };");
+            StringAssert.Contains(live, getter + ".__nsCss[1] = \"" + Utils.ToJSString(literals[marker]) + "\";");
+            StringAssert.Contains(live, "(" + getter + ".__nsStyles || []).forEach(function(s){if(s.__nsPart===1)s.textContent=this[1];}, " + getter + ".__nsCss);");
+            Assert.IsNull(plugin.LiveLiteral(MarkerStatement.ForLiteral("XwmlParser.Css.9"), "x", root), "no such part");
+
+            // A save that leaves the CSS as it was sends nothing.
+            literals.Clear();
+            Assert.IsNull(plugin.TryPatchResources(new List<Statement>(), literals, new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [Second] = Tuple.Create(Resource(Second, Linked("second", B).Replace("second {PropStr1}", "edited {PropStr1}")), Second),
+            }));
+            Assert.AreEqual(0, literals.Count, "no CSS changed");
+
+            // A document keeps its part when its CSS is gone, and takes CSS into it again: both live.
+            literals.Clear();
+            Assert.IsNull(plugin.TryPatchResources(new List<Statement>(), literals, new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [Second] = Tuple.Create(Resource(Second, Document("second", " ").Replace("</style>", "</style><link rel=\"stylesheet\" href=\"" + B + "\" />")), Second),
+            }));
+            Assert.AreEqual(1, literals.Count, "the emptied document's part alone");
+            Assert.AreEqual(string.Empty, literals[MarkerStatement.ForLiteral("XwmlParser.Css.3")]);
+            literals.Clear();
+            Assert.IsNull(plugin.TryPatchResources(new List<Statement>(), literals, new Dictionary<string, Tuple<EmbeddedResource, string>>(plugin.CodeGenerator.ResourceMap)
+            {
+                [Second] = Tuple.Create(Resource(Second, Linked("second", B).Replace(".inlinesecond", ".inlineagain")), Second),
+            }));
+            Assert.AreEqual(1, literals.Count, "the document's part takes its CSS again");
+            StringAssert.Contains(literals[MarkerStatement.ForLiteral("XwmlParser.Css.3")], "inlineagain");
+
+            // A release bundle keeps one unmarked style element with all the CSS, in order.
+            var release = ColdBuild(false, out _);
+            Assert.IsFalse(release.Contains("/*@L"), release);
+            Assert.AreEqual(1, Regex.Matches(release, Regex.Escape(".textContent = ")).Count, release);
+            var all = Css(release);
+            Assert.IsTrue(all.IndexOf("red") < all.IndexOf("blue") && all.IndexOf("blue") < all.IndexOf("inlinefirst"), all);
         }
 
         /// <summary>
@@ -266,12 +385,13 @@ namespace XwmlParser.Test
             Assert.IsFalse(cold.Contains(reskin.Groups[1].Value + " = null;"), "the hook takes the place of the null start");
             StringAssert.Contains(cold, "return " + getter + ".__nsTrack(");
             Assert.IsTrue(
-                Regex.IsMatch(cold, Regex.Escape(getter) + @"\.__nsReskin = \(function\(F,I,P,K,set\)[^\n]*\}\)\(""factoryMethod[\w$]*"", ""id[\w$]*"", ""skinableParent[\w$]*"", ""skinInstance[\w$]*"", function\("),
+                Regex.IsMatch(cold, Regex.Escape(getter) + @"\.__nsReskin = \(function\(F,I,P,K,E,set\)[^\n]*\}\)\(""factoryMethod[\w$]*"", ""id[\w$]*"", ""skinableParent[\w$]*"", ""skinInstance[\w$]*"", ""element[\w$]*"", function\("),
                 "the helper gets the framework's field names as resolved, and a Skin setter: " + cold);
             Assert.IsTrue(plugin.PatchSectionLive);
 
             // The console line says what a re-skin resets, and names the template, not its path.
             Assert.IsTrue(cold.Contains("(n?' (reset: focus, caret, scroll, unbound typed text)':'')"), "the console line names what a re-skin resets, only when it re-skinned something");
+            Assert.IsTrue(cold.Contains("globalThis.__nsFlush=globalThis.__nsFlush||function(){"), "the helpers define the flush that skins the queued controls again");
             var getterId = plugin.CodeGenerator.GetDocumentStorageGetter();
             var named = Helper.ConvertCodeToString(new List<Statement>
             {

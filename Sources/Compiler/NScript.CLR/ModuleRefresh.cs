@@ -20,7 +20,8 @@ namespace NScript.CLR
     /// Build session: the new images of loaded modules, checked against the loaded modules
     /// and applied in place, so every Cecil object the session holds stays valid.
     /// <list type="bullet">
-    /// <item>An image with the loaded MVID may change only resources (a resource patch).</item>
+    /// <item>An image with the loaded MVID may change only resources (a resource patch), or
+    /// nothing (the same patch written again).</item>
     /// <item>A recompiled image (a new MVID) may change only method bodies and compiler
     /// generated members, and only in the types its changed source files declare
     /// (<c>$$SrcInfo$$</c>). Their bodies move into the loaded methods, their generated
@@ -210,7 +211,6 @@ namespace NScript.CLR
                 return "resource-set " + fresh.Name;
             }
 
-            int changed = 0;
             for (int index = 0; index < kept.Resources.Count; index++)
             {
                 if (!(kept.Resources[index] is EmbeddedResource keptResource)
@@ -233,10 +233,10 @@ namespace NScript.CLR
                 }
 
                 this.resourceSwaps.Add((kept, index, new EmbeddedResource(keptResource.Name, keptResource.Attributes, data)));
-                changed++;
             }
 
-            return changed == 0 ? "no-resource-change " + fresh.Name : null;
+            // No change is no swap: a resource patch that wrote the same bytes again (#125).
+            return null;
         }
 
         private string PlanBodies(ModuleDefinition kept, ModuleDefinition fresh)

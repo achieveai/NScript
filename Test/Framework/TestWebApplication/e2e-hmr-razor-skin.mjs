@@ -3,7 +3,8 @@
 // skins every open row again with no reload. The rows keep their view models, the draft stays,
 // a re-skinned row's star still toggles, a row added after the save and a new tab get the new
 // skin, and the revert goes live too. Then the app's outer skin (AppShell) is saved: the shell
-// is skinned again around the same rows, and adding a row still works. Last a colour in the
+// is skinned again around the same rows, and adding a row still works. Then both skins in one
+// save: each row is built once, by the shell, with the new row skin (#122). Last a colour in the
 // skins' stylesheet (AppShell.css): the open page takes it, a new tab reads it from the bundle.
 // Needs the watch running with patch emit:
 //   NSCRIPT_PATCH_EMIT=1 dotnet build Test/Framework/TodoApp/TodoApp.csproj -p:NScriptWatch=true
@@ -143,6 +144,23 @@ try {
   check(await until(() => applied() >= 4), 'the AppShell revert is applied live');
   check(await page.$('[hmr=shell]') === null && loads === 1, `the old shell is back with no reload (loads=${loads})`);
 
+  // Both skins in one save (#122): the shell makes the rows again with the new row skin, and
+  // no row is built a second time. Every open row is one the shell made.
+  fs.writeFileSync(SHELL, shell.replace(SHELL_OLD, SHELL_NEW));
+  fs.writeFileSync(SKIN, source.replace(OLD, NEW));
+  shellEdited = edited = true;
+  check(await until(() => applied() >= 5), 'the AppShell + TodoItemControl save is applied live');
+  const both = logs.map(line => /reskinned (\d+) TodoItemControl \(reset: focus, caret, scroll, unbound typed text\) \((\d+) by an outer skin\)$/.exec(line)).filter(Boolean).pop();
+  check(both && both[1] === both[2] && +both[1] > 0 && logs.some(line => /reskinned 1 AppShell \(reset: /.test(line)),
+    `each row is built once, by the shell (${both && both[0]})`);
+  const nested = await rows(page);
+  check(await page.$('[hmr=shell]') !== null && nested.live === nested.titles.length && nested.live > 0, `the new shell shows the rows with the new skin (${JSON.stringify(nested)})`);
+  fs.writeFileSync(SHELL, shell);
+  fs.writeFileSync(SKIN, source);
+  shellEdited = edited = false;
+  check(await until(() => applied() >= 6), 'the joint revert is applied live');
+  check(await page.$('[hmr=shell]') === null && (await rows(page)).live === 0 && loads === 1, `both old skins are back with no reload (loads=${loads})`);
+
   // The skins' stylesheet: the style element takes the new text.
   const colour = target => target.evaluate(() => getComputedStyle(document.querySelector('[class^=app-title]')).color);
   const colourBefore = await colour(page);
@@ -150,7 +168,7 @@ try {
   const cssEdit = crlf ? css.replace(CSS_OLD, CSS_NEW).replace(/\n/g, '\r\n') : css.replace(CSS_OLD, CSS_NEW);
   fs.writeFileSync(CSS, cssEdit);
   cssEdited = true;
-  check(await until(() => applied() >= 5), 'the CSS save is applied live');
+  check(await until(() => applied() >= 7), 'the CSS save is applied live');
   check(await colour(page) === 'rgb(7, 8, 9)' && colourBefore !== 'rgb(7, 8, 9)', `the open page takes the new colour (${colourBefore} -> ${await colour(page)})`);
   check(await page.evaluate(() => document.querySelectorAll('style').length) === styleCount, 'no style element added');
   const cssTab = await browser.newPage();
@@ -160,7 +178,7 @@ try {
   await cssTab.close();
   fs.writeFileSync(CSS, cssRaw);
   cssEdited = false;
-  check(await until(() => applied() >= 6), 'the CSS revert is applied live');
+  check(await until(() => applied() >= 8), 'the CSS revert is applied live');
   check(await colour(page) === colourBefore && loads === 1, `the old colour is back with no reload (loads=${loads})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
 } finally {

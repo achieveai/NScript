@@ -17,6 +17,12 @@ namespace Sunlight.Framework.UI.Test
     public class NScriptsTemplateTests
     {
         /// <summary>
+        /// The control left open for the live patch test. The page keeps it, as an app keeps
+        /// its open controls: the element alone does not, and live re-skin tracks it weakly.
+        /// </summary>
+        private static UISkinableElement liveProbe;
+
+        /// <summary>
         /// Sets up the data/environment to run all the test cases.
         /// </summary>
         [TestCaseSetup]
@@ -72,6 +78,7 @@ namespace Sunlight.Framework.UI.Test
             control.DataContext = vm;
             control.Skin = NScriptsTemplatesClass.TestTemplateVMB1;
             control.Activate();
+            NScriptsTemplateTests.liveProbe = control;
 
             assert.Equal("probe", element.QuerySelector("[test]").TextContent, "The open control shows its view model.");
         }

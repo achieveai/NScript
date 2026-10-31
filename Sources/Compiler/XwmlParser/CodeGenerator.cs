@@ -225,8 +225,8 @@ namespace XwmlParser
         /// <summary>The other plugins' CSS the full emit wrote.</summary>
         private List<string> cssContributions;
 
-        /// <summary>The CSS the last document initializer wrote.</summary>
-        private string writtenCss;
+        /// <summary>The CSS parts the last document initializer wrote (<see cref="GetCssParts"/>).</summary>
+        private List<(string Key, string Css)> writtenCssParts;
 
         /// <summary>Whether the document initializer has the live CSS hook (<see cref="CreateLiveCss"/>).</summary>
         private bool liveCssHook;
@@ -241,8 +241,8 @@ namespace XwmlParser
         /// </summary>
         internal bool LiveHook => this.parserContext?.ConverterContext?.LivePatchHook == true;
 
-        /// <summary>Dev bundles: the marker on the line before the page's CSS.</summary>
-        internal static readonly string CssMarker = MarkerStatement.ForLiteral("XwmlParser.Css");
+        /// <summary>Dev bundles: the marker on the line before a CSS part's literal.</summary>
+        internal static string CssPartMarker(int part) => MarkerStatement.ForLiteral("XwmlParser.Css." + part);
 
         /// <summary>
         /// The CSS registry methods.
@@ -777,7 +777,7 @@ namespace XwmlParser
         /// <summary>
         /// Dev patch emit: parses the changed style sheets and documents again and adds the code
         /// that replaces theirs to <paramref name="statements"/>, and the page's CSS, when it
-        /// changed, to <paramref name="literals"/> under <see cref="CssMarker"/>. The templates
+        /// changed, to <paramref name="literals"/>, each changed part under its <see cref="CssPartMarker"/>. The templates
         /// keep their names and the classes keep theirs; new skins take storage indexes past
         /// the old ones. Returns null when patched, or why the change needs a full emit.
         /// </summary>
@@ -889,18 +889,29 @@ namespace XwmlParser
             long probeParse = System.Diagnostics.Stopwatch.GetTimestamp();
             int prefixRuns = CssStyleSheet.Compiler.Runs;
 
-            // The CSS is one block, written again in place on its marked line when it changed.
-            // The document initializer stands: its storage size is a hint, and the array grows
-            // for the indexes new skins take.
+            // Each CSS part that changed is written again in place on its marked line. The
+            // document initializer stands: its storage size is a hint, and the array grows for
+            // the indexes new skins take. A part added or gone needs a new initializer.
             this.patching = true;
             try
             {
-                string css = this.GetAllCss();
-                if (css != this.writtenCss)
+                var parts = this.GetCssParts();
+                if (!System.Linq.Enumerable.SequenceEqual(
+                    System.Linq.Enumerable.Select(parts, part => part.Key),
+                    System.Linq.Enumerable.Select(this.writtenCssParts, part => part.Key)))
                 {
-                    literals[CssMarker] = css;
-                    this.writtenCss = css;
+                    return "xwml css parts";
                 }
+
+                for (int iPart = 0; iPart < parts.Count; iPart++)
+                {
+                    if (parts[iPart].Css != this.writtenCssParts[iPart].Css)
+                    {
+                        literals[CssPartMarker(iPart)] = parts[iPart].Css;
+                    }
+                }
+
+                this.writtenCssParts = parts;
             }
             finally
             {
@@ -1700,7 +1711,7 @@ namespace XwmlParser
                 new ExpressionStatement(
                     null,
                     this.scopeManager.Scope,
-                    this.GenerateDocumentInitializerMethod(this.GetAllCss())));
+                    this.GenerateDocumentInitializerMethod(this.GetCssParts())));
 
             if (this.LiveHook)
             {
@@ -1738,6 +1749,7 @@ namespace XwmlParser
                 Field(skinType, "id"),
                 Field(this.KnownTypes.SkinInstance, "skinableParent"),
                 Field(skinableType, "skinInstance"),
+                Field(this.KnownTypes.UIElement.Resolve(), "element"),
                 setSkin);
         }
 
@@ -1750,22 +1762,39 @@ namespace XwmlParser
             => LiveSkinHook.CreateReskin(scope, this.GetDocumentStorageGetter(), skinVariable, factory, id, name);
 
         /// <summary>
-        /// The live form of a CSS patch, run in the bundle's closure: the style element each
-        /// document took gets <paramref name="css"/>, and so does each document made later.
-        /// Null when the bundle has no live CSS hook.
+        /// The live form of a CSS part's patch, run in the bundle's closure: the style element
+        /// each document took for the part under <paramref name="marker"/> gets
+        /// <paramref name="css"/>, and so does each document made later. Null when the bundle
+        /// has no live CSS hook or no such part.
         /// </summary>
-        internal List<Statement> CreateLiveCss(string css, IdentifierScope root)
+        internal List<Statement> CreateLiveCss(string marker, string css, IdentifierScope root)
         {
-            if (!this.liveCssHook)
+            int part = this.writtenCssParts == null
+                ? -1
+                : System.Linq.Enumerable.FirstOrDefault(
+                    System.Linq.Enumerable.Range(0, this.writtenCssParts.Count),
+                    iPart => CssPartMarker(iPart) == marker,
+                    -1);
+            if (!this.liveCssHook || part < 0)
             {
                 return null;
             }
 
             return new List<Statement>
             {
-                // DocStorageGetter.__nsCss = "CSS";
+                // DocStorageGetter.__nsCss = DocStorageGetter.__nsCss || {};
                 ExpressionStatement.CreateAssignmentExpression(
                     this.GetterKey(root, CssKey),
+                    new BinaryExpression(
+                        null,
+                        root,
+                        BinaryOperator.LogicalOr,
+                        this.GetterKey(root, CssKey),
+                        new InlineObjectInitializer(null, root))),
+
+                // DocStorageGetter.__nsCss[part] = "CSS";
+                ExpressionStatement.CreateAssignmentExpression(
+                    new IndexExpression(null, root, this.GetterKey(root, CssKey), new NumberLiteralExpression(root, part)),
                     new StringLiteralExpression(root, css)),
 
                 // (DocStorageGetter.__nsStyles || []).forEach(function(s){...}, DocStorageGetter.__nsCss);
@@ -1780,7 +1809,7 @@ namespace XwmlParser
                             this.GetterKey(root, StylesKey),
                             new InlineNewArrayInitialization(null, root, new List<Expression>())),
                         new StringLiteralExpression(root, "forEach")),
-                    new ScriptLiteralExpression(null, root, "function(s){s.textContent=String(this);}"),
+                    new ScriptLiteralExpression(null, root, "function(s){if(s.__nsPart===" + part + ")s.textContent=this[" + part + "];}"),
                     this.GetterKey(root, CssKey)),
             };
         }
@@ -1798,9 +1827,9 @@ namespace XwmlParser
         /// <returns>
         /// The document initializer method.
         /// </returns>
-        private FunctionExpression GenerateDocumentInitializerMethod(string css)
+        private FunctionExpression GenerateDocumentInitializerMethod(List<(string Key, string Css)> cssParts)
         {
-            this.writtenCss = css;
+            this.writtenCssParts = cssParts;
             var methodScope = new IdentifierScope(
                 this.scopeManager.Scope,
                 new string[]{
@@ -1839,99 +1868,132 @@ namespace XwmlParser
                             methodScope,
                             this.skinCodeGeneratorStorageIndexs.Count))));
 
-            // style = doc.createElement('style')
-            initializers.Add(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IdentifierExpression(
-                        styleElemIdentifier,
-                        methodScope),
-                    new MethodCallExpression(
-                        null,
-                        methodScope,
-                        new IndexExpression(
-                            null,
-                            methodScope,
-                            new IdentifierExpression(
-                                methodScope.ParameterIdentifiers[0],
-                                methodScope),
-                            new StringLiteralExpression(
-                                methodScope,
-                                "createElement")),
-                        new StringLiteralExpression(
-                            methodScope,
-                            "style"))));
-
-            // A dev bundle marks the CSS line, so a patch writes the CSS again in place.
-            if (this.parserContext?.ConverterContext?.DevMode == true)
-            {
-                initializers.Add(new MarkerStatement(methodScope, CssMarker));
-            }
-
-            // style.textContent = "CSS", or with the live hook DocStorageGetter.__nsCss || "CSS":
-            // a document made after a live patch takes the patch's CSS.
+            // Each CSS part takes its own style element, in cascade order.
             this.liveCssHook = this.parserContext?.ConverterContext?.LivePatchHook == true;
-            Expression cssValue = new StringLiteralExpression(methodScope, css);
-            if (this.liveCssHook)
+            for (int iPart = 0; iPart < cssParts.Count; iPart++)
             {
-                cssValue = new BinaryExpression(null, methodScope, BinaryOperator.LogicalOr, this.GetterKey(methodScope, CssKey), cssValue);
-            }
-
-            initializers.Add(
-                ExpressionStatement.CreateAssignmentExpression(
-                    new IndexExpression(
-                        null,
-                        methodScope,
+                // style = doc.createElement('style')
+                initializers.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
                         new IdentifierExpression(
                             styleElemIdentifier,
                             methodScope),
-                        new StringLiteralExpression(
+                        new MethodCallExpression(
+                            null,
                             methodScope,
-                            "textContent")),
-                    cssValue));
+                            new IndexExpression(
+                                null,
+                                methodScope,
+                                new IdentifierExpression(
+                                    methodScope.ParameterIdentifiers[0],
+                                    methodScope),
+                                new StringLiteralExpression(
+                                    methodScope,
+                                    "createElement")),
+                            new StringLiteralExpression(
+                                methodScope,
+                                "style"))));
 
-            // doc.body.appendChild(style)
-            initializers.Add(
-                ExpressionStatement.CreateMethodCallExpression(
-                    new IndexExpression(
+                // A dev bundle marks the part's CSS line, so a patch writes the part again in place.
+                if (this.parserContext?.ConverterContext?.DevMode == true)
+                {
+                    initializers.Add(new MarkerStatement(methodScope, CssPartMarker(iPart)));
+                }
+
+                // style.textContent = "CSS", or with the live hook
+                // DocStorageGetter.__nsCss && part in DocStorageGetter.__nsCss ? DocStorageGetter.__nsCss[part] : "CSS":
+                // a document made after a live patch takes the patch's CSS, an emptied part too.
+                Expression cssValue = new StringLiteralExpression(methodScope, cssParts[iPart].Css);
+                if (this.liveCssHook)
+                {
+                    cssValue = new ConditionalOperatorExpression(
                         null,
                         methodScope,
+                        new BinaryExpression(
+                            null,
+                            methodScope,
+                            BinaryOperator.LogicalAnd,
+                            this.GetterKey(methodScope, CssKey),
+                            new BinaryExpression(
+                                null,
+                                methodScope,
+                                BinaryOperator.In,
+                                new NumberLiteralExpression(methodScope, iPart),
+                                this.GetterKey(methodScope, CssKey))),
+                        new IndexExpression(null, methodScope, this.GetterKey(methodScope, CssKey), new NumberLiteralExpression(methodScope, iPart)),
+                        cssValue);
+                }
+
+                initializers.Add(
+                    ExpressionStatement.CreateAssignmentExpression(
                         new IndexExpression(
                             null,
                             methodScope,
                             new IdentifierExpression(
-                                methodScope.ParameterIdentifiers[0],
+                                styleElemIdentifier,
                                 methodScope),
                             new StringLiteralExpression(
                                 methodScope,
-                                "head")),
-                        new StringLiteralExpression(
-                            methodScope,
-                            "appendChild")),
-                    new IdentifierExpression(
-                        styleElemIdentifier,
-                        methodScope)));
+                                "textContent")),
+                        cssValue));
 
-            // (DocStorageGetter.__nsStyles || (DocStorageGetter.__nsStyles = [])).push(style)
-            if (this.liveCssHook)
-            {
+                // style.__nsPart = part; the live patch of a part finds its elements by it.
+                if (this.liveCssHook)
+                {
+                    initializers.Add(
+                        ExpressionStatement.CreateAssignmentExpression(
+                            new IndexExpression(
+                                null,
+                                methodScope,
+                                new IdentifierExpression(styleElemIdentifier, methodScope),
+                                new StringLiteralExpression(methodScope, "__nsPart")),
+                            new NumberLiteralExpression(methodScope, iPart)));
+                }
+
+                // doc.body.appendChild(style)
                 initializers.Add(
                     ExpressionStatement.CreateMethodCallExpression(
                         new IndexExpression(
                             null,
                             methodScope,
-                            new BinaryExpression(
+                            new IndexExpression(
                                 null,
                                 methodScope,
-                                BinaryOperator.LogicalOr,
-                                this.GetterKey(methodScope, StylesKey),
+                                new IdentifierExpression(
+                                    methodScope.ParameterIdentifiers[0],
+                                    methodScope),
+                                new StringLiteralExpression(
+                                    methodScope,
+                                    "head")),
+                            new StringLiteralExpression(
+                                methodScope,
+                                "appendChild")),
+                        new IdentifierExpression(
+                            styleElemIdentifier,
+                            methodScope)));
+
+                // (DocStorageGetter.__nsStyles || (DocStorageGetter.__nsStyles = [])).push(style)
+                if (this.liveCssHook)
+                {
+                    initializers.Add(
+                        ExpressionStatement.CreateMethodCallExpression(
+                            new IndexExpression(
+                                null,
+                                methodScope,
                                 new BinaryExpression(
                                     null,
                                     methodScope,
-                                    BinaryOperator.Assignment,
+                                    BinaryOperator.LogicalOr,
                                     this.GetterKey(methodScope, StylesKey),
-                                    new InlineNewArrayInitialization(null, methodScope, new List<Expression>()))),
-                            new StringLiteralExpression(methodScope, "push")),
-                        new IdentifierExpression(styleElemIdentifier, methodScope)));
+                                    new BinaryExpression(
+                                        null,
+                                        methodScope,
+                                        BinaryOperator.Assignment,
+                                        this.GetterKey(methodScope, StylesKey),
+                                        new InlineNewArrayInitialization(null, methodScope, new List<Expression>()))),
+                                new StringLiteralExpression(methodScope, "push")),
+                            new IdentifierExpression(styleElemIdentifier, methodScope)));
+                }
             }
 
             // if (!doc.storage) {...}
@@ -1973,14 +2035,15 @@ namespace XwmlParser
         }
 
         /// <summary>
-        /// Gets all CSS.
+        /// The page's CSS parts, in cascade order: the style sheets by their dependencies, each
+        /// document's, then other plugins'. Each part is keyed by where it comes from. A dev
+        /// bundle writes a style element per part, so a save writes its own part again. Each
+        /// part stays when its CSS is empty, so a save that adds or drops a document's style
+        /// patches in place. A release bundle writes one part.
         /// </summary>
-        /// <returns>
-        /// all CSS.
-        /// </returns>
-        private string GetAllCss()
+        private List<(string Key, string Css)> GetCssParts()
         {
-            var pieces = new List<string>();
+            var pieces = new List<(string Key, string Css)>();
             HashSet<DocumentContext> documentContexts = new HashSet<DocumentContext>();
             List<CssStyleSheet> dependencyOrderedList = new List<CssStyleSheet>();
 
@@ -2008,7 +2071,7 @@ namespace XwmlParser
 
             foreach (var styleSheet in dependencyOrderedList)
             {
-                pieces.Add(styleSheet.GetCssString());
+                pieces.Add((styleSheet.ResourceName, styleSheet.GetCssString() ?? string.Empty));
             }
 
             foreach (var skinCodeGenerators in this.skinCodeGenerators.Keys)
@@ -2017,7 +2080,7 @@ namespace XwmlParser
                 if (!documentContexts.Contains(dc))
                 {
                     documentContexts.Add(dc);
-                    pieces.Add(dc.GetCssString());
+                    pieces.Add(("document " + dc.ResourceName, dc.GetCssString() ?? string.Empty));
                 }
             }
 
@@ -2028,25 +2091,33 @@ namespace XwmlParser
                 this.cssContributions = new List<string>(this.parserContext.ConverterContext.GetCssContributions());
             }
 
-            pieces.AddRange(this.cssContributions ?? new List<string>());
+            var contributions = this.cssContributions ?? new List<string>();
+            for (int iContribution = 0; iContribution < contributions.Count; iContribution++)
+            {
+                pieces.Add(("plugin " + iContribution, contributions[iContribution] ?? string.Empty));
+            }
 
-            // The prefixer caches results by text. Dev mode prefixes each piece apart, so a
+            // The prefixer caches results by text. Dev mode prefixes each part apart, so a
             // changed sheet is the only text read again; a release build prefixes one block.
             if (this.parserContext?.ConverterContext?.DevMode != true)
             {
-                return CssStyleSheet.Compiler.Prefix(string.Concat(pieces), CssStyleSheet.browserSpecification);
+                return new List<(string Key, string Css)>
+                {
+                    (string.Empty, CssStyleSheet.Compiler.Prefix(
+                        string.Concat(System.Linq.Enumerable.Select(pieces, piece => piece.Css)),
+                        CssStyleSheet.browserSpecification)),
+                };
             }
 
-            StringBuilder sb = new StringBuilder();
-            foreach (var piece in pieces)
+            for (int iPiece = 0; iPiece < pieces.Count; iPiece++)
             {
-                if (!string.IsNullOrEmpty(piece))
+                if (pieces[iPiece].Css.Length > 0)
                 {
-                    sb.Append(CssStyleSheet.Compiler.Prefix(piece, CssStyleSheet.browserSpecification));
+                    pieces[iPiece] = (pieces[iPiece].Key, CssStyleSheet.Compiler.Prefix(pieces[iPiece].Css, CssStyleSheet.browserSpecification));
                 }
             }
 
-            return sb.ToString();
+            return pieces;
         }
 
         private string GetRelativeResourceId(
