@@ -10,6 +10,7 @@ namespace Sunlight.Framework.Test
     using System.Collections.Generic;
     using SunlightUnit;
     using Sunlight.Framework;
+    using Sunlight.Framework.Test.Logging;
 
     /// <summary>
     /// QUnit tests for the structured logging pipeline added in WI-11.
@@ -590,6 +591,114 @@ namespace Sunlight.Framework.Test
             assert.Equal(1, payloads.Count, "Detach drained the queue through the transport");
             assert.IsTrue(payloads[0].IndexOf("\"msg\":\"queued-1\"") >= 0, "Residual event 'queued-1' included");
             assert.IsTrue(payloads[0].IndexOf("\"msg\":\"queued-2\"") >= 0, "Residual event 'queued-2' included");
+        }
+
+        [Test]
+        public static void TestHttpLogSinkPageHideSendsJsonBlobBeacon(Assert assert)
+        {
+            AssertUnloadEventSendsJsonBlobBeacon(assert, "pagehide", BeaconTestHooks.DispatchPageHide);
+        }
+
+        [Test]
+        public static void TestHttpLogSinkBeforeUnloadSendsJsonBlobBeacon(Assert assert)
+        {
+            AssertUnloadEventSendsJsonBlobBeacon(assert, "beforeunload", BeaconTestHooks.DispatchBeforeUnload);
+        }
+
+        [Test]
+        public static void TestHttpLogSinkUnloadFailureWarnsOnConsole(Assert assert)
+        {
+            // A failing beacon cannot be retried on unload, but it must not
+            // vanish silently either: the sink reports it on console.warn.
+            ResetLogger();
+            var timer = new ControllableTimer();
+            string endpoint = "/ClientLogs.ashx?beacon-test-throws";
+            string expectedWarning = "HttpLogSink: unload flush failed; batch dropped.";
+            int warnCount = 0;
+            object originalBeacon = BeaconTestHooks.GetSendBeacon();
+            object originalWarn = BeaconTestHooks.GetConsoleWarn();
+            HttpLogSink sink = null;
+            try
+            {
+                BeaconTestHooks.SetSendBeacon((url, data) =>
+                {
+                    if (url == endpoint) { throw new Exception("beacon refused"); }
+                    return true;
+                });
+                BeaconTestHooks.SetConsoleWarn((message, error) =>
+                {
+                    if (message == expectedWarning) { warnCount++; }
+                });
+
+                sink = new HttpLogSink(endpoint, 100, 5000, 500, timer);
+                sink.Handle(new LogEvent("beacon02beacon02", "ts", LogLevel.Error, string.Empty, "beacon-throws", null, null));
+                BeaconTestHooks.DispatchPageHide();
+            }
+            finally
+            {
+                BeaconTestHooks.SetSendBeacon(originalBeacon);
+                BeaconTestHooks.SetConsoleWarn(originalWarn);
+                if (sink != null) { sink.Detach(); }
+            }
+
+            assert.Equal(warnCount, 1, "The failed unload flush was reported on console.warn");
+        }
+
+        private static void AssertUnloadEventSendsJsonBlobBeacon(Assert assert, string eventName, Action dispatch)
+        {
+            // Drives the production unload path (no transportOverride): the
+            // unload event must hand navigator.sendBeacon an application/json Blob
+            // whose text is the envelope. The flush catches transport errors,
+            // so a broken Blob construction shows up only as a missing beacon.
+            ResetLogger();
+            var timer = new ControllableTimer();
+            string endpoint = "/ClientLogs.ashx?beacon-test-" + eventName;
+            var evt = new LogEvent("beacon01beacon01", "ts", LogLevel.Error, string.Empty, "beacon-crash", null, null);
+            var expected = new List<LogEvent>();
+            expected.Add(evt);
+            string expectedPayload = LogJsonBuilder.BuildEnvelope(expected, 0);
+
+            int beaconCount = 0;
+            object beaconData = null;
+            object originalBeacon = BeaconTestHooks.GetSendBeacon();
+            HttpLogSink sink = null;
+            try
+            {
+                // Other tests' sinks may still listen for pagehide; count only ours.
+                BeaconTestHooks.SetSendBeacon((url, data) =>
+                {
+                    if (url == endpoint)
+                    {
+                        beaconCount++;
+                        beaconData = data;
+                    }
+
+                    return true;
+                });
+
+                sink = new HttpLogSink(endpoint, 100, 5000, 500, timer);
+                sink.Handle(evt);
+                dispatch();
+            }
+            finally
+            {
+                BeaconTestHooks.SetSendBeacon(originalBeacon);
+                if (sink != null) { sink.Detach(); }
+            }
+
+            assert.Equal(beaconCount, 1, eventName + " shipped the queued batch through sendBeacon");
+            if (beaconCount != 1) { return; }
+
+            assert.IsTrue(BeaconTestHooks.IsBlob(beaconData), "Beacon body is a Blob");
+            var blob = (System.Web.Blob)beaconData;
+            assert.Equal(blob.Type, "application/json", "Beacon Blob is typed application/json");
+
+            var done = assert.Async(1);
+            BeaconTestHooks.ReadText(blob, text =>
+            {
+                assert.Equal(text, expectedPayload, "Beacon Blob text is the serialized envelope");
+                done();
+            });
         }
 
         [Test]
