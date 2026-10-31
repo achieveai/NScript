@@ -306,7 +306,8 @@ namespace Sunlight.Framework
             {
                 var opts = new BlobCreateOptions();
                 opts.Type = "application/json";
-                var blob = new Blob(payload, opts);
+                // JS Blob takes a sequence of parts; a bare string throws TypeError.
+                var blob = new Blob(NativeArray.GetNativeArray(new string[] { payload }), opts);
                 HttpLogSink.NavigatorSendBeaconBlob(endpoint, blob);
                 return;
             }
