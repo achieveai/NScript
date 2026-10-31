@@ -12,7 +12,7 @@ namespace Sunlight.Framework.Test.Logging
 
     /// <summary>
     /// Browser hooks for driving <see cref="HttpLogSink"/>'s real unload path:
-    /// swap <c>navigator.sendBeacon</c> for a recorder, fire <c>pagehide</c>,
+    /// swap <c>navigator.sendBeacon</c> for a recorder, fire <c>pagehide</c> or <c>beforeunload</c>,
     /// and read a beacon <c>Blob</c> back. Kept out of the test fixture so
     /// fixture classes carry no <c>[Script]</c> externs.
     /// </summary>
@@ -29,6 +29,18 @@ namespace Sunlight.Framework.Test.Logging
 
         [Script(@"var e = window.document.createEvent('Event'); e.initEvent('pagehide', false, false); window.dispatchEvent(e);")]
         public static extern void DispatchPageHide();
+
+        [Script(@"var e = window.document.createEvent('Event'); e.initEvent('beforeunload', false, false); window.dispatchEvent(e);")]
+        public static extern void DispatchBeforeUnload();
+
+        [Script(@"return console.warn;")]
+        public static extern object GetConsoleWarn();
+
+        [Script(@"console.warn = warn;")]
+        public static extern void SetConsoleWarn(object warn);
+
+        [Script(@"console.warn = warn;")]
+        public static extern void SetConsoleWarn(Action<string, object> warn);
 
         [Script(@"return data instanceof window.Blob;")]
         public static extern bool IsBlob(object data);

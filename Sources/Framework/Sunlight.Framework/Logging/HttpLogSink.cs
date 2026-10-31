@@ -189,7 +189,10 @@ namespace Sunlight.Framework
                     string payload = this.ExtractBatchAsPayload();
                     this.SendPayload(payload, true);
                 }
-                catch { /* fire-and-forget transport */ }
+                catch (Exception ex)
+                {
+                    HttpLogSink.ConsoleWarn("HttpLogSink: final flush on detach failed; batch dropped.", ex);
+                }
             }
         }
 
@@ -226,7 +229,13 @@ namespace Sunlight.Framework
                 string payload = this.ExtractBatchAsPayload();
                 this.SendPayload(payload, true);
             }
-            catch { /* fire-and-forget transport — unload path cannot react */ }
+            catch (Exception ex)
+            {
+                // The unload path cannot retry, but a silent catch here once hid
+                // a beacon that never shipped. Warn on the console, not through
+                // Logger, which would recurse into this sink.
+                HttpLogSink.ConsoleWarn("HttpLogSink: unload flush failed; batch dropped.", ex);
+            }
         }
 
         /// <summary>
@@ -297,7 +306,9 @@ namespace Sunlight.Framework
         /// with a <c>Blob</c> of type <c>application/json</c> — sending a bare
         /// string defaults to <c>text/plain</c>, which ingestion servers tend to
         /// reject. Falls back to a synchronous XHR on browsers without
-        /// <c>sendBeacon</c> so buffered events still have a chance to ship.
+        /// <c>sendBeacon</c>, or when the browser refuses the beacon (for
+        /// example over its ~64 KiB quota), so buffered events still have a
+        /// chance to ship.
         /// </summary>
         private static void SendBeacon(string endpoint, string payload)
         {
@@ -308,11 +319,12 @@ namespace Sunlight.Framework
                 opts.Type = "application/json";
                 // JS Blob takes a sequence of parts; a bare string throws TypeError.
                 var blob = new Blob(NativeArray.GetNativeArray(new string[] { payload }), opts);
-                HttpLogSink.NavigatorSendBeaconBlob(endpoint, blob);
-                return;
+                if (HttpLogSink.NavigatorSendBeaconBlob(endpoint, blob)) { return; }
             }
 
-            // Very old browsers: sync XHR is the last-resort unload path.
+            // Old browsers, or a refused beacon: sync XHR is the last-resort
+            // unload path. Chromium throws on sync XHR during page dismissal;
+            // the caller's catch then reports the dropped batch.
             var xhr = new XMLHttpRequest();
             xhr.Open("POST", endpoint, false);
             xhr.SetRequestHeader("Content-Type", "application/json");
@@ -322,10 +334,18 @@ namespace Sunlight.Framework
         /// <summary>
         /// Single-expression <c>[Script]</c> bridge so we can pass a <c>Blob</c>
         /// to <c>navigator.sendBeacon</c> — the <see cref="Navigator"/> facade
-        /// only exposes <c>string</c>/<c>FormData</c> overloads.
+        /// only exposes <c>string</c>/<c>FormData</c> overloads. Returns
+        /// <c>false</c> when the browser refuses to queue the beacon.
         /// </summary>
-        [Script(@"window.navigator.sendBeacon(endpoint, blob);")]
-        private static extern void NavigatorSendBeaconBlob(string endpoint, Blob blob);
+        [Script(@"return window.navigator.sendBeacon(endpoint, blob);")]
+        private static extern bool NavigatorSendBeaconBlob(string endpoint, Blob blob);
+
+        /// <summary>
+        /// Report a dropped batch straight to the console. Going through
+        /// <see cref="Logger"/> would route the warning back into this sink.
+        /// </summary>
+        [Script(@"console.warn(message, error);")]
+        private static extern void ConsoleWarn(string message, object error);
 
         private void AddUnloadHandler(Action handler)
         {
