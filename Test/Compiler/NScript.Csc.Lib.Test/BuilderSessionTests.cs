@@ -1061,15 +1061,16 @@ namespace NScript.Csc.Lib.Test
 
         /// <summary>
         /// #125: a watch batch that ran after another batch already patched the bundle finds
-        /// nothing new. With a patch session that build writes nothing and sends nothing: no new
-        /// gen, so open pages do not reload. That holds for inputs with the same stamps, and for
-        /// a rewritten entry DLL with the same MVID and resources (a resource patch that wrote
-        /// the same bytes again). A bundle changed on disk still emits in full, and a later
-        /// body edit still patches on the same gen.
+        /// nothing new. With a patch session that build leaves the bundle as it is and sends no
+        /// live patch: no new gen, so open pages do not reload. That holds for inputs with the
+        /// same stamps, and for a rewritten entry DLL with the same MVID and resources (a
+        /// resource patch that wrote the same bytes again). Only a deleted or replaced map is
+        /// written again. A bundle changed on disk still emits in full, and a later body edit
+        /// still patches on the same gen.
         /// </summary>
         [TestMethod]
         [TestCategory("Integration")] // ~17 s fixture setup plus 6 builds of a small library.
-        public void Session_PatchEmit_NothingChanged_WritesNothing_KeepsGen()
+        public void Session_PatchEmit_NothingChanged_KeepsBundleAndGen_RestoresMap()
         {
             TestAssemblyLoader.LoadAssemblies();
             var temp = TestResources.FixtureDirectory;
