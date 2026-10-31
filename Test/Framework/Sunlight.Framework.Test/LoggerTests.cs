@@ -10,6 +10,7 @@ namespace Sunlight.Framework.Test
     using System.Collections.Generic;
     using SunlightUnit;
     using Sunlight.Framework;
+    using Sunlight.Framework.Test.Logging;
 
     /// <summary>
     /// QUnit tests for the structured logging pipeline added in WI-11.
@@ -590,6 +591,64 @@ namespace Sunlight.Framework.Test
             assert.Equal(1, payloads.Count, "Detach drained the queue through the transport");
             assert.IsTrue(payloads[0].IndexOf("\"msg\":\"queued-1\"") >= 0, "Residual event 'queued-1' included");
             assert.IsTrue(payloads[0].IndexOf("\"msg\":\"queued-2\"") >= 0, "Residual event 'queued-2' included");
+        }
+
+        [Test]
+        public static void TestHttpLogSinkPageHideSendsJsonBlobBeacon(Assert assert)
+        {
+            // Drives the production unload path (no transportOverride): a
+            // pagehide must hand navigator.sendBeacon an application/json Blob
+            // whose text is the envelope. The flush swallows transport errors,
+            // so a broken Blob construction shows up only as a missing beacon.
+            ResetLogger();
+            var timer = new ControllableTimer();
+            string endpoint = "/ClientLogs.ashx?beacon-test";
+            var evt = new LogEvent("beacon01beacon01", "ts", LogLevel.Error, string.Empty, "beacon-crash", null, null);
+            var expected = new List<LogEvent>();
+            expected.Add(evt);
+            string expectedPayload = LogJsonBuilder.BuildEnvelope(expected, 0);
+
+            int beaconCount = 0;
+            object beaconData = null;
+            object originalBeacon = BeaconTestHooks.GetSendBeacon();
+            HttpLogSink sink = null;
+            try
+            {
+                // Other tests' sinks may still listen for pagehide; count only ours.
+                BeaconTestHooks.SetSendBeacon((url, data) =>
+                {
+                    if (url == endpoint)
+                    {
+                        beaconCount++;
+                        beaconData = data;
+                    }
+
+                    return true;
+                });
+
+                sink = new HttpLogSink(endpoint, 100, 5000, 500, timer);
+                sink.Handle(evt);
+                BeaconTestHooks.DispatchPageHide();
+            }
+            finally
+            {
+                BeaconTestHooks.SetSendBeacon(originalBeacon);
+                if (sink != null) { sink.Detach(); }
+            }
+
+            assert.Equal(beaconCount, 1, "pagehide shipped the queued batch through sendBeacon");
+            if (beaconCount != 1) { return; }
+
+            assert.IsTrue(BeaconTestHooks.IsBlob(beaconData), "Beacon body is a Blob");
+            var blob = (System.Web.Blob)beaconData;
+            assert.Equal(blob.Type, "application/json", "Beacon Blob is typed application/json");
+
+            var done = assert.Async(1);
+            BeaconTestHooks.ReadText(blob, text =>
+            {
+                assert.Equal(text, expectedPayload, "Beacon Blob text is the serialized envelope");
+                done();
+            });
         }
 
         [Test]

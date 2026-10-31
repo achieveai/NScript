@@ -24,6 +24,9 @@ namespace System.Web
 
         public extern Blob(Blob blob, BlobCreateOptions options = null);
 
+        // JS has no Blob(string): it throws TypeError at runtime. Kept as a compile error so
+        // existing callers get the fix in the message instead of a bare missing-overload error.
+        [Obsolete("JavaScript's Blob constructor takes an array of parts; new Blob(string) throws TypeError. Use new Blob(NativeArray.GetNativeArray(new string[] { text }), options).", true)]
         public extern Blob(string blob, BlobCreateOptions options = null);
 
         public extern bool IsClosed { get; set; }
