@@ -238,7 +238,14 @@
             ")]
         public extern string ReplaceFirst(string oldText, string replaceText);
 
-        [ScriptName("replace")]
+        /// <summary>
+        /// Replaces the first match only, even when <paramref name="oldText"/> has the g flag
+        /// (a non-global copy is used; the caller's regex is not changed).
+        /// </summary>
+        [Script(@"
+            var re = oldText.global ? new @:RegExp(oldText.source, oldText.flags.replace('g', '')) : oldText;
+            return this.replace(re, replaceText);
+            ")]
         public extern string ReplaceFirst(RegularExpression oldText, string replaceText);
 
         public string[] Split(char ch)

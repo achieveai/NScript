@@ -1161,10 +1161,7 @@ namespace NScript.RazorSkin.CodeGen
                         property, modelType, itemType, itemVariablePrefix,
                         findProperty, sub.Location);
 
-                if (!binding.IsLiteral && property.CustomAttributes.Any(attr =>
-                    attr.AttributeType.Name == "DefaultDataBindingAttribute"
-                    && attr.Properties.Any(named => named.Name == "Mode"
-                        && Convert.ToInt32(named.Argument.Value) == 2)))
+                if (!binding.IsLiteral && IsTwoWayTargetProperty(property))
                 {
                     var source = binding.Classification.CSharpExpression;
                     var prefix = !string.IsNullOrEmpty(itemVariablePrefix)
@@ -1218,6 +1215,18 @@ namespace NScript.RazorSkin.CodeGen
                 throw new RazorSubControlDiagnosticException(sub.Location,
                     $"<{sub.TypeName}> has content, but the skin of {typeDef.FullName} ({skinGetter.Name}) "
                     + "is not a Razor .skin.cshtml template; only a Razor skin can place it with @RenderBody().");
+        }
+
+        /// <summary>
+        /// Whether a sub-control property is declared two-way
+        /// (<c>[DefaultDataBinding(Mode = DataBindingMode.TwoWay)]</c>).
+        /// </summary>
+        internal static bool IsTwoWayTargetProperty(PropertyDefinition property)
+        {
+            return property.CustomAttributes.Any(attr =>
+                attr.AttributeType.Name == "DefaultDataBindingAttribute"
+                && attr.Properties.Any(named => named.Name == "Mode"
+                    && Convert.ToInt32(named.Argument.Value) == 2));
         }
 
         internal static MethodDefinition FindElementConstructor(TypeDefinition typeDef)

@@ -131,6 +131,11 @@ function String__ReplaceFirst(this_, oldText, replaceText) {
     return this_;
   return this_.substring(0, i) + (replaceText == null ? "" : replaceText) + this_.substring(i + oldText.length);
 }
+function String__ReplaceFirsta(this_, oldText, replaceText) {
+  var re;
+  re = oldText.global ? new RegExp(oldText.source, oldText.flags.replace("g", "")) : oldText;
+  return this_.replace(re, replaceText);
+}
 function String__Split(this_, ch) {
   return NativeArray__GetArray(String, this_.split(String.fromCharCode(ch)));
 }

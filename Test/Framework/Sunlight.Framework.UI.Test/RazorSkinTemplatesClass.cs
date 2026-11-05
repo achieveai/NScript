@@ -379,6 +379,18 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.PrValueSetterOnly.skin.cshtml")]
+        public static Skin PrValueSetterOnly
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.PrSubControlSetterOnly.skin.cshtml")]
+        public static Skin PrSubControlSetterOnly
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB4bHrBeforeLoop.skin.cshtml")]
         public static Skin AwbB4bHrBeforeLoop
         {
@@ -519,6 +531,12 @@ namespace Sunlight.Framework.UI.Test
 
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotGatedForwardFrame.skin.cshtml")]
         public static Skin SlotGatedForwardFrame
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF2NestedGate.skin.cshtml")]
+        public static Skin AwbF2NestedGate
         {
             get { return null; }
         }

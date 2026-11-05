@@ -595,6 +595,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // Start from max(gateIdx+1, 0) to handle inverted gate indices (negative values).
             int start = gateIdx >= 0 ? gateIdx + 1 : 0;
 
+            // Two-way value= elements leave with the branch, nested @if branches included:
+            // whoever still holds one must not write the model. Reopening wires the new ones.
+            GraphEngine.UnwireGatedTwoWayValues(desc, state, gateIdx);
+
             for (int i = start; i < n; i++)
             {
                 if (desc.GateIndices[i] != gateIdx)
@@ -684,6 +688,31 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphEngine.ApplyGateClosure(desc, state, gateIdx);
             GraphEngine.ApplyGateClosure(desc, state, -(gateIdx + 2));
             state.Values[gateIdx] = null;
+        }
+
+        /// <summary>
+        /// Unwires the two-way listeners of the DomTarget nodes on one side of a gate
+        /// (<paramref name="gateRef"/>: gate index, or -(gate + 2) for @else), and of both
+        /// sides of every @if nested there: a nested node is gated by its own @if, not by
+        /// the one that closed.
+        /// </summary>
+        private static void UnwireGatedTwoWayValues(GraphDescriptor desc, GraphState state, int gateRef)
+        {
+            if (object.IsNullOrUndefined(state.TwoWayListeners)) return;
+            for (int i = 0; i < desc.NodeCount; i++)
+            {
+                // A gate node can carry its own index: it is the controller, not a nested @if.
+                if (desc.GateIndices[i] != gateRef || i == gateRef) continue;
+                if (desc.NodeTypes[i] == GraphNodeType.DomTarget)
+                {
+                    GraphEngine.UnwireTwoWayValue(state, i);
+                }
+                else if (desc.NodeTypes[i] == GraphNodeType.Gate)
+                {
+                    GraphEngine.UnwireGatedTwoWayValues(desc, state, i);
+                    GraphEngine.UnwireGatedTwoWayValues(desc, state, -(i + 2));
+                }
+            }
         }
 
         /// <summary>
