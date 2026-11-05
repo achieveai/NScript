@@ -8,6 +8,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         private GraphDescriptor descriptor;
         private GraphState state;
 
+        // The caller content's original order, for ReturnContent: one entry per run of
+        // children that went to the same slot. runEnds holds a default-slot run's last node;
+        // a named slot is one run bounded by its markers.
+        private NativeArray<SlotProjection> runSlots;
+        private NativeArray<System.Web.Html.Node> runEnds;
+
         public GraphBindingStrategy(GraphDescriptor descriptor, NativeArray elemRefs, int depth,
             System.Web.Html.Element rootElement)
         {
@@ -266,6 +272,21 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 throw new Exception("Skin '" + skinId + "' for " + controlName
                     + " has no @RenderBody(); remove the content or add the outlet.");
 
+            NativeArray<SlotProjection> runs = new NativeArray<SlotProjection>(0);
+            NativeArray<System.Web.Html.Node> ends = new NativeArray<System.Web.Html.Node>(0);
+            for (int k = 0; k < nodes.Length; k++)
+            {
+                if (k == 0 || owners[k] != owners[k - 1])
+                {
+                    runs.Push(GraphBindingStrategy.FindSlot(slots, owners[k]));
+                    ends.Push(nodes[k]);
+                }
+                else
+                {
+                    ends[ends.Length - 1] = nodes[k];
+                }
+            }
+
             // Second pass: move. A named slot's markers stay out of its outlet.
             for (int k = 0; k < nodes.Length; k++)
             {
@@ -289,6 +310,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             this.state.Projections = slots;
+            this.runSlots = runs;
+            this.runEnds = ends;
         }
 
         private const string SlotContentStartSelector = "template[data-ns-slot-for]";
@@ -324,16 +347,53 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             NativeArray<SlotProjection> slots = this.state.Projections;
             if (object.IsNullOrUndefined(slots)) return;
             GraphEngine.ParkProjections(this.state);
-            for (int k = 0; k < slots.Length; k++)
+
+            // Replay the runs in the caller's order. A default-slot run takes its holder's
+            // nodes up to its last node; nodes the caller's @if added since go with the run
+            // they follow, and the last default run takes whatever is left.
+            NativeArray<SlotProjection> runs = this.runSlots;
+            int lastDefault = -1;
+            for (int k = 0; k < runs.Length; k++)
+                if (runs[k].Name == "") lastDefault = k;
+
+            for (int k = 0; k < runs.Length; k++)
             {
-                SlotProjection slot = slots[k];
-                if (!object.IsNullOrUndefined(slot.ContentStart)) host.AppendChild(slot.ContentStart);
-                while (!object.IsNullOrUndefined(slot.Holder.FirstChild))
-                    host.AppendChild(slot.Holder.FirstChild);
-                if (!object.IsNullOrUndefined(slot.ContentEnd)) host.AppendChild(slot.ContentEnd);
+                SlotProjection slot = runs[k];
+                if (slot.Name != "")
+                {
+                    if (!object.IsNullOrUndefined(slot.ContentStart)) host.AppendChild(slot.ContentStart);
+                    GraphBindingStrategy.MoveAll(slot.Holder, host);
+                    if (!object.IsNullOrUndefined(slot.ContentEnd)) host.AppendChild(slot.ContentEnd);
+                }
+                else if (k == lastDefault)
+                {
+                    GraphBindingStrategy.MoveAll(slot.Holder, host);
+                }
+                else if (this.runEnds[k].ParentNode == (System.Web.Html.Node)slot.Holder)
+                {
+                    System.Web.Html.Node moved;
+                    do
+                    {
+                        moved = slot.Holder.FirstChild;
+                        host.AppendChild(moved);
+                    }
+                    while (moved != this.runEnds[k]);
+                }
             }
 
+            // The default slot is always first; with no default run its holder is empty
+            // unless a caller @if added nodes there, and those must not be lost.
+            GraphBindingStrategy.MoveAll(slots[0].Holder, host);
+
             this.state.Projections = null;
+            this.runSlots = null;
+            this.runEnds = null;
+        }
+
+        private static void MoveAll(System.Web.Html.Element from, System.Web.Html.Element to)
+        {
+            while (!object.IsNullOrUndefined(from.FirstChild))
+                to.AppendChild(from.FirstChild);
         }
 
         /// <summary>

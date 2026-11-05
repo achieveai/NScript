@@ -1200,9 +1200,7 @@ namespace NScript.RazorSkin.CodeGen
                     + "only a skinned control can project content with @RenderBody().");
 
             // The getter the sub-control's SkinFactory calls (GraphDescriptorJSTEmitter.BuildSubControlSkinFactory).
-            var skinGetter = typeDef.Properties.FirstOrDefault(prop => prop.GetMethod != null
-                && prop.GetMethod.IsStatic
-                && prop.CustomAttributes.Any(attr => attr.AttributeType.Name == "SkinAttribute"));
+            var skinGetter = FindSkinGetter(typeDef);
             if (skinGetter == null)
                 throw new RazorSubControlDiagnosticException(sub.Location,
                     $"<{sub.TypeName}> has content, but {typeDef.FullName} has no static [Skin] property, "
@@ -1215,6 +1213,31 @@ namespace NScript.RazorSkin.CodeGen
                 throw new RazorSubControlDiagnosticException(sub.Location,
                     $"<{sub.TypeName}> has content, but the skin of {typeDef.FullName} ({skinGetter.Name}) "
                     + "is not a Razor .skin.cshtml template; only a Razor skin can place it with @RenderBody().");
+        }
+
+        private const string SkinAttributeFullName = "Sunlight.Framework.UI.Attributes.SkinAttribute";
+
+        /// <summary>
+        /// The framework's <c>[Skin("...")]</c> on a getter-only property, or null. One rule for the
+        /// plugin (which overwrites the getter), this generator and the emitter (which call it).
+        /// A property with a setter is not a skin getter, as in XWML; a foreign attribute that is
+        /// only named SkinAttribute is not the framework's.
+        /// </summary>
+        internal static CustomAttribute SkinAttributeOf(PropertyDefinition property)
+        {
+            if (property?.GetMethod == null || property.SetMethod != null || !property.HasCustomAttributes)
+                return null;
+            return property.CustomAttributes.FirstOrDefault(
+                attr => attr.AttributeType.FullName == SkinAttributeFullName);
+        }
+
+        /// <summary>
+        /// A control's static skin getter (<see cref="SkinAttributeOf"/>), which its SkinFactory calls.
+        /// </summary>
+        internal static PropertyDefinition FindSkinGetter(TypeDefinition type)
+        {
+            return type.Properties.FirstOrDefault(
+                prop => prop.GetMethod?.IsStatic == true && SkinAttributeOf(prop) != null);
         }
 
         /// <summary>

@@ -53,6 +53,34 @@ namespace RazorSkinParser.Test
                 .WithMessage("*has content*no static*Skin*property*");
         }
 
+        // PR 148 S5: the skin getter is a static, getter-only property carrying the framework's
+        // [Skin] (as XWML requires). The plugin never overwrites a getter with a setter, and a
+        // foreign SkinAttribute is not a skin, so neither may pass as the content host's skin.
+        [TestMethod]
+        public void ContentOnControlWhoseSkinPropertyHasASetterReportsCompileError()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: true, skinGetterHasSetter: true);
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => Validate(sub, type);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*has content*no static*Skin*property*");
+        }
+
+        [TestMethod]
+        public void ContentOnControlWithForeignSkinAttributeReportsCompileError()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: true,
+                skinAttributeNamespace: "Other.Attributes");
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => Validate(sub, type);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*has content*no static*Skin*property*");
+        }
+
         [TestMethod]
         public void ContentOnSkinnedControlIsAccepted()
         {
@@ -464,7 +492,8 @@ namespace RazorSkinParser.Test
             return control;
         }
 
-        private static TypeDefinition CreateSkinableControl(out ModuleDefinition module, bool withSkinGetter)
+        private static TypeDefinition CreateSkinableControl(out ModuleDefinition module, bool withSkinGetter,
+            bool skinGetterHasSetter = false, string skinAttributeNamespace = "Sunlight.Framework.UI.Attributes")
         {
             module = ModuleDefinition.CreateModule("SubControlContent", ModuleKind.Dll);
             var ui = new TypeDefinition("Sunlight.Framework.UI", "UIElement", TypeAttributes.Public);
@@ -482,7 +511,16 @@ namespace RazorSkinParser.Test
                 control.Methods.Add(getter);
                 var property = new PropertyDefinition("DefaultSkin", PropertyAttributes.None, skinType)
                 { GetMethod = getter };
-                var attributeType = new TypeReference("Sunlight.Framework.UI.Attributes", "SkinAttribute", module, module);
+                if (skinGetterHasSetter)
+                {
+                    var setter = new MethodDefinition("set_DefaultSkin",
+                        MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.SpecialName,
+                        module.TypeSystem.Void);
+                    setter.Parameters.Add(new ParameterDefinition(skinType));
+                    control.Methods.Add(setter);
+                    property.SetMethod = setter;
+                }
+                var attributeType = new TypeReference(skinAttributeNamespace, "SkinAttribute", module, module);
                 property.CustomAttributes.Add(new CustomAttribute(
                     new MethodReference(".ctor", module.TypeSystem.Void, attributeType) { HasThis = true }));
                 control.Properties.Add(property);

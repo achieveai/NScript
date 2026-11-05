@@ -175,11 +175,11 @@ namespace NScript.RazorSkin.TemplateIR
         /// </summary>
         private static void ValidateContentHostNesting(List<IRNode> nodes, string templateName)
         {
-            var open = new Stack<SubControlNode>();
+            var open = new Stack<OpenContentHost>();
             foreach (var node in nodes)
             {
                 if (node is SubControlNode sub && sub.HasContent)
-                    open.Push(sub);
+                    open.Push(new OpenContentHost(sub));
                 else if (node is SubControlEndNode && open.Count == 0)
                     throw new NScript.Converter.ConverterLocationException(
                         node.Location ?? new Location(templateName ?? "(razor)", 0, 0),
@@ -194,6 +194,8 @@ namespace NScript.RazorSkin.TemplateIR
                         node.Location ?? new Location(templateName ?? "(razor)", 0, 0),
                         "<Slot> names caller content for a control: put it directly inside the control's tag, "
                         + "in the same block.");
+                else if (open.Count > 0 && node is HtmlNode slotHtml)
+                    open.Peek().TrackSlotMarkers(slotHtml, templateName);
 
                 ValidateContentHostNesting(node.Children, templateName);
                 if (node is ConditionalNode cond)
@@ -209,9 +211,55 @@ namespace NScript.RazorSkin.TemplateIR
 
             if (open.Count > 0)
                 throw new NScript.Converter.ConverterLocationException(
-                    open.Peek().Location ?? new Location(templateName ?? "(razor)", 0, 0),
-                    $"<{open.Peek().TypeName}> is not closed in the block it opens in; "
+                    open.Peek().Control.Location ?? new Location(templateName ?? "(razor)", 0, 0),
+                    $"<{open.Peek().Control.TypeName}> is not closed in the block it opens in; "
                     + "open and close the control in the same @if, @else or @foreach block.");
+        }
+
+        private static readonly Regex SlotContentMarkerRegex = new Regex(
+            @"<template data-ns-slot-for=""(?<name>[^""]*)""></template>|<template data-ns-slot-end></template>",
+            RegexOptions.Compiled);
+
+        /// <summary>
+        /// A control tag with content whose close tag is not reached yet, and the
+        /// <c>&lt;Slot&gt;</c> names in its content. Duplicate and nested slots fail here, at the
+        /// Slot tag's line, rather than when the control mounts (GraphBindingStrategy.TakeContent).
+        /// </summary>
+        private sealed class OpenContentHost
+        {
+            private readonly HashSet<string> slotNames = new HashSet<string>();
+            private string openSlot;
+
+            public OpenContentHost(SubControlNode control)
+            {
+                this.Control = control;
+            }
+
+            public SubControlNode Control { get; }
+
+            public void TrackSlotMarkers(HtmlNode html, string templateName)
+            {
+                foreach (Match marker in SlotContentMarkerRegex.Matches(html.HtmlContent ?? ""))
+                {
+                    if (!marker.Groups["name"].Success)
+                    {
+                        this.openSlot = null;
+                        continue;
+                    }
+
+                    var name = marker.Groups["name"].Value;
+                    var location = html.Location ?? new Location(templateName ?? "(razor)", 0, 0);
+                    if (this.openSlot != null)
+                        throw new NScript.Converter.ConverterLocationException(location,
+                            $"<Slot Name=\"{name}\"> is inside <Slot Name=\"{this.openSlot}\"> in <{this.Control.TypeName}>; "
+                            + "slots do not nest. Close the first <Slot> before the next one.");
+                    if (!this.slotNames.Add(name))
+                        throw new NScript.Converter.ConverterLocationException(location,
+                            $"<{this.Control.TypeName}> has two <Slot Name=\"{name}\">; "
+                            + "put all of that slot's content in one <Slot>.");
+                    this.openSlot = name;
+                }
+            }
         }
 
         /// <summary>
@@ -557,7 +605,8 @@ namespace NScript.RazorSkin.TemplateIR
                         var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
                         // Also detect sub-controls in the HTML
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, htmlLocation);
+                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, htmlLocation,
+                            ContentStartLocation(htmlLocation, GetTokenContent(htmlNode), content));
                         if (!string.IsNullOrWhiteSpace(processed))
                         {
                             currentParent.Children.Add(new HtmlNode
@@ -850,7 +899,7 @@ namespace NScript.RazorSkin.TemplateIR
                         var branchParent = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
                         var processed = ExtractSubControlsFromHtml(content.Trim(), branchParent,
-                            templateName, htmlLocation);
+                            templateName, htmlLocation, ContentStartLocation(htmlLocation, content, content));
                         if (!string.IsNullOrWhiteSpace(processed))
                             targetBranch.Add(new HtmlNode
                             {
@@ -1044,7 +1093,8 @@ namespace NScript.RazorSkin.TemplateIR
                         // rather than collapsing to the dummy container's null Location.
                         var dummy = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, htmlLocation);
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, htmlLocation,
+                            ContentStartLocation(htmlLocation, content, content));
                         if (!string.IsNullOrWhiteSpace(processed))
                             loop.ItemTemplate.Add(new HtmlNode
                             {
@@ -1550,6 +1600,39 @@ namespace NScript.RazorSkin.TemplateIR
         }
 
         /// <summary>
+        /// The location of <paramref name="index"/> in <paramref name="html"/>, which starts at
+        /// <paramref name="start"/>: its line moves down by the newlines before the index.
+        /// Columns are 0-based, as in <see cref="TryGetLocation"/>.
+        /// </summary>
+        private static Location LocationAt(Location start, string html, int index)
+        {
+            if (start == null) return null;
+            int newlines = 0, lineStart = -1;
+            for (int i = 0; i < index; i++)
+            {
+                if (html[i] == '\n')
+                {
+                    newlines++;
+                    lineStart = i;
+                }
+            }
+
+            return newlines == 0
+                ? new Location(start.FileName, start.StartLine, start.StartColumn + index)
+                : new Location(start.FileName, start.StartLine + newlines, index - lineStart - 1);
+        }
+
+        /// <summary>
+        /// Where <paramref name="kept"/> starts: <paramref name="raw"/> starts at
+        /// <paramref name="rawLocation"/>, and <paramref name="kept"/> is a suffix of it whose
+        /// leading model echo and whitespace were stripped.
+        /// </summary>
+        private static Location ContentStartLocation(Location rawLocation, string raw, string kept)
+        {
+            return LocationAt(rawLocation, raw, raw.Length - kept.TrimStart().Length);
+        }
+
+        /// <summary>
         /// Scans HTML content for PascalCase tags that represent sub-controls.
         /// Extracts them into SubControlNode instances. <paramref name="hostLocation"/>
         /// is the preferred source anchor (e.g., the surrounding
@@ -1559,7 +1642,10 @@ namespace NScript.RazorSkin.TemplateIR
         /// Without the host-level anchor, all sub-controls would collapse to the
         /// parent's line (often line 1 for the <see cref="SkinTemplateNode"/> root).
         /// </summary>
-        private static string ExtractSubControlsFromHtml(string html, IRNode parent, string templateName = null, Location hostLocation = null)
+        /// <param name="contentLocation">Where <paramref name="html"/> itself starts, for the
+        /// Slot tags' own lines. <paramref name="hostLocation"/> stays the sub-controls' anchor.</param>
+        private static string ExtractSubControlsFromHtml(string html, IRNode parent, string templateName = null,
+            Location hostLocation = null, Location contentLocation = null)
         {
             if (string.IsNullOrEmpty(html)) return html;
 
@@ -1581,10 +1667,11 @@ namespace NScript.RazorSkin.TemplateIR
 
                 if (tagName == SlotTagName)
                 {
+                    var slotLocation = LocationAt(contentLocation ?? parentLocation, html, match.Index);
                     parent.Children.Add(new HtmlNode
                     {
-                        HtmlContent = SlotContentMarkerHtml(match, parentLocation, templateName),
-                        Location = parentLocation
+                        HtmlContent = SlotContentMarkerHtml(match, slotLocation, templateName),
+                        Location = slotLocation
                     });
                     continue;
                 }

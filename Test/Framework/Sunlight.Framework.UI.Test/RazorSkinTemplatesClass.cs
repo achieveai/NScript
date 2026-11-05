@@ -540,5 +540,16 @@ namespace Sunlight.Framework.UI.Test
         {
             get { return null; }
         }
-    }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostNestedHead.skin.cshtml")]
+        public static Skin SlotHostNestedHead
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostRowsMissing.skin.cshtml")]
+        public static Skin SlotHostRowsMissing
+        {
+            get { return null; }
+        }    }
 }
