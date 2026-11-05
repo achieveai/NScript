@@ -1125,6 +1125,10 @@ namespace NScript.Converter.TypeSystemConverter
             // Unclosed '@{' imports; the '}' closing one is a value, like a name.
             var openImports = 0;
             var closedImportIndex = -1;
+
+            // Index of the last character that is not whitespace or inside a comment, as the
+            // lexer's last significant token; -1 at the start of the body.
+            var lastSignificant = -1;
             for (; nowIndex < script.Length; nowIndex++)
             {
                 var ch = script[nowIndex];
@@ -1139,12 +1143,14 @@ namespace NScript.Converter.TypeSystemConverter
                         CopyStringPart(script, lastIndex, nowIndex + 1, strBuilder);
                         lastIndex = nowIndex + 1;
                         inStr = false;
+                        lastSignificant = nowIndex;
                     }
                     continue;
                 }
 
                 if (IsScriptIdentifierChar(ch))
                 {
+                    lastSignificant = nowIndex;
                     continue;
                 }
 
@@ -1159,7 +1165,7 @@ namespace NScript.Converter.TypeSystemConverter
                 }
                 else if (ch == '(')
                 {
-                    openParens.Push(IsControlHeaderParen(script, nowIndex));
+                    openParens.Push(IsControlHeaderParen(script, lastSignificant));
                 }
                 else if (ch == ')')
                 {
@@ -1193,7 +1199,12 @@ namespace NScript.Converter.TypeSystemConverter
                     }
                     else
                     {
-                        verbatimEnd = RegexLiteralEnd(script, nowIndex, closedHeaderIndex, closedImportIndex);
+                        verbatimEnd = RegexLiteralEnd(
+                            script, nowIndex, lastSignificant, closedHeaderIndex, closedImportIndex);
+                        if (verbatimEnd > 0)
+                        {
+                            lastSignificant = verbatimEnd - 1;
+                        }
                     }
 
                     if (verbatimEnd > 0)
@@ -1201,7 +1212,13 @@ namespace NScript.Converter.TypeSystemConverter
                         CopyStringPart(script, nowIndex + 1, verbatimEnd, strBuilder);
                         lastIndex = verbatimEnd;
                         nowIndex = verbatimEnd - 1;
+                        continue;
                     }
+                }
+
+                if (!char.IsWhiteSpace(ch))
+                {
+                    lastSignificant = nowIndex;
                 }
             }
 
@@ -1211,12 +1228,15 @@ namespace NScript.Converter.TypeSystemConverter
         }
 
         /// <summary>
-        /// Keywords after which a '/' starts a regex literal rather than a division.
+        /// The words JavaScript.g3 lexes as keywords rather than as an Identifier, except the
+        /// values this, null, true and false: a '/' after one of these starts a regex literal.
+        /// Any other word (of, yield, await, a name) is an Identifier, so '/' divides.
         /// </summary>
         private static readonly HashSet<string> RegexPrecedingKeywords = new HashSet<string>
         {
-            "return", "typeof", "case", "do", "else", "in", "of", "new", "delete", "void",
-            "throw", "instanceof", "yield", "await",
+            "break", "case", "catch", "continue", "default", "delete", "do", "else", "finally",
+            "for", "function", "if", "in", "instanceof", "new", "return", "switch", "throw",
+            "try", "typeof", "var", "void", "while", "with",
         };
 
         /// <summary>
@@ -1225,14 +1245,14 @@ namespace NScript.Converter.TypeSystemConverter
         /// <c>JavaScriptLexer.RegexAllowed</c>: after a value (a name other than a keyword such as
         /// <c>return</c>, a number, a string, '++', '--', ')', ']', or the '}' at
         /// <paramref name="closedImportIndex"/> closing an @{...} import) '/' divides; elsewhere,
-        /// including after the ')' at <paramref name="closedHeaderIndex"/> closing an
-        /// if/while/for/with header, it starts a regex.
+        /// including at the start (<paramref name="prev"/> is -1) and after the ')' at
+        /// <paramref name="closedHeaderIndex"/> closing an if/while/for/with header, it starts a regex.
+        /// <paramref name="prev"/> is the last significant character before the '/'.
         /// </summary>
         private static int RegexLiteralEnd(
-            string script, int slashIndex, int closedHeaderIndex, int closedImportIndex)
+            string script, int slashIndex, int prev, int closedHeaderIndex, int closedImportIndex)
         {
-            var prev = PreviousSignificantIndex(script, slashIndex);
-            if (prev == closedImportIndex)
+            if (prev >= 0 && prev == closedImportIndex)
             {
                 return -1;
             }
@@ -1290,11 +1310,11 @@ namespace NScript.Converter.TypeSystemConverter
         }
 
         /// <summary>
-        /// Whether the '(' at <paramref name="parenIndex"/> opens an if/while/for/with header.
+        /// Whether a '(' whose last significant character before it is at
+        /// <paramref name="prev"/> opens an if/while/for/with header.
         /// </summary>
-        private static bool IsControlHeaderParen(string script, int parenIndex)
+        private static bool IsControlHeaderParen(string script, int prev)
         {
-            var prev = PreviousSignificantIndex(script, parenIndex);
             if (prev < 0 || !IsScriptIdentifierChar(script[prev]))
             {
                 return false;
@@ -1302,20 +1322,6 @@ namespace NScript.Converter.TypeSystemConverter
 
             var word = WordEndingAt(script, prev);
             return word == "if" || word == "while" || word == "for" || word == "with";
-        }
-
-        /// <summary>
-        /// Index of the last non-whitespace character before <paramref name="index"/>, or -1.
-        /// </summary>
-        private static int PreviousSignificantIndex(string script, int index)
-        {
-            var prev = index - 1;
-            while (prev >= 0 && char.IsWhiteSpace(script[prev]))
-            {
-                prev--;
-            }
-
-            return prev;
         }
 
         /// <summary>
@@ -1332,13 +1338,35 @@ namespace NScript.Converter.TypeSystemConverter
             return script.Substring(start, end - start + 1);
         }
 
+        /// <summary>
+        /// The lexer's IdentifierPart rule: a Unicode letter (Lu, Ll, Lt, Lm, Lo, Nl), digit (Nd)
+        /// or connector punctuation (Pc), '$' or '_'.
+        /// </summary>
         private static bool IsScriptIdentifierChar(char ch)
         {
-            return (ch >= '0' && ch <= '9')
-                || (ch >= 'a' && ch <= 'z')
-                || (ch >= 'A' && ch <= 'Z')
-                || ch == '_'
-                || ch == '$';
+            if (ch < 128)
+            {
+                return (ch >= '0' && ch <= '9')
+                    || (ch >= 'a' && ch <= 'z')
+                    || (ch >= 'A' && ch <= 'Z')
+                    || ch == '_'
+                    || ch == '$';
+            }
+
+            switch (char.GetUnicodeCategory(ch))
+            {
+                case System.Globalization.UnicodeCategory.UppercaseLetter:
+                case System.Globalization.UnicodeCategory.LowercaseLetter:
+                case System.Globalization.UnicodeCategory.TitlecaseLetter:
+                case System.Globalization.UnicodeCategory.ModifierLetter:
+                case System.Globalization.UnicodeCategory.OtherLetter:
+                case System.Globalization.UnicodeCategory.LetterNumber:
+                case System.Globalization.UnicodeCategory.DecimalDigitNumber:
+                case System.Globalization.UnicodeCategory.ConnectorPunctuation:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>
