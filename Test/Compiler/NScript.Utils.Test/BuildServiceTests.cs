@@ -2188,10 +2188,24 @@ namespace NScript.Utils.Test
         private static void WaitFor(Func<bool> condition, string message)
         {
             var clock = Stopwatch.StartNew();
-            while (!condition())
+            while (!ConditionHolds(condition))
             {
                 Assert.IsTrue(clock.Elapsed < HostLoadWait, message);
                 Thread.Sleep(20);
+            }
+        }
+
+        // A watched file read while the daemon's emit is still writing it throws a sharing
+        // violation; that means "not yet", so the wait keeps polling instead of failing.
+        private static bool ConditionHolds(Func<bool> condition)
+        {
+            try
+            {
+                return condition();
+            }
+            catch (IOException)
+            {
+                return false;
             }
         }
 
