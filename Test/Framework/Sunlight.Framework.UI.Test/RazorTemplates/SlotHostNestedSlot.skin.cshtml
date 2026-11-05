@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.SlotHostVM
+
+<div data-test="slot-nested">
+    <SlotPanel DataContext="@Model.Frame">
+        <p class="msg">@Model.Message</p>
+        <Slot Name="head"><h2 class="head">@Model.Message</h2><Slot Name="actions"><button class="confirm" onclick="@Model.Confirm">ok</button></Slot></Slot>
+    </SlotPanel>
+</div>

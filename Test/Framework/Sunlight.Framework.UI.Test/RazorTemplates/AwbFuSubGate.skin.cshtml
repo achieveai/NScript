@@ -1,0 +1,7 @@
+@model Sunlight.Framework.UI.Test.GateVm
+<div>
+@foreach (var i in Model.Items)
+{
+    <span data-test="sg-row">@if (i.Flag) { <RazorValueProbeControl data-test="sg-probe" Value="@i.Name" /> } else { <b data-test="sg-text">@i.Name</b> }</span>
+}
+</div>

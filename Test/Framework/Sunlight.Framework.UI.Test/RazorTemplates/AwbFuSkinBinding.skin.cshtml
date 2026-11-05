@@ -1,0 +1,7 @@
+@model Sunlight.Framework.UI.Test.SkinChoiceVm
+<div>
+    <SlotFrame Skin="@Model.FrameSkin" DataContext="@Model.Frame">
+        <p class="msg">@Model.Message</p>
+        <button class="confirm" onclick="@Model.Confirm">ok</button>
+    </SlotFrame>
+</div>

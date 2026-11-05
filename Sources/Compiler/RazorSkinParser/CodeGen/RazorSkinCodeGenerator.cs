@@ -226,17 +226,7 @@ namespace NScript.RazorSkin.CodeGen
                     var tag = sub1.TagName ?? "div";
                     sb.Append("<");
                     sb.Append(tag);
-                    if (sub1.DomAttributes != null)
-                    {
-                        foreach (var kvp in sub1.DomAttributes)
-                        {
-                            sb.Append(" ");
-                            sb.Append(kvp.Key);
-                            sb.Append("=\"");
-                            sb.Append(System.Net.WebUtility.HtmlEncode(kvp.Value));
-                            sb.Append("\"");
-                        }
-                    }
+                    AppendHostAttributes(sb, sub1);
                     sb.Append(SubControlHostEnd(sub1, tag, openContentHosts));
                 }
                 else if (node is SubControlEndNode)
@@ -339,17 +329,7 @@ namespace NScript.RazorSkin.CodeGen
                     var tag = sub2.TagName ?? "div";
                     sb.Append("<");
                     sb.Append(tag);
-                    if (sub2.DomAttributes != null)
-                    {
-                        foreach (var kvp in sub2.DomAttributes)
-                        {
-                            sb.Append(" ");
-                            sb.Append(kvp.Key);
-                            sb.Append("=\"");
-                            sb.Append(System.Net.WebUtility.HtmlEncode(kvp.Value));
-                            sb.Append("\"");
-                        }
-                    }
+                    AppendHostAttributes(sb, sub2);
                     sb.Append(SubControlHostEnd(sub2, tag, openContentHosts));
                 }
                 else if (node is SubControlEndNode)
@@ -364,6 +344,35 @@ namespace NScript.RazorSkin.CodeGen
 
             EnsureContentHostsClosed(openContentHosts);
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// The host's [DomAttribute] attributes (text, encoded here), then the static <c>id</c>,
+        /// <c>data-*</c> and <c>aria-*</c> written on the control tag (already markup: kept as written,
+        /// with any double quote encoded for the double-quoted value).
+        /// </summary>
+        private static void AppendHostAttributes(System.Text.StringBuilder sb, SubControlNode sub)
+        {
+            if (sub.DomAttributes != null)
+            {
+                foreach (var kvp in sub.DomAttributes)
+                {
+                    sb.Append(" ");
+                    sb.Append(kvp.Key);
+                    sb.Append("=\"");
+                    sb.Append(System.Net.WebUtility.HtmlEncode(kvp.Value));
+                    sb.Append("\"");
+                }
+            }
+
+            foreach (var kvp in sub.HostAttributes)
+            {
+                sb.Append(" ");
+                sb.Append(kvp.Key);
+                sb.Append("=\"");
+                sb.Append(kvp.Value.Replace("\"", "&quot;"));
+                sb.Append("\"");
+            }
         }
 
         /// <summary>

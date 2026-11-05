@@ -206,6 +206,8 @@ namespace NScript.RazorSkin.CodeGen
             // Resolve sub-control attributes (TagName, DomAttributes) via Cecil
             // Must happen before CollectHtmlWithPathsPublic which reads SubControlNode.TagName
             ResolveSubControlAttributes(_ir.Children, FindTypeDefinition(_ir.ModelTypeName));
+            if (_clrContext != null)
+                ValidateReservedSlotTag(_ir.Children, _clrContext.GetTypes());
 
             // Marker indices are assigned by the topology builder and used by the
             // HTML collector for stable sub-control host lookup.
@@ -1114,6 +1116,50 @@ namespace NScript.RazorSkin.CodeGen
             }
         }
 
+        /// <summary>
+        /// <c>&lt;Slot&gt;</c> always compiles to content-projection markers, so a control class
+        /// named Slot can never be used as a tag: fail at the first <c>&lt;Slot&gt;</c> instead of
+        /// silently projecting content where the author meant the control.
+        /// </summary>
+        internal static void ValidateReservedSlotTag(List<IRNode> nodes, IEnumerable<TypeDefinition> types)
+        {
+            var slotTag = FindSlotContentMarker(nodes);
+            if (slotTag == null) return;
+
+            var control = types.FirstOrDefault(type => type.Name == TemplateIRBuilder.SlotTagName
+                && InheritsUIElement(type));
+            if (control != null)
+                throw new RazorSubControlDiagnosticException(slotTag.Location,
+                    $"<{TemplateIRBuilder.SlotTagName}> is reserved for content projection (named caller content, "
+                    + $"see docs/templates/razor.md \"Content projection (slots)\"), so control {control.FullName} "
+                    + "cannot be used as a tag. Rename the control.");
+        }
+
+        private static IRNode FindSlotContentMarker(List<IRNode> nodes)
+        {
+            if (nodes == null) return null;
+            foreach (var node in nodes)
+            {
+                if (TemplateIRBuilder.IsSlotContentMarker(node)) return node;
+                var found = FindSlotContentMarker(node.Children);
+                if (found == null && node is ConditionalNode cond)
+                    found = FindSlotContentMarker(cond.TrueBranch) ?? FindSlotContentMarker(cond.FalseBranch);
+                if (found == null && node is LoopNode loop)
+                    found = FindSlotContentMarker(loop.ItemTemplate);
+                if (found != null) return found;
+            }
+
+            return null;
+        }
+
+        private static bool InheritsUIElement(TypeDefinition type)
+        {
+            for (TypeReference current = type; current != null && current.FullName != "System.Object";
+                current = current.Resolve()?.BaseType)
+                if (current.FullName == "Sunlight.Framework.UI.UIElement") return true;
+            return false;
+        }
+
         internal static void ValidateSubControlTagInfo(
             SubControlNode sub, TypeDefinition typeDef,
             Func<TypeDefinition, string, PropertyDefinition> findProperty,
@@ -1137,6 +1183,9 @@ namespace NScript.RazorSkin.CodeGen
             sub.ResolvedTypeName = typeDef.FullName;
             foreach (var binding in sub.PropertyBindings)
             {
+                // An attribute of the host element, set like any bound attribute: no C# property.
+                if (binding.IsHostAttribute) continue;
+
                 var property = findProperty(typeDef, binding.PropertyName);
                 if (property == null || property.SetMethod == null)
                     throw new RazorSubControlDiagnosticException(
@@ -1289,9 +1338,7 @@ namespace NScript.RazorSkin.CodeGen
 
         private static bool CanAssign(TypeReference source, TypeReference target)
         {
-            if ((source.FullName == target.FullName
-                && source.Scope?.Name == target.Scope?.Name)
-                || target.FullName == "System.Object")
+            if (IsSameType(source, target) || target.FullName == "System.Object")
                 return true;
             var widening = new Dictionary<string, string[]>
             {
@@ -1337,9 +1384,8 @@ namespace NScript.RazorSkin.CodeGen
         private static bool CanAssignReference(TypeReference source, TypeReference target,
             HashSet<string> visited)
         {
-            if (source.FullName == target.FullName
-                && source.Scope?.Name == target.Scope?.Name) return true;
-            if (!visited.Add(source.FullName + "|" + source.Scope?.Name)) return false;
+            if (IsSameType(source, target)) return true;
+            if (!visited.Add(source.FullName + "|" + AssemblyNameOf(source))) return false;
 
             if (source is GenericInstanceType sourceGeneric
                 && target is GenericInstanceType targetGeneric
@@ -1376,6 +1422,26 @@ namespace NScript.RazorSkin.CodeGen
             var baseType = sourceDefinition.BaseType;
             return baseType != null && CanAssignReference(
                 Specialize(baseType, source), target, visited);
+        }
+
+        /// <summary>
+        /// Same name in the same assembly. A type seen from its own assembly has the module as
+        /// its scope ("X.dll"); seen from another it has an assembly reference ("X").
+        /// </summary>
+        private static bool IsSameType(TypeReference source, TypeReference target)
+            => source.FullName == target.FullName && AssemblyNameOf(source) == AssemblyNameOf(target);
+
+        private static string AssemblyNameOf(TypeReference type)
+        {
+            switch (type.Scope)
+            {
+                case ModuleDefinition module:
+                    return module.Assembly?.Name.Name ?? module.Name;
+                case AssemblyNameReference assembly:
+                    return assembly.Name;
+                default:
+                    return type.Scope?.Name;
+            }
         }
 
         private static TypeReference Specialize(TypeReference inherited, TypeReference source)

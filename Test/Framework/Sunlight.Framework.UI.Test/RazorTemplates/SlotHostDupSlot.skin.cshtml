@@ -1,0 +1,9 @@
+@model Sunlight.Framework.UI.Test.SlotHostVM
+
+<div data-test="slot-dup">
+    <SlotPanel DataContext="@Model.Frame">
+        <p class="msg">@Model.Message</p>
+        <Slot Name="head"><h2 class="head">@Model.Message</h2></Slot>
+        <Slot Name="head"><h3 class="head2">again</h3></Slot>
+    </SlotPanel>
+</div>

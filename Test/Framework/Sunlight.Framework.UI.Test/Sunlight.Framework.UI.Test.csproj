@@ -126,6 +126,15 @@
     <EmbeddedResource Include="RazorTemplates\AwbR143Grid.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR144NullAttr.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR145Lists.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbR147NestedHandler.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuHostAttrs.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuSkinBinding.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuNestedModel.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuOuterItemHandler.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuLoopModelValue.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuNestedSubValue.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuSharedGate.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuSubGate.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\SlotFrame.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\SlotGatedFrame.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\SlotElseFrame.skin.cshtml" />
@@ -141,6 +150,18 @@
     <EmbeddedResource Include="RazorTemplates\AwbR3GateLoop.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3AddThrows.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3SourceWalk.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuMultiRootIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuRowsThrow.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHostDupSlot.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHostNestedSlot.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuChainThrow.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuDisposeThrow.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuRow2Root.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuRow3Root.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuRowLeadIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuRowCtl.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuRowNestIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuGateClose.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

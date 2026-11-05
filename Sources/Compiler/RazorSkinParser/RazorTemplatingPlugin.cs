@@ -1435,20 +1435,22 @@ namespace Sunlight.Framework.Observables
         private void CollectEventMethodReferences(
             IRNode node, string modelTypeName, string controlTypeName,
             List<MethodReference> methods, HashSet<string> seen,
-            string itemTypeName = null, string itemVariableName = null)
+            string itemTypeName = null, string itemVariableName = null,
+            IReadOnlyList<(string Variable, string TypeName)> enclosingLoops = null)
         {
             if (node is TemplateIR.EventNode evt && !string.IsNullOrEmpty(evt.HandlerExpression))
                 AddEventMethodReference(evt.HandlerExpression, modelTypeName, controlTypeName,
-                    itemTypeName, itemVariableName, methods, seen);
+                    itemTypeName, itemVariableName, methods, seen, enclosingLoops);
 
             if (node is TemplateIR.SubControlNode subControl)
             {
                 foreach (var subEvent in subControl.EventBindings)
                     AddEventMethodReference(subEvent.HandlerExpression, modelTypeName, controlTypeName,
-                        itemTypeName, itemVariableName, methods, seen);
+                        itemTypeName, itemVariableName, methods, seen, enclosingLoops);
                 foreach (var binding in subControl.PropertyBindings)
                     AddEventMethodReference(binding.Classification.CSharpExpression,
-                        modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+                        modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen,
+                        enclosingLoops);
             }
 
             // Gate branches are not in Children; walk them with the same item context so
@@ -1458,10 +1460,10 @@ namespace Sunlight.Framework.Observables
             {
                 foreach (var child in conditional.TrueBranch)
                     CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
-                        itemTypeName, itemVariableName);
+                        itemTypeName, itemVariableName, enclosingLoops);
                 foreach (var child in conditional.FalseBranch)
                     CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
-                        itemTypeName, itemVariableName);
+                        itemTypeName, itemVariableName, enclosingLoops);
             }
 
             // For loops, also scan item template with the item type for item-level methods
@@ -1471,31 +1473,50 @@ namespace Sunlight.Framework.Observables
                 var loopItemTypeName = TryResolveItemTypeName(
                     modelTypeName, controlTypeName, itemTypeName, itemVariableName, loop);
 
+                // An inner loop can name this loop's variable (outer.M), so it is passed down.
+                var innerEnclosing = string.IsNullOrEmpty(itemVariableName)
+                    ? enclosingLoops
+                    : (enclosingLoops ?? Array.Empty<(string, string)>())
+                        .Append((itemVariableName, itemTypeName)).ToList();
                 foreach (var child in loop.ItemTemplate)
                     CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
-                        loopItemTypeName, loop.ItemVariableName);
+                        loopItemTypeName, loop.ItemVariableName, innerEnclosing);
             }
 
             if (node.Children != null)
             {
                 foreach (var child in node.Children)
                     CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
-                        itemTypeName, itemVariableName);
+                        itemTypeName, itemVariableName, enclosingLoops);
             }
         }
 
         private void AddEventMethodReference(string handler, string modelTypeName,
             string controlTypeName, string itemTypeName, string itemVariableName,
-            List<MethodReference> methods, HashSet<string> seen)
+            List<MethodReference> methods, HashSet<string> seen,
+            IReadOnlyList<(string Variable, string TypeName)> enclosingLoops = null)
         {
             if (string.IsNullOrEmpty(handler)) return;
             var itemPrefix = itemVariableName + ".";
             var isItemMethod = !string.IsNullOrEmpty(itemVariableName)
                 && handler.StartsWith(itemPrefix, StringComparison.Ordinal);
+            // outer.M from an inner loop: M lives on the enclosing loop's item type
+            string outerPrefix = null, outerTypeName = null;
+            for (int i = (enclosingLoops?.Count ?? 0) - 1; !isItemMethod && outerPrefix == null && i >= 0; i--)
+            {
+                if (handler.StartsWith(enclosingLoops[i].Variable + ".", StringComparison.Ordinal))
+                {
+                    outerPrefix = enclosingLoops[i].Variable + ".";
+                    outerTypeName = enclosingLoops[i].TypeName;
+                }
+            }
             var typeName = isItemMethod ? itemTypeName
+                : outerPrefix != null ? outerTypeName
                 : handler.StartsWith("Control.", StringComparison.Ordinal)
                     ? controlTypeName : modelTypeName;
-            var expression = isItemMethod ? handler.Substring(itemPrefix.Length) : handler;
+            var expression = isItemMethod ? handler.Substring(itemPrefix.Length)
+                : outerPrefix != null ? handler.Substring(outerPrefix.Length)
+                : handler;
             var method = TryFindEventMethodDefinition(expression, typeName);
             if (method != null && seen.Add(method.FullName)) methods.Add(method);
         }

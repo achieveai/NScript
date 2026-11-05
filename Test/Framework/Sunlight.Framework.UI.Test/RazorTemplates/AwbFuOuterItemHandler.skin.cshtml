@@ -1,0 +1,12 @@
+@model Sunlight.Framework.UI.Test.NestVm
+<div>
+@foreach (var item in Model.Groups)
+{
+    <div data-test="o-group">
+        @foreach (var tab in item.Tabs)
+        {
+            <span data-test="o-row"><button data-test="o-outer" onclick="@item.Pick">@tab.Name</button></span>
+        }
+    </div>
+}
+</div>

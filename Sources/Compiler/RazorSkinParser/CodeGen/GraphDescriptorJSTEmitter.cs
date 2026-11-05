@@ -29,8 +29,20 @@ namespace NScript.RazorSkin.CodeGen
         private readonly RazorKnownTypes _knownTypes;
         private readonly ClrContext _clrContext;
         private readonly string _modelTypeName;
-        private readonly string _parentModelTypeName;
         private readonly string _controlTypeName;
+
+        /// <summary>
+        /// The template's model type: what <c>Model</c> means at any loop depth. (The
+        /// <c>parentModelTypeName</c> argument is the enclosing graph's model type, which in a
+        /// nested item graph is the outer loop's item type.)
+        /// </summary>
+        private readonly string _rootModelTypeName;
+
+        /// <summary>
+        /// For an item graph, the @foreach loops around its own loop, outermost first: loop
+        /// variable and item type. Empty for a root graph and for a loop at the top level.
+        /// </summary>
+        private readonly IReadOnlyList<(string Variable, string TypeName)> _enclosingLoops;
 
         // Numbers the temps behind null-safe mid-path reads (h0, h1, ...) so each is unique within
         // this emitter's getters.
@@ -147,7 +159,9 @@ namespace NScript.RazorSkin.CodeGen
             IEnumerable<string> usingNamespaces = null,
             Location fallbackLocation = null,
             string controlTypeName = null,
-            List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> inlinedGetters = null)
+            List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> inlinedGetters = null,
+            string rootModelTypeName = null,
+            IReadOnlyList<(string Variable, string TypeName)> enclosingLoops = null)
         {
             _topology = topology;
             _inlinedGetters = inlinedGetters;
@@ -156,8 +170,10 @@ namespace NScript.RazorSkin.CodeGen
             _knownTypes = knownTypes;
             _clrContext = clrContext;
             _modelTypeName = modelTypeName;
-            _parentModelTypeName = parentModelTypeName;
             _controlTypeName = controlTypeName;
+            _rootModelTypeName = rootModelTypeName
+                ?? (string.IsNullOrEmpty(topology.ItemVariablePrefix) ? modelTypeName : parentModelTypeName);
+            _enclosingLoops = enclosingLoops ?? Array.Empty<(string, string)>();
             _resolvedTypeIdentifiers = resolvedTypeIdentifiers;
             _usingNamespaces = usingNamespaces ?? Enumerable.Empty<string>();
             _typeHelper = new CecilTypeHelper(clrContext);
@@ -634,14 +650,14 @@ namespace NScript.RazorSkin.CodeGen
 
         /// <summary>
         /// Maps a binding root name to its receiver expression and declared type name: <c>Model</c>
-        /// (the parent model inside an item graph), <c>Control</c>, or the loop variable. Returns
-        /// (null, null) for anything else, which the caller treats as a static member.
+        /// (the template's model, however deep the loop), <c>Control</c>, or the loop variable.
+        /// Returns (null, null) for anything else, which the caller treats as a static member.
         /// </summary>
         private (Expression receiver, string typeName) ResolveRoot(string root, IdentifierScope scope)
         {
             var typeName = ResolveRootTypeName(root);
             if (root == "Model")
-                return (CreateTupleAccessExpression(scope.ParameterIdentifiers[0], scope, 0), typeName);
+                return (CreateModelAccess(scope.ParameterIdentifiers[0], scope), typeName);
             if (root == "Control")
                 return (new IdentifierExpression(scope.ParameterIdentifiers[1], scope), typeName);
             if (typeName != null)
@@ -651,12 +667,12 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Declared type name of a binding root: <c>Model</c> (the parent model inside an item
-        /// graph), <c>Control</c>, or the loop variable (the item type). Null for anything else.
+        /// Declared type name of a binding root: <c>Model</c> (the template's model), <c>Control</c>,
+        /// or the loop variable (the item type). Null for anything else.
         /// </summary>
         private string ResolveRootTypeName(string root)
         {
-            if (root == "Model") return IsItemGraph ? _parentModelTypeName : _modelTypeName;
+            if (root == "Model") return ModelTypeName;
             if (root == "Control") return _controlTypeName;
 
             var itemVariable = IsItemGraph ? _topology.ItemVariablePrefix.TrimEnd('.') : null;
@@ -849,7 +865,7 @@ namespace NScript.RazorSkin.CodeGen
 
             // Find the model type
             var typeName = isControl ? _controlTypeName
-                : isParentModel ? _parentModelTypeName
+                : isParentModel ? ModelTypeName
                 : _modelTypeName;
             var typeDefinition = FindTypeDefinition(typeName);
             if (typeDefinition == null)
@@ -871,11 +887,11 @@ namespace NScript.RazorSkin.CodeGen
             var getterScope = new IdentifierScope(_scope, new[] { "dc", "tp" }, false);
             var paramIdentifier = getterScope.ParameterIdentifiers[0];
 
-            // For item graphs, access the item element of the tuple: dc[2]
+            // For item graphs, access the item element of the tuple (dc[2]) or the model
             var dcAccess = isControl
                 ? (Expression)new IdentifierExpression(getterScope.ParameterIdentifiers[1], getterScope)
-                : CreateTupleAccessExpression(paramIdentifier, getterScope,
-                    isParentModel ? 0 : 2);
+                : isParentModel ? CreateModelAccess(paramIdentifier, getterScope)
+                : CreateTupleAccessExpression(paramIdentifier, getterScope, 2);
             var currentExpr = BuildPropertyRead(dcAccess, typeDefinition, property, getterScope);
 
             // Apply negation for gate conditions like "!IsCollapsed"
@@ -993,6 +1009,70 @@ namespace NScript.RazorSkin.CodeGen
 
             var fieldName = (instructions[2].Operand as FieldReference)?.Name;
             return type.Fields.FirstOrDefault(field => field.Name == fieldName);
+        }
+
+        private string ItemVariable => IsItemGraph ? _topology.ItemVariablePrefix.TrimEnd('.') : null;
+
+        /// <summary>
+        /// <c>dc</c> followed by <paramref name="hops"/> <c>[0]</c> steps: each step goes from an
+        /// item graph's tuple <c>[parentDC, control, item]</c> to its parent's DataContext.
+        /// </summary>
+        private static Expression CreateParentHops(IIdentifier dcParam, IdentifierScope scope, int hops)
+        {
+            Expression dcExpr = new IdentifierExpression(dcParam, scope);
+            for (int i = 0; i < hops; i++)
+                dcExpr = new IndexExpression(null, scope, dcExpr, new NumberLiteralExpression(scope, 0));
+            return dcExpr;
+        }
+
+        /// <summary>
+        /// The template's model from this graph's DataContext: <c>dc</c> in the root graph,
+        /// <c>dc[0]</c> in a loop, <c>dc[0][0]</c> in a loop inside a loop, and so on.
+        /// </summary>
+        private Expression CreateModelAccess(IIdentifier dcParam, IdentifierScope scope)
+            => CreateParentHops(dcParam, scope, IsItemGraph ? _enclosingLoops.Count + 1 : 0);
+
+        /// <summary>Declared type of <c>Model</c>: the template's model in every graph.</summary>
+        private string ModelTypeName => IsItemGraph ? _rootModelTypeName : _modelTypeName;
+
+        /// <summary>
+        /// The object behind a two-way source slot: <c>dc</c> in the root graph; in an item graph
+        /// the tuple entry, except slot 0 (Model), which is the template's model.
+        /// </summary>
+        private Expression CreateSourceSlotAccess(IIdentifier dcParam, IdentifierScope scope, int sourceSlot)
+        {
+            if (IsItemGraph && sourceSlot == 0)
+                return CreateModelAccess(dcParam, scope);
+            Expression source = new IdentifierExpression(dcParam, scope);
+            return IsItemGraph
+                ? new IndexExpression(null, scope, source, new NumberLiteralExpression(scope, sourceSlot))
+                : source;
+        }
+
+        /// <summary>
+        /// The item of the in-scope @foreach variable <paramref name="variable"/>: this loop's
+        /// item is <c>dc[2]</c>; an enclosing loop's item is <c>[2]</c> of that loop's tuple,
+        /// one <c>[0]</c> hop per loop in between. False when no loop declares it.
+        /// </summary>
+        private bool TryCreateLoopItemAccess(string variable, IIdentifier dcParam, IdentifierScope scope,
+            out Expression access)
+        {
+            access = null;
+            int hops;
+            if (IsItemGraph && variable == ItemVariable)
+                hops = 0;
+            else
+            {
+                int index = -1;
+                for (int i = _enclosingLoops.Count - 1; i >= 0 && index < 0; i--)
+                    if (_enclosingLoops[i].Variable == variable) index = i;
+                if (index < 0) return false;
+                hops = _enclosingLoops.Count - index;
+            }
+
+            access = new IndexExpression(null, scope, CreateParentHops(dcParam, scope, hops),
+                new NumberLiteralExpression(scope, 2));
+            return true;
         }
 
         /// <summary>
@@ -1221,8 +1301,7 @@ namespace NScript.RazorSkin.CodeGen
                     else
                     {
                         // Emit: function(e, v) { if (v != null) e.setAttribute("attrName", v); else e.removeAttribute("attrName"); }
-                        setterExpr = CreateRawSetterFunction(
-                            $"if (v != null) e.setAttribute(\"{attrName}\", v); else e.removeAttribute(\"{attrName}\")");
+                        setterExpr = CreateRawSetterFunction(PlainAttributeSetterBody(dt.AttributeName));
                     }
                     break;
                 }
@@ -1284,7 +1363,7 @@ namespace NScript.RazorSkin.CodeGen
                 return null;
 
             var sourceTypeName = IsItemGraph && dt.TwoWaySourceSlot == 0
-                ? _parentModelTypeName : _modelTypeName;
+                ? ModelTypeName : _modelTypeName;
             var sourceType = FindTypeDefinition(sourceTypeName);
             var property = sourceType != null ? FindProperty(sourceType, dt.TwoWaySourceProperty) : null;
             if (property?.SetMethod == null || !property.SetMethod.IsPublic
@@ -1315,13 +1394,32 @@ namespace NScript.RazorSkin.CodeGen
             bool isModelMethodRef = handlerExpression.StartsWith("Model.");
             bool isControlMethodRef = handlerExpression.StartsWith("Control.");
 
-            // Strip Model. or item variable prefix (e.g., "folder.", "todo.")
+            // outer.M, where outer is an enclosing @foreach variable (not this loop's own)
+            string outerLoopVariable = null, outerLoopTypeName = null;
+            var rootDot = handlerExpression.IndexOf('.');
+            if (!isModelMethodRef && !isControlMethodRef && rootDot > 0)
+            {
+                var root = handlerExpression.Substring(0, rootDot);
+                for (int i = _enclosingLoops.Count - 1; i >= 0 && outerLoopVariable == null; i--)
+                {
+                    if (_enclosingLoops[i].Variable == root && root != ItemVariable)
+                    {
+                        outerLoopVariable = root;
+                        outerLoopTypeName = _enclosingLoops[i].TypeName;
+                    }
+                }
+            }
+
+            // Strip Model., Control., an outer loop variable or the item variable prefix
             var expr = handlerExpression;
             if (expr.StartsWith("Model."))
                 expr = expr.Substring(6);
             else if (expr.StartsWith("Control."))
                 expr = expr.Substring(8);
-            if (!string.IsNullOrEmpty(_topology?.ItemVariablePrefix)
+            else if (outerLoopVariable != null)
+                expr = expr.Substring(rootDot + 1);
+            if (outerLoopVariable == null
+                && !string.IsNullOrEmpty(_topology?.ItemVariablePrefix)
                 && expr.StartsWith(_topology.ItemVariablePrefix))
                 expr = expr.Substring(_topology.ItemVariablePrefix.Length);
 
@@ -1331,10 +1429,11 @@ namespace NScript.RazorSkin.CodeGen
                 if (isControlMethodRef)
                     RequirePublicControlHandler(FindTypeDefinition(_controlTypeName), expr,
                         eventLocation);
-                // Resolve method — for Model methods in item graphs, look up on parent type
+                // Resolve method — for Model methods in item graphs, look up on the template's model
                 var resolveTypeName = isControlMethodRef ? _controlTypeName
-                    : (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
-                        ? _parentModelTypeName : null;
+                    : outerLoopVariable != null ? outerLoopTypeName
+                    : (isModelMethodRef && IsItemGraph && !string.IsNullOrEmpty(_rootModelTypeName))
+                        ? _rootModelTypeName : null;
                 var methodId = TryResolveMethodIdentifier(expr, out bool isDevirtualized, resolveTypeName);
                 if (methodId != null)
                 {
@@ -1342,10 +1441,14 @@ namespace NScript.RazorSkin.CodeGen
                     var dcParam = outerScope.ParameterIdentifiers[0];
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    int tupleIdx = isModelMethodRef ? 0 : 2;
-                    var dcRef = isControlMethodRef
-                        ? (Expression)new IdentifierExpression(outerScope.ParameterIdentifiers[1], innerScope)
-                        : CreateTupleAccessExpression(dcParam, innerScope, tupleIdx);
+                    Expression dcRef;
+                    if (isControlMethodRef)
+                        dcRef = new IdentifierExpression(outerScope.ParameterIdentifiers[1], innerScope);
+                    else if (isModelMethodRef)
+                        dcRef = CreateModelAccess(dcParam, innerScope);
+                    else if (outerLoopVariable == null
+                        || !TryCreateLoopItemAccess(outerLoopVariable, dcParam, innerScope, out dcRef))
+                        dcRef = CreateTupleAccessExpression(dcParam, innerScope, 2);
                     var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
                     var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
 
@@ -1396,9 +1499,9 @@ namespace NScript.RazorSkin.CodeGen
             var lambdaMethodName = TryExtractLambdaMethodName(handlerExpression);
             if (lambdaMethodName != null)
             {
-                // For lambdas in item graphs, resolve on parent type (lambdas reference Model methods)
-                var resolveTypeName = (IsItemGraph && !string.IsNullOrEmpty(_parentModelTypeName))
-                    ? _parentModelTypeName : null;
+                // For lambdas in item graphs, resolve on the template's model (lambdas reference Model methods)
+                var resolveTypeName = (IsItemGraph && !string.IsNullOrEmpty(_rootModelTypeName))
+                    ? _rootModelTypeName : null;
                 var lambdaMethodId = TryResolveMethodIdentifier(lambdaMethodName, out bool lambdaIsDevirt, resolveTypeName);
                 if (lambdaMethodId != null)
                 {
@@ -1406,8 +1509,8 @@ namespace NScript.RazorSkin.CodeGen
                     var dcParam = outerScope.ParameterIdentifiers[0];
                     var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
 
-                    // Lambdas reference Model methods → tuple index 0 for item graphs
-                    var dcRef = CreateTupleAccessExpression(dcParam, innerScope, 0);
+                    // Lambdas reference Model methods
+                    var dcRef = CreateModelAccess(dcParam, innerScope);
 
                     MethodCallExpression methodCall;
                     if (lambdaIsDevirt)
@@ -1435,7 +1538,7 @@ namespace NScript.RazorSkin.CodeGen
 
             throw new RazorSubControlDiagnosticException(eventLocation,
                 "Cannot resolve event handler '" + handlerExpression + "': supported forms are "
-                + "Model.M / Control.M / item.M, Model.M(item) inside @foreach, and "
+                + "Model.M / Control.M / x.M and Model.M(x) where x is any enclosing @foreach variable, and "
                 + "(e) => Model.M().");
         }
 
@@ -1567,8 +1670,8 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Expression TryEmitParentMethodInvocation(string handlerExpression)
         {
-            // Only applies inside foreach item templates with known parent type
-            if (!IsItemGraph || string.IsNullOrEmpty(_parentModelTypeName) || _clrContext == null)
+            // Only applies inside foreach item templates with a known model type
+            if (!IsItemGraph || string.IsNullOrEmpty(_rootModelTypeName) || _clrContext == null)
                 return null;
 
             // Parse "Model.MethodName(argName)" pattern
@@ -1585,13 +1688,12 @@ namespace NScript.RazorSkin.CodeGen
             var methodName = expr.Substring(0, parenOpen);
             var argName = expr.Substring(parenOpen + 1, parenClose - parenOpen - 1).Trim();
 
-            // Verify the argument matches the loop variable
-            var itemVarName = _topology.ItemVariablePrefix.TrimEnd('.');
-            if (argName != itemVarName)
+            // The argument must be this loop's variable or an enclosing loop's.
+            if (argName != ItemVariable && !_enclosingLoops.Any(loop => loop.Variable == argName))
                 return null;
 
-            // Look up the method on the parent type
-            var parentTypeDef = FindTypeDefinition(_parentModelTypeName);
+            // Look up the method on the template's model
+            var parentTypeDef = FindTypeDefinition(_rootModelTypeName);
             if (parentTypeDef == null)
                 return null;
 
@@ -1616,12 +1718,12 @@ namespace NScript.RazorSkin.CodeGen
 
             // Build: function(dc) { return function(e, ev) { method(dc[0], dc[2], e, ev); }; }  (devirtualized)
             //   or:  function(dc) { return function(e, ev) { dc[0].method(dc[2], e, ev); }; }  (virtual)
+            // In a nested loop the model and an outer item sit further up: dc[0][0], dc[0][2].
             var outerScope = new IdentifierScope(_scope, new[] { "dc" }, false);
             var dcParam = outerScope.ParameterIdentifiers[0];
             var innerScope = new IdentifierScope(outerScope, new[] { "e", "ev" }, false);
-
-            var parentAccess = CreateTupleAccessExpression(dcParam, innerScope, 0);
-            var itemAccess = CreateTupleAccessExpression(dcParam, innerScope, 2);
+            var parentAccess = CreateModelAccess(dcParam, innerScope);
+            TryCreateLoopItemAccess(argName, dcParam, innerScope, out var itemAccess);
             var eParam = new IdentifierExpression(innerScope.ParameterIdentifiers[0], innerScope);
             var evParam = new IdentifierExpression(innerScope.ParameterIdentifiers[1], innerScope);
 
@@ -1666,6 +1768,15 @@ namespace NScript.RazorSkin.CodeGen
 
         internal static bool IsBooleanAttribute(string attributeName)
             => attributeName != null && BooleanAttributes.Contains(attributeName);
+
+        /// <summary>
+        /// Body of a plain attribute setter over (e, v): null removes the attribute (#144).
+        /// </summary>
+        private static string PlainAttributeSetterBody(string attributeName)
+        {
+            var name = EscapeJsString(attributeName ?? "");
+            return $"if (v != null) e.setAttribute(\"{name}\", v); else e.removeAttribute(\"{name}\")";
+        }
 
         /// <summary>
         /// Creates a raw setter function: function(e, v) { body }
@@ -1783,7 +1894,11 @@ namespace NScript.RazorSkin.CodeGen
                     usingNamespaces: _usingNamespaces,
                     fallbackLocation: ct.IrNode?.Location ?? _fallbackLocation,
                     controlTypeName: _controlTypeName,
-                    inlinedGetters: _inlinedGetters);
+                    inlinedGetters: _inlinedGetters,
+                    rootModelTypeName: _rootModelTypeName,
+                    enclosingLoops: IsItemGraph
+                        ? _enclosingLoops.Append((ItemVariable, _modelTypeName)).ToList()
+                        : null);
                 itemGraphExpr = nestedEmitter.Emit();
             }
 
@@ -1924,17 +2039,18 @@ namespace NScript.RazorSkin.CodeGen
                     };
 
                     // Emit PathSegments array for chained property paths
-                    if (sub.PathSegments != null && sub.PathSegments.Length > 1)
+                    var chainPath = ChainedPath(sub);
+                    if (chainPath != null)
                     {
                         var pathArray = new List<Expression>();
-                        foreach (var segment in sub.PathSegments)
+                        foreach (var segment in chainPath)
                         {
                             pathArray.Add(new StringLiteralExpression(_scope, segment));
                         }
                         fields.Add((_subscriptionPathSegmentsField, "PathSegments",
                             new InlineNewArrayInitialization(null, _scope, pathArray)));
                         fields.Add((_subscriptionChainParentGettersField, "ChainParentGetters",
-                            new InlineNewArrayInitialization(null, _scope, BuildChainParentGetters(sub))));
+                            new InlineNewArrayInitialization(null, _scope, BuildChainParentGetters(sub, chainPath))));
                     }
 
                     items.Add(EmitTypedObject(_subscriptionEntryFactory, fields));
@@ -1951,17 +2067,18 @@ namespace NScript.RazorSkin.CodeGen
                         new NumberLiteralExpression(_scope, sub.SourceSlot));
 
                     // Emit PathSegments array for chained property paths
-                    if (sub.PathSegments != null && sub.PathSegments.Length > 1)
+                    var chainPath = ChainedPath(sub);
+                    if (chainPath != null)
                     {
                         var pathArray = new List<Expression>();
-                        foreach (var segment in sub.PathSegments)
+                        foreach (var segment in chainPath)
                         {
                             pathArray.Add(new StringLiteralExpression(_scope, segment));
                         }
                         AddField(subObj, _subscriptionPathSegmentsField, "PathSegments",
                             new InlineNewArrayInitialization(null, _scope, pathArray));
                         AddField(subObj, _subscriptionChainParentGettersField, "ChainParentGetters",
-                            new InlineNewArrayInitialization(null, _scope, BuildChainParentGetters(sub)));
+                            new InlineNewArrayInitialization(null, _scope, BuildChainParentGetters(sub, chainPath)));
                     }
 
                     items.Add(subObj);
@@ -1978,18 +2095,35 @@ namespace NScript.RazorSkin.CodeGen
         /// <c>(dc, tp) =&gt; value</c> function resolved exactly like a node getter, so the runtime
         /// can subscribe to the leaf object and re-target listeners when a mid-path object changes.
         /// </summary>
-        private List<Expression> BuildChainParentGetters(SubscriptionInfo sub)
+        private List<Expression> BuildChainParentGetters(SubscriptionInfo sub, string[] path)
         {
             var getters = new List<Expression>();
             string root = ChainRootToken(sub.SourceSlot);
-            for (int k = 0; k < sub.PathSegments.Length; k++)
+            for (int k = 0; k < path.Length; k++)
             {
                 string ownerExpression = root;
                 for (int j = 0; j < k; j++)
-                    ownerExpression += "." + sub.PathSegments[j];
+                    ownerExpression += "." + path[j];
                 getters.Add(BuildBindingExpressionGetter(ownerExpression, GetterLocation(sub.NodeIdx)));
             }
             return getters;
+        }
+
+        /// <summary>
+        /// The path a subscription listens along through owner getters, or null for a plain
+        /// entry the runtime resolves from its source slot. A chained path is its own path. A
+        /// one-segment <c>Model.X</c> in a loop inside a loop is a one-segment chain too: its row
+        /// tuple's slot 0 is the outer row's tuple, not the model, so the model must come from
+        /// an owner getter (<c>dc[0][0]</c>...). The runtime treats an entry that carries owner
+        /// getters as chained.
+        /// </summary>
+        private string[] ChainedPath(SubscriptionInfo sub)
+        {
+            if (sub.PathSegments != null && sub.PathSegments.Length > 1)
+                return sub.PathSegments;
+            if (IsItemGraph && sub.SourceSlot == 0 && _enclosingLoops.Count > 0)
+                return new[] { sub.PropertyName };
+            return null;
         }
 
         /// <summary>
@@ -2060,9 +2194,11 @@ namespace NScript.RazorSkin.CodeGen
                 foreach (var propBinding in sc.PropertyBindings.OrderBy(p =>
                     p.TargetPropertyName == "Skin" ? 0 : p.TargetPropertyName == "DataContext" ? 1 : 2))
                 {
-                    var setter = BuildSubControlPropertySetter(
-                        sc.ResolvedTypeName ?? sc.ControlTypeName,
-                        propBinding.TargetPropertyName);
+                    var setter = propBinding.IsHostAttribute
+                        ? BuildHostAttributeSetter(propBinding.TargetPropertyName)
+                        : BuildSubControlPropertySetter(
+                            sc.ResolvedTypeName ?? sc.ControlTypeName,
+                            propBinding.TargetPropertyName);
                     var targetGetter = !string.IsNullOrEmpty(propBinding.TwoWaySourceProperty)
                         ? BuildSubControlTargetGetter(typeDef, propBinding.TargetPropertyName)
                         : null;
@@ -2140,6 +2276,31 @@ namespace NScript.RazorSkin.CodeGen
             }
 
             return new InlineNewArrayInitialization(null, _scope, items);
+        }
+
+        /// <summary>
+        /// A bound <c>id</c>, <c>data-*</c> or <c>aria-*</c> on a control tag: writes the attribute
+        /// on the control's host element like any bound attribute (null removes it).
+        /// Emits: function(ctrl, val) { return function(e, v) { ... }(ctrl.element, val); }
+        /// </summary>
+        private Expression BuildHostAttributeSetter(string attributeName)
+        {
+            var uiElement = FindTypeDefinition("Sunlight.Framework.UI.UIElement");
+            var elementProperty = uiElement != null ? FindProperty(uiElement, "Element") : null;
+            if (elementProperty?.GetMethod == null)
+                throw new InvalidOperationException(
+                    "Cannot bind host attribute '" + attributeName + "': UIElement.Element was not found.");
+
+            var scope = new IdentifierScope(_scope, new[] { "ctrl", "val" }, false);
+            var host = BuildPropertyRead(new IdentifierExpression(scope.ParameterIdentifiers[0], scope),
+                uiElement, elementProperty, scope);
+            var write = new MethodCallExpression(null, scope,
+                CreateRawSetterFunction(PlainAttributeSetterBody(attributeName)),
+                host, new IdentifierExpression(scope.ParameterIdentifiers[1], scope));
+
+            var fn = new FunctionExpression(_fallbackLocation, _scope, scope, scope.ParameterIdentifiers, null);
+            fn.AddStatement(new ReturnStatement(_fallbackLocation, scope, write));
+            return fn;
         }
 
         /// <summary>
@@ -2237,7 +2398,7 @@ namespace NScript.RazorSkin.CodeGen
         private Expression BuildSubControlSourceSetter(string propertyName, int sourceSlot)
         {
             var sourceTypeName = IsItemGraph && sourceSlot == 0
-                ? _parentModelTypeName : _modelTypeName;
+                ? ModelTypeName : _modelTypeName;
             var sourceType = FindTypeDefinition(sourceTypeName);
             var property = sourceType != null ? FindProperty(sourceType, propertyName) : null;
             if (property?.SetMethod == null)
@@ -2245,10 +2406,7 @@ namespace NScript.RazorSkin.CodeGen
                     $"Two-way source {sourceTypeName}.{propertyName} has no setter.");
 
             var scope = new IdentifierScope(_scope, new[] { "dc", "val" }, false);
-            Expression source = new IdentifierExpression(scope.ParameterIdentifiers[0], scope);
-            if (IsItemGraph)
-                source = new IndexExpression(null, scope, source,
-                    new NumberLiteralExpression(scope, sourceSlot));
+            var source = CreateSourceSlotAccess(scope.ParameterIdentifiers[0], scope, sourceSlot);
             var fn = new FunctionExpression(_fallbackLocation, _scope, scope,
                 scope.ParameterIdentifiers, null);
             var field = TryFindTrivialSetterFieldOnType(property.DeclaringType.Resolve(), property);

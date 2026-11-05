@@ -55,8 +55,8 @@ The compiler emits a single graph that:
 |---|---|
 | `@model FullyQualifiedTypeName` | Required at top of file. Specifies the data context type. |
 | `@styles "Resource.Name.css"` | Declares a CSS dependency. The CSS file is parsed by `CssParser` and class names are matched strictly against `class="..."` attributes; mismatches surface as compile diagnostics ([ADR 0016](../adr/0016-standardize-xwml-as-the-canonical-template-language-with-strict-css-and-binding-diagnostics.md)). |
-| `@Model.X` | Substitutes the value of `Model.X`. |
-| `@Model.Method(arg)` | Invokes a method (typically as an event handler). |
+| `@Model.X` | Substitutes the value of `Model.X`. Inside a `@foreach`, at any depth, `Model` is still the template's model, and the binding follows its changes. |
+| `@Model.Method(arg)` | Invokes a method (typically as an event handler). As a handler, `arg` may be any enclosing `@foreach` variable, also an outer loop's from an inner loop. `onclick="@row.M"` works with any enclosing loop variable too: from an inner loop it calls `M` on the outer row's item. |
 | `@(expression)` | Parenthesised expression — required when the expression contains spaces, ternaries, or any token that would confuse the implicit boundary. |
 | `@if (cond) { ... }` | Conditional fragment. Auto-classified OneWay when `cond` references observable properties. |
 | `@foreach (var x in Model.List) { ... }` | Repeats a fragment for each item. When `Model.List` is `IObservableCollection`, additions/removals reactively update the rendered list. |
@@ -73,6 +73,8 @@ The compiler emits a single graph that:
 ### Two-way `value=` (DOM → model)
 
 `value="@Model.X"` or `value="@item.X"` on `<input>`, `<textarea>` or `<select>` writes back to `X`:
+
+- **Inside `@foreach`:** `value="@Model.X"` writes to the template's model at any loop depth. Every row follows the new value.
 
 - **Events:** the element's DOM `input` and `change` events. Each reads `element.value` and calls the setter.
 - **No echo:** the setter is skipped when the value already equals the bound value. The model → DOM side skips `element.value = v` when the element already shows `v`, so the caret does not jump while typing.
@@ -186,6 +188,11 @@ This element has its own `onchange`, so `value=` is one-way. `OnTitleChange` rea
 
 The current iteration variable `todo` becomes the `Model` of the child `TodoItemControl`.
 
+On a control tag:
+
+- **`id`, `data-*` and `aria-*` are attributes of the control's host element**, never C# properties. Static values are written as is; bound ones (`aria-label="@Model.Label"`) update like any bound attribute, and `null` removes the attribute. A static `id` also names the control as a skin part.
+- **`Skin="@Model.FrameSkin"` may be bound (one-way).** A new value re-skins the control; caller content inside its tag moves to the new skin's outlet and stays live. `null` removes the skin.
+
 ### Content projection (slots)
 
 A control can wrap markup its caller writes. The caller puts content inside the control's tag; the control's skin says where it goes.
@@ -213,7 +220,7 @@ Caller skin:
 
 - **The content belongs to the caller.** `@Model` inside it is the caller's model. Its bindings, events and child controls stay live while it is shown.
 - **`@RenderBody()`** takes everything outside a `<Slot>`. **`@RenderSlot("name")`** takes the content of `<Slot Name="name">`.
-- **`<Slot>` is reserved.** It is not a control. It needs a literal `Name` and must sit directly inside the control's tag.
+- **`<Slot>` is reserved.** It is not a control. It needs a literal `Name` and must sit directly inside the control's tag. A control class named `Slot` cannot be used as a tag: a skin with `<Slot>` fails to build while one is visible; rename the control.
 - **An outlet may sit inside `@if` / `@else`**, nested ones too. While the branch is closed the content is kept off the page, still bound; it comes back when the branch opens.
 - **Rules checked at compile time:**
   - each outlet at most once on any render path (an `@if` and its `@else` may each hold one);

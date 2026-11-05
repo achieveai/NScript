@@ -1,0 +1,17 @@
+@model Sunlight.Framework.UI.Test.NestVm
+<div>
+@foreach (var item in Model.Groups)
+{
+    <div data-test="n-group">
+        <button data-test="n-outer" onclick="@Model.OpenTab(item)">@item.Name</button>
+        @foreach (var tab in item.Tabs)
+        {
+            <span data-test="n-tab">
+                <button data-test="n-inner" onclick="@Model.OpenTab(tab)">@tab.Name</button>
+                <button data-test="n-inner-outer" onclick="@Model.OpenTab(item)">@tab.Name</button>
+                <button data-test="n-inner-plain" onclick="@Model.OnPlain">p</button>
+            </span>
+        }
+    </div>
+}
+</div>
