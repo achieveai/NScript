@@ -1237,18 +1237,34 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             NativeArray<UIElement> controls = state.SubControlInstances;
             if (object.IsNullOrUndefined(controls)) return;
             NativeArray<SubControlInfo> infos = desc.SubControls;
+
+            // A control that throws while it tears down must not keep the later ones alive:
+            // tear every one down, then rethrow the first error.
+            Exception first = null;
             for (int i = 0; i < controls.Length; i++)
             {
                 UIElement control = controls[i];
                 if (object.IsNullOrUndefined(control)) continue;
-                GraphEngine.UnwireSubControlPropertyListeners(desc, state, i);
-                control.Deactivate();
-                control.Dispose();
-                state.ElemRefs[infos[i].ElemIdx] = null;
-                controls[i] = null;
-                state.SubControlAppliedValues[i] = null;
-                state.SubControlBindingsInitialized[i] = false;
+                try
+                {
+                    GraphEngine.UnwireSubControlPropertyListeners(desc, state, i);
+                    control.Deactivate();
+                    control.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    if (first == null) first = ex;
+                }
+                finally
+                {
+                    state.ElemRefs[infos[i].ElemIdx] = null;
+                    controls[i] = null;
+                    state.SubControlAppliedValues[i] = null;
+                    state.SubControlBindingsInitialized[i] = false;
+                }
             }
+
+            if (first != null) throw first;
         }
 
         private static void WireSubControlPropertyListeners(
@@ -2126,10 +2142,38 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             return delegate(INotifyPropertyChanged sender, string propName)
             {
                 if (state.Suspended) return;
-                GraphEngine.UnwireChainedSubscription(state, entryIndex);
-                GraphEngine.WireChainedSubscription(state, entry, entryIndex);
+
+                // A leaf change moves no owner (owners are the path before the leaf), so the
+                // hops stay wired: re-wiring here would unhook and re-hook every row's
+                // listeners on each change of a shared model property.
+                if (!GraphEngine.IsChainLeafChange(state, entry, entryIndex, sender, propName))
+                {
+                    GraphEngine.UnwireChainedSubscription(state, entryIndex);
+                    GraphEngine.WireChainedSubscription(state, entry, entryIndex);
+                }
+
                 GraphEngine.NotifyDirty(state, entry.NodeIdx);
             };
+        }
+
+        /// <summary>
+        /// True when a chained subscription fired for its leaf hop only: the chain is fully
+        /// wired, the sender and property are the last hop's, and no earlier hop listens to
+        /// the same object and property (then the change could also move an owner).
+        /// </summary>
+        private static bool IsChainLeafChange(
+            GraphState state, SubscriptionEntry entry, int entryIndex,
+            INotifyPropertyChanged sender, string propName)
+        {
+            if (string.IsNullOrEmpty(propName) || object.IsNullOrUndefined(state.ChainListeners)) return false;
+            NativeArray<ChainListenerHandle> handles = state.ChainListeners[entryIndex];
+            if (object.IsNullOrUndefined(handles) || handles.Length != entry.PathSegments.Length) return false;
+
+            int last = handles.Length - 1;
+            if (handles[last].Observable != sender || handles[last].PropertyName != propName) return false;
+            for (int k = 0; k < last; k++)
+                if (handles[k].Observable == sender && handles[k].PropertyName == propName) return false;
+            return true;
         }
 
         private static object GetCollectionItemSource(GraphState childState, int sourceSlot)

@@ -666,5 +666,17 @@ namespace Sunlight.Framework.UI.Test
         {
             get { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuDispose2.skin.cshtml")]
+        public static Skin AwbFuDispose2
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuNestChurn.skin.cshtml")]
+        public static Skin AwbFuNestChurn
+        {
+            get { return null; }
+        }
     }
 }

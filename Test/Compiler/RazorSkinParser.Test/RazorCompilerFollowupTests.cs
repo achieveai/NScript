@@ -101,6 +101,20 @@ namespace RazorSkinParser.Test
             html.Should().Contain("<div data-id=\"d\" id=\"p1\" aria-label=\"L\" data-ns-subctl=\"0\"></div>");
         }
 
+        // PR 149 P4: data-ns-* names the compiler's own markers (data-ns-subctl, data-ns-m, ...).
+        [DataTestMethod]
+        [DataRow("data-ns-subctl=\"3\"", "data-ns-subctl")]
+        [DataRow("data-ns-m=\"@Model.Name\"", "data-ns-m")]
+        [DataRow("DATA-NS-content=\"x\"", "DATA-NS-content")]
+        public void ReservedDataNsAttribute_OnAControlTag_IsACompileError(string attribute, string name)
+        {
+            Action build = () => BuildIR("@model TestVM\n<div><Probe " + attribute + " /></div>");
+
+            build.Should().Throw<NScript.Converter.ConverterLocationException>()
+                .WithMessage("*<Probe> cannot set " + name + "*data-ns-* attributes are reserved*")
+                .Which.Location.StartLine.Should().Be(2);
+        }
+
         [TestMethod]
         public void BoundId_OnAControlTag_IsAHostAttributeNotAPartId()
         {

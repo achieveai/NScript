@@ -1063,9 +1063,7 @@ namespace NScript.RazorSkin.CodeGen
                 hops = 0;
             else
             {
-                int index = -1;
-                for (int i = _enclosingLoops.Count - 1; i >= 0 && index < 0; i--)
-                    if (_enclosingLoops[i].Variable == variable) index = i;
+                int index = EnclosingLoops.IndexOf(_enclosingLoops, variable);
                 if (index < 0) return false;
                 hops = _enclosingLoops.Count - index;
             }
@@ -1397,18 +1395,10 @@ namespace NScript.RazorSkin.CodeGen
             // outer.M, where outer is an enclosing @foreach variable (not this loop's own)
             string outerLoopVariable = null, outerLoopTypeName = null;
             var rootDot = handlerExpression.IndexOf('.');
-            if (!isModelMethodRef && !isControlMethodRef && rootDot > 0)
-            {
-                var root = handlerExpression.Substring(0, rootDot);
-                for (int i = _enclosingLoops.Count - 1; i >= 0 && outerLoopVariable == null; i--)
-                {
-                    if (_enclosingLoops[i].Variable == root && root != ItemVariable)
-                    {
-                        outerLoopVariable = root;
-                        outerLoopTypeName = _enclosingLoops[i].TypeName;
-                    }
-                }
-            }
+            int outerIndex = isModelMethodRef || isControlMethodRef ? -1
+                : EnclosingLoops.IndexOfRoot(_enclosingLoops, handlerExpression, ItemVariable);
+            if (outerIndex >= 0)
+                (outerLoopVariable, outerLoopTypeName) = _enclosingLoops[outerIndex];
 
             // Strip Model., Control., an outer loop variable or the item variable prefix
             var expr = handlerExpression;
@@ -1689,7 +1679,7 @@ namespace NScript.RazorSkin.CodeGen
             var argName = expr.Substring(parenOpen + 1, parenClose - parenOpen - 1).Trim();
 
             // The argument must be this loop's variable or an enclosing loop's.
-            if (argName != ItemVariable && !_enclosingLoops.Any(loop => loop.Variable == argName))
+            if (argName != ItemVariable && EnclosingLoops.IndexOf(_enclosingLoops, argName) < 0)
                 return null;
 
             // Look up the method on the template's model
@@ -1896,9 +1886,7 @@ namespace NScript.RazorSkin.CodeGen
                     controlTypeName: _controlTypeName,
                     inlinedGetters: _inlinedGetters,
                     rootModelTypeName: _rootModelTypeName,
-                    enclosingLoops: IsItemGraph
-                        ? _enclosingLoops.Append((ItemVariable, _modelTypeName)).ToList()
-                        : null);
+                    enclosingLoops: EnclosingLoops.Enter(_enclosingLoops, ItemVariable, _modelTypeName));
                 itemGraphExpr = nestedEmitter.Emit();
             }
 

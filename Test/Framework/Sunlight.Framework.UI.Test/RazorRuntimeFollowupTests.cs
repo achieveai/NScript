@@ -73,6 +73,40 @@ namespace Sunlight.Framework.UI.Test
     }
 
     /// <summary>
+    /// A root model for a loop inside a loop that counts every listener added and removed
+    /// on it, so a test can see listener churn, not just the net count.
+    /// </summary>
+    public class FuNestVm : ObservableObject, INotifyPropertyChanged
+    {
+        public int AddCalls;
+        public int RemoveCalls;
+
+        [AutoFire] public string Title { get; set; }
+
+        [AutoFire] public FuItem Sub { get; set; }
+
+        public ObservableCollection<FuVm> Groups { get; private set; }
+
+        public FuNestVm()
+        {
+            this.Title = "t1";
+            this.Groups = new ObservableCollection<FuVm>();
+        }
+
+        public new void AddPropertyChangedListener(string propertyName, Action<INotifyPropertyChanged, string> callback)
+        {
+            this.AddCalls++;
+            base.AddPropertyChangedListener(propertyName, callback);
+        }
+
+        public new void RemovePropertyChangedListener(string propertyName, Action<INotifyPropertyChanged, string> callback)
+        {
+            this.RemoveCalls++;
+            base.RemovePropertyChangedListener(propertyName, callback);
+        }
+    }
+
+    /// <summary>
     /// A collection that can raise Reset (ObservableCollection never does). It re-implements
     /// INotifyCollectionChanged, so the binding graph listens here, not on the base event.
     /// </summary>
@@ -792,6 +826,76 @@ namespace Sunlight.Framework.UI.Test
 
             assert.Equal(Catch(delegate { vm.Flag = true; }), null, "reopening does not throw");
             assert.Equal(Names(root, "fg-row"), "a|dispose-boom|late|a|dispose-boom|late", "reopened: both lists render every item");
+        }
+
+        // PR 149 review P1: a row's first control throwing in Dispose must not keep the
+        // row's later controls from being disposed.
+        [Test]
+        public static void TestFuThrowingDisposeStillDisposesTheRowsOtherControls(Assert assert)
+        {
+            var vm = new FuVm();
+            var bad = new FuItem("dispose-boom");
+            vm.Items.Add(new FuItem("a"));
+            vm.Items.Add(bad);
+            vm.Items.Add(new FuItem("c"));
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbFuDispose2);
+            assert.Equal(Names(root, "fd2-row"), "a|dispose-boom|c", "mounted: 3 rows");
+            int disposed = RazorProbeControl.DisposedCount;
+
+            assert.Equal(Catch(delegate { vm.Items.Remove(bad); }), "dispose boom: dispose-boom",
+                "Remove rethrows the first control's Dispose error");
+            assert.Equal(RazorProbeControl.DisposedCount, disposed + 2, "both controls of the row are disposed");
+            assert.Equal(Names(root, "fd2-row"), "a|c", "the row left");
+
+            vm.Items.Add(new FuItem("d"));
+            vm.Items.RemoveAt(0);
+            assert.Equal(Names(root, "fd2-row"), "c|d", "a later Add and Remove keep the rows in step");
+        }
+
+        // PR 149 review P2: an inner-loop row binding a root property listens once; a change
+        // of that property marks the rows dirty without unhooking and re-hooking every row.
+        [Test]
+        public static void TestFuRootPropertyChangeDoesNotResubscribeInnerRows(Assert assert)
+        {
+            var vm = new FuNestVm();
+            for (int g = 0; g < 2; g++)
+            {
+                var group = new FuVm();
+                for (int t = 0; t < 3; t++) group.Items.Add(new FuItem("t" + t));
+                vm.Groups.Add(group);
+            }
+
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbFuNestChurn);
+            assert.Equal(Count(root, "[data-test=nc-row]"), 6, "mounted: 6 inner rows");
+
+            int adds = vm.AddCalls;
+            int removes = vm.RemoveCalls;
+            vm.Title = "t2";
+            assert.Equal(RowTexts(root, "b"), "t2|t2|t2|t2|t2|t2", "every row shows the new title");
+            assert.Equal(vm.AddCalls - adds, 0, "a title change adds no listener on the model");
+            assert.Equal(vm.RemoveCalls - removes, 0, "a title change removes no listener on the model");
+
+            // A partial chain (Sub null at mount) still re-hooks when the middle object arrives.
+            var sub = new FuItem("s1");
+            vm.Sub = sub;
+            assert.Equal(RowTexts(root, "i"), "s1|s1|s1|s1|s1|s1", "setting Sub shows its name in every row");
+            adds = vm.AddCalls;
+            removes = vm.RemoveCalls;
+            int subListeners = sub.ListenerCount;
+            sub.Name = "s2";
+            assert.Equal(RowTexts(root, "i"), "s2|s2|s2|s2|s2|s2", "a Sub.Name change reaches every row");
+            assert.Equal(vm.AddCalls - adds + vm.RemoveCalls - removes, 0, "a leaf change re-hooks nothing on the model");
+            assert.Equal(sub.ListenerCount, subListeners, "a leaf change keeps the listeners on Sub");
+        }
+
+        // The text of the given child of every inner row, joined by "|".
+        private static string RowTexts(Element root, string child)
+        {
+            var rows = root.QuerySelectorAll("[data-test=nc-row]");
+            string texts = "";
+            for (int k = 0; k < rows.Length; k++)
+                texts = texts + (k == 0 ? "" : "|") + rows[k].QuerySelector(child).TextContent;
+            return texts;
         }
     }
 }

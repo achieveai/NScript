@@ -165,6 +165,8 @@
     <EmbeddedResource Include="RazorTemplates\AwbF2NestedGate.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\SlotHostNestedHead.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\SlotHostRowsMissing.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuDispose2.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbFuNestChurn.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

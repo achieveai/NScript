@@ -351,9 +351,16 @@ namespace NScript.RazorSkin.TemplateIR
             RegexOptions.Compiled);
 
         /// <summary>
+        /// The prefix of the compiler's own marker attributes (data-ns-subctl, data-ns-m,
+        /// data-ns-content, ...). A control tag may not set one: its host element carries them.
+        /// </summary>
+        private const string ReservedAttributePrefix = "data-ns-";
+
+        /// <summary>
         /// <c>id</c>, <c>data-*</c> and <c>aria-*</c> on a control tag are HTML attributes of the
         /// control's host element, never C# properties of the control. Only lowercase <c>id</c>
         /// counts, as in IdAttributeRegex: <c>Id=</c> / <c>ID=</c> bind a C# property.
+        /// <c>data-ns-*</c> never gets here: it is a compile error (ReservedAttributePrefix).
         /// </summary>
         internal static bool IsHostAttributeName(string name)
             => string.Equals(name, "id", StringComparison.Ordinal)
@@ -1721,6 +1728,13 @@ namespace NScript.RazorSkin.TemplateIR
                     var attrValue = attrMatch.Groups[2].Success ? attrMatch.Groups[2].Value : attrMatch.Groups[3].Value;
                     if (attrValue.StartsWith(RazorSkinPreprocessor.EscapedSubControlAt, StringComparison.Ordinal))
                         attrValue = "@" + attrValue.Substring(RazorSkinPreprocessor.EscapedSubControlAt.Length);
+
+                    if (attrName.StartsWith(ReservedAttributePrefix, StringComparison.OrdinalIgnoreCase))
+                        throw new NScript.Converter.ConverterLocationException(
+                            LocationAt(contentLocation ?? parentLocation, html, match.Index)
+                                ?? new Location(templateName ?? "(razor)", 0, 0),
+                            $"<{tagName}> cannot set {attrName}: {ReservedAttributePrefix}* attributes are reserved "
+                            + "for the compiler's markers. Rename the attribute.");
 
                     if (IsHostAttributeName(attrName))
                     {

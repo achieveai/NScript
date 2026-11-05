@@ -1463,10 +1463,7 @@ namespace Sunlight.Framework.Observables
                     modelTypeName, controlTypeName, itemTypeName, itemVariableName, loop);
 
                 // An inner loop can name this loop's variable (outer.M), so it is passed down.
-                var innerEnclosing = string.IsNullOrEmpty(itemVariableName)
-                    ? enclosingLoops
-                    : (enclosingLoops ?? Array.Empty<(string, string)>())
-                        .Append((itemVariableName, itemTypeName)).ToList();
+                var innerEnclosing = EnclosingLoops.Enter(enclosingLoops, itemVariableName, itemTypeName);
                 foreach (var child in loop.ItemTemplate)
                     CollectEventMethodReferences(child, modelTypeName, controlTypeName, methods, seen,
                         loopItemTypeName, loop.ItemVariableName, innerEnclosing);
@@ -1491,13 +1488,12 @@ namespace Sunlight.Framework.Observables
                 && handler.StartsWith(itemPrefix, StringComparison.Ordinal);
             // outer.M from an inner loop: M lives on the enclosing loop's item type
             string outerPrefix = null, outerTypeName = null;
-            for (int i = (enclosingLoops?.Count ?? 0) - 1; !isItemMethod && outerPrefix == null && i >= 0; i--)
+            int outerIndex = isItemMethod ? -1
+                : EnclosingLoops.IndexOfRoot(enclosingLoops, handler, itemVariableName);
+            if (outerIndex >= 0)
             {
-                if (handler.StartsWith(enclosingLoops[i].Variable + ".", StringComparison.Ordinal))
-                {
-                    outerPrefix = enclosingLoops[i].Variable + ".";
-                    outerTypeName = enclosingLoops[i].TypeName;
-                }
+                outerPrefix = enclosingLoops[outerIndex].Variable + ".";
+                outerTypeName = enclosingLoops[outerIndex].TypeName;
             }
             var typeName = isItemMethod ? itemTypeName
                 : outerPrefix != null ? outerTypeName

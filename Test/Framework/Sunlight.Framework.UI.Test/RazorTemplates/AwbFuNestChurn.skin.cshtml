@@ -1,0 +1,12 @@
+@model Sunlight.Framework.UI.Test.FuNestVm
+<div>
+@foreach (var g in Model.Groups)
+{
+    <div data-test="nc-group">
+        @foreach (var t in g.Items)
+        {
+            <span data-test="nc-row"><b>@Model.Title</b><i>@Model.Sub.Name</i></span>
+        }
+    </div>
+}
+</div>
