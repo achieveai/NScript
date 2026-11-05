@@ -329,7 +329,7 @@ namespace Sunlight.Framework.UI.Test
             var boom = new FuItem("chain-boom");
 
             assert.NotEqual(Catch(delegate { vm.Items.Add(boom); }), null, "the failing wiring is not swallowed");
-            assert.IsTrue(boom.ListenerCount > 0, "the row subscribed before the throw: " + boom.ListenerCount);
+            assert.Equal(boom.ListenerCount, 0, "the row that threw while wiring is retired at once");
             var failedRow = root.QuerySelector("[data-test=fc-row]");
             string failedText = failedRow.QuerySelector("b").TextContent;
             string failedChildText = failedRow.QuerySelector("i").TextContent;
@@ -792,78 +792,6 @@ namespace Sunlight.Framework.UI.Test
 
             assert.Equal(Catch(delegate { vm.Flag = true; }), null, "reopening does not throw");
             assert.Equal(Names(root, "fg-row"), "a|dispose-boom|late|a|dispose-boom|late", "reopened: both lists render every item");
-        }
-
-        // Item 4 (slots advisory A2): a <Slot> error throws before anything moves.
-        private static string MountSlotHost(Skin skin, out Element root)
-        {
-            var vm = new SlotHostVM();
-            root = Window.Instance.Document.CreateElement("div");
-            var control = new UISkinableElement(root);
-            control.DataContext = vm;
-            control.Skin = skin;
-            return Catch(delegate { control.Activate(); });
-        }
-
-        // The host's children in order: markers by slot name, elements by tag.class, non-blank text.
-        private static string ChildSignature(Element host)
-        {
-            string signature = "";
-            var children = host.ChildNodes;
-            for (int k = 0; k < children.Length; k++)
-            {
-                var node = children[k];
-                string part;
-                if (node.NodeType == ElementType.Element)
-                {
-                    var e = node.As<Element>();
-                    if (e.HasAttribute("data-ns-slot-for")) part = "for:" + e.GetAttribute("data-ns-slot-for");
-                    else if (e.HasAttribute("data-ns-slot-end")) part = "end";
-                    else part = e.TagName.ToLowerCase() + "." + e.ClassName;
-                }
-                else
-                {
-                    part = node.TextContent.Trim();
-                    if (part.Length == 0) continue;
-                }
-
-                signature = signature.Length == 0 ? part : signature + "|" + part;
-            }
-
-            return signature;
-        }
-
-        private static void AssertSlotErrorMovedNothing(
-            Assert assert, Skin skin, string expectedError, string expectedChildren)
-        {
-            Element root;
-            string message = MountSlotHost(skin, out root);
-            assert.IsTrue(message != null && message.IndexOf(expectedError) >= 0,
-                "throws naming the error: " + message);
-
-            var host = root.QuerySelector("[data-ns-content]");
-            assert.IsTrue(host != null, "the frame host is still in the caller");
-            if (host == null) return;
-            assert.Equal(ChildSignature(host), expectedChildren, "the caller content stays where it was, in order");
-            assert.Equal(Count(root, "header.panel-head, section.panel-body, footer.panel-actions"), 0,
-                "nothing of the frame skin is in the host");
-            assert.Equal(Count(root, "template[data-ns-slot]"), 0, "no outlet holds caller content");
-        }
-
-        [Test]
-        public static void TestSlotDuplicateNameThrowsAndMovesNothing(Assert assert)
-        {
-            AssertSlotErrorMovedNothing(assert, RazorSkinTemplatesClass.SlotHostDupSlot,
-                "has two <Slot Name=\"head\">",
-                "p.msg|for:head|h2.head|end|for:head|h3.head2|end");
-        }
-
-        [Test]
-        public static void TestSlotNestedSlotThrowsAndMovesNothing(Assert assert)
-        {
-            AssertSlotErrorMovedNothing(assert, RazorSkinTemplatesClass.SlotHostNestedSlot,
-                "slots do not nest",
-                "p.msg|for:head|h2.head|for:actions|button.confirm|end|end");
         }
     }
 }

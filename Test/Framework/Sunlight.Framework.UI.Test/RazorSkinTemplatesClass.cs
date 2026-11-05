@@ -379,6 +379,18 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.PrValueSetterOnly.skin.cshtml")]
+        public static Skin PrValueSetterOnly
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.PrSubControlSetterOnly.skin.cshtml")]
+        public static Skin PrSubControlSetterOnly
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB4bHrBeforeLoop.skin.cshtml")]
         public static Skin AwbB4bHrBeforeLoop
         {
@@ -583,20 +595,20 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF2NestedGate.skin.cshtml")]
+        public static Skin AwbF2NestedGate
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuRowsThrow.skin.cshtml")]
         public static Skin AwbFuRowsThrow
         {
             get { return null; }
         }
 
-        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostDupSlot.skin.cshtml")]
-        public static Skin SlotHostDupSlot
-        {
-            get { return null; }
-        }
-
-        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostNestedSlot.skin.cshtml")]
-        public static Skin SlotHostNestedSlot
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostNestedHead.skin.cshtml")]
+        public static Skin SlotHostNestedHead
         {
             get { return null; }
         }
@@ -645,6 +657,12 @@ namespace Sunlight.Framework.UI.Test
 
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuGateClose.skin.cshtml")]
         public static Skin AwbFuGateClose
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostRowsMissing.skin.cshtml")]
+        public static Skin SlotHostRowsMissing
         {
             get { return null; }
         }

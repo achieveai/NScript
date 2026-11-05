@@ -433,5 +433,200 @@ namespace Sunlight.Framework.UI.Test
 
             AssertLiveContent(assert, vm, root, "div.fwd section.frame-body", "forwarded");
         }
+
+        private static string Catch(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+
+            return null;
+        }
+
+        // The host's children in order: markers by slot name, elements by tag.class, non-blank text.
+        private static string ChildSignature(Element host)
+        {
+            string signature = "";
+            var children = host.ChildNodes;
+            for (int k = 0; k < children.Length; k++)
+            {
+                var node = children[k];
+                string part;
+                if (node.NodeType == ElementType.Element)
+                {
+                    var e = node.As<Element>();
+                    if (e.HasAttribute("data-ns-slot-for")) part = "for:" + e.GetAttribute("data-ns-slot-for");
+                    else if (e.HasAttribute("data-ns-slot-end")) part = "end";
+                    else part = e.TagName.ToLowerCase() + "." + e.ClassName;
+                }
+                else
+                {
+                    part = node.TextContent.Trim();
+                    if (part.Length == 0) continue;
+                }
+
+                signature = signature.Length == 0 ? part : signature + "|" + part;
+            }
+
+            return signature;
+        }
+
+        // An inner panel in the head slot brings its own actions outlet into the outer
+        // header. The outer actions content must still land in the outer footer.
+        private static void AssertActionsInOuterFooter(Assert assert, SlotHostVM vm, Element outerHost, string step)
+        {
+            assert.Equal(outerHost.QuerySelectorAll(":scope > footer.panel-actions > button.confirm").Length, 1,
+                step + ": the actions content sits in the outer footer");
+            var inner = outerHost.QuerySelector(":scope > header.panel-head > [data-ns-content]");
+            assert.IsTrue(inner != null, step + ": the inner panel sits in the outer head outlet");
+            if (inner == null) return;
+            assert.Equal(Text(inner, "h3.inner-head"), "inner", step + ": the inner panel shows its own head content");
+            assert.Equal(inner.QuerySelectorAll("button.confirm").Length, 0, step + ": the inner footer holds no caller content");
+            int confirms = vm.ConfirmCount;
+            outerHost.QuerySelector("button.confirm").Click();
+            assert.Equal(vm.ConfirmCount, confirms + 1, step + ": the button still fires Confirm");
+        }
+
+        // Review S1: outlets are found before any content moves.
+        [Test]
+        public static void TestSlotOutletLookupSkipsEarlierCallerContent(Assert assert)
+        {
+            var vm = new SlotHostVM();
+            vm.Frame.IsOpen = true;
+            SlotPanel.FirstCreated = null;
+            var root = Mount(vm, RazorSkinTemplatesClass.SlotHostNestedHead, null).Element;
+            var outerHost = root.QuerySelector("[data-test=\"slot-nested-head\"] > [data-ns-content]");
+            SlotPanel outer = SlotPanel.FirstCreated.Element == outerHost ? SlotPanel.FirstCreated : SlotPanel.LastCreated;
+            assert.IsTrue(outer.Element == outerHost, "found the outer panel");
+            AssertActionsInOuterFooter(assert, vm, outerHost, "mounted");
+
+            outer.Skin = null;
+            outer.Skin = SlotPanel.DefaultSkin;
+            AssertActionsInOuterFooter(assert, vm, outerHost, "outer re-skinned");
+        }
+
+        // Review S2: un-skinning puts the content back in the caller's order, not in slot order.
+        [Test]
+        public static void TestSlotUnskinRestoresCallerOrder(Assert assert)
+        {
+            var vm = new SlotHostVM();
+            vm.Frame.IsOpen = true;
+            var root = Mount(vm, RazorSkinTemplatesClass.SlotHostNamed, null).Element;
+            var panel = SlotPanel.LastCreated;
+            for (int round = 0; round < 2; round++)
+            {
+                string r = "round " + round;
+                panel.Skin = null;
+                assert.Equal(ChildSignature(panel.Element), "for:head|h2.head|end|p.msg|for:actions|button.confirm|end",
+                    r + ": un-skinned host holds the content in the caller's order");
+                panel.Skin = SlotPanel.DefaultSkin;
+                vm.Message = "m-" + r;
+                assert.Equal(Text(root, "header.panel-head > h2.head"), "m-" + r, r + ": re-skinned head slot is live");
+                assert.Equal(Text(root, "section.panel-body > p.msg"), "m-" + r, r + ": re-skinned default slot is live");
+                assert.Equal(Count(root, "footer.panel-actions > button.confirm"), 1, r + ": re-skinned actions slot is projected");
+            }
+        }
+
+        // Review S3: a row whose frame refuses its content leaves nothing live behind.
+        [Test]
+        public static void TestSlotRowWithoutOutletRetiresTheRow(Assert assert)
+        {
+            var vm = new SlotHostVM();
+            var host = Mount(vm, RazorSkinTemplatesClass.SlotHostRowsMissing, null);
+            var root = host.Element;
+            var r = new SlotFrameVM("r1");
+
+            string message = Catch(delegate { vm.Rows.Add(r); });
+            assert.IsTrue(message != null && message.IndexOf("@RenderSlot(\"nope\")") >= 0,
+                "adding the row throws naming the slot: " + message);
+
+            var i = root.QuerySelector("i.row-i");
+            string before = i == null ? null : i.TextContent;
+            r.Title = "changed";
+            string after = i == null ? null : i.TextContent;
+            assert.Equal(after, before, "the failed row has no live binding");
+
+            assert.Equal(Catch(delegate { vm.Rows.RemoveAt(0); }), null, "removing the failed row does not throw");
+            assert.Equal(Count(root, "i.row-i"), 0, "the failed row's DOM is gone");
+            assert.Equal(Catch(delegate { host.Dispose(); }), null, "disposing the caller does not throw");
+        }
+
+        // Advisory A2 (the runtime half of PR 149's tests; delete the 149 copies at the
+        // 148 -> 149 merge): a <Slot> error throws before anything moves. The compiler now
+        // rejects these shapes in a skin, so the caller content is built by hand.
+        // Each part is "tag.class", "for:name" (slot start marker) or "end" (slot end marker).
+        private static Element BuildSlotHost(string[] parts)
+        {
+            var doc = Window.Instance.Document;
+            var host = doc.CreateElement("div");
+            host.SetAttribute("data-ns-content", "");
+            for (int k = 0; k < parts.Length; k++)
+            {
+                string part = parts[k];
+                Element e;
+                if (part.IndexOf("for:") == 0)
+                {
+                    e = doc.CreateElement("template");
+                    e.SetAttribute("data-ns-slot-for", part.Substring(4));
+                }
+                else if (part == "end")
+                {
+                    e = doc.CreateElement("template");
+                    e.SetAttribute("data-ns-slot-end", "");
+                }
+                else
+                {
+                    int dot = part.IndexOf(".");
+                    e = doc.CreateElement(part.Substring(0, dot));
+                    e.ClassName = part.Substring(dot + 1);
+                }
+
+                host.AppendChild(e);
+            }
+
+            return host;
+        }
+
+        private static void AssertSlotErrorMovedNothing(
+            Assert assert, string[] parts, string expectedChildren, string expectedError)
+        {
+            var host = BuildSlotHost(parts);
+            var panel = new SlotPanel(host);
+            panel.DataContext = new SlotFrameVM("t");
+            string message = Catch(delegate
+            {
+                panel.Skin = SlotPanel.DefaultSkin;
+                panel.Activate();
+            });
+            assert.IsTrue(message != null && message.IndexOf(expectedError) >= 0,
+                "throws naming the error: " + message);
+            assert.Equal(ChildSignature(host), expectedChildren, "the caller content stays where it was, in order");
+            assert.Equal(Count(host, "header.panel-head, section.panel-body, footer.panel-actions"), 0,
+                "nothing of the frame skin is in the host");
+            assert.Equal(Count(host, "template[data-ns-slot]"), 0, "no outlet holds caller content");
+        }
+
+        [Test]
+        public static void TestSlotDuplicateNameThrowsAndMovesNothing(Assert assert)
+        {
+            AssertSlotErrorMovedNothing(assert,
+                new string[] { "p.msg", "for:head", "h2.head", "end", "for:head", "h3.head2", "end" },
+                "p.msg|for:head|h2.head|end|for:head|h3.head2|end",
+                "has two <Slot Name=\"head\">");
+        }
+
+        [Test]
+        public static void TestSlotNestedSlotThrowsAndMovesNothing(Assert assert)
+        {
+            AssertSlotErrorMovedNothing(assert,
+                new string[] { "p.msg", "for:head", "h2.head", "for:actions", "button.confirm", "end", "end" },
+                "p.msg|for:head|h2.head|for:actions|button.confirm|end|end",
+                "slots do not nest");
+        }
     }
 }

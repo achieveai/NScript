@@ -62,10 +62,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         {
                             if (!object.IsNullOrUndefined(existing))
                             {
-                                GraphEngine.DisposeGateSubControls(desc, state, gateInfo, wasOpen);
-                                GraphEngine.UnbindGatedEvents(desc, state, wasOpen ? i : -(i + 2));
-                                GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
-                                GraphEngine.RemoveGateBranch(state, i);
+                                GraphEngine.TearDownGateBranch(desc, state, gateInfo, i, wasOpen);
                             }
 
                             Element marker = (Element)state.ElemRefs[gateInfo.MarkerIdx];
@@ -258,14 +255,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[i];
                             if (!object.IsNullOrUndefined(gateInfo))
                             {
-                                // Unbind the old branch's listeners and clear its elem
-                                // refs before removing it. Unbinding must happen first: an
-                                // event marker that trails a void root element resolves to
-                                // the gate's parent, which outlives the branch.
-                                GraphEngine.DisposeGateSubControls(desc, state, gateInfo, wasOpen);
-                                GraphEngine.UnbindGatedEvents(desc, state, wasOpen ? i : -(i + 2));
-                                GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
-                                GraphEngine.RemoveGateBranch(state, i);
+                                GraphEngine.TearDownGateBranch(desc, state, gateInfo, i, wasOpen);
 
                                 // Insert new branch template.
                                 object templateObj = gateIsOpen
@@ -650,6 +640,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // Start from max(gateIdx+1, 0) to handle inverted gate indices (negative values).
             int start = gateIdx >= 0 ? gateIdx + 1 : 0;
 
+            // Two-way value= elements leave with the branch, nested @if branches included:
+            // whoever still holds one must not write the model. Reopening wires the new ones.
+            GraphEngine.UnwireGatedTwoWayValues(desc, state, gateIdx);
+
             // A node that throws (a row whose Dispose throws) still lets every other gated
             // node reset; the first error then propagates.
             Exception first = null;
@@ -751,10 +745,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[gateIdx];
             if (!object.IsNullOrUndefined(gateInfo))
             {
-                GraphEngine.DisposeGateSubControls(desc, state, gateInfo, wasOpen);
-                GraphEngine.UnbindGatedEvents(desc, state, wasOpen ? gateIdx : -(gateIdx + 2));
-                GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
-                GraphEngine.RemoveGateBranch(state, gateIdx);
+                GraphEngine.TearDownGateBranch(desc, state, gateInfo, gateIdx, wasOpen);
             }
 
             state.GateOpen[gateIdx] = false;
@@ -780,6 +771,45 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             state.Values[gateIdx] = null;
             if (first != null) throw first;
+        }
+
+        /// <summary>
+        /// Takes down the rendered branch of a gate: disposes its sub-controls, unbinds its
+        /// events (before removal: an event marker after a void root resolves to the gate's
+        /// parent, which outlives the branch), clears its elem refs and removes it.
+        /// </summary>
+        private static void TearDownGateBranch(
+            GraphDescriptor desc, GraphState state, GateTargetInfo gateInfo, int gateIdx, bool wasOpen)
+        {
+            GraphEngine.DisposeGateSubControls(desc, state, gateInfo, wasOpen);
+            GraphEngine.UnbindGatedEvents(desc, state, wasOpen ? gateIdx : -(gateIdx + 2));
+            GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
+            GraphEngine.RemoveGateBranch(state, gateIdx);
+        }
+
+        /// <summary>
+        /// Unwires the two-way listeners of the DomTarget nodes on one side of a gate
+        /// (<paramref name="gateRef"/>: gate index, or -(gate + 2) for @else), and of both
+        /// sides of every @if nested there: a nested node is gated by its own @if, not by
+        /// the one that closed.
+        /// </summary>
+        private static void UnwireGatedTwoWayValues(GraphDescriptor desc, GraphState state, int gateRef)
+        {
+            if (object.IsNullOrUndefined(state.TwoWayListeners)) return;
+            for (int i = 0; i < desc.NodeCount; i++)
+            {
+                // A gate node can carry its own index: it is the controller, not a nested @if.
+                if (desc.GateIndices[i] != gateRef || i == gateRef) continue;
+                if (desc.NodeTypes[i] == GraphNodeType.DomTarget)
+                {
+                    GraphEngine.UnwireTwoWayValue(state, i);
+                }
+                else if (desc.NodeTypes[i] == GraphNodeType.Gate)
+                {
+                    GraphEngine.UnwireGatedTwoWayValues(desc, state, i);
+                    GraphEngine.UnwireGatedTwoWayValues(desc, state, -(i + 2));
+                }
+            }
         }
 
         /// <summary>
@@ -956,25 +986,39 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             itemContext[1] = parentState.Sources[GraphSourceSlot.TemplateParent];
             itemContext[2] = item;
             childState.Sources[GraphSourceSlot.DataContext] = itemContext;
-            for (int k = 0; k < rowNodes.Length; k++)
-                GraphEngine.CreateSubControls(colInfo.ItemGraph, childState, rowNodes[k], item);
 
-            // An item setter or Activate() can write to the item. Subscribe
-            // before invoking either and drain those notifications afterward.
-            childState.Flushing = true;
+            // A row that throws while it builds (a sub-control refusing its content, a
+            // setter) is retired before the error goes on, so nothing it wired stays live.
+            // The build error wins over one from the retire.
             try
             {
-                GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState);
-                GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
-                GraphEngine.ApplySubControlBindings(colInfo.ItemGraph, childState);
-                if (parentState.SubControlsActive)
-                    GraphEngine.ActivateSubControls(colInfo.ItemGraph, childState);
+                for (int k = 0; k < rowNodes.Length; k++)
+                    GraphEngine.CreateSubControls(colInfo.ItemGraph, childState, rowNodes[k], item);
+
+                // An item setter or Activate() can write to the item. Subscribe
+                // before invoking either and drain those notifications afterward.
+                childState.Flushing = true;
+                try
+                {
+                    GraphEngine.WireChildSubscriptions(colInfo.ItemGraph, childState);
+                    GraphEngine.PushInitialValues(colInfo.ItemGraph, childState);
+                    GraphEngine.ApplySubControlBindings(colInfo.ItemGraph, childState);
+                    if (parentState.SubControlsActive)
+                        GraphEngine.ActivateSubControls(colInfo.ItemGraph, childState);
+                }
+                finally
+                {
+                    childState.Flushing = false;
+                }
+                GraphEngine.Flush(colInfo.ItemGraph, childState);
             }
-            finally
+            catch (Exception ex)
             {
-                childState.Flushing = false;
+                Exception first = ex;
+                try { GraphEngine.RetireChildState(colInfo.ItemGraph, childState); }
+                catch (Exception) { }
+                throw first;
             }
-            GraphEngine.Flush(colInfo.ItemGraph, childState);
         }
 
         private static void RefreshCollectionItems(GraphState state, int nodeIdx)
@@ -1343,10 +1387,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// rejected by FlushOne instead of writing to detached DOM, re-creating
         /// gated sub-controls, or re-attaching nested collection listeners. Then
         /// unwires its subscriptions, events, nested collections (recursively
-        /// retiring their items) and sub-controls.
+        /// retiring their items) and sub-controls. A second call does nothing: a row that
+        /// threw while it built is retired at once and again when it is removed.
         /// </summary>
         public static void RetireChildState(GraphDescriptor itemDesc, GraphState child)
         {
+            if (child.Disposed) return;
             child.Disposed = true;
             GraphEngine.UnwireChildSubscriptions(itemDesc, child);
             GraphEngine.CleanupEventListeners(itemDesc, child);
@@ -2293,6 +2339,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             if (object.IsNullOrUndefined(slots) || object.IsNullOrUndefined(scope)
                 || object.IsNullOrUndefined(scope.TagName)) return;
 
+            // Find every outlet before moving anything: one slot's content can hold a control
+            // with its own outlets, which would then sit ahead of ours in document order.
+            NativeArray<Element> starts = new NativeArray<Element>(slots.Length);
             for (int k = 0; k < slots.Length; k++)
             {
                 SlotProjection slot = slots[k];
@@ -2306,7 +2355,16 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 if (object.IsNullOrUndefined(end) || !end.Matches(selector))
                     throw new Exception("The outlet for slot '" + slot.Name
                         + "' lost its closing anchor; the skin HTML and its outlet are out of step.");
+                starts[k] = start;
+            }
 
+            for (int k = 0; k < slots.Length; k++)
+            {
+                Element start = starts[k];
+                if (object.IsNullOrUndefined(start)) continue;
+
+                SlotProjection slot = slots[k];
+                Element end = start.NextElementSibling;
                 Node parent = start.ParentNode;
                 while (!object.IsNullOrUndefined(slot.Holder.FirstChild))
                     parent.InsertBefore(slot.Holder.FirstChild, end);

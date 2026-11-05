@@ -115,6 +115,8 @@
     <EmbeddedResource Include="RazorTemplates\AwbB7TwinControls.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB8Disabled.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB9TwoWay.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\PrValueSetterOnly.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\PrSubControlSetterOnly.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB4bHrBeforeLoop.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB5bRowEvents.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbF1RawText.skin.cshtml" />
@@ -152,8 +154,6 @@
     <EmbeddedResource Include="RazorTemplates\AwbR3SourceWalk.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuMultiRootIf.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuRowsThrow.skin.cshtml" />
-    <EmbeddedResource Include="RazorTemplates\SlotHostDupSlot.skin.cshtml" />
-    <EmbeddedResource Include="RazorTemplates\SlotHostNestedSlot.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuChainThrow.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuDisposeThrow.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuRow2Root.skin.cshtml" />
@@ -162,6 +162,9 @@
     <EmbeddedResource Include="RazorTemplates\AwbFuRowCtl.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuRowNestIf.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuGateClose.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbF2NestedGate.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHostNestedHead.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHostRowsMissing.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

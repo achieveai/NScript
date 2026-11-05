@@ -131,12 +131,27 @@ namespace Sunlight.Framework.Test
                 "{\"block\":\"center\",\"inline\":\"nearest\",\"behavior\":\"auto\"}",
                 "options emit as a plain object with browser key names");
 
+            // A fixed 100px scroller over 1020px of content; the 20px target starts at 500px.
+            // Centered, its middle (510) sits at the scroller's middle (50): scrollTop 460.
+            // Start alignment would give 500, no scroll 0.
             var doc = Window.Instance.Document;
-            var el = doc.CreateElement("div");
-            doc.Body.AppendChild(el);
-            el.ScrollIntoView(options);
-            el.Remove();
-            assert.IsTrue(true, "ScrollIntoView(options) does not throw");
+            var scroller = doc.CreateElement("div");
+            scroller.SetAttribute("style",
+                "position:fixed;top:0;left:0;width:100px;height:100px;overflow:auto;margin:0;padding:0;border:0;");
+            var before = doc.CreateElement("div");
+            before.SetAttribute("style", "margin:0;padding:0;border:0;height:500px;");
+            var target = doc.CreateElement("div");
+            target.SetAttribute("style", "margin:0;padding:0;border:0;height:20px;");
+            var after = doc.CreateElement("div");
+            after.SetAttribute("style", "margin:0;padding:0;border:0;height:500px;");
+            scroller.AppendChild(before);
+            scroller.AppendChild(target);
+            scroller.AppendChild(after);
+            doc.Body.AppendChild(scroller);
+            target.ScrollIntoView(options);
+            double scrollTop = scroller.ScrollTop;
+            scroller.Remove();
+            assert.StrictEqual(scrollTop, 460.0, "block: center centers the target in its scroller");
         }
 
         [Test]

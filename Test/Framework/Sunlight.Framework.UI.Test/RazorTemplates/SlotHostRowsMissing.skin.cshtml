@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.SlotHostVM
+
+<div data-test="slot-rows-missing">
+    @foreach (var r in Model.Rows)
+    {
+        <SlotFrame DataContext="@r"><Slot Name="nope"><i class="row-i">@r.Title</i></Slot></SlotFrame>
+    }
+</div>

@@ -1,0 +1,9 @@
+@model Sunlight.Framework.UI.Test.SetterOnlyVm
+<div>
+<PrTwoWayProbe Value="@Model.SubDraft" />
+<PrTwoWayProbe Value="@Model.BaseDraft" />
+@foreach (var row in Model.Rows)
+{
+    <span><PrTwoWayProbe Value="@row.SubDraft" /></span>
+}
+</div>

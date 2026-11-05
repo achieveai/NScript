@@ -31,10 +31,15 @@ namespace Sunlight.Framework.UI.Test
     {
         public static SlotPanel LastCreated;
 
+        // Set once until a test clears it: with panels nested in caller content it tells
+        // the outer and inner panels apart without relying on creation order.
+        public static SlotPanel FirstCreated;
+
         public SlotPanel(Element element)
             : base(element)
         {
             LastCreated = this;
+            if (FirstCreated == null) FirstCreated = this;
         }
 
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotPanel.skin.cshtml")]

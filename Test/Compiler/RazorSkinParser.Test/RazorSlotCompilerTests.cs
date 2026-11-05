@@ -165,6 +165,46 @@ namespace RazorSkinParser.Test
             build.Should().Throw<ConverterLocationException>().WithMessage("*<Slot>*directly inside the control's tag*");
         }
 
+        // PR 148 S6: caught at compile time, at the Slot tag's own line, not when the control mounts.
+        [TestMethod]
+        public void NamedSlot_TwiceInOneControl_IsACompileErrorAtTheSecondSlot()
+        {
+            Action build = () => BuildIR("@model TestVM\n<Frame>\n<Slot Name=\"head\"><i>a</i></Slot>\n"
+                + "<Slot Name=\"head\"><i>b</i></Slot>\n</Frame>");
+
+            var location = build.Should().Throw<ConverterLocationException>()
+                .WithMessage("*<Frame> has two <Slot Name=\"head\">*").Which.Location;
+            location.StartLine.Should().Be(4);
+            location.StartColumn.Should().Be(0, "columns are 0-based");
+        }
+
+        [TestMethod]
+        public void NamedSlot_InsideAnotherSlot_IsACompileErrorAtTheInnerSlot()
+        {
+            Action build = () => BuildIR("@model TestVM\n<Frame>\n<Slot Name=\"head\">\n"
+                + "    <Slot Name=\"tail\"><i>x</i></Slot>\n</Slot>\n</Frame>");
+
+            var location = build.Should().Throw<ConverterLocationException>()
+                .WithMessage("*<Slot Name=\"tail\"> is inside <Slot Name=\"head\">*").Which.Location;
+            location.StartLine.Should().Be(4);
+            location.StartColumn.Should().Be(4);
+        }
+
+        [TestMethod]
+        public void NamedSlot_SameNameInSiblingOrInnerControls_IsAllowed()
+        {
+            Action siblings = () => BuildIR("@model TestVM\n<Frame><Slot Name=\"head\"><i>a</i></Slot></Frame>"
+                + "<Frame><Slot Name=\"head\"><i>b</i></Slot></Frame>");
+            Action inner = () => BuildIR("@model TestVM\n<Frame><Slot Name=\"head\">"
+                + "<Frame><Slot Name=\"head\"><i>x</i></Slot></Frame></Slot></Frame>");
+            Action reopened = () => BuildIR("@model TestVM\n<Frame><Slot Name=\"head\"><i>a</i></Slot>"
+                + "<Slot Name=\"tail\"><i>b</i></Slot></Frame>");
+
+            siblings.Should().NotThrow();
+            inner.Should().NotThrow();
+            reopened.Should().NotThrow();
+        }
+
         private static void NumberSubControls(List<IRNode> nodes)
         {
             int next = 0;

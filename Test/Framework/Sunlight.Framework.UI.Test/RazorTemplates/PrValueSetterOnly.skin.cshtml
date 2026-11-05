@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.SetterOnlyVm
+<div>
+<input data-test="vs-model" value="@Model.Draft" />
+@foreach (var row in Model.Rows)
+{
+    <span><input data-test="vs-row" value="@row.Draft" /></span>
+}
+</div>
