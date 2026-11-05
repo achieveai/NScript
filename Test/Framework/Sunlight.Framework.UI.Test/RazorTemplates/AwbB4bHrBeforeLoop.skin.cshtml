@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<div><hr><span data-test="b4b-before">@Model.Other</span><div data-test="b4b-list">@foreach (var i in Model.Items) { <span data-test="b4b-item">@i.Name</span> }</div><span data-test="b4b-after">@Model.Text</span></div>

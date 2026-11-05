@@ -221,6 +221,65 @@ namespace System.Web.Html
         public extern Node InsertBefore(Node newChild, Node referenceChild);
 
         /// <summary>
+        /// Gets a value indicating whether the node is attached to a document.
+        /// </summary>
+        public extern bool IsConnected
+        { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the browser has <c>moveBefore</c> (Chromium 133+).
+        /// A move with <c>moveBefore</c> keeps the node's state, so an iframe does not reload.
+        /// </summary>
+        public static extern bool SupportsMoveBefore
+        {
+            [Script("return typeof @:Element !== 'undefined' && typeof @:Element.prototype.moveBefore === 'function';")]
+            get;
+        }
+
+        /// <summary>
+        /// Moves <paramref name="node"/> before <paramref name="child"/> and keeps its state.
+        /// Throws when the browser has no <c>moveBefore</c> (see <see cref="SupportsMoveBefore"/>)
+        /// or when either node is not connected to the same document.
+        /// </summary>
+        /// <param name="node">  The node to move. </param>
+        /// <param name="child"> The reference child, or null to move to the end. </param>
+        public extern void MoveBefore(Node node, Node child);
+
+        /// <summary>
+        /// Moves <paramref name="node"/> into <paramref name="parent"/> before <paramref name="child"/>.
+        /// Uses <c>moveBefore</c> when the browser has it and both nodes are connected to the
+        /// same document and the move succeeds; otherwise falls back to <c>insertBefore</c>, which resets state
+        /// (an iframe reloads).
+        /// </summary>
+        /// <param name="parent"> The new parent. </param>
+        /// <param name="node">   The node to move. </param>
+        /// <param name="child">  The reference child, or null to move to the end. </param>
+        /// <returns>
+        /// true if the move kept the node's state (moveBefore); false if it used insertBefore.
+        /// </returns>
+        public static bool MoveOrInsertBefore(Node parent, Node node, Node child)
+        {
+            if (Node.SupportsMoveBefore
+                && parent.IsConnected
+                && node.IsConnected
+                && parent.OwnerDocument == node.OwnerDocument)
+            {
+                try
+                {
+                    parent.MoveBefore(node, child);
+                    return true;
+                }
+                catch
+                {
+                    // moveBefore refuses some moves (e.g. across shadow roots); insert instead.
+                }
+            }
+
+            parent.InsertBefore(node, child);
+            return false;
+        }
+
+        /// <summary>
         /// Removes the attribute described by name.
         /// </summary>
         /// <param name="name"> The name. </param>

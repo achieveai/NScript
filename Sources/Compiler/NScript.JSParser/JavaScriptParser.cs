@@ -1,4 +1,4 @@
-// $ANTLR 3.3.0.7239 JavaScript.g3 2021-07-05 17:31:21
+// $ANTLR 3.3.0.7239 JavaScript.g3 2026-11-04 13:12:53
 
 // The variable 'variable' is assigned but its value is never used.
 #pragma warning disable 219
@@ -24,7 +24,7 @@ namespace NScript.JSParser
 public partial class JavaScriptParser : Antlr.Runtime.Parser
 {
 	internal static readonly string[] tokenNames = new string[] {
-		"<invalid>", "<EOR>", "<DOWN>", "<UP>", "ACCESSOR_EXPR", "AND", "ARGS", "ARGUMENTS", "ASN", "BINARY_EXPR", "BIT_AND", "BIT_AND_ASN", "BIT_NOT", "BIT_OR", "BIT_OR_ASN", "BIT_XOR", "BIT_XOR_ASN", "BOOL_LIT", "BREAK", "BoolLiteral", "CATCH", "COMMA", "CONDITIONAL_EXPR", "CONTINUE", "CharacterEscapeSequence", "Comment", "DELETE", "DIV", "DIV_ASN", "DOT_ACCESSOR_EXPR", "DOUBLE_NOT", "DO_BLOCK", "DecimalDigit", "DecimalLiteral", "DoubleStringCharacter", "EMPTY_STATEMENT", "EQ", "EXPR", "EscapeCharacter", "EscapeSequence", "ExponentPart", "FALSE", "FINALLY", "FOR_BLOCK", "FOR_IN_BLOCK", "FUNCTION", "FUNCTION_BODY", "GT", "GTE", "GenericSignature", "HexDigit", "HexEscapeSequence", "HexIntegerLiteral", "IDENTIFIER", "IF_BLOCK", "IMPORT_START", "IN", "INDEX_ARG", "INDEX_EXPR", "INLINE_ARRAY_INIT", "INLINE_OBJ_INIT", "INSTANCE_JSNI", "INST_OF", "Identifier", "IdentifierPart", "IdentifierStart", "LT", "LTE", "LineComment", "MEMBER_NAME", "METHOD_CALL", "MINUS", "MINUS_ASN", "MINUS_INC", "MOD", "MOD_ASN", "MUL", "MUL_ASN", "NEQ", "NEW", "NEWLINE", "NEW_OBJ_EXPR", "NOT", "NULL", "NUM_LIT", "NonEscapeCharacter", "NumericLiteral", "OR", "PLUS", "PLUS_ASN", "PLUS_INC", "POSTFIX", "PREFIX", "PROP_NAME_VALUE", "REQ", "RETURN", "RETURN_STATEMENT", "RNQ", "SEMI", "SHL", "SHL_ASN", "SHR", "SHR_ASN", "STATEMENTS", "STATEMENT_BLOCK", "STR_LIT", "SingleEscapeCharacter", "SingleStringCharacter", "SkipSpace", "StringLiteral", "THIS", "THROW", "TRUE", "TRY", "TYPENAME", "TYPEPART", "TYPE_OF", "TYPE_SEPERATOR", "TypeNameIdentifier", "USHR", "USHR_ASN", "UnicodeCombiningMark", "UnicodeConnectorPunctuation", "UnicodeDigit", "UnicodeEscapeSequence", "UnicodeLetter", "VAR", "VOID", "WHILE_BLOCK", "WhiteSpace", "'('", "')'", "'.'", "':'", "'?'", "'['", "']'", "'case'", "'default'", "'do'", "'else'", "'for'", "'function'", "'if'", "'switch'", "'while'", "'with'", "'{'", "'}'"
+		"<invalid>", "<EOR>", "<DOWN>", "<UP>", "ACCESSOR_EXPR", "AND", "ARGS", "ARGUMENTS", "ASN", "BINARY_EXPR", "BIT_AND", "BIT_AND_ASN", "BIT_NOT", "BIT_OR", "BIT_OR_ASN", "BIT_XOR", "BIT_XOR_ASN", "BOOL_LIT", "BREAK", "BoolLiteral", "CATCH", "COMMA", "CONDITIONAL_EXPR", "CONTINUE", "CharacterEscapeSequence", "Comment", "DELETE", "DIV", "DIV_ASN", "DOT_ACCESSOR_EXPR", "DOUBLE_NOT", "DO_BLOCK", "DecimalDigit", "DecimalLiteral", "DoubleStringCharacter", "EMPTY_STATEMENT", "EQ", "EXPR", "EscapeCharacter", "EscapeSequence", "ExponentPart", "FALSE", "FINALLY", "FOR_BLOCK", "FOR_IN_BLOCK", "FUNCTION", "FUNCTION_BODY", "GT", "GTE", "GenericSignature", "HexDigit", "HexEscapeSequence", "HexIntegerLiteral", "IDENTIFIER", "IF_BLOCK", "IMPORT_START", "IN", "INDEX_ARG", "INDEX_EXPR", "INLINE_ARRAY_INIT", "INLINE_OBJ_INIT", "INSTANCE_JSNI", "INST_OF", "Identifier", "IdentifierPart", "IdentifierStart", "LT", "LTE", "LineComment", "MEMBER_NAME", "METHOD_CALL", "MINUS", "MINUS_ASN", "MINUS_INC", "MOD", "MOD_ASN", "MUL", "MUL_ASN", "NEQ", "NEW", "NEWLINE", "NEW_OBJ_EXPR", "NOT", "NULL", "NUM_LIT", "NonEscapeCharacter", "NumericLiteral", "OR", "PLUS", "PLUS_ASN", "PLUS_INC", "POSTFIX", "PREFIX", "PROP_NAME_VALUE", "REQ", "RETURN", "RETURN_STATEMENT", "RNQ", "RegexBackslash", "RegexChar", "RegexClass", "RegexFirstChar", "RegexFlag", "RegularExpressionLiteral", "SEMI", "SHL", "SHL_ASN", "SHR", "SHR_ASN", "STATEMENTS", "STATEMENT_BLOCK", "STR_LIT", "SingleEscapeCharacter", "SingleStringCharacter", "SkipSpace", "StringLiteral", "THIS", "THROW", "TRUE", "TRY", "TYPENAME", "TYPEPART", "TYPE_OF", "TYPE_SEPERATOR", "TypeNameIdentifier", "USHR", "USHR_ASN", "UnicodeCombiningMark", "UnicodeConnectorPunctuation", "UnicodeDigit", "UnicodeEscapeSequence", "UnicodeLetter", "VAR", "VOID", "WHILE_BLOCK", "WhiteSpace", "'('", "')'", "'.'", "':'", "'?'", "'['", "']'", "'case'", "'default'", "'do'", "'else'", "'for'", "'function'", "'if'", "'switch'", "'while'", "'with'", "'{'", "'}'"
 	};
 	public const int EOF=-1;
 	public const int ACCESSOR_EXPR=4;
@@ -121,44 +121,44 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	public const int RETURN=95;
 	public const int RETURN_STATEMENT=96;
 	public const int RNQ=97;
-	public const int SEMI=98;
-	public const int SHL=99;
-	public const int SHL_ASN=100;
-	public const int SHR=101;
-	public const int SHR_ASN=102;
-	public const int STATEMENTS=103;
-	public const int STATEMENT_BLOCK=104;
-	public const int STR_LIT=105;
-	public const int SingleEscapeCharacter=106;
-	public const int SingleStringCharacter=107;
-	public const int SkipSpace=108;
-	public const int StringLiteral=109;
-	public const int THIS=110;
-	public const int THROW=111;
-	public const int TRUE=112;
-	public const int TRY=113;
-	public const int TYPENAME=114;
-	public const int TYPEPART=115;
-	public const int TYPE_OF=116;
-	public const int TYPE_SEPERATOR=117;
-	public const int TypeNameIdentifier=118;
-	public const int USHR=119;
-	public const int USHR_ASN=120;
-	public const int UnicodeCombiningMark=121;
-	public const int UnicodeConnectorPunctuation=122;
-	public const int UnicodeDigit=123;
-	public const int UnicodeEscapeSequence=124;
-	public const int UnicodeLetter=125;
-	public const int VAR=126;
-	public const int VOID=127;
-	public const int WHILE_BLOCK=128;
-	public const int WhiteSpace=129;
-	public const int T__130=130;
-	public const int T__131=131;
-	public const int T__132=132;
-	public const int T__133=133;
-	public const int T__134=134;
-	public const int T__135=135;
+	public const int RegexBackslash=98;
+	public const int RegexChar=99;
+	public const int RegexClass=100;
+	public const int RegexFirstChar=101;
+	public const int RegexFlag=102;
+	public const int RegularExpressionLiteral=103;
+	public const int SEMI=104;
+	public const int SHL=105;
+	public const int SHL_ASN=106;
+	public const int SHR=107;
+	public const int SHR_ASN=108;
+	public const int STATEMENTS=109;
+	public const int STATEMENT_BLOCK=110;
+	public const int STR_LIT=111;
+	public const int SingleEscapeCharacter=112;
+	public const int SingleStringCharacter=113;
+	public const int SkipSpace=114;
+	public const int StringLiteral=115;
+	public const int THIS=116;
+	public const int THROW=117;
+	public const int TRUE=118;
+	public const int TRY=119;
+	public const int TYPENAME=120;
+	public const int TYPEPART=121;
+	public const int TYPE_OF=122;
+	public const int TYPE_SEPERATOR=123;
+	public const int TypeNameIdentifier=124;
+	public const int USHR=125;
+	public const int USHR_ASN=126;
+	public const int UnicodeCombiningMark=127;
+	public const int UnicodeConnectorPunctuation=128;
+	public const int UnicodeDigit=129;
+	public const int UnicodeEscapeSequence=130;
+	public const int UnicodeLetter=131;
+	public const int VAR=132;
+	public const int VOID=133;
+	public const int WHILE_BLOCK=134;
+	public const int WhiteSpace=135;
 	public const int T__136=136;
 	public const int T__137=137;
 	public const int T__138=138;
@@ -172,6 +172,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	public const int T__146=146;
 	public const int T__147=147;
 	public const int T__148=148;
+	public const int T__149=149;
+	public const int T__150=150;
+	public const int T__151=151;
+	public const int T__152=152;
+	public const int T__153=153;
+	public const int T__154=154;
 
 	// delegates
 	// delegators
@@ -227,7 +233,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	public JavaScriptParser(ITokenStream input, RecognizerSharedState state)
 		: base(input, state)
 	{
-		this.state.ruleMemo = new System.Collections.Generic.Dictionary<int, int>[416+1];
+		this.state.ruleMemo = new System.Collections.Generic.Dictionary<int, int>[417+1];
 
 		ITreeAdaptor treeAdaptor = null;
 		CreateTreeAdaptor(ref treeAdaptor);
@@ -766,7 +772,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace11_tree=null;
 		CommonTree SkipSpace12_tree=null;
 		CommonTree SkipSpace13_tree=null;
-		RewriteRuleITokenStream stream_142=new RewriteRuleITokenStream(adaptor,"token 142");
+		RewriteRuleITokenStream stream_148=new RewriteRuleITokenStream(adaptor,"token 148");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
 		RewriteRuleSubtreeStream stream_formalParameterList=new RewriteRuleSubtreeStream(adaptor,"rule formalParameterList");
@@ -781,8 +787,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:80:7: 'function' ( SkipSpace )* name= Identifier ( SkipSpace )* args= formalParameterList ( SkipSpace )* body= functionBody
 			{
 			DebugLocation(80, 7);
-			string_literal10=(CommonToken)Match(input,142,Follow._142_in_functionDeclaration447); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_142.Add(string_literal10);
+			string_literal10=(CommonToken)Match(input,148,Follow._148_in_functionDeclaration447); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_148.Add(string_literal10);
 
 			DebugLocation(80, 18);
 			// JavaScript.g3:80:18: ( SkipSpace )*
@@ -1029,7 +1035,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace15_tree=null;
 		CommonTree SkipSpace16_tree=null;
 		CommonTree SkipSpace17_tree=null;
-		RewriteRuleITokenStream stream_142=new RewriteRuleITokenStream(adaptor,"token 142");
+		RewriteRuleITokenStream stream_148=new RewriteRuleITokenStream(adaptor,"token 148");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
 		RewriteRuleSubtreeStream stream_formalParameterList=new RewriteRuleSubtreeStream(adaptor,"rule formalParameterList");
@@ -1044,8 +1050,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:85:7: 'function' ( SkipSpace )* (name= Identifier )? ( SkipSpace )* args= formalParameterList ( SkipSpace )* body= functionBody
 			{
 			DebugLocation(85, 7);
-			string_literal14=(CommonToken)Match(input,142,Follow._142_in_functionExpression508); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_142.Add(string_literal14);
+			string_literal14=(CommonToken)Match(input,148,Follow._148_in_functionExpression508); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_148.Add(string_literal14);
 
 			DebugLocation(85, 18);
 			// JavaScript.g3:85:18: ( SkipSpace )*
@@ -1337,11 +1343,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree Identifier24_tree=null;
 		CommonTree SkipSpace25_tree=null;
 		CommonTree char_literal26_tree=null;
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
 		RewriteRuleITokenStream stream_COMMA=new RewriteRuleITokenStream(adaptor,"token COMMA");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 
 		try { DebugEnterRule(GrammarFileName, "formalParameterList");
 		DebugLocation(89, 4);
@@ -1353,8 +1359,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:90:7: '(' ( ( SkipSpace )* Identifier ( ( SkipSpace )* ',' ( SkipSpace )* Identifier )* )? ( SkipSpace )* ')'
 			{
 			DebugLocation(90, 7);
-			char_literal18=(CommonToken)Match(input,130,Follow._130_in_formalParameterList571); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal18);
+			char_literal18=(CommonToken)Match(input,136,Follow._136_in_formalParameterList571); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal18);
 
 			DebugLocation(90, 11);
 			// JavaScript.g3:90:11: ( ( SkipSpace )* Identifier ( ( SkipSpace )* ',' ( SkipSpace )* Identifier )* )?
@@ -1594,8 +1600,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(18); }
 
 			DebugLocation(90, 87);
-			char_literal26=(CommonToken)Match(input,131,Follow._131_in_formalParameterList597); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal26);
+			char_literal26=(CommonToken)Match(input,137,Follow._137_in_formalParameterList597); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal26);
 
 
 
@@ -1703,9 +1709,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace28_tree=null;
 		CommonTree SkipSpace29_tree=null;
 		CommonTree char_literal30_tree=null;
-		RewriteRuleITokenStream stream_147=new RewriteRuleITokenStream(adaptor,"token 147");
+		RewriteRuleITokenStream stream_153=new RewriteRuleITokenStream(adaptor,"token 153");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_148=new RewriteRuleITokenStream(adaptor,"token 148");
+		RewriteRuleITokenStream stream_154=new RewriteRuleITokenStream(adaptor,"token 154");
 		RewriteRuleSubtreeStream stream_sourceElements=new RewriteRuleSubtreeStream(adaptor,"rule sourceElements");
 		try { DebugEnterRule(GrammarFileName, "functionBody");
 		DebugLocation(94, 4);
@@ -1717,8 +1723,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:95:7: '{' ( SkipSpace )* body= sourceElements ( SkipSpace )* '}'
 			{
 			DebugLocation(95, 7);
-			char_literal27=(CommonToken)Match(input,147,Follow._147_in_functionBody631); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_147.Add(char_literal27);
+			char_literal27=(CommonToken)Match(input,153,Follow._153_in_functionBody631); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_153.Add(char_literal27);
 
 			DebugLocation(95, 11);
 			// JavaScript.g3:95:11: ( SkipSpace )*
@@ -1807,8 +1813,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(20); }
 
 			DebugLocation(95, 53);
-			char_literal30=(CommonToken)Match(input,148,Follow._148_in_functionBody643); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_148.Add(char_literal30);
+			char_literal30=(CommonToken)Match(input,154,Follow._154_in_functionBody643); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_154.Add(char_literal30);
 
 
 
@@ -2209,9 +2215,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace46_tree=null;
 		CommonTree SkipSpace48_tree=null;
 		CommonTree char_literal49_tree=null;
-		RewriteRuleITokenStream stream_147=new RewriteRuleITokenStream(adaptor,"token 147");
+		RewriteRuleITokenStream stream_153=new RewriteRuleITokenStream(adaptor,"token 153");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_148=new RewriteRuleITokenStream(adaptor,"token 148");
+		RewriteRuleITokenStream stream_154=new RewriteRuleITokenStream(adaptor,"token 154");
 		RewriteRuleSubtreeStream stream_statementList=new RewriteRuleSubtreeStream(adaptor,"rule statementList");
 		try { DebugEnterRule(GrammarFileName, "statementBlock");
 		DebugLocation(117, 4);
@@ -2223,8 +2229,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:118:7: '{' ( SkipSpace )* ( statementList )? ( SkipSpace )* '}'
 			{
 			DebugLocation(118, 7);
-			char_literal45=(CommonToken)Match(input,147,Follow._147_in_statementBlock799); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_147.Add(char_literal45);
+			char_literal45=(CommonToken)Match(input,153,Follow._153_in_statementBlock799); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_153.Add(char_literal45);
 
 			DebugLocation(118, 11);
 			// JavaScript.g3:118:11: ( SkipSpace )*
@@ -2280,7 +2286,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(23, decisionCanBacktrack[23]);
 			int LA23_0 = input.LA(1);
 
-			if ((LA23_0==BIT_NOT||(LA23_0>=BREAK && LA23_0<=BoolLiteral)||LA23_0==CONTINUE||LA23_0==DELETE||LA23_0==DOUBLE_NOT||LA23_0==FALSE||LA23_0==IMPORT_START||LA23_0==Identifier||LA23_0==MINUS||LA23_0==MINUS_INC||LA23_0==NEW||(LA23_0>=NOT && LA23_0<=NULL)||LA23_0==NumericLiteral||LA23_0==PLUS||LA23_0==PLUS_INC||LA23_0==RETURN||LA23_0==SEMI||(LA23_0>=StringLiteral && LA23_0<=THROW)||LA23_0==TRY||LA23_0==TYPE_OF||(LA23_0>=VAR && LA23_0<=VOID)||LA23_0==130||LA23_0==135||LA23_0==139||(LA23_0>=141 && LA23_0<=147)))
+			if ((LA23_0==BIT_NOT||(LA23_0>=BREAK && LA23_0<=BoolLiteral)||LA23_0==CONTINUE||LA23_0==DELETE||LA23_0==DOUBLE_NOT||LA23_0==FALSE||LA23_0==IMPORT_START||LA23_0==Identifier||LA23_0==MINUS||LA23_0==MINUS_INC||LA23_0==NEW||(LA23_0>=NOT && LA23_0<=NULL)||LA23_0==NumericLiteral||LA23_0==PLUS||LA23_0==PLUS_INC||LA23_0==RETURN||(LA23_0>=RegularExpressionLiteral && LA23_0<=SEMI)||(LA23_0>=StringLiteral && LA23_0<=THROW)||LA23_0==TRY||LA23_0==TYPE_OF||(LA23_0>=VAR && LA23_0<=VOID)||LA23_0==136||LA23_0==141||LA23_0==145||(LA23_0>=147 && LA23_0<=153)))
 			{
 				alt23=1;
 			}
@@ -2345,8 +2351,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(24); }
 
 			DebugLocation(118, 48);
-			char_literal49=(CommonToken)Match(input,148,Follow._148_in_statementBlock810); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_148.Add(char_literal49);
+			char_literal49=(CommonToken)Match(input,154,Follow._154_in_statementBlock810); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_154.Add(char_literal49);
 
 
 
@@ -4074,11 +4080,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace86_tree=null;
 		CommonTree string_literal87_tree=null;
 		CommonTree SkipSpace88_tree=null;
-		RewriteRuleITokenStream stream_143=new RewriteRuleITokenStream(adaptor,"token 143");
+		RewriteRuleITokenStream stream_149=new RewriteRuleITokenStream(adaptor,"token 149");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
-		RewriteRuleITokenStream stream_140=new RewriteRuleITokenStream(adaptor,"token 140");
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
+		RewriteRuleITokenStream stream_146=new RewriteRuleITokenStream(adaptor,"token 146");
 		RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
 		RewriteRuleSubtreeStream stream_statement=new RewriteRuleSubtreeStream(adaptor,"rule statement");
 		try { DebugEnterRule(GrammarFileName, "ifStatement");
@@ -4091,8 +4097,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:164:7: 'if' ( SkipSpace )* '(' ( SkipSpace )* cond= expression ( SkipSpace )* ')' ( SkipSpace )* ifs= statement ( ( SkipSpace )* 'else' ( SkipSpace )* els= statement )?
 			{
 			DebugLocation(164, 7);
-			string_literal79=(CommonToken)Match(input,143,Follow._143_in_ifStatement1173); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_143.Add(string_literal79);
+			string_literal79=(CommonToken)Match(input,149,Follow._149_in_ifStatement1173); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_149.Add(string_literal79);
 
 			DebugLocation(164, 12);
 			// JavaScript.g3:164:12: ( SkipSpace )*
@@ -4135,8 +4141,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(42); }
 
 			DebugLocation(164, 23);
-			char_literal81=(CommonToken)Match(input,130,Follow._130_in_ifStatement1178); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal81);
+			char_literal81=(CommonToken)Match(input,136,Follow._136_in_ifStatement1178); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal81);
 
 			DebugLocation(164, 27);
 			// JavaScript.g3:164:27: ( SkipSpace )*
@@ -4225,8 +4231,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(44); }
 
 			DebugLocation(164, 65);
-			char_literal84=(CommonToken)Match(input,131,Follow._131_in_ifStatement1190); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal84);
+			char_literal84=(CommonToken)Match(input,137,Follow._137_in_ifStatement1190); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal84);
 
 			DebugLocation(164, 69);
 			// JavaScript.g3:164:69: ( SkipSpace )*
@@ -4290,7 +4296,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					alt48=1;
 				}
 			}
-			else if ((LA48_0==140))
+			else if ((LA48_0==146))
 			{
 				int LA48_2 = input.LA(2);
 
@@ -4347,8 +4353,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				} finally { DebugExitSubRule(46); }
 
 				DebugLocation(164, 106);
-				string_literal87=(CommonToken)Match(input,140,Follow._140_in_ifStatement1203); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_140.Add(string_literal87);
+				string_literal87=(CommonToken)Match(input,146,Follow._146_in_ifStatement1203); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_146.Add(string_literal87);
 
 				DebugLocation(164, 113);
 				// JavaScript.g3:164:113: ( SkipSpace )*
@@ -4522,17 +4528,17 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(49, decisionCanBacktrack[49]);
 			switch (input.LA(1))
 			{
-			case 139:
+			case 145:
 				{
 				alt49=1;
 				}
 				break;
-			case 145:
+			case 151:
 				{
 				alt49=2;
 				}
 				break;
-			case 141:
+			case 147:
 				{
 				int LA49_3 = input.LA(2);
 
@@ -4701,11 +4707,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree char_literal99_tree=null;
 		CommonTree SkipSpace100_tree=null;
 		CommonTree SEMI101_tree=null;
-		RewriteRuleITokenStream stream_139=new RewriteRuleITokenStream(adaptor,"token 139");
-		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_145=new RewriteRuleITokenStream(adaptor,"token 145");
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
+		RewriteRuleITokenStream stream_151=new RewriteRuleITokenStream(adaptor,"token 151");
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 		RewriteRuleITokenStream stream_SEMI=new RewriteRuleITokenStream(adaptor,"token SEMI");
 		RewriteRuleSubtreeStream stream_statement=new RewriteRuleSubtreeStream(adaptor,"rule statement");
 		RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
@@ -4719,8 +4725,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:176:7: 'do' ( SkipSpace )* blk= statement ( SkipSpace )* 'while' ( SkipSpace )* '(' cond= expression ')' ( SkipSpace )* SEMI
 			{
 			DebugLocation(176, 7);
-			string_literal93=(CommonToken)Match(input,139,Follow._139_in_doWhileStatement1294); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_139.Add(string_literal93);
+			string_literal93=(CommonToken)Match(input,145,Follow._145_in_doWhileStatement1294); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_145.Add(string_literal93);
 
 			DebugLocation(176, 12);
 			// JavaScript.g3:176:12: ( SkipSpace )*
@@ -4809,8 +4815,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(51); }
 
 			DebugLocation(176, 48);
-			string_literal96=(CommonToken)Match(input,145,Follow._145_in_doWhileStatement1306); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_145.Add(string_literal96);
+			string_literal96=(CommonToken)Match(input,151,Follow._151_in_doWhileStatement1306); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_151.Add(string_literal96);
 
 			DebugLocation(176, 56);
 			// JavaScript.g3:176:56: ( SkipSpace )*
@@ -4853,8 +4859,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(52); }
 
 			DebugLocation(176, 67);
-			char_literal98=(CommonToken)Match(input,130,Follow._130_in_doWhileStatement1311); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal98);
+			char_literal98=(CommonToken)Match(input,136,Follow._136_in_doWhileStatement1311); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal98);
 
 			DebugLocation(176, 75);
 			PushFollow(Follow._expression_in_doWhileStatement1315);
@@ -4863,8 +4869,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			if (state.failed) return retval;
 			if ( state.backtracking == 0 ) stream_expression.Add(cond.Tree);
 			DebugLocation(176, 87);
-			char_literal99=(CommonToken)Match(input,131,Follow._131_in_doWhileStatement1317); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal99);
+			char_literal99=(CommonToken)Match(input,137,Follow._137_in_doWhileStatement1317); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal99);
 
 			DebugLocation(176, 91);
 			// JavaScript.g3:176:91: ( SkipSpace )*
@@ -5020,10 +5026,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace106_tree=null;
 		CommonTree char_literal107_tree=null;
 		CommonTree SkipSpace108_tree=null;
-		RewriteRuleITokenStream stream_145=new RewriteRuleITokenStream(adaptor,"token 145");
+		RewriteRuleITokenStream stream_151=new RewriteRuleITokenStream(adaptor,"token 151");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 		RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
 		RewriteRuleSubtreeStream stream_statement=new RewriteRuleSubtreeStream(adaptor,"rule statement");
 		try { DebugEnterRule(GrammarFileName, "whileStatement");
@@ -5036,8 +5042,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:181:7: 'while' ( SkipSpace )* '(' ( SkipSpace )* cond= expression ( SkipSpace )* ')' ( SkipSpace )* blk= statement
 			{
 			DebugLocation(181, 7);
-			string_literal102=(CommonToken)Match(input,145,Follow._145_in_whileStatement1359); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_145.Add(string_literal102);
+			string_literal102=(CommonToken)Match(input,151,Follow._151_in_whileStatement1359); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_151.Add(string_literal102);
 
 			DebugLocation(181, 15);
 			// JavaScript.g3:181:15: ( SkipSpace )*
@@ -5080,8 +5086,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(54); }
 
 			DebugLocation(181, 26);
-			char_literal104=(CommonToken)Match(input,130,Follow._130_in_whileStatement1364); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal104);
+			char_literal104=(CommonToken)Match(input,136,Follow._136_in_whileStatement1364); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal104);
 
 			DebugLocation(181, 30);
 			// JavaScript.g3:181:30: ( SkipSpace )*
@@ -5170,8 +5176,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(56); }
 
 			DebugLocation(181, 68);
-			char_literal107=(CommonToken)Match(input,131,Follow._131_in_whileStatement1376); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal107);
+			char_literal107=(CommonToken)Match(input,137,Follow._137_in_whileStatement1376); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal107);
 
 			DebugLocation(181, 72);
 			// JavaScript.g3:181:72: ( SkipSpace )*
@@ -5343,11 +5349,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace117_tree=null;
 		CommonTree char_literal118_tree=null;
 		CommonTree SkipSpace119_tree=null;
-		RewriteRuleITokenStream stream_141=new RewriteRuleITokenStream(adaptor,"token 141");
+		RewriteRuleITokenStream stream_147=new RewriteRuleITokenStream(adaptor,"token 147");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
 		RewriteRuleITokenStream stream_SEMI=new RewriteRuleITokenStream(adaptor,"token SEMI");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 		RewriteRuleSubtreeStream stream_forStatementInitialiserPart=new RewriteRuleSubtreeStream(adaptor,"rule forStatementInitialiserPart");
 		RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
 		RewriteRuleSubtreeStream stream_statement=new RewriteRuleSubtreeStream(adaptor,"rule statement");
@@ -5361,8 +5367,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:186:7: 'for' ( SkipSpace )* '(' ( SkipSpace )* (ini= forStatementInitialiserPart )? ( SkipSpace )* s1= SEMI ( SkipSpace )* (compareExp= expression )? ( SkipSpace )* s2= SEMI ( SkipSpace )* (incrementExp= expression )? ( SkipSpace )* ')' ( SkipSpace )* blk= statement
 			{
 			DebugLocation(186, 7);
-			string_literal109=(CommonToken)Match(input,141,Follow._141_in_forStatement1420); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_141.Add(string_literal109);
+			string_literal109=(CommonToken)Match(input,147,Follow._147_in_forStatement1420); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_147.Add(string_literal109);
 
 			DebugLocation(186, 13);
 			// JavaScript.g3:186:13: ( SkipSpace )*
@@ -5405,8 +5411,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(58); }
 
 			DebugLocation(186, 24);
-			char_literal111=(CommonToken)Match(input,130,Follow._130_in_forStatement1425); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal111);
+			char_literal111=(CommonToken)Match(input,136,Follow._136_in_forStatement1425); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal111);
 
 			DebugLocation(186, 28);
 			// JavaScript.g3:186:28: ( SkipSpace )*
@@ -5462,7 +5468,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(60, decisionCanBacktrack[60]);
 			int LA60_0 = input.LA(1);
 
-			if ((LA60_0==BIT_NOT||LA60_0==BoolLiteral||LA60_0==DELETE||LA60_0==DOUBLE_NOT||LA60_0==FALSE||LA60_0==IMPORT_START||LA60_0==Identifier||LA60_0==MINUS||LA60_0==MINUS_INC||LA60_0==NEW||(LA60_0>=NOT && LA60_0<=NULL)||LA60_0==NumericLiteral||LA60_0==PLUS||LA60_0==PLUS_INC||(LA60_0>=StringLiteral && LA60_0<=THIS)||LA60_0==TYPE_OF||(LA60_0>=VAR && LA60_0<=VOID)||LA60_0==130||LA60_0==135||LA60_0==142||LA60_0==147))
+			if ((LA60_0==BIT_NOT||LA60_0==BoolLiteral||LA60_0==DELETE||LA60_0==DOUBLE_NOT||LA60_0==FALSE||LA60_0==IMPORT_START||LA60_0==Identifier||LA60_0==MINUS||LA60_0==MINUS_INC||LA60_0==NEW||(LA60_0>=NOT && LA60_0<=NULL)||LA60_0==NumericLiteral||LA60_0==PLUS||LA60_0==PLUS_INC||LA60_0==RegularExpressionLiteral||(LA60_0>=StringLiteral && LA60_0<=THIS)||LA60_0==TYPE_OF||(LA60_0>=VAR && LA60_0<=VOID)||LA60_0==136||LA60_0==141||LA60_0==148||LA60_0==153))
 			{
 				alt60=1;
 			}
@@ -5584,7 +5590,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(63, decisionCanBacktrack[63]);
 			int LA63_0 = input.LA(1);
 
-			if ((LA63_0==BIT_NOT||LA63_0==BoolLiteral||LA63_0==DELETE||LA63_0==DOUBLE_NOT||LA63_0==FALSE||LA63_0==IMPORT_START||LA63_0==Identifier||LA63_0==MINUS||LA63_0==MINUS_INC||LA63_0==NEW||(LA63_0>=NOT && LA63_0<=NULL)||LA63_0==NumericLiteral||LA63_0==PLUS||LA63_0==PLUS_INC||(LA63_0>=StringLiteral && LA63_0<=THIS)||LA63_0==TYPE_OF||LA63_0==VOID||LA63_0==130||LA63_0==135||LA63_0==142||LA63_0==147))
+			if ((LA63_0==BIT_NOT||LA63_0==BoolLiteral||LA63_0==DELETE||LA63_0==DOUBLE_NOT||LA63_0==FALSE||LA63_0==IMPORT_START||LA63_0==Identifier||LA63_0==MINUS||LA63_0==MINUS_INC||LA63_0==NEW||(LA63_0>=NOT && LA63_0<=NULL)||LA63_0==NumericLiteral||LA63_0==PLUS||LA63_0==PLUS_INC||LA63_0==RegularExpressionLiteral||(LA63_0>=StringLiteral && LA63_0<=THIS)||LA63_0==TYPE_OF||LA63_0==VOID||LA63_0==136||LA63_0==141||LA63_0==148||LA63_0==153))
 			{
 				alt63=1;
 			}
@@ -5706,7 +5712,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(66, decisionCanBacktrack[66]);
 			int LA66_0 = input.LA(1);
 
-			if ((LA66_0==BIT_NOT||LA66_0==BoolLiteral||LA66_0==DELETE||LA66_0==DOUBLE_NOT||LA66_0==FALSE||LA66_0==IMPORT_START||LA66_0==Identifier||LA66_0==MINUS||LA66_0==MINUS_INC||LA66_0==NEW||(LA66_0>=NOT && LA66_0<=NULL)||LA66_0==NumericLiteral||LA66_0==PLUS||LA66_0==PLUS_INC||(LA66_0>=StringLiteral && LA66_0<=THIS)||LA66_0==TYPE_OF||LA66_0==VOID||LA66_0==130||LA66_0==135||LA66_0==142||LA66_0==147))
+			if ((LA66_0==BIT_NOT||LA66_0==BoolLiteral||LA66_0==DELETE||LA66_0==DOUBLE_NOT||LA66_0==FALSE||LA66_0==IMPORT_START||LA66_0==Identifier||LA66_0==MINUS||LA66_0==MINUS_INC||LA66_0==NEW||(LA66_0>=NOT && LA66_0<=NULL)||LA66_0==NumericLiteral||LA66_0==PLUS||LA66_0==PLUS_INC||LA66_0==RegularExpressionLiteral||(LA66_0>=StringLiteral && LA66_0<=THIS)||LA66_0==TYPE_OF||LA66_0==VOID||LA66_0==136||LA66_0==141||LA66_0==148||LA66_0==153))
 			{
 				alt66=1;
 			}
@@ -5771,8 +5777,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(67); }
 
 			DebugLocation(186, 197);
-			char_literal118=(CommonToken)Match(input,131,Follow._131_in_forStatement1474); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal118);
+			char_literal118=(CommonToken)Match(input,137,Follow._137_in_forStatement1474); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal118);
 
 			DebugLocation(186, 201);
 			// JavaScript.g3:186:201: ( SkipSpace )*
@@ -5964,7 +5970,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(70, decisionCanBacktrack[70]);
 			int LA70_0 = input.LA(1);
 
-			if ((LA70_0==BIT_NOT||LA70_0==BoolLiteral||LA70_0==DELETE||LA70_0==DOUBLE_NOT||LA70_0==FALSE||LA70_0==IMPORT_START||LA70_0==Identifier||LA70_0==MINUS||LA70_0==MINUS_INC||LA70_0==NEW||(LA70_0>=NOT && LA70_0<=NULL)||LA70_0==NumericLiteral||LA70_0==PLUS||LA70_0==PLUS_INC||(LA70_0>=StringLiteral && LA70_0<=THIS)||LA70_0==TYPE_OF||LA70_0==VOID||LA70_0==130||LA70_0==135||LA70_0==142||LA70_0==147))
+			if ((LA70_0==BIT_NOT||LA70_0==BoolLiteral||LA70_0==DELETE||LA70_0==DOUBLE_NOT||LA70_0==FALSE||LA70_0==IMPORT_START||LA70_0==Identifier||LA70_0==MINUS||LA70_0==MINUS_INC||LA70_0==NEW||(LA70_0>=NOT && LA70_0<=NULL)||LA70_0==NumericLiteral||LA70_0==PLUS||LA70_0==PLUS_INC||LA70_0==RegularExpressionLiteral||(LA70_0>=StringLiteral && LA70_0<=THIS)||LA70_0==TYPE_OF||LA70_0==VOID||LA70_0==136||LA70_0==141||LA70_0==148||LA70_0==153))
 			{
 				alt70=1;
 			}
@@ -6004,14 +6010,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(192, 7);
+				DebugLocation(192, 10);
 				VAR121=(CommonToken)Match(input,VAR,Follow._VAR_in_forStatementInitialiserPart1542); if (state.failed) return retval;
-				if ( state.backtracking==0 ) {
+				if ( state.backtracking == 0 ) {
 				VAR121_tree = (CommonTree)adaptor.Create(VAR121);
-				adaptor.AddChild(root_0, VAR121_tree);
+				root_0 = (CommonTree)adaptor.BecomeRoot(VAR121_tree, root_0);
 				}
-				DebugLocation(192, 20);
-				// JavaScript.g3:192:20: ( SkipSpace )*
+				DebugLocation(192, 21);
+				// JavaScript.g3:192:21: ( SkipSpace )*
 				try { DebugEnterSubRule(69);
 				while (true)
 				{
@@ -6030,10 +6036,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:192:20: SkipSpace
+						// JavaScript.g3:192:21: SkipSpace
 						{
-						DebugLocation(192, 20);
-						SkipSpace122=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forStatementInitialiserPart1544); if (state.failed) return retval;
+						DebugLocation(192, 21);
+						SkipSpace122=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forStatementInitialiserPart1545); if (state.failed) return retval;
 
 						}
 						break;
@@ -6048,8 +6054,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(69); }
 
-				DebugLocation(192, 23);
-				PushFollow(Follow._variableDeclarationListNoIn_in_forStatementInitialiserPart1548);
+				DebugLocation(192, 24);
+				PushFollow(Follow._variableDeclarationListNoIn_in_forStatementInitialiserPart1549);
 				variableDeclarationListNoIn123=variableDeclarationListNoIn();
 				PopFollow();
 				if (state.failed) return retval;
@@ -6134,11 +6140,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree SkipSpace133_tree=null;
 		CommonTree char_literal134_tree=null;
 		CommonTree SkipSpace135_tree=null;
-		RewriteRuleITokenStream stream_141=new RewriteRuleITokenStream(adaptor,"token 141");
+		RewriteRuleITokenStream stream_147=new RewriteRuleITokenStream(adaptor,"token 147");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
 		RewriteRuleITokenStream stream_IN=new RewriteRuleITokenStream(adaptor,"token IN");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 		RewriteRuleSubtreeStream stream_forInStatementInitialiserPart=new RewriteRuleSubtreeStream(adaptor,"rule forInStatementInitialiserPart");
 		RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
 		RewriteRuleSubtreeStream stream_statement=new RewriteRuleSubtreeStream(adaptor,"rule statement");
@@ -6152,8 +6158,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:196:7: 'for' ( SkipSpace )* '(' ( SkipSpace )* forInStatementInitialiserPart ( SkipSpace )* 'in' ( SkipSpace )* expression ( SkipSpace )* ')' ( SkipSpace )* statement
 			{
 			DebugLocation(196, 7);
-			string_literal124=(CommonToken)Match(input,141,Follow._141_in_forInStatement1565); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_141.Add(string_literal124);
+			string_literal124=(CommonToken)Match(input,147,Follow._147_in_forInStatement1566); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_147.Add(string_literal124);
 
 			DebugLocation(196, 13);
 			// JavaScript.g3:196:13: ( SkipSpace )*
@@ -6178,7 +6184,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:196:13: SkipSpace
 					{
 					DebugLocation(196, 13);
-					SkipSpace125=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1567); if (state.failed) return retval; 
+					SkipSpace125=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1568); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace125);
 
 
@@ -6196,8 +6202,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(71); }
 
 			DebugLocation(196, 24);
-			char_literal126=(CommonToken)Match(input,130,Follow._130_in_forInStatement1570); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal126);
+			char_literal126=(CommonToken)Match(input,136,Follow._136_in_forInStatement1571); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal126);
 
 			DebugLocation(196, 28);
 			// JavaScript.g3:196:28: ( SkipSpace )*
@@ -6222,7 +6228,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:196:28: SkipSpace
 					{
 					DebugLocation(196, 28);
-					SkipSpace127=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1572); if (state.failed) return retval; 
+					SkipSpace127=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1573); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace127);
 
 
@@ -6240,7 +6246,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(72); }
 
 			DebugLocation(196, 39);
-			PushFollow(Follow._forInStatementInitialiserPart_in_forInStatement1575);
+			PushFollow(Follow._forInStatementInitialiserPart_in_forInStatement1576);
 			forInStatementInitialiserPart128=forInStatementInitialiserPart();
 			PopFollow();
 			if (state.failed) return retval;
@@ -6268,7 +6274,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:196:69: SkipSpace
 					{
 					DebugLocation(196, 69);
-					SkipSpace129=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1577); if (state.failed) return retval; 
+					SkipSpace129=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1578); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace129);
 
 
@@ -6286,7 +6292,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(73); }
 
 			DebugLocation(196, 80);
-			string_literal130=(CommonToken)Match(input,IN,Follow._IN_in_forInStatement1580); if (state.failed) return retval; 
+			string_literal130=(CommonToken)Match(input,IN,Follow._IN_in_forInStatement1581); if (state.failed) return retval; 
 			if ( state.backtracking == 0 ) stream_IN.Add(string_literal130);
 
 			DebugLocation(196, 85);
@@ -6312,7 +6318,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:196:85: SkipSpace
 					{
 					DebugLocation(196, 85);
-					SkipSpace131=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1582); if (state.failed) return retval; 
+					SkipSpace131=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1583); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace131);
 
 
@@ -6330,7 +6336,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(74); }
 
 			DebugLocation(196, 96);
-			PushFollow(Follow._expression_in_forInStatement1585);
+			PushFollow(Follow._expression_in_forInStatement1586);
 			expression132=expression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -6358,7 +6364,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:196:107: SkipSpace
 					{
 					DebugLocation(196, 107);
-					SkipSpace133=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1587); if (state.failed) return retval; 
+					SkipSpace133=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1588); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace133);
 
 
@@ -6376,8 +6382,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(75); }
 
 			DebugLocation(196, 118);
-			char_literal134=(CommonToken)Match(input,131,Follow._131_in_forInStatement1590); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal134);
+			char_literal134=(CommonToken)Match(input,137,Follow._137_in_forInStatement1591); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal134);
 
 			DebugLocation(196, 122);
 			// JavaScript.g3:196:122: ( SkipSpace )*
@@ -6402,7 +6408,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:196:122: SkipSpace
 					{
 					DebugLocation(196, 122);
-					SkipSpace135=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1592); if (state.failed) return retval; 
+					SkipSpace135=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatement1593); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace135);
 
 
@@ -6420,7 +6426,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(76); }
 
 			DebugLocation(196, 133);
-			PushFollow(Follow._statement_in_forInStatement1595);
+			PushFollow(Follow._statement_in_forInStatement1596);
 			statement136=statement();
 			PopFollow();
 			if (state.failed) return retval;
@@ -6536,7 +6542,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(78, decisionCanBacktrack[78]);
 			int LA78_0 = input.LA(1);
 
-			if ((LA78_0==BoolLiteral||LA78_0==FALSE||LA78_0==IMPORT_START||LA78_0==Identifier||LA78_0==NEW||LA78_0==NULL||LA78_0==NumericLiteral||(LA78_0>=StringLiteral && LA78_0<=THIS)||LA78_0==130||LA78_0==135||LA78_0==142||LA78_0==147))
+			if ((LA78_0==BoolLiteral||LA78_0==FALSE||LA78_0==IMPORT_START||LA78_0==Identifier||LA78_0==NEW||LA78_0==NULL||LA78_0==NumericLiteral||LA78_0==RegularExpressionLiteral||(LA78_0>=StringLiteral && LA78_0<=THIS)||LA78_0==136||LA78_0==141||LA78_0==148||LA78_0==153))
 			{
 				alt78=1;
 			}
@@ -6562,7 +6568,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(201, 7);
-				PushFollow(Follow._leftHandSideExpression_in_forInStatementInitialiserPart1632);
+				PushFollow(Follow._leftHandSideExpression_in_forInStatementInitialiserPart1633);
 				leftHandSideExpression137=leftHandSideExpression();
 				PopFollow();
 				if (state.failed) return retval;
@@ -6577,7 +6583,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				root_0 = (CommonTree)adaptor.Nil();
 
 				DebugLocation(202, 7);
-				VAR138=(CommonToken)Match(input,VAR,Follow._VAR_in_forInStatementInitialiserPart1640); if (state.failed) return retval;
+				VAR138=(CommonToken)Match(input,VAR,Follow._VAR_in_forInStatementInitialiserPart1641); if (state.failed) return retval;
 				if ( state.backtracking==0 ) {
 				VAR138_tree = (CommonTree)adaptor.Create(VAR138);
 				adaptor.AddChild(root_0, VAR138_tree);
@@ -6605,7 +6611,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						// JavaScript.g3:202:20: SkipSpace
 						{
 						DebugLocation(202, 20);
-						SkipSpace139=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatementInitialiserPart1642); if (state.failed) return retval;
+						SkipSpace139=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_forInStatementInitialiserPart1643); if (state.failed) return retval;
 
 						}
 						break;
@@ -6621,7 +6627,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				} finally { DebugExitSubRule(77); }
 
 				DebugLocation(202, 23);
-				PushFollow(Follow._variableDeclarationNoIn_in_forInStatementInitialiserPart1646);
+				PushFollow(Follow._variableDeclarationNoIn_in_forInStatementInitialiserPart1647);
 				variableDeclarationNoIn140=variableDeclarationNoIn();
 				PopFollow();
 				if (state.failed) return retval;
@@ -6704,7 +6710,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(206, 15);
-			CONTINUE141=(CommonToken)Match(input,CONTINUE,Follow._CONTINUE_in_continueStatement1663); if (state.failed) return retval;
+			CONTINUE141=(CommonToken)Match(input,CONTINUE,Follow._CONTINUE_in_continueStatement1664); if (state.failed) return retval;
 			if ( state.backtracking == 0 ) {
 			CONTINUE141_tree = (CommonTree)adaptor.Create(CONTINUE141);
 			root_0 = (CommonTree)adaptor.BecomeRoot(CONTINUE141_tree, root_0);
@@ -6728,7 +6734,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				// JavaScript.g3:206:17: Identifier
 				{
 				DebugLocation(206, 17);
-				Identifier142=(CommonToken)Match(input,Identifier,Follow._Identifier_in_continueStatement1666); if (state.failed) return retval;
+				Identifier142=(CommonToken)Match(input,Identifier,Follow._Identifier_in_continueStatement1667); if (state.failed) return retval;
 				if ( state.backtracking==0 ) {
 				Identifier142_tree = (CommonTree)adaptor.Create(Identifier142);
 				adaptor.AddChild(root_0, Identifier142_tree);
@@ -6763,7 +6769,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:206:38: SkipSpace
 					{
 					DebugLocation(206, 38);
-					SkipSpace143=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_continueStatement1669); if (state.failed) return retval;
+					SkipSpace143=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_continueStatement1670); if (state.failed) return retval;
 
 					}
 					break;
@@ -6779,7 +6785,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(80); }
 
 			DebugLocation(206, 45);
-			SEMI144=(CommonToken)Match(input,SEMI,Follow._SEMI_in_continueStatement1673); if (state.failed) return retval;
+			SEMI144=(CommonToken)Match(input,SEMI,Follow._SEMI_in_continueStatement1674); if (state.failed) return retval;
 
 			}
 
@@ -6856,7 +6862,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(210, 12);
-			BREAK145=(CommonToken)Match(input,BREAK,Follow._BREAK_in_breakStatement1691); if (state.failed) return retval;
+			BREAK145=(CommonToken)Match(input,BREAK,Follow._BREAK_in_breakStatement1692); if (state.failed) return retval;
 			if ( state.backtracking == 0 ) {
 			BREAK145_tree = (CommonTree)adaptor.Create(BREAK145);
 			root_0 = (CommonTree)adaptor.BecomeRoot(BREAK145_tree, root_0);
@@ -6880,7 +6886,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				// JavaScript.g3:210:14: Identifier
 				{
 				DebugLocation(210, 14);
-				Identifier146=(CommonToken)Match(input,Identifier,Follow._Identifier_in_breakStatement1694); if (state.failed) return retval;
+				Identifier146=(CommonToken)Match(input,Identifier,Follow._Identifier_in_breakStatement1695); if (state.failed) return retval;
 				if ( state.backtracking==0 ) {
 				Identifier146_tree = (CommonTree)adaptor.Create(Identifier146);
 				adaptor.AddChild(root_0, Identifier146_tree);
@@ -6915,7 +6921,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:210:35: SkipSpace
 					{
 					DebugLocation(210, 35);
-					SkipSpace147=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_breakStatement1697); if (state.failed) return retval;
+					SkipSpace147=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_breakStatement1698); if (state.failed) return retval;
 
 					}
 					break;
@@ -6931,7 +6937,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(82); }
 
 			DebugLocation(210, 42);
-			SEMI148=(CommonToken)Match(input,SEMI,Follow._SEMI_in_breakStatement1701); if (state.failed) return retval;
+			SEMI148=(CommonToken)Match(input,SEMI,Follow._SEMI_in_breakStatement1702); if (state.failed) return retval;
 
 			}
 
@@ -7031,7 +7037,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				// JavaScript.g3:214:7: RETURN ( SkipSpace )* exp= expression ( SkipSpace )* SEMI
 				{
 				DebugLocation(214, 7);
-				RETURN149=(CommonToken)Match(input,RETURN,Follow._RETURN_in_returnStatement1719); if (state.failed) return retval; 
+				RETURN149=(CommonToken)Match(input,RETURN,Follow._RETURN_in_returnStatement1720); if (state.failed) return retval; 
 				if ( state.backtracking == 0 ) stream_RETURN.Add(RETURN149);
 
 				DebugLocation(214, 14);
@@ -7057,7 +7063,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						// JavaScript.g3:214:14: SkipSpace
 						{
 						DebugLocation(214, 14);
-						SkipSpace150=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_returnStatement1721); if (state.failed) return retval; 
+						SkipSpace150=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_returnStatement1722); if (state.failed) return retval; 
 						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace150);
 
 
@@ -7075,7 +7081,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				} finally { DebugExitSubRule(83); }
 
 				DebugLocation(214, 28);
-				PushFollow(Follow._expression_in_returnStatement1726);
+				PushFollow(Follow._expression_in_returnStatement1727);
 				exp=expression();
 				PopFollow();
 				if (state.failed) return retval;
@@ -7103,7 +7109,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						// JavaScript.g3:214:40: SkipSpace
 						{
 						DebugLocation(214, 40);
-						SkipSpace151=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_returnStatement1728); if (state.failed) return retval; 
+						SkipSpace151=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_returnStatement1729); if (state.failed) return retval; 
 						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace151);
 
 
@@ -7121,7 +7127,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				} finally { DebugExitSubRule(84); }
 
 				DebugLocation(214, 51);
-				SEMI152=(CommonToken)Match(input,SEMI,Follow._SEMI_in_returnStatement1731); if (state.failed) return retval; 
+				SEMI152=(CommonToken)Match(input,SEMI,Follow._SEMI_in_returnStatement1732); if (state.failed) return retval; 
 				if ( state.backtracking == 0 ) stream_SEMI.Add(SEMI152);
 
 
@@ -7168,7 +7174,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				// JavaScript.g3:216:7: RETURN ( SkipSpace )* SEMI
 				{
 				DebugLocation(216, 7);
-				RETURN153=(CommonToken)Match(input,RETURN,Follow._RETURN_in_returnStatement1756); if (state.failed) return retval; 
+				RETURN153=(CommonToken)Match(input,RETURN,Follow._RETURN_in_returnStatement1757); if (state.failed) return retval; 
 				if ( state.backtracking == 0 ) stream_RETURN.Add(RETURN153);
 
 				DebugLocation(216, 14);
@@ -7194,7 +7200,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						// JavaScript.g3:216:14: SkipSpace
 						{
 						DebugLocation(216, 14);
-						SkipSpace154=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_returnStatement1758); if (state.failed) return retval; 
+						SkipSpace154=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_returnStatement1759); if (state.failed) return retval; 
 						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace154);
 
 
@@ -7212,7 +7218,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				} finally { DebugExitSubRule(85); }
 
 				DebugLocation(216, 25);
-				SEMI155=(CommonToken)Match(input,SEMI,Follow._SEMI_in_returnStatement1761); if (state.failed) return retval; 
+				SEMI155=(CommonToken)Match(input,SEMI,Follow._SEMI_in_returnStatement1762); if (state.failed) return retval; 
 				if ( state.backtracking == 0 ) stream_SEMI.Add(SEMI155);
 
 
@@ -7333,7 +7339,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(221, 7);
-			string_literal156=(CommonToken)Match(input,146,Follow._146_in_withStatement1792); if (state.failed) return retval;
+			string_literal156=(CommonToken)Match(input,152,Follow._152_in_withStatement1793); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			string_literal156_tree = (CommonTree)adaptor.Create(string_literal156);
 			adaptor.AddChild(root_0, string_literal156_tree);
@@ -7361,7 +7367,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:221:23: SkipSpace
 					{
 					DebugLocation(221, 23);
-					SkipSpace157=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1794); if (state.failed) return retval;
+					SkipSpace157=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1795); if (state.failed) return retval;
 
 					}
 					break;
@@ -7377,7 +7383,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(87); }
 
 			DebugLocation(221, 26);
-			char_literal158=(CommonToken)Match(input,130,Follow._130_in_withStatement1798); if (state.failed) return retval;
+			char_literal158=(CommonToken)Match(input,136,Follow._136_in_withStatement1799); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal158_tree = (CommonTree)adaptor.Create(char_literal158);
 			adaptor.AddChild(root_0, char_literal158_tree);
@@ -7405,7 +7411,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:221:39: SkipSpace
 					{
 					DebugLocation(221, 39);
-					SkipSpace159=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1800); if (state.failed) return retval;
+					SkipSpace159=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1801); if (state.failed) return retval;
 
 					}
 					break;
@@ -7421,7 +7427,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(88); }
 
 			DebugLocation(221, 42);
-			PushFollow(Follow._expression_in_withStatement1804);
+			PushFollow(Follow._expression_in_withStatement1805);
 			expression160=expression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -7449,7 +7455,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:221:62: SkipSpace
 					{
 					DebugLocation(221, 62);
-					SkipSpace161=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1806); if (state.failed) return retval;
+					SkipSpace161=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1807); if (state.failed) return retval;
 
 					}
 					break;
@@ -7465,7 +7471,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(89); }
 
 			DebugLocation(221, 65);
-			char_literal162=(CommonToken)Match(input,131,Follow._131_in_withStatement1810); if (state.failed) return retval;
+			char_literal162=(CommonToken)Match(input,137,Follow._137_in_withStatement1811); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal162_tree = (CommonTree)adaptor.Create(char_literal162);
 			adaptor.AddChild(root_0, char_literal162_tree);
@@ -7493,7 +7499,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:221:78: SkipSpace
 					{
 					DebugLocation(221, 78);
-					SkipSpace163=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1812); if (state.failed) return retval;
+					SkipSpace163=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_withStatement1813); if (state.failed) return retval;
 
 					}
 					break;
@@ -7509,7 +7515,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(90); }
 
 			DebugLocation(221, 81);
-			PushFollow(Follow._statement_in_withStatement1816);
+			PushFollow(Follow._statement_in_withStatement1817);
 			statement164=statement();
 			PopFollow();
 			if (state.failed) return retval;
@@ -7591,7 +7597,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(225, 7);
-			Identifier165=(CommonToken)Match(input,Identifier,Follow._Identifier_in_labelledStatement1833); if (state.failed) return retval;
+			Identifier165=(CommonToken)Match(input,Identifier,Follow._Identifier_in_labelledStatement1834); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			Identifier165_tree = (CommonTree)adaptor.Create(Identifier165);
 			adaptor.AddChild(root_0, Identifier165_tree);
@@ -7619,7 +7625,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:225:27: SkipSpace
 					{
 					DebugLocation(225, 27);
-					SkipSpace166=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_labelledStatement1835); if (state.failed) return retval;
+					SkipSpace166=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_labelledStatement1836); if (state.failed) return retval;
 
 					}
 					break;
@@ -7635,7 +7641,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(91); }
 
 			DebugLocation(225, 30);
-			char_literal167=(CommonToken)Match(input,133,Follow._133_in_labelledStatement1839); if (state.failed) return retval;
+			char_literal167=(CommonToken)Match(input,139,Follow._139_in_labelledStatement1840); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal167_tree = (CommonTree)adaptor.Create(char_literal167);
 			adaptor.AddChild(root_0, char_literal167_tree);
@@ -7663,7 +7669,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:225:43: SkipSpace
 					{
 					DebugLocation(225, 43);
-					SkipSpace168=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_labelledStatement1841); if (state.failed) return retval;
+					SkipSpace168=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_labelledStatement1842); if (state.failed) return retval;
 
 					}
 					break;
@@ -7679,7 +7685,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(92); }
 
 			DebugLocation(225, 46);
-			PushFollow(Follow._statement_in_labelledStatement1845);
+			PushFollow(Follow._statement_in_labelledStatement1846);
 			statement169=statement();
 			PopFollow();
 			if (state.failed) return retval;
@@ -7768,7 +7774,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(229, 7);
-			string_literal170=(CommonToken)Match(input,144,Follow._144_in_switchStatement1862); if (state.failed) return retval;
+			string_literal170=(CommonToken)Match(input,150,Follow._150_in_switchStatement1863); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			string_literal170_tree = (CommonTree)adaptor.Create(string_literal170);
 			adaptor.AddChild(root_0, string_literal170_tree);
@@ -7796,7 +7802,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:229:25: SkipSpace
 					{
 					DebugLocation(229, 25);
-					SkipSpace171=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1864); if (state.failed) return retval;
+					SkipSpace171=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1865); if (state.failed) return retval;
 
 					}
 					break;
@@ -7812,7 +7818,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(93); }
 
 			DebugLocation(229, 28);
-			char_literal172=(CommonToken)Match(input,130,Follow._130_in_switchStatement1868); if (state.failed) return retval;
+			char_literal172=(CommonToken)Match(input,136,Follow._136_in_switchStatement1869); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal172_tree = (CommonTree)adaptor.Create(char_literal172);
 			adaptor.AddChild(root_0, char_literal172_tree);
@@ -7840,7 +7846,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:229:41: SkipSpace
 					{
 					DebugLocation(229, 41);
-					SkipSpace173=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1870); if (state.failed) return retval;
+					SkipSpace173=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1871); if (state.failed) return retval;
 
 					}
 					break;
@@ -7856,7 +7862,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(94); }
 
 			DebugLocation(229, 44);
-			PushFollow(Follow._expression_in_switchStatement1874);
+			PushFollow(Follow._expression_in_switchStatement1875);
 			expression174=expression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -7884,7 +7890,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:229:64: SkipSpace
 					{
 					DebugLocation(229, 64);
-					SkipSpace175=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1876); if (state.failed) return retval;
+					SkipSpace175=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1877); if (state.failed) return retval;
 
 					}
 					break;
@@ -7900,7 +7906,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(95); }
 
 			DebugLocation(229, 67);
-			char_literal176=(CommonToken)Match(input,131,Follow._131_in_switchStatement1880); if (state.failed) return retval;
+			char_literal176=(CommonToken)Match(input,137,Follow._137_in_switchStatement1881); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal176_tree = (CommonTree)adaptor.Create(char_literal176);
 			adaptor.AddChild(root_0, char_literal176_tree);
@@ -7928,7 +7934,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:229:80: SkipSpace
 					{
 					DebugLocation(229, 80);
-					SkipSpace177=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1882); if (state.failed) return retval;
+					SkipSpace177=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_switchStatement1883); if (state.failed) return retval;
 
 					}
 					break;
@@ -7944,7 +7950,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(96); }
 
 			DebugLocation(229, 83);
-			PushFollow(Follow._caseBlock_in_switchStatement1886);
+			PushFollow(Follow._caseBlock_in_switchStatement1887);
 			caseBlock178=caseBlock();
 			PopFollow();
 			if (state.failed) return retval;
@@ -8032,7 +8038,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(233, 7);
-			char_literal179=(CommonToken)Match(input,147,Follow._147_in_caseBlock1903); if (state.failed) return retval;
+			char_literal179=(CommonToken)Match(input,153,Follow._153_in_caseBlock1904); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal179_tree = (CommonTree)adaptor.Create(char_literal179);
 			adaptor.AddChild(root_0, char_literal179_tree);
@@ -8083,7 +8089,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							// JavaScript.g3:233:21: SkipSpace
 							{
 							DebugLocation(233, 21);
-							SkipSpace180=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1906); if (state.failed) return retval;
+							SkipSpace180=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1907); if (state.failed) return retval;
 
 							}
 							break;
@@ -8099,7 +8105,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					} finally { DebugExitSubRule(97); }
 
 					DebugLocation(233, 24);
-					PushFollow(Follow._caseClause_in_caseBlock1910);
+					PushFollow(Follow._caseClause_in_caseBlock1911);
 					caseClause181=caseClause();
 					PopFollow();
 					if (state.failed) return retval;
@@ -8162,7 +8168,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						// JavaScript.g3:233:47: SkipSpace
 						{
 						DebugLocation(233, 47);
-						SkipSpace182=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1915); if (state.failed) return retval;
+						SkipSpace182=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1916); if (state.failed) return retval;
 
 						}
 						break;
@@ -8178,7 +8184,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				} finally { DebugExitSubRule(99); }
 
 				DebugLocation(233, 50);
-				PushFollow(Follow._defaultClause_in_caseBlock1919);
+				PushFollow(Follow._defaultClause_in_caseBlock1920);
 				defaultClause183=defaultClause();
 				PopFollow();
 				if (state.failed) return retval;
@@ -8229,7 +8235,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 								// JavaScript.g3:233:74: SkipSpace
 								{
 								DebugLocation(233, 74);
-								SkipSpace184=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1922); if (state.failed) return retval;
+								SkipSpace184=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1923); if (state.failed) return retval;
 
 								}
 								break;
@@ -8245,7 +8251,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						} finally { DebugExitSubRule(100); }
 
 						DebugLocation(233, 77);
-						PushFollow(Follow._caseClause_in_caseBlock1926);
+						PushFollow(Follow._caseClause_in_caseBlock1927);
 						caseClause185=caseClause();
 						PopFollow();
 						if (state.failed) return retval;
@@ -8294,7 +8300,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:233:101: SkipSpace
 					{
 					DebugLocation(233, 101);
-					SkipSpace186=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1932); if (state.failed) return retval;
+					SkipSpace186=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseBlock1933); if (state.failed) return retval;
 
 					}
 					break;
@@ -8310,7 +8316,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(103); }
 
 			DebugLocation(233, 104);
-			char_literal187=(CommonToken)Match(input,148,Follow._148_in_caseBlock1936); if (state.failed) return retval;
+			char_literal187=(CommonToken)Match(input,154,Follow._154_in_caseBlock1937); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal187_tree = (CommonTree)adaptor.Create(char_literal187);
 			adaptor.AddChild(root_0, char_literal187_tree);
@@ -8395,7 +8401,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(237, 7);
-			string_literal188=(CommonToken)Match(input,137,Follow._137_in_caseClause1953); if (state.failed) return retval;
+			string_literal188=(CommonToken)Match(input,143,Follow._143_in_caseClause1954); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			string_literal188_tree = (CommonTree)adaptor.Create(string_literal188);
 			adaptor.AddChild(root_0, string_literal188_tree);
@@ -8423,7 +8429,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:237:23: SkipSpace
 					{
 					DebugLocation(237, 23);
-					SkipSpace189=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseClause1955); if (state.failed) return retval;
+					SkipSpace189=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseClause1956); if (state.failed) return retval;
 
 					}
 					break;
@@ -8439,7 +8445,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(104); }
 
 			DebugLocation(237, 26);
-			PushFollow(Follow._expression_in_caseClause1959);
+			PushFollow(Follow._expression_in_caseClause1960);
 			expression190=expression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -8467,7 +8473,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:237:46: SkipSpace
 					{
 					DebugLocation(237, 46);
-					SkipSpace191=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseClause1961); if (state.failed) return retval;
+					SkipSpace191=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseClause1962); if (state.failed) return retval;
 
 					}
 					break;
@@ -8483,7 +8489,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(105); }
 
 			DebugLocation(237, 49);
-			char_literal192=(CommonToken)Match(input,133,Follow._133_in_caseClause1965); if (state.failed) return retval;
+			char_literal192=(CommonToken)Match(input,139,Follow._139_in_caseClause1966); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal192_tree = (CommonTree)adaptor.Create(char_literal192);
 			adaptor.AddChild(root_0, char_literal192_tree);
@@ -8518,7 +8524,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:237:62: SkipSpace
 					{
 					DebugLocation(237, 62);
-					SkipSpace193=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseClause1967); if (state.failed) return retval;
+					SkipSpace193=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_caseClause1968); if (state.failed) return retval;
 
 					}
 					break;
@@ -8540,7 +8546,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(107, decisionCanBacktrack[107]);
 			int LA107_0 = input.LA(1);
 
-			if ((LA107_0==BIT_NOT||(LA107_0>=BREAK && LA107_0<=BoolLiteral)||LA107_0==CONTINUE||LA107_0==DELETE||LA107_0==DOUBLE_NOT||LA107_0==FALSE||LA107_0==IMPORT_START||LA107_0==Identifier||LA107_0==MINUS||LA107_0==MINUS_INC||LA107_0==NEW||(LA107_0>=NOT && LA107_0<=NULL)||LA107_0==NumericLiteral||LA107_0==PLUS||LA107_0==PLUS_INC||LA107_0==RETURN||LA107_0==SEMI||(LA107_0>=StringLiteral && LA107_0<=THROW)||LA107_0==TRY||LA107_0==TYPE_OF||(LA107_0>=VAR && LA107_0<=VOID)||LA107_0==130||LA107_0==135||LA107_0==139||(LA107_0>=141 && LA107_0<=147)))
+			if ((LA107_0==BIT_NOT||(LA107_0>=BREAK && LA107_0<=BoolLiteral)||LA107_0==CONTINUE||LA107_0==DELETE||LA107_0==DOUBLE_NOT||LA107_0==FALSE||LA107_0==IMPORT_START||LA107_0==Identifier||LA107_0==MINUS||LA107_0==MINUS_INC||LA107_0==NEW||(LA107_0>=NOT && LA107_0<=NULL)||LA107_0==NumericLiteral||LA107_0==PLUS||LA107_0==PLUS_INC||LA107_0==RETURN||(LA107_0>=RegularExpressionLiteral && LA107_0<=SEMI)||(LA107_0>=StringLiteral && LA107_0<=THROW)||LA107_0==TRY||LA107_0==TYPE_OF||(LA107_0>=VAR && LA107_0<=VOID)||LA107_0==136||LA107_0==141||LA107_0==145||(LA107_0>=147 && LA107_0<=153)))
 			{
 				alt107=1;
 			}
@@ -8552,7 +8558,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				// JavaScript.g3:237:65: statementList
 				{
 				DebugLocation(237, 65);
-				PushFollow(Follow._statementList_in_caseClause1971);
+				PushFollow(Follow._statementList_in_caseClause1972);
 				statementList194=statementList();
 				PopFollow();
 				if (state.failed) return retval;
@@ -8641,7 +8647,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			root_0 = (CommonTree)adaptor.Nil();
 
 			DebugLocation(241, 7);
-			string_literal195=(CommonToken)Match(input,138,Follow._138_in_defaultClause1989); if (state.failed) return retval;
+			string_literal195=(CommonToken)Match(input,144,Follow._144_in_defaultClause1990); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			string_literal195_tree = (CommonTree)adaptor.Create(string_literal195);
 			adaptor.AddChild(root_0, string_literal195_tree);
@@ -8669,7 +8675,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:241:26: SkipSpace
 					{
 					DebugLocation(241, 26);
-					SkipSpace196=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_defaultClause1991); if (state.failed) return retval;
+					SkipSpace196=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_defaultClause1992); if (state.failed) return retval;
 
 					}
 					break;
@@ -8685,7 +8691,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(108); }
 
 			DebugLocation(241, 29);
-			char_literal197=(CommonToken)Match(input,133,Follow._133_in_defaultClause1995); if (state.failed) return retval;
+			char_literal197=(CommonToken)Match(input,139,Follow._139_in_defaultClause1996); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			char_literal197_tree = (CommonTree)adaptor.Create(char_literal197);
 			adaptor.AddChild(root_0, char_literal197_tree);
@@ -8720,7 +8726,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:241:42: SkipSpace
 					{
 					DebugLocation(241, 42);
-					SkipSpace198=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_defaultClause1997); if (state.failed) return retval;
+					SkipSpace198=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_defaultClause1998); if (state.failed) return retval;
 
 					}
 					break;
@@ -8742,7 +8748,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			try { DebugEnterDecision(110, decisionCanBacktrack[110]);
 			int LA110_0 = input.LA(1);
 
-			if ((LA110_0==BIT_NOT||(LA110_0>=BREAK && LA110_0<=BoolLiteral)||LA110_0==CONTINUE||LA110_0==DELETE||LA110_0==DOUBLE_NOT||LA110_0==FALSE||LA110_0==IMPORT_START||LA110_0==Identifier||LA110_0==MINUS||LA110_0==MINUS_INC||LA110_0==NEW||(LA110_0>=NOT && LA110_0<=NULL)||LA110_0==NumericLiteral||LA110_0==PLUS||LA110_0==PLUS_INC||LA110_0==RETURN||LA110_0==SEMI||(LA110_0>=StringLiteral && LA110_0<=THROW)||LA110_0==TRY||LA110_0==TYPE_OF||(LA110_0>=VAR && LA110_0<=VOID)||LA110_0==130||LA110_0==135||LA110_0==139||(LA110_0>=141 && LA110_0<=147)))
+			if ((LA110_0==BIT_NOT||(LA110_0>=BREAK && LA110_0<=BoolLiteral)||LA110_0==CONTINUE||LA110_0==DELETE||LA110_0==DOUBLE_NOT||LA110_0==FALSE||LA110_0==IMPORT_START||LA110_0==Identifier||LA110_0==MINUS||LA110_0==MINUS_INC||LA110_0==NEW||(LA110_0>=NOT && LA110_0<=NULL)||LA110_0==NumericLiteral||LA110_0==PLUS||LA110_0==PLUS_INC||LA110_0==RETURN||(LA110_0>=RegularExpressionLiteral && LA110_0<=SEMI)||(LA110_0>=StringLiteral && LA110_0<=THROW)||LA110_0==TRY||LA110_0==TYPE_OF||(LA110_0>=VAR && LA110_0<=VOID)||LA110_0==136||LA110_0==141||LA110_0==145||(LA110_0>=147 && LA110_0<=153)))
 			{
 				alt110=1;
 			}
@@ -8754,7 +8760,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				// JavaScript.g3:241:45: statementList
 				{
 				DebugLocation(241, 45);
-				PushFollow(Follow._statementList_in_defaultClause2001);
+				PushFollow(Follow._statementList_in_defaultClause2002);
 				statementList199=statementList();
 				PopFollow();
 				if (state.failed) return retval;
@@ -8844,7 +8850,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:245:7: THROW ( SkipSpace )* expression ( SkipSpace )* SEMI
 			{
 			DebugLocation(245, 7);
-			THROW200=(CommonToken)Match(input,THROW,Follow._THROW_in_throwStatement2019); if (state.failed) return retval; 
+			THROW200=(CommonToken)Match(input,THROW,Follow._THROW_in_throwStatement2020); if (state.failed) return retval; 
 			if ( state.backtracking == 0 ) stream_THROW.Add(THROW200);
 
 			DebugLocation(245, 13);
@@ -8870,7 +8876,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:245:13: SkipSpace
 					{
 					DebugLocation(245, 13);
-					SkipSpace201=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_throwStatement2021); if (state.failed) return retval; 
+					SkipSpace201=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_throwStatement2022); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace201);
 
 
@@ -8888,7 +8894,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(111); }
 
 			DebugLocation(245, 24);
-			PushFollow(Follow._expression_in_throwStatement2024);
+			PushFollow(Follow._expression_in_throwStatement2025);
 			expression202=expression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -8916,7 +8922,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					// JavaScript.g3:245:35: SkipSpace
 					{
 					DebugLocation(245, 35);
-					SkipSpace203=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_throwStatement2026); if (state.failed) return retval; 
+					SkipSpace203=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_throwStatement2027); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace203);
 
 
@@ -8934,7 +8940,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(112); }
 
 			DebugLocation(245, 46);
-			SEMI204=(CommonToken)Match(input,SEMI,Follow._SEMI_in_throwStatement2029); if (state.failed) return retval; 
+			SEMI204=(CommonToken)Match(input,SEMI,Follow._SEMI_in_throwStatement2030); if (state.failed) return retval; 
 			if ( state.backtracking == 0 ) stream_SEMI.Add(SEMI204);
 
 
@@ -9014,7 +9020,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_tryStatement();
 
 	// $ANTLR start "tryStatement"
-	// JavaScript.g3:249:1: tryStatement : TRY ( SkipSpace )* statementBlock ( SkipSpace )* ( finallyClause | catchClause ( ( SkipSpace )* finallyClause )? ) ;
+	// JavaScript.g3:249:1: tryStatement : TRY ( SkipSpace )* blk= statementBlock ( SkipSpace )* (fin= finallyClause |ctch= catchClause ( ( SkipSpace )* fin= finallyClause )? ) -> ^( TRY $blk ( $ctch)? ( $fin)? ) ;
 	[GrammarRule("tryStatement")]
 	private JavaScriptParser.tryStatement_return tryStatement()
 	{
@@ -9028,37 +9034,36 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 		CommonToken TRY205=null;
 		CommonToken SkipSpace206=null;
+		CommonToken SkipSpace207=null;
 		CommonToken SkipSpace208=null;
-		CommonToken SkipSpace211=null;
-		JavaScriptParser.statementBlock_return statementBlock207 = default(JavaScriptParser.statementBlock_return);
-		JavaScriptParser.finallyClause_return finallyClause209 = default(JavaScriptParser.finallyClause_return);
-		JavaScriptParser.catchClause_return catchClause210 = default(JavaScriptParser.catchClause_return);
-		JavaScriptParser.finallyClause_return finallyClause212 = default(JavaScriptParser.finallyClause_return);
+		JavaScriptParser.statementBlock_return blk = default(JavaScriptParser.statementBlock_return);
+		JavaScriptParser.finallyClause_return fin = default(JavaScriptParser.finallyClause_return);
+		JavaScriptParser.catchClause_return ctch = default(JavaScriptParser.catchClause_return);
 
 		CommonTree TRY205_tree=null;
 		CommonTree SkipSpace206_tree=null;
+		CommonTree SkipSpace207_tree=null;
 		CommonTree SkipSpace208_tree=null;
-		CommonTree SkipSpace211_tree=null;
-
+		RewriteRuleITokenStream stream_TRY=new RewriteRuleITokenStream(adaptor,"token TRY");
+		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
+		RewriteRuleSubtreeStream stream_statementBlock=new RewriteRuleSubtreeStream(adaptor,"rule statementBlock");
+		RewriteRuleSubtreeStream stream_finallyClause=new RewriteRuleSubtreeStream(adaptor,"rule finallyClause");
+		RewriteRuleSubtreeStream stream_catchClause=new RewriteRuleSubtreeStream(adaptor,"rule catchClause");
 		try { DebugEnterRule(GrammarFileName, "tryStatement");
 		DebugLocation(249, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 37)) { return retval; }
-			// JavaScript.g3:250:5: ( TRY ( SkipSpace )* statementBlock ( SkipSpace )* ( finallyClause | catchClause ( ( SkipSpace )* finallyClause )? ) )
+			// JavaScript.g3:250:5: ( TRY ( SkipSpace )* blk= statementBlock ( SkipSpace )* (fin= finallyClause |ctch= catchClause ( ( SkipSpace )* fin= finallyClause )? ) -> ^( TRY $blk ( $ctch)? ( $fin)? ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:250:7: TRY ( SkipSpace )* statementBlock ( SkipSpace )* ( finallyClause | catchClause ( ( SkipSpace )* finallyClause )? )
+			// JavaScript.g3:250:7: TRY ( SkipSpace )* blk= statementBlock ( SkipSpace )* (fin= finallyClause |ctch= catchClause ( ( SkipSpace )* fin= finallyClause )? )
 			{
-			root_0 = (CommonTree)adaptor.Nil();
-
 			DebugLocation(250, 7);
-			TRY205=(CommonToken)Match(input,TRY,Follow._TRY_in_tryStatement2062); if (state.failed) return retval;
-			if ( state.backtracking==0 ) {
-			TRY205_tree = (CommonTree)adaptor.Create(TRY205);
-			adaptor.AddChild(root_0, TRY205_tree);
-			}
-			DebugLocation(250, 20);
-			// JavaScript.g3:250:20: ( SkipSpace )*
+			TRY205=(CommonToken)Match(input,TRY,Follow._TRY_in_tryStatement2063); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_TRY.Add(TRY205);
+
+			DebugLocation(250, 11);
+			// JavaScript.g3:250:11: ( SkipSpace )*
 			try { DebugEnterSubRule(113);
 			while (true)
 			{
@@ -9077,10 +9082,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:250:20: SkipSpace
+					// JavaScript.g3:250:11: SkipSpace
 					{
-					DebugLocation(250, 20);
-					SkipSpace206=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_tryStatement2064); if (state.failed) return retval;
+					DebugLocation(250, 11);
+					SkipSpace206=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_tryStatement2065); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace206);
+
 
 					}
 					break;
@@ -9095,14 +9102,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(113); }
 
-			DebugLocation(250, 23);
-			PushFollow(Follow._statementBlock_in_tryStatement2068);
-			statementBlock207=statementBlock();
+			DebugLocation(250, 25);
+			PushFollow(Follow._statementBlock_in_tryStatement2070);
+			blk=statementBlock();
 			PopFollow();
 			if (state.failed) return retval;
-			if ( state.backtracking == 0 ) adaptor.AddChild(root_0, statementBlock207.Tree);
-			DebugLocation(250, 47);
-			// JavaScript.g3:250:47: ( SkipSpace )*
+			if ( state.backtracking == 0 ) stream_statementBlock.Add(blk.Tree);
+			DebugLocation(250, 41);
+			// JavaScript.g3:250:41: ( SkipSpace )*
 			try { DebugEnterSubRule(114);
 			while (true)
 			{
@@ -9121,10 +9128,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:250:47: SkipSpace
+					// JavaScript.g3:250:41: SkipSpace
 					{
-					DebugLocation(250, 47);
-					SkipSpace208=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_tryStatement2070); if (state.failed) return retval;
+					DebugLocation(250, 41);
+					SkipSpace207=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_tryStatement2072); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace207);
+
 
 					}
 					break;
@@ -9139,8 +9148,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(114); }
 
-			DebugLocation(250, 50);
-			// JavaScript.g3:250:50: ( finallyClause | catchClause ( ( SkipSpace )* finallyClause )? )
+			DebugLocation(250, 52);
+			// JavaScript.g3:250:52: (fin= finallyClause |ctch= catchClause ( ( SkipSpace )* fin= finallyClause )? )
 			int alt117=2;
 			try { DebugEnterSubRule(117);
 			try { DebugEnterDecision(117, decisionCanBacktrack[117]);
@@ -9167,29 +9176,29 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:250:51: finallyClause
+				// JavaScript.g3:250:53: fin= finallyClause
 				{
-				DebugLocation(250, 51);
-				PushFollow(Follow._finallyClause_in_tryStatement2075);
-				finallyClause209=finallyClause();
+				DebugLocation(250, 56);
+				PushFollow(Follow._finallyClause_in_tryStatement2078);
+				fin=finallyClause();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, finallyClause209.Tree);
+				if ( state.backtracking == 0 ) stream_finallyClause.Add(fin.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:250:67: catchClause ( ( SkipSpace )* finallyClause )?
+				// JavaScript.g3:250:73: ctch= catchClause ( ( SkipSpace )* fin= finallyClause )?
 				{
-				DebugLocation(250, 67);
-				PushFollow(Follow._catchClause_in_tryStatement2079);
-				catchClause210=catchClause();
+				DebugLocation(250, 77);
+				PushFollow(Follow._catchClause_in_tryStatement2084);
+				ctch=catchClause();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, catchClause210.Tree);
-				DebugLocation(250, 79);
-				// JavaScript.g3:250:79: ( ( SkipSpace )* finallyClause )?
+				if ( state.backtracking == 0 ) stream_catchClause.Add(ctch.Tree);
+				DebugLocation(250, 90);
+				// JavaScript.g3:250:90: ( ( SkipSpace )* fin= finallyClause )?
 				int alt116=2;
 				try { DebugEnterSubRule(116);
 				try { DebugEnterDecision(116, decisionCanBacktrack[116]);
@@ -9207,10 +9216,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:250:80: ( SkipSpace )* finallyClause
+					// JavaScript.g3:250:91: ( SkipSpace )* fin= finallyClause
 					{
-					DebugLocation(250, 89);
-					// JavaScript.g3:250:89: ( SkipSpace )*
+					DebugLocation(250, 91);
+					// JavaScript.g3:250:91: ( SkipSpace )*
 					try { DebugEnterSubRule(115);
 					while (true)
 					{
@@ -9229,10 +9238,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:250:89: SkipSpace
+							// JavaScript.g3:250:91: SkipSpace
 							{
-							DebugLocation(250, 89);
-							SkipSpace211=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_tryStatement2082); if (state.failed) return retval;
+							DebugLocation(250, 91);
+							SkipSpace208=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_tryStatement2087); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace208);
+
 
 							}
 							break;
@@ -9247,12 +9258,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(115); }
 
-					DebugLocation(250, 92);
-					PushFollow(Follow._finallyClause_in_tryStatement2086);
-					finallyClause212=finallyClause();
+					DebugLocation(250, 105);
+					PushFollow(Follow._finallyClause_in_tryStatement2092);
+					fin=finallyClause();
 					PopFollow();
 					if (state.failed) return retval;
-					if ( state.backtracking == 0 ) adaptor.AddChild(root_0, finallyClause212.Tree);
+					if ( state.backtracking == 0 ) stream_finallyClause.Add(fin.Tree);
 
 					}
 					break;
@@ -9267,6 +9278,62 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			}
 			} finally { DebugExitSubRule(117); }
 
+
+
+			{
+			// AST REWRITE
+			// elements: TRY, blk, ctch, fin
+			// token labels: 
+			// rule labels: blk, ctch, fin, retval
+			// token list labels: 
+			// rule list labels: 
+			// wildcard labels: 
+			if ( state.backtracking == 0 ) {
+			retval.Tree = root_0;
+			RewriteRuleSubtreeStream stream_blk=new RewriteRuleSubtreeStream(adaptor,"rule blk",blk!=null?blk.Tree:null);
+			RewriteRuleSubtreeStream stream_ctch=new RewriteRuleSubtreeStream(adaptor,"rule ctch",ctch!=null?ctch.Tree:null);
+			RewriteRuleSubtreeStream stream_fin=new RewriteRuleSubtreeStream(adaptor,"rule fin",fin!=null?fin.Tree:null);
+			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
+
+			root_0 = (CommonTree)adaptor.Nil();
+			// 251:9: -> ^( TRY $blk ( $ctch)? ( $fin)? )
+			{
+				DebugLocation(251, 12);
+				// JavaScript.g3:251:12: ^( TRY $blk ( $ctch)? ( $fin)? )
+				{
+				CommonTree root_1 = (CommonTree)adaptor.Nil();
+				DebugLocation(251, 14);
+				root_1 = (CommonTree)adaptor.BecomeRoot(stream_TRY.NextNode(), root_1);
+
+				DebugLocation(251, 19);
+				adaptor.AddChild(root_1, stream_blk.NextTree());
+				DebugLocation(251, 24);
+				// JavaScript.g3:251:24: ( $ctch)?
+				if ( stream_ctch.HasNext )
+				{
+					DebugLocation(251, 24);
+					adaptor.AddChild(root_1, stream_ctch.NextTree());
+
+				}
+				stream_ctch.Reset();
+				DebugLocation(251, 31);
+				// JavaScript.g3:251:31: ( $fin)?
+				if ( stream_fin.HasNext )
+				{
+					DebugLocation(251, 31);
+					adaptor.AddChild(root_1, stream_fin.NextTree());
+
+				}
+				stream_fin.Reset();
+
+				adaptor.AddChild(root_0, root_1);
+				}
+
+			}
+
+			retval.Tree = root_0;
+			}
+			}
 
 			}
 
@@ -9292,7 +9359,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_tryStatement();
 			if (state.backtracking > 0) { Memoize(input, 37, tryStatement_StartIndex); }
 		}
-		DebugLocation(251, 4);
+		DebugLocation(252, 4);
 		} finally { DebugExitRule(GrammarFileName, "tryStatement"); }
 		return retval;
 
@@ -9309,7 +9376,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_catchClause();
 
 	// $ANTLR start "catchClause"
-	// JavaScript.g3:253:1: catchClause : CATCH ( SkipSpace )* '(' ( SkipSpace )* Identifier ( SkipSpace )* ')' ( SkipSpace )* statementBlock ;
+	// JavaScript.g3:254:1: catchClause : CATCH ( SkipSpace )* '(' ( SkipSpace )* id= Identifier ( SkipSpace )* ')' ( SkipSpace )* blk= statementBlock -> ^( CATCH $id $blk) ;
 	[GrammarRule("catchClause")]
 	private JavaScriptParser.catchClause_return catchClause()
 	{
@@ -9321,44 +9388,45 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int catchClause_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken CATCH213=null;
-		CommonToken SkipSpace214=null;
-		CommonToken char_literal215=null;
-		CommonToken SkipSpace216=null;
-		CommonToken Identifier217=null;
-		CommonToken SkipSpace218=null;
-		CommonToken char_literal219=null;
-		CommonToken SkipSpace220=null;
-		JavaScriptParser.statementBlock_return statementBlock221 = default(JavaScriptParser.statementBlock_return);
+		CommonToken id=null;
+		CommonToken CATCH209=null;
+		CommonToken SkipSpace210=null;
+		CommonToken char_literal211=null;
+		CommonToken SkipSpace212=null;
+		CommonToken SkipSpace213=null;
+		CommonToken char_literal214=null;
+		CommonToken SkipSpace215=null;
+		JavaScriptParser.statementBlock_return blk = default(JavaScriptParser.statementBlock_return);
 
-		CommonTree CATCH213_tree=null;
-		CommonTree SkipSpace214_tree=null;
-		CommonTree char_literal215_tree=null;
-		CommonTree SkipSpace216_tree=null;
-		CommonTree Identifier217_tree=null;
-		CommonTree SkipSpace218_tree=null;
-		CommonTree char_literal219_tree=null;
-		CommonTree SkipSpace220_tree=null;
-
+		CommonTree id_tree=null;
+		CommonTree CATCH209_tree=null;
+		CommonTree SkipSpace210_tree=null;
+		CommonTree char_literal211_tree=null;
+		CommonTree SkipSpace212_tree=null;
+		CommonTree SkipSpace213_tree=null;
+		CommonTree char_literal214_tree=null;
+		CommonTree SkipSpace215_tree=null;
+		RewriteRuleITokenStream stream_CATCH=new RewriteRuleITokenStream(adaptor,"token CATCH");
+		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
+		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
+		RewriteRuleSubtreeStream stream_statementBlock=new RewriteRuleSubtreeStream(adaptor,"rule statementBlock");
 		try { DebugEnterRule(GrammarFileName, "catchClause");
-		DebugLocation(253, 4);
+		DebugLocation(254, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 38)) { return retval; }
-			// JavaScript.g3:254:5: ( CATCH ( SkipSpace )* '(' ( SkipSpace )* Identifier ( SkipSpace )* ')' ( SkipSpace )* statementBlock )
+			// JavaScript.g3:255:5: ( CATCH ( SkipSpace )* '(' ( SkipSpace )* id= Identifier ( SkipSpace )* ')' ( SkipSpace )* blk= statementBlock -> ^( CATCH $id $blk) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:254:7: CATCH ( SkipSpace )* '(' ( SkipSpace )* Identifier ( SkipSpace )* ')' ( SkipSpace )* statementBlock
+			// JavaScript.g3:255:7: CATCH ( SkipSpace )* '(' ( SkipSpace )* id= Identifier ( SkipSpace )* ')' ( SkipSpace )* blk= statementBlock
 			{
-			root_0 = (CommonTree)adaptor.Nil();
+			DebugLocation(255, 7);
+			CATCH209=(CommonToken)Match(input,CATCH,Follow._CATCH_in_catchClause2137); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_CATCH.Add(CATCH209);
 
-			DebugLocation(254, 7);
-			CATCH213=(CommonToken)Match(input,CATCH,Follow._CATCH_in_catchClause2106); if (state.failed) return retval;
-			if ( state.backtracking==0 ) {
-			CATCH213_tree = (CommonTree)adaptor.Create(CATCH213);
-			adaptor.AddChild(root_0, CATCH213_tree);
-			}
-			DebugLocation(254, 22);
-			// JavaScript.g3:254:22: ( SkipSpace )*
+			DebugLocation(255, 13);
+			// JavaScript.g3:255:13: ( SkipSpace )*
 			try { DebugEnterSubRule(118);
 			while (true)
 			{
@@ -9377,10 +9445,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:254:22: SkipSpace
+					// JavaScript.g3:255:13: SkipSpace
 					{
-					DebugLocation(254, 22);
-					SkipSpace214=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2108); if (state.failed) return retval;
+					DebugLocation(255, 13);
+					SkipSpace210=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2139); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace210);
+
 
 					}
 					break;
@@ -9395,14 +9465,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(118); }
 
-			DebugLocation(254, 25);
-			char_literal215=(CommonToken)Match(input,130,Follow._130_in_catchClause2112); if (state.failed) return retval;
-			if ( state.backtracking==0 ) {
-			char_literal215_tree = (CommonTree)adaptor.Create(char_literal215);
-			adaptor.AddChild(root_0, char_literal215_tree);
-			}
-			DebugLocation(254, 38);
-			// JavaScript.g3:254:38: ( SkipSpace )*
+			DebugLocation(255, 24);
+			char_literal211=(CommonToken)Match(input,136,Follow._136_in_catchClause2142); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal211);
+
+			DebugLocation(255, 28);
+			// JavaScript.g3:255:28: ( SkipSpace )*
 			try { DebugEnterSubRule(119);
 			while (true)
 			{
@@ -9421,10 +9489,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:254:38: SkipSpace
+					// JavaScript.g3:255:28: SkipSpace
 					{
-					DebugLocation(254, 38);
-					SkipSpace216=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2114); if (state.failed) return retval;
+					DebugLocation(255, 28);
+					SkipSpace212=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2144); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace212);
+
 
 					}
 					break;
@@ -9439,14 +9509,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(119); }
 
-			DebugLocation(254, 41);
-			Identifier217=(CommonToken)Match(input,Identifier,Follow._Identifier_in_catchClause2118); if (state.failed) return retval;
-			if ( state.backtracking==0 ) {
-			Identifier217_tree = (CommonTree)adaptor.Create(Identifier217);
-			adaptor.AddChild(root_0, Identifier217_tree);
-			}
-			DebugLocation(254, 61);
-			// JavaScript.g3:254:61: ( SkipSpace )*
+			DebugLocation(255, 41);
+			id=(CommonToken)Match(input,Identifier,Follow._Identifier_in_catchClause2149); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_Identifier.Add(id);
+
+			DebugLocation(255, 53);
+			// JavaScript.g3:255:53: ( SkipSpace )*
 			try { DebugEnterSubRule(120);
 			while (true)
 			{
@@ -9465,10 +9533,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:254:61: SkipSpace
+					// JavaScript.g3:255:53: SkipSpace
 					{
-					DebugLocation(254, 61);
-					SkipSpace218=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2120); if (state.failed) return retval;
+					DebugLocation(255, 53);
+					SkipSpace213=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2151); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace213);
+
 
 					}
 					break;
@@ -9483,14 +9553,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(120); }
 
-			DebugLocation(254, 64);
-			char_literal219=(CommonToken)Match(input,131,Follow._131_in_catchClause2124); if (state.failed) return retval;
-			if ( state.backtracking==0 ) {
-			char_literal219_tree = (CommonTree)adaptor.Create(char_literal219);
-			adaptor.AddChild(root_0, char_literal219_tree);
-			}
-			DebugLocation(254, 77);
-			// JavaScript.g3:254:77: ( SkipSpace )*
+			DebugLocation(255, 64);
+			char_literal214=(CommonToken)Match(input,137,Follow._137_in_catchClause2154); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal214);
+
+			DebugLocation(255, 68);
+			// JavaScript.g3:255:68: ( SkipSpace )*
 			try { DebugEnterSubRule(121);
 			while (true)
 			{
@@ -9509,10 +9577,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:254:77: SkipSpace
+					// JavaScript.g3:255:68: SkipSpace
 					{
-					DebugLocation(254, 77);
-					SkipSpace220=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2126); if (state.failed) return retval;
+					DebugLocation(255, 68);
+					SkipSpace215=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_catchClause2156); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace215);
+
 
 					}
 					break;
@@ -9527,12 +9597,51 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(121); }
 
-			DebugLocation(254, 80);
-			PushFollow(Follow._statementBlock_in_catchClause2130);
-			statementBlock221=statementBlock();
+			DebugLocation(255, 82);
+			PushFollow(Follow._statementBlock_in_catchClause2161);
+			blk=statementBlock();
 			PopFollow();
 			if (state.failed) return retval;
-			if ( state.backtracking == 0 ) adaptor.AddChild(root_0, statementBlock221.Tree);
+			if ( state.backtracking == 0 ) stream_statementBlock.Add(blk.Tree);
+
+
+			{
+			// AST REWRITE
+			// elements: CATCH, id, blk
+			// token labels: id
+			// rule labels: blk, retval
+			// token list labels: 
+			// rule list labels: 
+			// wildcard labels: 
+			if ( state.backtracking == 0 ) {
+			retval.Tree = root_0;
+			RewriteRuleITokenStream stream_id=new RewriteRuleITokenStream(adaptor,"token id",id);
+			RewriteRuleSubtreeStream stream_blk=new RewriteRuleSubtreeStream(adaptor,"rule blk",blk!=null?blk.Tree:null);
+			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
+
+			root_0 = (CommonTree)adaptor.Nil();
+			// 256:9: -> ^( CATCH $id $blk)
+			{
+				DebugLocation(256, 12);
+				// JavaScript.g3:256:12: ^( CATCH $id $blk)
+				{
+				CommonTree root_1 = (CommonTree)adaptor.Nil();
+				DebugLocation(256, 14);
+				root_1 = (CommonTree)adaptor.BecomeRoot(stream_CATCH.NextNode(), root_1);
+
+				DebugLocation(256, 21);
+				adaptor.AddChild(root_1, stream_id.NextNode());
+				DebugLocation(256, 25);
+				adaptor.AddChild(root_1, stream_blk.NextTree());
+
+				adaptor.AddChild(root_0, root_1);
+				}
+
+			}
+
+			retval.Tree = root_0;
+			}
+			}
 
 			}
 
@@ -9558,7 +9667,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_catchClause();
 			if (state.backtracking > 0) { Memoize(input, 38, catchClause_StartIndex); }
 		}
-		DebugLocation(255, 4);
+		DebugLocation(257, 4);
 		} finally { DebugExitRule(GrammarFileName, "catchClause"); }
 		return retval;
 
@@ -9575,7 +9684,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_finallyClause();
 
 	// $ANTLR start "finallyClause"
-	// JavaScript.g3:257:1: finallyClause : FINALLY ( SkipSpace )* statementBlock ;
+	// JavaScript.g3:259:1: finallyClause : FINALLY ( SkipSpace )* blk= statementBlock -> ^( FINALLY $blk) ;
 	[GrammarRule("finallyClause")]
 	private JavaScriptParser.finallyClause_return finallyClause()
 	{
@@ -9587,32 +9696,30 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int finallyClause_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken FINALLY222=null;
-		CommonToken SkipSpace223=null;
-		JavaScriptParser.statementBlock_return statementBlock224 = default(JavaScriptParser.statementBlock_return);
+		CommonToken FINALLY216=null;
+		CommonToken SkipSpace217=null;
+		JavaScriptParser.statementBlock_return blk = default(JavaScriptParser.statementBlock_return);
 
-		CommonTree FINALLY222_tree=null;
-		CommonTree SkipSpace223_tree=null;
-
+		CommonTree FINALLY216_tree=null;
+		CommonTree SkipSpace217_tree=null;
+		RewriteRuleITokenStream stream_FINALLY=new RewriteRuleITokenStream(adaptor,"token FINALLY");
+		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
+		RewriteRuleSubtreeStream stream_statementBlock=new RewriteRuleSubtreeStream(adaptor,"rule statementBlock");
 		try { DebugEnterRule(GrammarFileName, "finallyClause");
-		DebugLocation(257, 4);
+		DebugLocation(259, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 39)) { return retval; }
-			// JavaScript.g3:258:5: ( FINALLY ( SkipSpace )* statementBlock )
+			// JavaScript.g3:260:5: ( FINALLY ( SkipSpace )* blk= statementBlock -> ^( FINALLY $blk) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:258:7: FINALLY ( SkipSpace )* statementBlock
+			// JavaScript.g3:260:7: FINALLY ( SkipSpace )* blk= statementBlock
 			{
-			root_0 = (CommonTree)adaptor.Nil();
+			DebugLocation(260, 7);
+			FINALLY216=(CommonToken)Match(input,FINALLY,Follow._FINALLY_in_finallyClause2198); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_FINALLY.Add(FINALLY216);
 
-			DebugLocation(258, 7);
-			FINALLY222=(CommonToken)Match(input,FINALLY,Follow._FINALLY_in_finallyClause2147); if (state.failed) return retval;
-			if ( state.backtracking==0 ) {
-			FINALLY222_tree = (CommonTree)adaptor.Create(FINALLY222);
-			adaptor.AddChild(root_0, FINALLY222_tree);
-			}
-			DebugLocation(258, 24);
-			// JavaScript.g3:258:24: ( SkipSpace )*
+			DebugLocation(260, 15);
+			// JavaScript.g3:260:15: ( SkipSpace )*
 			try { DebugEnterSubRule(122);
 			while (true)
 			{
@@ -9631,10 +9738,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:258:24: SkipSpace
+					// JavaScript.g3:260:15: SkipSpace
 					{
-					DebugLocation(258, 24);
-					SkipSpace223=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_finallyClause2149); if (state.failed) return retval;
+					DebugLocation(260, 15);
+					SkipSpace217=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_finallyClause2200); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace217);
+
 
 					}
 					break;
@@ -9649,12 +9758,48 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(122); }
 
-			DebugLocation(258, 27);
-			PushFollow(Follow._statementBlock_in_finallyClause2153);
-			statementBlock224=statementBlock();
+			DebugLocation(260, 29);
+			PushFollow(Follow._statementBlock_in_finallyClause2205);
+			blk=statementBlock();
 			PopFollow();
 			if (state.failed) return retval;
-			if ( state.backtracking == 0 ) adaptor.AddChild(root_0, statementBlock224.Tree);
+			if ( state.backtracking == 0 ) stream_statementBlock.Add(blk.Tree);
+
+
+			{
+			// AST REWRITE
+			// elements: FINALLY, blk
+			// token labels: 
+			// rule labels: blk, retval
+			// token list labels: 
+			// rule list labels: 
+			// wildcard labels: 
+			if ( state.backtracking == 0 ) {
+			retval.Tree = root_0;
+			RewriteRuleSubtreeStream stream_blk=new RewriteRuleSubtreeStream(adaptor,"rule blk",blk!=null?blk.Tree:null);
+			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
+
+			root_0 = (CommonTree)adaptor.Nil();
+			// 261:9: -> ^( FINALLY $blk)
+			{
+				DebugLocation(261, 12);
+				// JavaScript.g3:261:12: ^( FINALLY $blk)
+				{
+				CommonTree root_1 = (CommonTree)adaptor.Nil();
+				DebugLocation(261, 14);
+				root_1 = (CommonTree)adaptor.BecomeRoot(stream_FINALLY.NextNode(), root_1);
+
+				DebugLocation(261, 23);
+				adaptor.AddChild(root_1, stream_blk.NextTree());
+
+				adaptor.AddChild(root_0, root_1);
+				}
+
+			}
+
+			retval.Tree = root_0;
+			}
+			}
 
 			}
 
@@ -9680,7 +9825,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_finallyClause();
 			if (state.backtracking > 0) { Memoize(input, 39, finallyClause_StartIndex); }
 		}
-		DebugLocation(259, 4);
+		DebugLocation(262, 4);
 		} finally { DebugExitRule(GrammarFileName, "finallyClause"); }
 		return retval;
 
@@ -9697,7 +9842,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_expression();
 
 	// $ANTLR start "expression"
-	// JavaScript.g3:262:1: expression : assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* -> ( assignmentExpression )+ ;
+	// JavaScript.g3:265:1: expression : assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* -> ( assignmentExpression )+ ;
 	[GrammarRule("expression")]
 	private JavaScriptParser.expression_return expression()
 	{
@@ -9709,35 +9854,35 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int expression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace226=null;
-		CommonToken char_literal227=null;
-		CommonToken SkipSpace228=null;
-		JavaScriptParser.assignmentExpression_return assignmentExpression225 = default(JavaScriptParser.assignmentExpression_return);
-		JavaScriptParser.assignmentExpression_return assignmentExpression229 = default(JavaScriptParser.assignmentExpression_return);
+		CommonToken SkipSpace219=null;
+		CommonToken char_literal220=null;
+		CommonToken SkipSpace221=null;
+		JavaScriptParser.assignmentExpression_return assignmentExpression218 = default(JavaScriptParser.assignmentExpression_return);
+		JavaScriptParser.assignmentExpression_return assignmentExpression222 = default(JavaScriptParser.assignmentExpression_return);
 
-		CommonTree SkipSpace226_tree=null;
-		CommonTree char_literal227_tree=null;
-		CommonTree SkipSpace228_tree=null;
+		CommonTree SkipSpace219_tree=null;
+		CommonTree char_literal220_tree=null;
+		CommonTree SkipSpace221_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_COMMA=new RewriteRuleITokenStream(adaptor,"token COMMA");
 		RewriteRuleSubtreeStream stream_assignmentExpression=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpression");
 		try { DebugEnterRule(GrammarFileName, "expression");
-		DebugLocation(262, 4);
+		DebugLocation(265, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 40)) { return retval; }
-			// JavaScript.g3:263:5: ( assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* -> ( assignmentExpression )+ )
+			// JavaScript.g3:266:5: ( assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* -> ( assignmentExpression )+ )
 			DebugEnterAlt(1);
-			// JavaScript.g3:263:7: assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
+			// JavaScript.g3:266:7: assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
 			{
-			DebugLocation(263, 7);
-			PushFollow(Follow._assignmentExpression_in_expression2171);
-			assignmentExpression225=assignmentExpression();
+			DebugLocation(266, 7);
+			PushFollow(Follow._assignmentExpression_in_expression2240);
+			assignmentExpression218=assignmentExpression();
 			PopFollow();
 			if (state.failed) return retval;
-			if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression225.Tree);
-			DebugLocation(263, 28);
-			// JavaScript.g3:263:28: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
+			if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression218.Tree);
+			DebugLocation(266, 28);
+			// JavaScript.g3:266:28: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
 			try { DebugEnterSubRule(125);
 			while (true)
 			{
@@ -9757,10 +9902,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:263:29: ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression
+					// JavaScript.g3:266:29: ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression
 					{
-					DebugLocation(263, 29);
-					// JavaScript.g3:263:29: ( SkipSpace )*
+					DebugLocation(266, 29);
+					// JavaScript.g3:266:29: ( SkipSpace )*
 					try { DebugEnterSubRule(123);
 					while (true)
 					{
@@ -9779,11 +9924,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:263:29: SkipSpace
+							// JavaScript.g3:266:29: SkipSpace
 							{
-							DebugLocation(263, 29);
-							SkipSpace226=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expression2174); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace226);
+							DebugLocation(266, 29);
+							SkipSpace219=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expression2243); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace219);
 
 
 							}
@@ -9799,12 +9944,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(123); }
 
-					DebugLocation(263, 40);
-					char_literal227=(CommonToken)Match(input,COMMA,Follow._COMMA_in_expression2177); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal227);
+					DebugLocation(266, 40);
+					char_literal220=(CommonToken)Match(input,COMMA,Follow._COMMA_in_expression2246); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal220);
 
-					DebugLocation(263, 44);
-					// JavaScript.g3:263:44: ( SkipSpace )*
+					DebugLocation(266, 44);
+					// JavaScript.g3:266:44: ( SkipSpace )*
 					try { DebugEnterSubRule(124);
 					while (true)
 					{
@@ -9823,11 +9968,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:263:44: SkipSpace
+							// JavaScript.g3:266:44: SkipSpace
 							{
-							DebugLocation(263, 44);
-							SkipSpace228=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expression2179); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace228);
+							DebugLocation(266, 44);
+							SkipSpace221=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expression2248); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace221);
 
 
 							}
@@ -9843,12 +9988,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(124); }
 
-					DebugLocation(263, 55);
-					PushFollow(Follow._assignmentExpression_in_expression2182);
-					assignmentExpression229=assignmentExpression();
+					DebugLocation(266, 55);
+					PushFollow(Follow._assignmentExpression_in_expression2251);
+					assignmentExpression222=assignmentExpression();
 					PopFollow();
 					if (state.failed) return retval;
-					if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression229.Tree);
+					if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression222.Tree);
 
 					}
 					break;
@@ -9878,16 +10023,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 264:9: -> ( assignmentExpression )+
+			// 267:9: -> ( assignmentExpression )+
 			{
-				DebugLocation(264, 12);
+				DebugLocation(267, 12);
 				if ( !(stream_assignmentExpression.HasNext) )
 				{
 					throw new RewriteEarlyExitException();
 				}
 				while ( stream_assignmentExpression.HasNext )
 				{
-					DebugLocation(264, 12);
+					DebugLocation(267, 12);
 					adaptor.AddChild(root_0, stream_assignmentExpression.NextTree());
 
 				}
@@ -9923,7 +10068,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_expression();
 			if (state.backtracking > 0) { Memoize(input, 40, expression_StartIndex); }
 		}
-		DebugLocation(265, 4);
+		DebugLocation(268, 4);
 		} finally { DebugExitRule(GrammarFileName, "expression"); }
 		return retval;
 
@@ -9940,7 +10085,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_expressionNoIn();
 
 	// $ANTLR start "expressionNoIn"
-	// JavaScript.g3:267:1: expressionNoIn : assignmentExpressionNoIn ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )* -> ( assignmentExpressionNoIn )+ ;
+	// JavaScript.g3:270:1: expressionNoIn : assignmentExpressionNoIn ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )* -> ( assignmentExpressionNoIn )+ ;
 	[GrammarRule("expressionNoIn")]
 	private JavaScriptParser.expressionNoIn_return expressionNoIn()
 	{
@@ -9952,35 +10097,35 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int expressionNoIn_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace231=null;
-		CommonToken char_literal232=null;
-		CommonToken SkipSpace233=null;
-		JavaScriptParser.assignmentExpressionNoIn_return assignmentExpressionNoIn230 = default(JavaScriptParser.assignmentExpressionNoIn_return);
-		JavaScriptParser.assignmentExpressionNoIn_return assignmentExpressionNoIn234 = default(JavaScriptParser.assignmentExpressionNoIn_return);
+		CommonToken SkipSpace224=null;
+		CommonToken char_literal225=null;
+		CommonToken SkipSpace226=null;
+		JavaScriptParser.assignmentExpressionNoIn_return assignmentExpressionNoIn223 = default(JavaScriptParser.assignmentExpressionNoIn_return);
+		JavaScriptParser.assignmentExpressionNoIn_return assignmentExpressionNoIn227 = default(JavaScriptParser.assignmentExpressionNoIn_return);
 
-		CommonTree SkipSpace231_tree=null;
-		CommonTree char_literal232_tree=null;
-		CommonTree SkipSpace233_tree=null;
+		CommonTree SkipSpace224_tree=null;
+		CommonTree char_literal225_tree=null;
+		CommonTree SkipSpace226_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_COMMA=new RewriteRuleITokenStream(adaptor,"token COMMA");
 		RewriteRuleSubtreeStream stream_assignmentExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "expressionNoIn");
-		DebugLocation(267, 4);
+		DebugLocation(270, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 41)) { return retval; }
-			// JavaScript.g3:268:5: ( assignmentExpressionNoIn ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )* -> ( assignmentExpressionNoIn )+ )
+			// JavaScript.g3:271:5: ( assignmentExpressionNoIn ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )* -> ( assignmentExpressionNoIn )+ )
 			DebugEnterAlt(1);
-			// JavaScript.g3:268:7: assignmentExpressionNoIn ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )*
+			// JavaScript.g3:271:7: assignmentExpressionNoIn ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )*
 			{
-			DebugLocation(268, 7);
-			PushFollow(Follow._assignmentExpressionNoIn_in_expressionNoIn2214);
-			assignmentExpressionNoIn230=assignmentExpressionNoIn();
+			DebugLocation(271, 7);
+			PushFollow(Follow._assignmentExpressionNoIn_in_expressionNoIn2283);
+			assignmentExpressionNoIn223=assignmentExpressionNoIn();
 			PopFollow();
 			if (state.failed) return retval;
-			if ( state.backtracking == 0 ) stream_assignmentExpressionNoIn.Add(assignmentExpressionNoIn230.Tree);
-			DebugLocation(268, 32);
-			// JavaScript.g3:268:32: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )*
+			if ( state.backtracking == 0 ) stream_assignmentExpressionNoIn.Add(assignmentExpressionNoIn223.Tree);
+			DebugLocation(271, 32);
+			// JavaScript.g3:271:32: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )*
 			try { DebugEnterSubRule(128);
 			while (true)
 			{
@@ -10000,10 +10145,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:268:33: ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn
+					// JavaScript.g3:271:33: ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn
 					{
-					DebugLocation(268, 33);
-					// JavaScript.g3:268:33: ( SkipSpace )*
+					DebugLocation(271, 33);
+					// JavaScript.g3:271:33: ( SkipSpace )*
 					try { DebugEnterSubRule(126);
 					while (true)
 					{
@@ -10022,11 +10167,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:268:33: SkipSpace
+							// JavaScript.g3:271:33: SkipSpace
 							{
-							DebugLocation(268, 33);
-							SkipSpace231=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expressionNoIn2217); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace231);
+							DebugLocation(271, 33);
+							SkipSpace224=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expressionNoIn2286); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace224);
 
 
 							}
@@ -10042,12 +10187,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(126); }
 
-					DebugLocation(268, 44);
-					char_literal232=(CommonToken)Match(input,COMMA,Follow._COMMA_in_expressionNoIn2220); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal232);
+					DebugLocation(271, 44);
+					char_literal225=(CommonToken)Match(input,COMMA,Follow._COMMA_in_expressionNoIn2289); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal225);
 
-					DebugLocation(268, 48);
-					// JavaScript.g3:268:48: ( SkipSpace )*
+					DebugLocation(271, 48);
+					// JavaScript.g3:271:48: ( SkipSpace )*
 					try { DebugEnterSubRule(127);
 					while (true)
 					{
@@ -10066,11 +10211,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:268:48: SkipSpace
+							// JavaScript.g3:271:48: SkipSpace
 							{
-							DebugLocation(268, 48);
-							SkipSpace233=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expressionNoIn2222); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace233);
+							DebugLocation(271, 48);
+							SkipSpace226=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_expressionNoIn2291); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace226);
 
 
 							}
@@ -10086,12 +10231,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(127); }
 
-					DebugLocation(268, 59);
-					PushFollow(Follow._assignmentExpressionNoIn_in_expressionNoIn2225);
-					assignmentExpressionNoIn234=assignmentExpressionNoIn();
+					DebugLocation(271, 59);
+					PushFollow(Follow._assignmentExpressionNoIn_in_expressionNoIn2294);
+					assignmentExpressionNoIn227=assignmentExpressionNoIn();
 					PopFollow();
 					if (state.failed) return retval;
-					if ( state.backtracking == 0 ) stream_assignmentExpressionNoIn.Add(assignmentExpressionNoIn234.Tree);
+					if ( state.backtracking == 0 ) stream_assignmentExpressionNoIn.Add(assignmentExpressionNoIn227.Tree);
 
 					}
 					break;
@@ -10121,16 +10266,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 269:9: -> ( assignmentExpressionNoIn )+
+			// 272:9: -> ( assignmentExpressionNoIn )+
 			{
-				DebugLocation(269, 12);
+				DebugLocation(272, 12);
 				if ( !(stream_assignmentExpressionNoIn.HasNext) )
 				{
 					throw new RewriteEarlyExitException();
 				}
 				while ( stream_assignmentExpressionNoIn.HasNext )
 				{
-					DebugLocation(269, 12);
+					DebugLocation(272, 12);
 					adaptor.AddChild(root_0, stream_assignmentExpressionNoIn.NextTree());
 
 				}
@@ -10166,7 +10311,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_expressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 41, expressionNoIn_StartIndex); }
 		}
-		DebugLocation(270, 4);
+		DebugLocation(273, 4);
 		} finally { DebugExitRule(GrammarFileName, "expressionNoIn"); }
 		return retval;
 
@@ -10183,7 +10328,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_assignmentExpression();
 
 	// $ANTLR start "assignmentExpression"
-	// JavaScript.g3:272:1: assignmentExpression : ( conditionalExpression |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression -> ^( BINARY_EXPR $op $lhs $rhs) );
+	// JavaScript.g3:275:1: assignmentExpression : ( conditionalExpression |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression -> ^( BINARY_EXPR $op $lhs $rhs) );
 	[GrammarRule("assignmentExpression")]
 	private JavaScriptParser.assignmentExpression_return assignmentExpression()
 	{
@@ -10195,25 +10340,25 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int assignmentExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace236=null;
-		CommonToken SkipSpace237=null;
+		CommonToken SkipSpace229=null;
+		CommonToken SkipSpace230=null;
 		JavaScriptParser.leftHandSideExpression_return lhs = default(JavaScriptParser.leftHandSideExpression_return);
 		JavaScriptParser.assignmentOperator_return op = default(JavaScriptParser.assignmentOperator_return);
 		JavaScriptParser.assignmentExpression_return rhs = default(JavaScriptParser.assignmentExpression_return);
-		JavaScriptParser.conditionalExpression_return conditionalExpression235 = default(JavaScriptParser.conditionalExpression_return);
+		JavaScriptParser.conditionalExpression_return conditionalExpression228 = default(JavaScriptParser.conditionalExpression_return);
 
-		CommonTree SkipSpace236_tree=null;
-		CommonTree SkipSpace237_tree=null;
+		CommonTree SkipSpace229_tree=null;
+		CommonTree SkipSpace230_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_leftHandSideExpression=new RewriteRuleSubtreeStream(adaptor,"rule leftHandSideExpression");
 		RewriteRuleSubtreeStream stream_assignmentOperator=new RewriteRuleSubtreeStream(adaptor,"rule assignmentOperator");
 		RewriteRuleSubtreeStream stream_assignmentExpression=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpression");
 		try { DebugEnterRule(GrammarFileName, "assignmentExpression");
-		DebugLocation(272, 4);
+		DebugLocation(275, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 42)) { return retval; }
-			// JavaScript.g3:273:5: ( conditionalExpression |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression -> ^( BINARY_EXPR $op $lhs $rhs) )
+			// JavaScript.g3:276:5: ( conditionalExpression |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression -> ^( BINARY_EXPR $op $lhs $rhs) )
 			int alt131=2;
 			try { DebugEnterDecision(131, decisionCanBacktrack[131]);
 			try
@@ -10230,31 +10375,31 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:273:7: conditionalExpression
+				// JavaScript.g3:276:7: conditionalExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(273, 7);
-				PushFollow(Follow._conditionalExpression_in_assignmentExpression2257);
-				conditionalExpression235=conditionalExpression();
+				DebugLocation(276, 7);
+				PushFollow(Follow._conditionalExpression_in_assignmentExpression2326);
+				conditionalExpression228=conditionalExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, conditionalExpression235.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, conditionalExpression228.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:274:7: lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression
+				// JavaScript.g3:277:7: lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression
 				{
-				DebugLocation(274, 10);
-				PushFollow(Follow._leftHandSideExpression_in_assignmentExpression2267);
+				DebugLocation(277, 10);
+				PushFollow(Follow._leftHandSideExpression_in_assignmentExpression2336);
 				lhs=leftHandSideExpression();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_leftHandSideExpression.Add(lhs.Tree);
-				DebugLocation(274, 34);
-				// JavaScript.g3:274:34: ( SkipSpace )*
+				DebugLocation(277, 34);
+				// JavaScript.g3:277:34: ( SkipSpace )*
 				try { DebugEnterSubRule(129);
 				while (true)
 				{
@@ -10273,11 +10418,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:274:34: SkipSpace
+						// JavaScript.g3:277:34: SkipSpace
 						{
-						DebugLocation(274, 34);
-						SkipSpace236=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpression2269); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace236);
+						DebugLocation(277, 34);
+						SkipSpace229=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpression2338); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace229);
 
 
 						}
@@ -10293,14 +10438,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(129); }
 
-				DebugLocation(274, 47);
-				PushFollow(Follow._assignmentOperator_in_assignmentExpression2274);
+				DebugLocation(277, 47);
+				PushFollow(Follow._assignmentOperator_in_assignmentExpression2343);
 				op=assignmentOperator();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_assignmentOperator.Add(op.Tree);
-				DebugLocation(274, 67);
-				// JavaScript.g3:274:67: ( SkipSpace )*
+				DebugLocation(277, 67);
+				// JavaScript.g3:277:67: ( SkipSpace )*
 				try { DebugEnterSubRule(130);
 				while (true)
 				{
@@ -10319,11 +10464,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:274:67: SkipSpace
+						// JavaScript.g3:277:67: SkipSpace
 						{
-						DebugLocation(274, 67);
-						SkipSpace237=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpression2276); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace237);
+						DebugLocation(277, 67);
+						SkipSpace230=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpression2345); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace230);
 
 
 						}
@@ -10339,8 +10484,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(130); }
 
-				DebugLocation(274, 81);
-				PushFollow(Follow._assignmentExpression_in_assignmentExpression2281);
+				DebugLocation(277, 81);
+				PushFollow(Follow._assignmentExpression_in_assignmentExpression2350);
 				rhs=assignmentExpression();
 				PopFollow();
 				if (state.failed) return retval;
@@ -10363,20 +10508,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 275:9: -> ^( BINARY_EXPR $op $lhs $rhs)
+				// 278:9: -> ^( BINARY_EXPR $op $lhs $rhs)
 				{
-					DebugLocation(275, 12);
-					// JavaScript.g3:275:12: ^( BINARY_EXPR $op $lhs $rhs)
+					DebugLocation(278, 12);
+					// JavaScript.g3:278:12: ^( BINARY_EXPR $op $lhs $rhs)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(275, 14);
+					DebugLocation(278, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-					DebugLocation(275, 27);
+					DebugLocation(278, 27);
 					adaptor.AddChild(root_1, stream_op.NextTree());
-					DebugLocation(275, 31);
+					DebugLocation(278, 31);
 					adaptor.AddChild(root_1, stream_lhs.NextTree());
-					DebugLocation(275, 36);
+					DebugLocation(278, 36);
 					adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -10414,7 +10559,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_assignmentExpression();
 			if (state.backtracking > 0) { Memoize(input, 42, assignmentExpression_StartIndex); }
 		}
-		DebugLocation(276, 4);
+		DebugLocation(279, 4);
 		} finally { DebugExitRule(GrammarFileName, "assignmentExpression"); }
 		return retval;
 
@@ -10431,7 +10576,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_assignmentExpressionNoIn();
 
 	// $ANTLR start "assignmentExpressionNoIn"
-	// JavaScript.g3:278:1: assignmentExpressionNoIn : ( conditionalExpressionNoIn |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn -> ^( BINARY_EXPR $op $lhs $rhs) );
+	// JavaScript.g3:281:1: assignmentExpressionNoIn : ( conditionalExpressionNoIn |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn -> ^( BINARY_EXPR $op $lhs $rhs) );
 	[GrammarRule("assignmentExpressionNoIn")]
 	private JavaScriptParser.assignmentExpressionNoIn_return assignmentExpressionNoIn()
 	{
@@ -10443,25 +10588,25 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int assignmentExpressionNoIn_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace239=null;
-		CommonToken SkipSpace240=null;
+		CommonToken SkipSpace232=null;
+		CommonToken SkipSpace233=null;
 		JavaScriptParser.leftHandSideExpression_return lhs = default(JavaScriptParser.leftHandSideExpression_return);
 		JavaScriptParser.assignmentOperator_return op = default(JavaScriptParser.assignmentOperator_return);
 		JavaScriptParser.assignmentExpressionNoIn_return rhs = default(JavaScriptParser.assignmentExpressionNoIn_return);
-		JavaScriptParser.conditionalExpressionNoIn_return conditionalExpressionNoIn238 = default(JavaScriptParser.conditionalExpressionNoIn_return);
+		JavaScriptParser.conditionalExpressionNoIn_return conditionalExpressionNoIn231 = default(JavaScriptParser.conditionalExpressionNoIn_return);
 
-		CommonTree SkipSpace239_tree=null;
-		CommonTree SkipSpace240_tree=null;
+		CommonTree SkipSpace232_tree=null;
+		CommonTree SkipSpace233_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_leftHandSideExpression=new RewriteRuleSubtreeStream(adaptor,"rule leftHandSideExpression");
 		RewriteRuleSubtreeStream stream_assignmentOperator=new RewriteRuleSubtreeStream(adaptor,"rule assignmentOperator");
 		RewriteRuleSubtreeStream stream_assignmentExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "assignmentExpressionNoIn");
-		DebugLocation(278, 4);
+		DebugLocation(281, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 43)) { return retval; }
-			// JavaScript.g3:279:5: ( conditionalExpressionNoIn |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn -> ^( BINARY_EXPR $op $lhs $rhs) )
+			// JavaScript.g3:282:5: ( conditionalExpressionNoIn |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn -> ^( BINARY_EXPR $op $lhs $rhs) )
 			int alt134=2;
 			try { DebugEnterDecision(134, decisionCanBacktrack[134]);
 			try
@@ -10478,31 +10623,31 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:279:7: conditionalExpressionNoIn
+				// JavaScript.g3:282:7: conditionalExpressionNoIn
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(279, 7);
-				PushFollow(Follow._conditionalExpressionNoIn_in_assignmentExpressionNoIn2321);
-				conditionalExpressionNoIn238=conditionalExpressionNoIn();
+				DebugLocation(282, 7);
+				PushFollow(Follow._conditionalExpressionNoIn_in_assignmentExpressionNoIn2390);
+				conditionalExpressionNoIn231=conditionalExpressionNoIn();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, conditionalExpressionNoIn238.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, conditionalExpressionNoIn231.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:280:7: lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn
+				// JavaScript.g3:283:7: lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn
 				{
-				DebugLocation(280, 10);
-				PushFollow(Follow._leftHandSideExpression_in_assignmentExpressionNoIn2331);
+				DebugLocation(283, 10);
+				PushFollow(Follow._leftHandSideExpression_in_assignmentExpressionNoIn2400);
 				lhs=leftHandSideExpression();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_leftHandSideExpression.Add(lhs.Tree);
-				DebugLocation(280, 34);
-				// JavaScript.g3:280:34: ( SkipSpace )*
+				DebugLocation(283, 34);
+				// JavaScript.g3:283:34: ( SkipSpace )*
 				try { DebugEnterSubRule(132);
 				while (true)
 				{
@@ -10521,11 +10666,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:280:34: SkipSpace
+						// JavaScript.g3:283:34: SkipSpace
 						{
-						DebugLocation(280, 34);
-						SkipSpace239=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpressionNoIn2333); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace239);
+						DebugLocation(283, 34);
+						SkipSpace232=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpressionNoIn2402); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace232);
 
 
 						}
@@ -10541,14 +10686,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(132); }
 
-				DebugLocation(280, 47);
-				PushFollow(Follow._assignmentOperator_in_assignmentExpressionNoIn2338);
+				DebugLocation(283, 47);
+				PushFollow(Follow._assignmentOperator_in_assignmentExpressionNoIn2407);
 				op=assignmentOperator();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_assignmentOperator.Add(op.Tree);
-				DebugLocation(280, 67);
-				// JavaScript.g3:280:67: ( SkipSpace )*
+				DebugLocation(283, 67);
+				// JavaScript.g3:283:67: ( SkipSpace )*
 				try { DebugEnterSubRule(133);
 				while (true)
 				{
@@ -10567,11 +10712,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:280:67: SkipSpace
+						// JavaScript.g3:283:67: SkipSpace
 						{
-						DebugLocation(280, 67);
-						SkipSpace240=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpressionNoIn2340); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace240);
+						DebugLocation(283, 67);
+						SkipSpace233=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_assignmentExpressionNoIn2409); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace233);
 
 
 						}
@@ -10587,8 +10732,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(133); }
 
-				DebugLocation(280, 81);
-				PushFollow(Follow._assignmentExpressionNoIn_in_assignmentExpressionNoIn2345);
+				DebugLocation(283, 81);
+				PushFollow(Follow._assignmentExpressionNoIn_in_assignmentExpressionNoIn2414);
 				rhs=assignmentExpressionNoIn();
 				PopFollow();
 				if (state.failed) return retval;
@@ -10611,20 +10756,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 281:9: -> ^( BINARY_EXPR $op $lhs $rhs)
+				// 284:9: -> ^( BINARY_EXPR $op $lhs $rhs)
 				{
-					DebugLocation(281, 12);
-					// JavaScript.g3:281:12: ^( BINARY_EXPR $op $lhs $rhs)
+					DebugLocation(284, 12);
+					// JavaScript.g3:284:12: ^( BINARY_EXPR $op $lhs $rhs)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(281, 14);
+					DebugLocation(284, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-					DebugLocation(281, 27);
+					DebugLocation(284, 27);
 					adaptor.AddChild(root_1, stream_op.NextTree());
-					DebugLocation(281, 31);
+					DebugLocation(284, 31);
 					adaptor.AddChild(root_1, stream_lhs.NextTree());
-					DebugLocation(281, 36);
+					DebugLocation(284, 36);
 					adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -10662,7 +10807,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_assignmentExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 43, assignmentExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(282, 4);
+		DebugLocation(285, 4);
 		} finally { DebugExitRule(GrammarFileName, "assignmentExpressionNoIn"); }
 		return retval;
 
@@ -10679,7 +10824,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_assignmentOperator();
 
 	// $ANTLR start "assignmentOperator"
-	// JavaScript.g3:284:1: assignmentOperator : ( ASN | MUL_ASN | DIV_ASN | MOD_ASN | PLUS_ASN | MINUS_ASN | SHL_ASN | SHR_ASN | USHR_ASN | BIT_AND_ASN | BIT_XOR_ASN | BIT_OR_ASN );
+	// JavaScript.g3:287:1: assignmentOperator : ( ASN | MUL_ASN | DIV_ASN | MOD_ASN | PLUS_ASN | MINUS_ASN | SHL_ASN | SHR_ASN | USHR_ASN | BIT_AND_ASN | BIT_XOR_ASN | BIT_OR_ASN );
 	[GrammarRule("assignmentOperator")]
 	private JavaScriptParser.assignmentOperator_return assignmentOperator()
 	{
@@ -10691,27 +10836,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int assignmentOperator_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set241=null;
+		CommonToken set234=null;
 
-		CommonTree set241_tree=null;
+		CommonTree set234_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "assignmentOperator");
-		DebugLocation(284, 4);
+		DebugLocation(287, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 44)) { return retval; }
-			// JavaScript.g3:285:5: ( ASN | MUL_ASN | DIV_ASN | MOD_ASN | PLUS_ASN | MINUS_ASN | SHL_ASN | SHR_ASN | USHR_ASN | BIT_AND_ASN | BIT_XOR_ASN | BIT_OR_ASN )
+			// JavaScript.g3:288:5: ( ASN | MUL_ASN | DIV_ASN | MOD_ASN | PLUS_ASN | MINUS_ASN | SHL_ASN | SHR_ASN | USHR_ASN | BIT_AND_ASN | BIT_XOR_ASN | BIT_OR_ASN )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(285, 5);
-			set241=(CommonToken)input.LT(1);
+			DebugLocation(288, 5);
+			set234=(CommonToken)input.LT(1);
 			if (input.LA(1)==ASN||input.LA(1)==BIT_AND_ASN||input.LA(1)==BIT_OR_ASN||input.LA(1)==BIT_XOR_ASN||input.LA(1)==DIV_ASN||input.LA(1)==MINUS_ASN||input.LA(1)==MOD_ASN||input.LA(1)==MUL_ASN||input.LA(1)==PLUS_ASN||input.LA(1)==SHL_ASN||input.LA(1)==SHR_ASN||input.LA(1)==USHR_ASN)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set241));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set234));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -10747,7 +10892,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_assignmentOperator();
 			if (state.backtracking > 0) { Memoize(input, 44, assignmentOperator_StartIndex); }
 		}
-		DebugLocation(297, 4);
+		DebugLocation(300, 4);
 		} finally { DebugExitRule(GrammarFileName, "assignmentOperator"); }
 		return retval;
 
@@ -10764,7 +10909,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_leftHandSideExpression();
 
 	// $ANTLR start "leftHandSideExpression"
-	// JavaScript.g3:299:1: leftHandSideExpression : ( callExpression | newExpression );
+	// JavaScript.g3:302:1: leftHandSideExpression : ( callExpression | newExpression );
 	[GrammarRule("leftHandSideExpression")]
 	private JavaScriptParser.leftHandSideExpression_return leftHandSideExpression()
 	{
@@ -10776,16 +10921,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int leftHandSideExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		JavaScriptParser.callExpression_return callExpression242 = default(JavaScriptParser.callExpression_return);
-		JavaScriptParser.newExpression_return newExpression243 = default(JavaScriptParser.newExpression_return);
+		JavaScriptParser.callExpression_return callExpression235 = default(JavaScriptParser.callExpression_return);
+		JavaScriptParser.newExpression_return newExpression236 = default(JavaScriptParser.newExpression_return);
 
 
 		try { DebugEnterRule(GrammarFileName, "leftHandSideExpression");
-		DebugLocation(299, 4);
+		DebugLocation(302, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 45)) { return retval; }
-			// JavaScript.g3:300:5: ( callExpression | newExpression )
+			// JavaScript.g3:303:5: ( callExpression | newExpression )
 			int alt135=2;
 			try { DebugEnterDecision(135, decisionCanBacktrack[135]);
 			try
@@ -10802,31 +10947,31 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:300:7: callExpression
+				// JavaScript.g3:303:7: callExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(300, 7);
-				PushFollow(Follow._callExpression_in_leftHandSideExpression2490);
-				callExpression242=callExpression();
+				DebugLocation(303, 7);
+				PushFollow(Follow._callExpression_in_leftHandSideExpression2559);
+				callExpression235=callExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, callExpression242.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, callExpression235.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:301:7: newExpression
+				// JavaScript.g3:304:7: newExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(301, 7);
-				PushFollow(Follow._newExpression_in_leftHandSideExpression2498);
-				newExpression243=newExpression();
+				DebugLocation(304, 7);
+				PushFollow(Follow._newExpression_in_leftHandSideExpression2567);
+				newExpression236=newExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, newExpression243.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, newExpression236.Tree);
 
 				}
 				break;
@@ -10854,7 +10999,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_leftHandSideExpression();
 			if (state.backtracking > 0) { Memoize(input, 45, leftHandSideExpression_StartIndex); }
 		}
-		DebugLocation(302, 4);
+		DebugLocation(305, 4);
 		} finally { DebugExitRule(GrammarFileName, "leftHandSideExpression"); }
 		return retval;
 
@@ -10871,7 +11016,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_newExpression();
 
 	// $ANTLR start "newExpression"
-	// JavaScript.g3:304:1: newExpression : ( memberExpression | 'new' ( SkipSpace )* newExpression );
+	// JavaScript.g3:307:1: newExpression : ( memberExpression | 'new' ( SkipSpace )* newExpression );
 	[GrammarRule("newExpression")]
 	private JavaScriptParser.newExpression_return newExpression()
 	{
@@ -10883,20 +11028,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int newExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken string_literal245=null;
-		CommonToken SkipSpace246=null;
-		JavaScriptParser.memberExpression_return memberExpression244 = default(JavaScriptParser.memberExpression_return);
-		JavaScriptParser.newExpression_return newExpression247 = default(JavaScriptParser.newExpression_return);
+		CommonToken string_literal238=null;
+		CommonToken SkipSpace239=null;
+		JavaScriptParser.memberExpression_return memberExpression237 = default(JavaScriptParser.memberExpression_return);
+		JavaScriptParser.newExpression_return newExpression240 = default(JavaScriptParser.newExpression_return);
 
-		CommonTree string_literal245_tree=null;
-		CommonTree SkipSpace246_tree=null;
+		CommonTree string_literal238_tree=null;
+		CommonTree SkipSpace239_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "newExpression");
-		DebugLocation(304, 4);
+		DebugLocation(307, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 46)) { return retval; }
-			// JavaScript.g3:305:5: ( memberExpression | 'new' ( SkipSpace )* newExpression )
+			// JavaScript.g3:308:5: ( memberExpression | 'new' ( SkipSpace )* newExpression )
 			int alt137=2;
 			try { DebugEnterDecision(137, decisionCanBacktrack[137]);
 			try
@@ -10913,33 +11058,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:305:7: memberExpression
+				// JavaScript.g3:308:7: memberExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(305, 7);
-				PushFollow(Follow._memberExpression_in_newExpression2515);
-				memberExpression244=memberExpression();
+				DebugLocation(308, 7);
+				PushFollow(Follow._memberExpression_in_newExpression2584);
+				memberExpression237=memberExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, memberExpression244.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, memberExpression237.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:306:7: 'new' ( SkipSpace )* newExpression
+				// JavaScript.g3:309:7: 'new' ( SkipSpace )* newExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(306, 7);
-				string_literal245=(CommonToken)Match(input,NEW,Follow._NEW_in_newExpression2523); if (state.failed) return retval;
+				DebugLocation(309, 7);
+				string_literal238=(CommonToken)Match(input,NEW,Follow._NEW_in_newExpression2592); if (state.failed) return retval;
 				if ( state.backtracking==0 ) {
-				string_literal245_tree = (CommonTree)adaptor.Create(string_literal245);
-				adaptor.AddChild(root_0, string_literal245_tree);
+				string_literal238_tree = (CommonTree)adaptor.Create(string_literal238);
+				adaptor.AddChild(root_0, string_literal238_tree);
 				}
-				DebugLocation(306, 22);
-				// JavaScript.g3:306:22: ( SkipSpace )*
+				DebugLocation(309, 22);
+				// JavaScript.g3:309:22: ( SkipSpace )*
 				try { DebugEnterSubRule(136);
 				while (true)
 				{
@@ -10958,10 +11103,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:306:22: SkipSpace
+						// JavaScript.g3:309:22: SkipSpace
 						{
-						DebugLocation(306, 22);
-						SkipSpace246=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_newExpression2525); if (state.failed) return retval;
+						DebugLocation(309, 22);
+						SkipSpace239=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_newExpression2594); if (state.failed) return retval;
 
 						}
 						break;
@@ -10976,12 +11121,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(136); }
 
-				DebugLocation(306, 25);
-				PushFollow(Follow._newExpression_in_newExpression2529);
-				newExpression247=newExpression();
+				DebugLocation(309, 25);
+				PushFollow(Follow._newExpression_in_newExpression2598);
+				newExpression240=newExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, newExpression247.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, newExpression240.Tree);
 
 				}
 				break;
@@ -11009,7 +11154,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_newExpression();
 			if (state.backtracking > 0) { Memoize(input, 46, newExpression_StartIndex); }
 		}
-		DebugLocation(307, 4);
+		DebugLocation(310, 4);
 		} finally { DebugExitRule(GrammarFileName, "newExpression"); }
 		return retval;
 
@@ -11026,7 +11171,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_memberExpression();
 
 	// $ANTLR start "memberExpression"
-	// JavaScript.g3:309:1: memberExpression : (lhs= memberExpressionLHS -> $lhs) ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )* ;
+	// JavaScript.g3:312:1: memberExpression : (lhs= memberExpressionLHS -> $lhs) ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )* ;
 	[GrammarRule("memberExpression")]
 	private JavaScriptParser.memberExpression_return memberExpression()
 	{
@@ -11038,30 +11183,30 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int memberExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace248=null;
+		CommonToken SkipSpace241=null;
 		JavaScriptParser.memberExpressionLHS_return lhs = default(JavaScriptParser.memberExpressionLHS_return);
 		JavaScriptParser.memberExpressionSuffix_return rhs = default(JavaScriptParser.memberExpressionSuffix_return);
 
-		CommonTree SkipSpace248_tree=null;
+		CommonTree SkipSpace241_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_memberExpressionLHS=new RewriteRuleSubtreeStream(adaptor,"rule memberExpressionLHS");
 		RewriteRuleSubtreeStream stream_memberExpressionSuffix=new RewriteRuleSubtreeStream(adaptor,"rule memberExpressionSuffix");
 		try { DebugEnterRule(GrammarFileName, "memberExpression");
-		DebugLocation(309, 4);
+		DebugLocation(312, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 47)) { return retval; }
-			// JavaScript.g3:310:5: ( (lhs= memberExpressionLHS -> $lhs) ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )* )
+			// JavaScript.g3:313:5: ( (lhs= memberExpressionLHS -> $lhs) ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:310:7: (lhs= memberExpressionLHS -> $lhs) ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )*
+			// JavaScript.g3:313:7: (lhs= memberExpressionLHS -> $lhs) ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )*
 			{
-			DebugLocation(310, 7);
-			// JavaScript.g3:310:7: (lhs= memberExpressionLHS -> $lhs)
+			DebugLocation(313, 7);
+			// JavaScript.g3:313:7: (lhs= memberExpressionLHS -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:310:8: lhs= memberExpressionLHS
+			// JavaScript.g3:313:8: lhs= memberExpressionLHS
 			{
-			DebugLocation(310, 11);
-			PushFollow(Follow._memberExpressionLHS_in_memberExpression2549);
+			DebugLocation(313, 11);
+			PushFollow(Follow._memberExpressionLHS_in_memberExpression2618);
 			lhs=memberExpressionLHS();
 			PopFollow();
 			if (state.failed) return retval;
@@ -11082,9 +11227,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 310:32: -> $lhs
+			// 313:32: -> $lhs
 			{
-				DebugLocation(310, 36);
+				DebugLocation(313, 36);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -11095,8 +11240,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(311, 9);
-			// JavaScript.g3:311:9: ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )*
+			DebugLocation(314, 9);
+			// JavaScript.g3:314:9: ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )*
 			try { DebugEnterSubRule(139);
 			while (true)
 			{
@@ -11116,10 +11261,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:311:10: ( SkipSpace )* rhs= memberExpressionSuffix
+					// JavaScript.g3:314:10: ( SkipSpace )* rhs= memberExpressionSuffix
 					{
-					DebugLocation(311, 10);
-					// JavaScript.g3:311:10: ( SkipSpace )*
+					DebugLocation(314, 10);
+					// JavaScript.g3:314:10: ( SkipSpace )*
 					try { DebugEnterSubRule(138);
 					while (true)
 					{
@@ -11138,11 +11283,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:311:10: SkipSpace
+							// JavaScript.g3:314:10: SkipSpace
 							{
-							DebugLocation(311, 10);
-							SkipSpace248=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_memberExpression2566); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace248);
+							DebugLocation(314, 10);
+							SkipSpace241=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_memberExpression2635); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace241);
 
 
 							}
@@ -11158,8 +11303,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(138); }
 
-					DebugLocation(311, 24);
-					PushFollow(Follow._memberExpressionSuffix_in_memberExpression2571);
+					DebugLocation(314, 24);
+					PushFollow(Follow._memberExpressionSuffix_in_memberExpression2640);
 					rhs=memberExpressionSuffix();
 					PopFollow();
 					if (state.failed) return retval;
@@ -11180,18 +11325,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 311:48: -> ^( ACCESSOR_EXPR $memberExpression $rhs)
+					// 314:48: -> ^( ACCESSOR_EXPR $memberExpression $rhs)
 					{
-						DebugLocation(311, 51);
-						// JavaScript.g3:311:51: ^( ACCESSOR_EXPR $memberExpression $rhs)
+						DebugLocation(314, 51);
+						// JavaScript.g3:314:51: ^( ACCESSOR_EXPR $memberExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(311, 53);
+						DebugLocation(314, 53);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(ACCESSOR_EXPR, "ACCESSOR_EXPR"), root_1);
 
-						DebugLocation(311, 68);
+						DebugLocation(314, 68);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(311, 86);
+						DebugLocation(314, 86);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -11241,7 +11386,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_memberExpression();
 			if (state.backtracking > 0) { Memoize(input, 47, memberExpression_StartIndex); }
 		}
-		DebugLocation(312, 4);
+		DebugLocation(315, 4);
 		} finally { DebugExitRule(GrammarFileName, "memberExpression"); }
 		return retval;
 
@@ -11258,7 +11403,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_memberExpressionLHS();
 
 	// $ANTLR start "memberExpressionLHS"
-	// JavaScript.g3:314:1: memberExpressionLHS : ( primaryExpression | functionExpression | newObjectExpression );
+	// JavaScript.g3:317:1: memberExpressionLHS : ( primaryExpression | functionExpression | newObjectExpression );
 	[GrammarRule("memberExpressionLHS")]
 	private JavaScriptParser.memberExpressionLHS_return memberExpressionLHS()
 	{
@@ -11270,17 +11415,17 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int memberExpressionLHS_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		JavaScriptParser.primaryExpression_return primaryExpression249 = default(JavaScriptParser.primaryExpression_return);
-		JavaScriptParser.functionExpression_return functionExpression250 = default(JavaScriptParser.functionExpression_return);
-		JavaScriptParser.newObjectExpression_return newObjectExpression251 = default(JavaScriptParser.newObjectExpression_return);
+		JavaScriptParser.primaryExpression_return primaryExpression242 = default(JavaScriptParser.primaryExpression_return);
+		JavaScriptParser.functionExpression_return functionExpression243 = default(JavaScriptParser.functionExpression_return);
+		JavaScriptParser.newObjectExpression_return newObjectExpression244 = default(JavaScriptParser.newObjectExpression_return);
 
 
 		try { DebugEnterRule(GrammarFileName, "memberExpressionLHS");
-		DebugLocation(314, 4);
+		DebugLocation(317, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 48)) { return retval; }
-			// JavaScript.g3:315:5: ( primaryExpression | functionExpression | newObjectExpression )
+			// JavaScript.g3:318:5: ( primaryExpression | functionExpression | newObjectExpression )
 			int alt140=3;
 			try { DebugEnterDecision(140, decisionCanBacktrack[140]);
 			switch (input.LA(1))
@@ -11291,16 +11436,17 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			case Identifier:
 			case NULL:
 			case NumericLiteral:
+			case RegularExpressionLiteral:
 			case StringLiteral:
 			case THIS:
-			case 130:
-			case 135:
-			case 147:
+			case 136:
+			case 141:
+			case 153:
 				{
 				alt140=1;
 				}
 				break;
-			case 142:
+			case 148:
 				{
 				alt140=2;
 				}
@@ -11325,46 +11471,46 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:315:7: primaryExpression
+				// JavaScript.g3:318:7: primaryExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(315, 7);
-				PushFollow(Follow._primaryExpression_in_memberExpressionLHS2603);
-				primaryExpression249=primaryExpression();
+				DebugLocation(318, 7);
+				PushFollow(Follow._primaryExpression_in_memberExpressionLHS2672);
+				primaryExpression242=primaryExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, primaryExpression249.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, primaryExpression242.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:316:7: functionExpression
+				// JavaScript.g3:319:7: functionExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(316, 7);
-				PushFollow(Follow._functionExpression_in_memberExpressionLHS2611);
-				functionExpression250=functionExpression();
+				DebugLocation(319, 7);
+				PushFollow(Follow._functionExpression_in_memberExpressionLHS2680);
+				functionExpression243=functionExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, functionExpression250.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, functionExpression243.Tree);
 
 				}
 				break;
 			case 3:
 				DebugEnterAlt(3);
-				// JavaScript.g3:317:7: newObjectExpression
+				// JavaScript.g3:320:7: newObjectExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(317, 7);
-				PushFollow(Follow._newObjectExpression_in_memberExpressionLHS2619);
-				newObjectExpression251=newObjectExpression();
+				DebugLocation(320, 7);
+				PushFollow(Follow._newObjectExpression_in_memberExpressionLHS2688);
+				newObjectExpression244=newObjectExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, newObjectExpression251.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, newObjectExpression244.Tree);
 
 				}
 				break;
@@ -11392,7 +11538,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_memberExpressionLHS();
 			if (state.backtracking > 0) { Memoize(input, 48, memberExpressionLHS_StartIndex); }
 		}
-		DebugLocation(318, 4);
+		DebugLocation(321, 4);
 		} finally { DebugExitRule(GrammarFileName, "memberExpressionLHS"); }
 		return retval;
 
@@ -11409,7 +11555,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_newObjectExpression();
 
 	// $ANTLR start "newObjectExpression"
-	// JavaScript.g3:320:1: newObjectExpression : NEW ( SkipSpace )* memb= memberExpression ( SkipSpace )* args= arguments -> ^( NEW_OBJ_EXPR $memb $args) ;
+	// JavaScript.g3:323:1: newObjectExpression : NEW ( SkipSpace )* memb= memberExpression ( SkipSpace )* args= arguments -> ^( NEW_OBJ_EXPR $memb $args) ;
 	[GrammarRule("newObjectExpression")]
 	private JavaScriptParser.newObjectExpression_return newObjectExpression()
 	{
@@ -11421,34 +11567,34 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int newObjectExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken NEW252=null;
-		CommonToken SkipSpace253=null;
-		CommonToken SkipSpace254=null;
+		CommonToken NEW245=null;
+		CommonToken SkipSpace246=null;
+		CommonToken SkipSpace247=null;
 		JavaScriptParser.memberExpression_return memb = default(JavaScriptParser.memberExpression_return);
 		JavaScriptParser.arguments_return args = default(JavaScriptParser.arguments_return);
 
-		CommonTree NEW252_tree=null;
-		CommonTree SkipSpace253_tree=null;
-		CommonTree SkipSpace254_tree=null;
+		CommonTree NEW245_tree=null;
+		CommonTree SkipSpace246_tree=null;
+		CommonTree SkipSpace247_tree=null;
 		RewriteRuleITokenStream stream_NEW=new RewriteRuleITokenStream(adaptor,"token NEW");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_memberExpression=new RewriteRuleSubtreeStream(adaptor,"rule memberExpression");
 		RewriteRuleSubtreeStream stream_arguments=new RewriteRuleSubtreeStream(adaptor,"rule arguments");
 		try { DebugEnterRule(GrammarFileName, "newObjectExpression");
-		DebugLocation(320, 4);
+		DebugLocation(323, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 49)) { return retval; }
-			// JavaScript.g3:321:5: ( NEW ( SkipSpace )* memb= memberExpression ( SkipSpace )* args= arguments -> ^( NEW_OBJ_EXPR $memb $args) )
+			// JavaScript.g3:324:5: ( NEW ( SkipSpace )* memb= memberExpression ( SkipSpace )* args= arguments -> ^( NEW_OBJ_EXPR $memb $args) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:321:7: NEW ( SkipSpace )* memb= memberExpression ( SkipSpace )* args= arguments
+			// JavaScript.g3:324:7: NEW ( SkipSpace )* memb= memberExpression ( SkipSpace )* args= arguments
 			{
-			DebugLocation(321, 7);
-			NEW252=(CommonToken)Match(input,NEW,Follow._NEW_in_newObjectExpression2636); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_NEW.Add(NEW252);
+			DebugLocation(324, 7);
+			NEW245=(CommonToken)Match(input,NEW,Follow._NEW_in_newObjectExpression2705); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_NEW.Add(NEW245);
 
-			DebugLocation(321, 11);
-			// JavaScript.g3:321:11: ( SkipSpace )*
+			DebugLocation(324, 11);
+			// JavaScript.g3:324:11: ( SkipSpace )*
 			try { DebugEnterSubRule(141);
 			while (true)
 			{
@@ -11467,11 +11613,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:321:11: SkipSpace
+					// JavaScript.g3:324:11: SkipSpace
 					{
-					DebugLocation(321, 11);
-					SkipSpace253=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_newObjectExpression2638); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace253);
+					DebugLocation(324, 11);
+					SkipSpace246=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_newObjectExpression2707); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace246);
 
 
 					}
@@ -11487,14 +11633,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(141); }
 
-			DebugLocation(321, 26);
-			PushFollow(Follow._memberExpression_in_newObjectExpression2643);
+			DebugLocation(324, 26);
+			PushFollow(Follow._memberExpression_in_newObjectExpression2712);
 			memb=memberExpression();
 			PopFollow();
 			if (state.failed) return retval;
 			if ( state.backtracking == 0 ) stream_memberExpression.Add(memb.Tree);
-			DebugLocation(321, 44);
-			// JavaScript.g3:321:44: ( SkipSpace )*
+			DebugLocation(324, 44);
+			// JavaScript.g3:324:44: ( SkipSpace )*
 			try { DebugEnterSubRule(142);
 			while (true)
 			{
@@ -11513,11 +11659,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:321:44: SkipSpace
+					// JavaScript.g3:324:44: SkipSpace
 					{
-					DebugLocation(321, 44);
-					SkipSpace254=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_newObjectExpression2645); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace254);
+					DebugLocation(324, 44);
+					SkipSpace247=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_newObjectExpression2714); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace247);
 
 
 					}
@@ -11533,8 +11679,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(142); }
 
-			DebugLocation(321, 59);
-			PushFollow(Follow._arguments_in_newObjectExpression2650);
+			DebugLocation(324, 59);
+			PushFollow(Follow._arguments_in_newObjectExpression2719);
 			args=arguments();
 			PopFollow();
 			if (state.failed) return retval;
@@ -11556,18 +11702,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 322:9: -> ^( NEW_OBJ_EXPR $memb $args)
+			// 325:9: -> ^( NEW_OBJ_EXPR $memb $args)
 			{
-				DebugLocation(322, 12);
-				// JavaScript.g3:322:12: ^( NEW_OBJ_EXPR $memb $args)
+				DebugLocation(325, 12);
+				// JavaScript.g3:325:12: ^( NEW_OBJ_EXPR $memb $args)
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(322, 14);
+				DebugLocation(325, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(NEW_OBJ_EXPR, "NEW_OBJ_EXPR"), root_1);
 
-				DebugLocation(322, 28);
+				DebugLocation(325, 28);
 				adaptor.AddChild(root_1, stream_memb.NextTree());
-				DebugLocation(322, 34);
+				DebugLocation(325, 34);
 				adaptor.AddChild(root_1, stream_args.NextTree());
 
 				adaptor.AddChild(root_0, root_1);
@@ -11603,7 +11749,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_newObjectExpression();
 			if (state.backtracking > 0) { Memoize(input, 49, newObjectExpression_StartIndex); }
 		}
-		DebugLocation(323, 4);
+		DebugLocation(326, 4);
 		} finally { DebugExitRule(GrammarFileName, "newObjectExpression"); }
 		return retval;
 
@@ -11620,7 +11766,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_memberExpressionSuffix();
 
 	// $ANTLR start "memberExpressionSuffix"
-	// JavaScript.g3:325:1: memberExpressionSuffix : ( indexSuffix | propertyReferenceSuffix );
+	// JavaScript.g3:328:1: memberExpressionSuffix : ( indexSuffix | propertyReferenceSuffix );
 	[GrammarRule("memberExpressionSuffix")]
 	private JavaScriptParser.memberExpressionSuffix_return memberExpressionSuffix()
 	{
@@ -11632,25 +11778,25 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int memberExpressionSuffix_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		JavaScriptParser.indexSuffix_return indexSuffix255 = default(JavaScriptParser.indexSuffix_return);
-		JavaScriptParser.propertyReferenceSuffix_return propertyReferenceSuffix256 = default(JavaScriptParser.propertyReferenceSuffix_return);
+		JavaScriptParser.indexSuffix_return indexSuffix248 = default(JavaScriptParser.indexSuffix_return);
+		JavaScriptParser.propertyReferenceSuffix_return propertyReferenceSuffix249 = default(JavaScriptParser.propertyReferenceSuffix_return);
 
 
 		try { DebugEnterRule(GrammarFileName, "memberExpressionSuffix");
-		DebugLocation(325, 4);
+		DebugLocation(328, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 50)) { return retval; }
-			// JavaScript.g3:326:5: ( indexSuffix | propertyReferenceSuffix )
+			// JavaScript.g3:329:5: ( indexSuffix | propertyReferenceSuffix )
 			int alt143=2;
 			try { DebugEnterDecision(143, decisionCanBacktrack[143]);
 			int LA143_0 = input.LA(1);
 
-			if ((LA143_0==135))
+			if ((LA143_0==141))
 			{
 				alt143=1;
 			}
-			else if ((LA143_0==132))
+			else if ((LA143_0==138))
 			{
 				alt143=2;
 			}
@@ -11667,31 +11813,31 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:326:7: indexSuffix
+				// JavaScript.g3:329:7: indexSuffix
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(326, 7);
-				PushFollow(Follow._indexSuffix_in_memberExpressionSuffix2687);
-				indexSuffix255=indexSuffix();
+				DebugLocation(329, 7);
+				PushFollow(Follow._indexSuffix_in_memberExpressionSuffix2756);
+				indexSuffix248=indexSuffix();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, indexSuffix255.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, indexSuffix248.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:327:7: propertyReferenceSuffix
+				// JavaScript.g3:330:7: propertyReferenceSuffix
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(327, 7);
-				PushFollow(Follow._propertyReferenceSuffix_in_memberExpressionSuffix2695);
-				propertyReferenceSuffix256=propertyReferenceSuffix();
+				DebugLocation(330, 7);
+				PushFollow(Follow._propertyReferenceSuffix_in_memberExpressionSuffix2764);
+				propertyReferenceSuffix249=propertyReferenceSuffix();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyReferenceSuffix256.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyReferenceSuffix249.Tree);
 
 				}
 				break;
@@ -11719,7 +11865,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_memberExpressionSuffix();
 			if (state.backtracking > 0) { Memoize(input, 50, memberExpressionSuffix_StartIndex); }
 		}
-		DebugLocation(328, 4);
+		DebugLocation(331, 4);
 		} finally { DebugExitRule(GrammarFileName, "memberExpressionSuffix"); }
 		return retval;
 
@@ -11736,7 +11882,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_callExpression();
 
 	// $ANTLR start "callExpression"
-	// JavaScript.g3:330:1: callExpression : (lhs= methodCallExpression -> $lhs) ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )* ;
+	// JavaScript.g3:333:1: callExpression : (lhs= methodCallExpression -> $lhs) ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )* ;
 	[GrammarRule("callExpression")]
 	private JavaScriptParser.callExpression_return callExpression()
 	{
@@ -11748,30 +11894,30 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int callExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace257=null;
+		CommonToken SkipSpace250=null;
 		JavaScriptParser.methodCallExpression_return lhs = default(JavaScriptParser.methodCallExpression_return);
 		JavaScriptParser.callExpressionSuffix_return rhs = default(JavaScriptParser.callExpressionSuffix_return);
 
-		CommonTree SkipSpace257_tree=null;
+		CommonTree SkipSpace250_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_methodCallExpression=new RewriteRuleSubtreeStream(adaptor,"rule methodCallExpression");
 		RewriteRuleSubtreeStream stream_callExpressionSuffix=new RewriteRuleSubtreeStream(adaptor,"rule callExpressionSuffix");
 		try { DebugEnterRule(GrammarFileName, "callExpression");
-		DebugLocation(330, 4);
+		DebugLocation(333, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 51)) { return retval; }
-			// JavaScript.g3:331:5: ( (lhs= methodCallExpression -> $lhs) ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )* )
+			// JavaScript.g3:334:5: ( (lhs= methodCallExpression -> $lhs) ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:331:7: (lhs= methodCallExpression -> $lhs) ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )*
+			// JavaScript.g3:334:7: (lhs= methodCallExpression -> $lhs) ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )*
 			{
-			DebugLocation(331, 7);
-			// JavaScript.g3:331:7: (lhs= methodCallExpression -> $lhs)
+			DebugLocation(334, 7);
+			// JavaScript.g3:334:7: (lhs= methodCallExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:331:8: lhs= methodCallExpression
+			// JavaScript.g3:334:8: lhs= methodCallExpression
 			{
-			DebugLocation(331, 11);
-			PushFollow(Follow._methodCallExpression_in_callExpression2715);
+			DebugLocation(334, 11);
+			PushFollow(Follow._methodCallExpression_in_callExpression2784);
 			lhs=methodCallExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -11792,9 +11938,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 331:33: -> $lhs
+			// 334:33: -> $lhs
 			{
-				DebugLocation(331, 37);
+				DebugLocation(334, 37);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -11805,8 +11951,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(332, 9);
-			// JavaScript.g3:332:9: ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )*
+			DebugLocation(335, 9);
+			// JavaScript.g3:335:9: ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )*
 			try { DebugEnterSubRule(145);
 			while (true)
 			{
@@ -11826,10 +11972,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:332:10: ( SkipSpace )* rhs= callExpressionSuffix
+					// JavaScript.g3:335:10: ( SkipSpace )* rhs= callExpressionSuffix
 					{
-					DebugLocation(332, 10);
-					// JavaScript.g3:332:10: ( SkipSpace )*
+					DebugLocation(335, 10);
+					// JavaScript.g3:335:10: ( SkipSpace )*
 					try { DebugEnterSubRule(144);
 					while (true)
 					{
@@ -11848,11 +11994,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:332:10: SkipSpace
+							// JavaScript.g3:335:10: SkipSpace
 							{
-							DebugLocation(332, 10);
-							SkipSpace257=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_callExpression2732); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace257);
+							DebugLocation(335, 10);
+							SkipSpace250=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_callExpression2801); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace250);
 
 
 							}
@@ -11868,8 +12014,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(144); }
 
-					DebugLocation(332, 24);
-					PushFollow(Follow._callExpressionSuffix_in_callExpression2737);
+					DebugLocation(335, 24);
+					PushFollow(Follow._callExpressionSuffix_in_callExpression2806);
 					rhs=callExpressionSuffix();
 					PopFollow();
 					if (state.failed) return retval;
@@ -11890,18 +12036,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 332:46: -> ^( ACCESSOR_EXPR $callExpression $rhs)
+					// 335:46: -> ^( ACCESSOR_EXPR $callExpression $rhs)
 					{
-						DebugLocation(332, 49);
-						// JavaScript.g3:332:49: ^( ACCESSOR_EXPR $callExpression $rhs)
+						DebugLocation(335, 49);
+						// JavaScript.g3:335:49: ^( ACCESSOR_EXPR $callExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(332, 51);
+						DebugLocation(335, 51);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(ACCESSOR_EXPR, "ACCESSOR_EXPR"), root_1);
 
-						DebugLocation(332, 66);
+						DebugLocation(335, 66);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(332, 82);
+						DebugLocation(335, 82);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -11951,7 +12097,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_callExpression();
 			if (state.backtracking > 0) { Memoize(input, 51, callExpression_StartIndex); }
 		}
-		DebugLocation(333, 4);
+		DebugLocation(336, 4);
 		} finally { DebugExitRule(GrammarFileName, "callExpression"); }
 		return retval;
 
@@ -11968,7 +12114,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_methodCallExpression();
 
 	// $ANTLR start "methodCallExpression"
-	// JavaScript.g3:335:1: methodCallExpression : method= memberExpression ( SkipSpace )* args= arguments -> ^( METHOD_CALL $method $args) ;
+	// JavaScript.g3:338:1: methodCallExpression : method= memberExpression ( SkipSpace )* args= arguments -> ^( METHOD_CALL $method $args) ;
 	[GrammarRule("methodCallExpression")]
 	private JavaScriptParser.methodCallExpression_return methodCallExpression()
 	{
@@ -11980,31 +12126,31 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int methodCallExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace258=null;
+		CommonToken SkipSpace251=null;
 		JavaScriptParser.memberExpression_return method = default(JavaScriptParser.memberExpression_return);
 		JavaScriptParser.arguments_return args = default(JavaScriptParser.arguments_return);
 
-		CommonTree SkipSpace258_tree=null;
+		CommonTree SkipSpace251_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_memberExpression=new RewriteRuleSubtreeStream(adaptor,"rule memberExpression");
 		RewriteRuleSubtreeStream stream_arguments=new RewriteRuleSubtreeStream(adaptor,"rule arguments");
 		try { DebugEnterRule(GrammarFileName, "methodCallExpression");
-		DebugLocation(335, 4);
+		DebugLocation(338, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 52)) { return retval; }
-			// JavaScript.g3:336:5: (method= memberExpression ( SkipSpace )* args= arguments -> ^( METHOD_CALL $method $args) )
+			// JavaScript.g3:339:5: (method= memberExpression ( SkipSpace )* args= arguments -> ^( METHOD_CALL $method $args) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:336:9: method= memberExpression ( SkipSpace )* args= arguments
+			// JavaScript.g3:339:9: method= memberExpression ( SkipSpace )* args= arguments
 			{
-			DebugLocation(336, 15);
-			PushFollow(Follow._memberExpression_in_methodCallExpression2773);
+			DebugLocation(339, 15);
+			PushFollow(Follow._memberExpression_in_methodCallExpression2842);
 			method=memberExpression();
 			PopFollow();
 			if (state.failed) return retval;
 			if ( state.backtracking == 0 ) stream_memberExpression.Add(method.Tree);
-			DebugLocation(336, 33);
-			// JavaScript.g3:336:33: ( SkipSpace )*
+			DebugLocation(339, 33);
+			// JavaScript.g3:339:33: ( SkipSpace )*
 			try { DebugEnterSubRule(146);
 			while (true)
 			{
@@ -12023,11 +12169,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:336:33: SkipSpace
+					// JavaScript.g3:339:33: SkipSpace
 					{
-					DebugLocation(336, 33);
-					SkipSpace258=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_methodCallExpression2775); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace258);
+					DebugLocation(339, 33);
+					SkipSpace251=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_methodCallExpression2844); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace251);
 
 
 					}
@@ -12043,8 +12189,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(146); }
 
-			DebugLocation(336, 48);
-			PushFollow(Follow._arguments_in_methodCallExpression2780);
+			DebugLocation(339, 48);
+			PushFollow(Follow._arguments_in_methodCallExpression2849);
 			args=arguments();
 			PopFollow();
 			if (state.failed) return retval;
@@ -12066,18 +12212,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 337:9: -> ^( METHOD_CALL $method $args)
+			// 340:9: -> ^( METHOD_CALL $method $args)
 			{
-				DebugLocation(337, 12);
-				// JavaScript.g3:337:12: ^( METHOD_CALL $method $args)
+				DebugLocation(340, 12);
+				// JavaScript.g3:340:12: ^( METHOD_CALL $method $args)
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(337, 14);
+				DebugLocation(340, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(METHOD_CALL, "METHOD_CALL"), root_1);
 
-				DebugLocation(337, 27);
+				DebugLocation(340, 27);
 				adaptor.AddChild(root_1, stream_method.NextTree());
-				DebugLocation(337, 35);
+				DebugLocation(340, 35);
 				adaptor.AddChild(root_1, stream_args.NextTree());
 
 				adaptor.AddChild(root_0, root_1);
@@ -12113,7 +12259,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_methodCallExpression();
 			if (state.backtracking > 0) { Memoize(input, 52, methodCallExpression_StartIndex); }
 		}
-		DebugLocation(338, 4);
+		DebugLocation(341, 4);
 		} finally { DebugExitRule(GrammarFileName, "methodCallExpression"); }
 		return retval;
 
@@ -12130,7 +12276,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_callExpressionSuffix();
 
 	// $ANTLR start "callExpressionSuffix"
-	// JavaScript.g3:340:1: callExpressionSuffix : ( arguments | indexSuffix | propertyReferenceSuffix );
+	// JavaScript.g3:343:1: callExpressionSuffix : ( arguments | indexSuffix | propertyReferenceSuffix );
 	[GrammarRule("callExpressionSuffix")]
 	private JavaScriptParser.callExpressionSuffix_return callExpressionSuffix()
 	{
@@ -12142,32 +12288,32 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int callExpressionSuffix_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		JavaScriptParser.arguments_return arguments259 = default(JavaScriptParser.arguments_return);
-		JavaScriptParser.indexSuffix_return indexSuffix260 = default(JavaScriptParser.indexSuffix_return);
-		JavaScriptParser.propertyReferenceSuffix_return propertyReferenceSuffix261 = default(JavaScriptParser.propertyReferenceSuffix_return);
+		JavaScriptParser.arguments_return arguments252 = default(JavaScriptParser.arguments_return);
+		JavaScriptParser.indexSuffix_return indexSuffix253 = default(JavaScriptParser.indexSuffix_return);
+		JavaScriptParser.propertyReferenceSuffix_return propertyReferenceSuffix254 = default(JavaScriptParser.propertyReferenceSuffix_return);
 
 
 		try { DebugEnterRule(GrammarFileName, "callExpressionSuffix");
-		DebugLocation(340, 4);
+		DebugLocation(343, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 53)) { return retval; }
-			// JavaScript.g3:341:5: ( arguments | indexSuffix | propertyReferenceSuffix )
+			// JavaScript.g3:344:5: ( arguments | indexSuffix | propertyReferenceSuffix )
 			int alt147=3;
 			try { DebugEnterDecision(147, decisionCanBacktrack[147]);
 			switch (input.LA(1))
 			{
-			case 130:
+			case 136:
 				{
 				alt147=1;
 				}
 				break;
-			case 135:
+			case 141:
 				{
 				alt147=2;
 				}
 				break;
-			case 132:
+			case 138:
 				{
 				alt147=3;
 				}
@@ -12187,46 +12333,46 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:341:7: arguments
+				// JavaScript.g3:344:7: arguments
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(341, 7);
-				PushFollow(Follow._arguments_in_callExpressionSuffix2817);
-				arguments259=arguments();
+				DebugLocation(344, 7);
+				PushFollow(Follow._arguments_in_callExpressionSuffix2886);
+				arguments252=arguments();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, arguments259.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, arguments252.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:342:7: indexSuffix
+				// JavaScript.g3:345:7: indexSuffix
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(342, 7);
-				PushFollow(Follow._indexSuffix_in_callExpressionSuffix2825);
-				indexSuffix260=indexSuffix();
+				DebugLocation(345, 7);
+				PushFollow(Follow._indexSuffix_in_callExpressionSuffix2894);
+				indexSuffix253=indexSuffix();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, indexSuffix260.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, indexSuffix253.Tree);
 
 				}
 				break;
 			case 3:
 				DebugEnterAlt(3);
-				// JavaScript.g3:343:7: propertyReferenceSuffix
+				// JavaScript.g3:346:7: propertyReferenceSuffix
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(343, 7);
-				PushFollow(Follow._propertyReferenceSuffix_in_callExpressionSuffix2833);
-				propertyReferenceSuffix261=propertyReferenceSuffix();
+				DebugLocation(346, 7);
+				PushFollow(Follow._propertyReferenceSuffix_in_callExpressionSuffix2902);
+				propertyReferenceSuffix254=propertyReferenceSuffix();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyReferenceSuffix261.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyReferenceSuffix254.Tree);
 
 				}
 				break;
@@ -12254,7 +12400,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_callExpressionSuffix();
 			if (state.backtracking > 0) { Memoize(input, 53, callExpressionSuffix_StartIndex); }
 		}
-		DebugLocation(344, 4);
+		DebugLocation(347, 4);
 		} finally { DebugExitRule(GrammarFileName, "callExpressionSuffix"); }
 		return retval;
 
@@ -12271,7 +12417,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_arguments();
 
 	// $ANTLR start "arguments"
-	// JavaScript.g3:346:1: arguments : '(' ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )? ( SkipSpace )* ')' -> ^( ARGS ( assignmentExpression )* ) ;
+	// JavaScript.g3:349:1: arguments : '(' ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )? ( SkipSpace )* ')' -> ^( ARGS ( assignmentExpression )* ) ;
 	[GrammarRule("arguments")]
 	private JavaScriptParser.arguments_return arguments()
 	{
@@ -12283,43 +12429,43 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int arguments_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken char_literal262=null;
-		CommonToken SkipSpace263=null;
-		CommonToken SkipSpace265=null;
-		CommonToken char_literal266=null;
-		CommonToken SkipSpace267=null;
-		CommonToken SkipSpace269=null;
-		CommonToken char_literal270=null;
-		JavaScriptParser.assignmentExpression_return assignmentExpression264 = default(JavaScriptParser.assignmentExpression_return);
-		JavaScriptParser.assignmentExpression_return assignmentExpression268 = default(JavaScriptParser.assignmentExpression_return);
+		CommonToken char_literal255=null;
+		CommonToken SkipSpace256=null;
+		CommonToken SkipSpace258=null;
+		CommonToken char_literal259=null;
+		CommonToken SkipSpace260=null;
+		CommonToken SkipSpace262=null;
+		CommonToken char_literal263=null;
+		JavaScriptParser.assignmentExpression_return assignmentExpression257 = default(JavaScriptParser.assignmentExpression_return);
+		JavaScriptParser.assignmentExpression_return assignmentExpression261 = default(JavaScriptParser.assignmentExpression_return);
 
-		CommonTree char_literal262_tree=null;
-		CommonTree SkipSpace263_tree=null;
-		CommonTree SkipSpace265_tree=null;
-		CommonTree char_literal266_tree=null;
-		CommonTree SkipSpace267_tree=null;
-		CommonTree SkipSpace269_tree=null;
-		CommonTree char_literal270_tree=null;
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
+		CommonTree char_literal255_tree=null;
+		CommonTree SkipSpace256_tree=null;
+		CommonTree SkipSpace258_tree=null;
+		CommonTree char_literal259_tree=null;
+		CommonTree SkipSpace260_tree=null;
+		CommonTree SkipSpace262_tree=null;
+		CommonTree char_literal263_tree=null;
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_COMMA=new RewriteRuleITokenStream(adaptor,"token COMMA");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 		RewriteRuleSubtreeStream stream_assignmentExpression=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpression");
 		try { DebugEnterRule(GrammarFileName, "arguments");
-		DebugLocation(346, 4);
+		DebugLocation(349, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 54)) { return retval; }
-			// JavaScript.g3:347:5: ( '(' ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )? ( SkipSpace )* ')' -> ^( ARGS ( assignmentExpression )* ) )
+			// JavaScript.g3:350:5: ( '(' ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )? ( SkipSpace )* ')' -> ^( ARGS ( assignmentExpression )* ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:347:7: '(' ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )? ( SkipSpace )* ')'
+			// JavaScript.g3:350:7: '(' ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )? ( SkipSpace )* ')'
 			{
-			DebugLocation(347, 7);
-			char_literal262=(CommonToken)Match(input,130,Follow._130_in_arguments2850); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal262);
+			DebugLocation(350, 7);
+			char_literal255=(CommonToken)Match(input,136,Follow._136_in_arguments2919); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal255);
 
-			DebugLocation(347, 11);
-			// JavaScript.g3:347:11: ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )?
+			DebugLocation(350, 11);
+			// JavaScript.g3:350:11: ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )?
 			int alt152=2;
 			try { DebugEnterSubRule(152);
 			try { DebugEnterDecision(152, decisionCanBacktrack[152]);
@@ -12337,10 +12483,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:347:12: ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
+				// JavaScript.g3:350:12: ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
 				{
-				DebugLocation(347, 12);
-				// JavaScript.g3:347:12: ( SkipSpace )*
+				DebugLocation(350, 12);
+				// JavaScript.g3:350:12: ( SkipSpace )*
 				try { DebugEnterSubRule(148);
 				while (true)
 				{
@@ -12359,11 +12505,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:347:12: SkipSpace
+						// JavaScript.g3:350:12: SkipSpace
 						{
-						DebugLocation(347, 12);
-						SkipSpace263=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2853); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace263);
+						DebugLocation(350, 12);
+						SkipSpace256=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2922); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace256);
 
 
 						}
@@ -12379,14 +12525,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(148); }
 
-				DebugLocation(347, 23);
-				PushFollow(Follow._assignmentExpression_in_arguments2856);
-				assignmentExpression264=assignmentExpression();
+				DebugLocation(350, 23);
+				PushFollow(Follow._assignmentExpression_in_arguments2925);
+				assignmentExpression257=assignmentExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression264.Tree);
-				DebugLocation(347, 44);
-				// JavaScript.g3:347:44: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
+				if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression257.Tree);
+				DebugLocation(350, 44);
+				// JavaScript.g3:350:44: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*
 				try { DebugEnterSubRule(151);
 				while (true)
 				{
@@ -12406,10 +12552,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:347:45: ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression
+						// JavaScript.g3:350:45: ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression
 						{
-						DebugLocation(347, 45);
-						// JavaScript.g3:347:45: ( SkipSpace )*
+						DebugLocation(350, 45);
+						// JavaScript.g3:350:45: ( SkipSpace )*
 						try { DebugEnterSubRule(149);
 						while (true)
 						{
@@ -12428,11 +12574,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							{
 							case 1:
 								DebugEnterAlt(1);
-								// JavaScript.g3:347:45: SkipSpace
+								// JavaScript.g3:350:45: SkipSpace
 								{
-								DebugLocation(347, 45);
-								SkipSpace265=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2859); if (state.failed) return retval; 
-								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace265);
+								DebugLocation(350, 45);
+								SkipSpace258=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2928); if (state.failed) return retval; 
+								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace258);
 
 
 								}
@@ -12448,12 +12594,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 						} finally { DebugExitSubRule(149); }
 
-						DebugLocation(347, 56);
-						char_literal266=(CommonToken)Match(input,COMMA,Follow._COMMA_in_arguments2862); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal266);
+						DebugLocation(350, 56);
+						char_literal259=(CommonToken)Match(input,COMMA,Follow._COMMA_in_arguments2931); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal259);
 
-						DebugLocation(347, 60);
-						// JavaScript.g3:347:60: ( SkipSpace )*
+						DebugLocation(350, 60);
+						// JavaScript.g3:350:60: ( SkipSpace )*
 						try { DebugEnterSubRule(150);
 						while (true)
 						{
@@ -12472,11 +12618,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							{
 							case 1:
 								DebugEnterAlt(1);
-								// JavaScript.g3:347:60: SkipSpace
+								// JavaScript.g3:350:60: SkipSpace
 								{
-								DebugLocation(347, 60);
-								SkipSpace267=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2864); if (state.failed) return retval; 
-								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace267);
+								DebugLocation(350, 60);
+								SkipSpace260=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2933); if (state.failed) return retval; 
+								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace260);
 
 
 								}
@@ -12492,12 +12638,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 						} finally { DebugExitSubRule(150); }
 
-						DebugLocation(347, 71);
-						PushFollow(Follow._assignmentExpression_in_arguments2867);
-						assignmentExpression268=assignmentExpression();
+						DebugLocation(350, 71);
+						PushFollow(Follow._assignmentExpression_in_arguments2936);
+						assignmentExpression261=assignmentExpression();
 						PopFollow();
 						if (state.failed) return retval;
-						if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression268.Tree);
+						if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression261.Tree);
 
 						}
 						break;
@@ -12519,8 +12665,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			}
 			} finally { DebugExitSubRule(152); }
 
-			DebugLocation(347, 96);
-			// JavaScript.g3:347:96: ( SkipSpace )*
+			DebugLocation(350, 96);
+			// JavaScript.g3:350:96: ( SkipSpace )*
 			try { DebugEnterSubRule(153);
 			while (true)
 			{
@@ -12539,11 +12685,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:347:96: SkipSpace
+					// JavaScript.g3:350:96: SkipSpace
 					{
-					DebugLocation(347, 96);
-					SkipSpace269=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2873); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace269);
+					DebugLocation(350, 96);
+					SkipSpace262=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arguments2942); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace262);
 
 
 					}
@@ -12559,9 +12705,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(153); }
 
-			DebugLocation(347, 107);
-			char_literal270=(CommonToken)Match(input,131,Follow._131_in_arguments2876); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal270);
+			DebugLocation(350, 107);
+			char_literal263=(CommonToken)Match(input,137,Follow._137_in_arguments2945); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal263);
 
 
 
@@ -12578,20 +12724,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 348:9: -> ^( ARGS ( assignmentExpression )* )
+			// 351:9: -> ^( ARGS ( assignmentExpression )* )
 			{
-				DebugLocation(348, 12);
-				// JavaScript.g3:348:12: ^( ARGS ( assignmentExpression )* )
+				DebugLocation(351, 12);
+				// JavaScript.g3:351:12: ^( ARGS ( assignmentExpression )* )
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(348, 14);
+				DebugLocation(351, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(ARGS, "ARGS"), root_1);
 
-				DebugLocation(348, 19);
-				// JavaScript.g3:348:19: ( assignmentExpression )*
+				DebugLocation(351, 19);
+				// JavaScript.g3:351:19: ( assignmentExpression )*
 				while ( stream_assignmentExpression.HasNext )
 				{
-					DebugLocation(348, 19);
+					DebugLocation(351, 19);
 					adaptor.AddChild(root_1, stream_assignmentExpression.NextTree());
 
 				}
@@ -12630,7 +12776,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_arguments();
 			if (state.backtracking > 0) { Memoize(input, 54, arguments_StartIndex); }
 		}
-		DebugLocation(349, 4);
+		DebugLocation(352, 4);
 		} finally { DebugExitRule(GrammarFileName, "arguments"); }
 		return retval;
 
@@ -12647,7 +12793,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_indexSuffix();
 
 	// $ANTLR start "indexSuffix"
-	// JavaScript.g3:351:1: indexSuffix : '[' ( SkipSpace )* expr= expression ( SkipSpace )* ']' -> ^( INDEX_EXPR $expr) ;
+	// JavaScript.g3:354:1: indexSuffix : '[' ( SkipSpace )* expr= expression ( SkipSpace )* ']' -> ^( INDEX_EXPR $expr) ;
 	[GrammarRule("indexSuffix")]
 	private JavaScriptParser.indexSuffix_return indexSuffix()
 	{
@@ -12659,35 +12805,35 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int indexSuffix_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken char_literal271=null;
-		CommonToken SkipSpace272=null;
-		CommonToken SkipSpace273=null;
-		CommonToken char_literal274=null;
+		CommonToken char_literal264=null;
+		CommonToken SkipSpace265=null;
+		CommonToken SkipSpace266=null;
+		CommonToken char_literal267=null;
 		JavaScriptParser.expression_return expr = default(JavaScriptParser.expression_return);
 
-		CommonTree char_literal271_tree=null;
-		CommonTree SkipSpace272_tree=null;
-		CommonTree SkipSpace273_tree=null;
-		CommonTree char_literal274_tree=null;
-		RewriteRuleITokenStream stream_135=new RewriteRuleITokenStream(adaptor,"token 135");
+		CommonTree char_literal264_tree=null;
+		CommonTree SkipSpace265_tree=null;
+		CommonTree SkipSpace266_tree=null;
+		CommonTree char_literal267_tree=null;
+		RewriteRuleITokenStream stream_141=new RewriteRuleITokenStream(adaptor,"token 141");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
+		RewriteRuleITokenStream stream_142=new RewriteRuleITokenStream(adaptor,"token 142");
 		RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
 		try { DebugEnterRule(GrammarFileName, "indexSuffix");
-		DebugLocation(351, 4);
+		DebugLocation(354, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 55)) { return retval; }
-			// JavaScript.g3:352:5: ( '[' ( SkipSpace )* expr= expression ( SkipSpace )* ']' -> ^( INDEX_EXPR $expr) )
+			// JavaScript.g3:355:5: ( '[' ( SkipSpace )* expr= expression ( SkipSpace )* ']' -> ^( INDEX_EXPR $expr) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:352:7: '[' ( SkipSpace )* expr= expression ( SkipSpace )* ']'
+			// JavaScript.g3:355:7: '[' ( SkipSpace )* expr= expression ( SkipSpace )* ']'
 			{
-			DebugLocation(352, 7);
-			char_literal271=(CommonToken)Match(input,135,Follow._135_in_indexSuffix2910); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_135.Add(char_literal271);
+			DebugLocation(355, 7);
+			char_literal264=(CommonToken)Match(input,141,Follow._141_in_indexSuffix2979); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_141.Add(char_literal264);
 
-			DebugLocation(352, 11);
-			// JavaScript.g3:352:11: ( SkipSpace )*
+			DebugLocation(355, 11);
+			// JavaScript.g3:355:11: ( SkipSpace )*
 			try { DebugEnterSubRule(154);
 			while (true)
 			{
@@ -12706,11 +12852,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:352:11: SkipSpace
+					// JavaScript.g3:355:11: SkipSpace
 					{
-					DebugLocation(352, 11);
-					SkipSpace272=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_indexSuffix2912); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace272);
+					DebugLocation(355, 11);
+					SkipSpace265=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_indexSuffix2981); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace265);
 
 
 					}
@@ -12726,14 +12872,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(154); }
 
-			DebugLocation(352, 26);
-			PushFollow(Follow._expression_in_indexSuffix2917);
+			DebugLocation(355, 26);
+			PushFollow(Follow._expression_in_indexSuffix2986);
 			expr=expression();
 			PopFollow();
 			if (state.failed) return retval;
 			if ( state.backtracking == 0 ) stream_expression.Add(expr.Tree);
-			DebugLocation(352, 38);
-			// JavaScript.g3:352:38: ( SkipSpace )*
+			DebugLocation(355, 38);
+			// JavaScript.g3:355:38: ( SkipSpace )*
 			try { DebugEnterSubRule(155);
 			while (true)
 			{
@@ -12752,11 +12898,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:352:38: SkipSpace
+					// JavaScript.g3:355:38: SkipSpace
 					{
-					DebugLocation(352, 38);
-					SkipSpace273=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_indexSuffix2919); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace273);
+					DebugLocation(355, 38);
+					SkipSpace266=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_indexSuffix2988); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace266);
 
 
 					}
@@ -12772,9 +12918,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(155); }
 
-			DebugLocation(352, 49);
-			char_literal274=(CommonToken)Match(input,136,Follow._136_in_indexSuffix2922); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_136.Add(char_literal274);
+			DebugLocation(355, 49);
+			char_literal267=(CommonToken)Match(input,142,Follow._142_in_indexSuffix2991); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_142.Add(char_literal267);
 
 
 
@@ -12792,16 +12938,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 353:9: -> ^( INDEX_EXPR $expr)
+			// 356:9: -> ^( INDEX_EXPR $expr)
 			{
-				DebugLocation(353, 12);
-				// JavaScript.g3:353:12: ^( INDEX_EXPR $expr)
+				DebugLocation(356, 12);
+				// JavaScript.g3:356:12: ^( INDEX_EXPR $expr)
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(353, 14);
+				DebugLocation(356, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(INDEX_EXPR, "INDEX_EXPR"), root_1);
 
-				DebugLocation(353, 26);
+				DebugLocation(356, 26);
 				adaptor.AddChild(root_1, stream_expr.NextTree());
 
 				adaptor.AddChild(root_0, root_1);
@@ -12837,7 +12983,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_indexSuffix();
 			if (state.backtracking > 0) { Memoize(input, 55, indexSuffix_StartIndex); }
 		}
-		DebugLocation(354, 4);
+		DebugLocation(357, 4);
 		} finally { DebugExitRule(GrammarFileName, "indexSuffix"); }
 		return retval;
 
@@ -12854,7 +13000,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_propertyReferenceSuffix();
 
 	// $ANTLR start "propertyReferenceSuffix"
-	// JavaScript.g3:356:1: propertyReferenceSuffix : ( '.' ( SkipSpace )* id= Identifier -> ^( DOT_ACCESSOR_EXPR $id) | '.' ( SkipSpace )* importId= importedNotation -> ^( INSTANCE_JSNI $importId) );
+	// JavaScript.g3:359:1: propertyReferenceSuffix : ( '.' ( SkipSpace )* id= Identifier -> ^( DOT_ACCESSOR_EXPR $id) | '.' ( SkipSpace )* importId= importedNotation -> ^( INSTANCE_JSNI $importId) );
 	[GrammarRule("propertyReferenceSuffix")]
 	private JavaScriptParser.propertyReferenceSuffix_return propertyReferenceSuffix()
 	{
@@ -12867,27 +13013,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken id=null;
-		CommonToken char_literal275=null;
-		CommonToken SkipSpace276=null;
-		CommonToken char_literal277=null;
-		CommonToken SkipSpace278=null;
+		CommonToken char_literal268=null;
+		CommonToken SkipSpace269=null;
+		CommonToken char_literal270=null;
+		CommonToken SkipSpace271=null;
 		JavaScriptParser.importedNotation_return importId = default(JavaScriptParser.importedNotation_return);
 
 		CommonTree id_tree=null;
-		CommonTree char_literal275_tree=null;
-		CommonTree SkipSpace276_tree=null;
-		CommonTree char_literal277_tree=null;
-		CommonTree SkipSpace278_tree=null;
-		RewriteRuleITokenStream stream_132=new RewriteRuleITokenStream(adaptor,"token 132");
+		CommonTree char_literal268_tree=null;
+		CommonTree SkipSpace269_tree=null;
+		CommonTree char_literal270_tree=null;
+		CommonTree SkipSpace271_tree=null;
+		RewriteRuleITokenStream stream_138=new RewriteRuleITokenStream(adaptor,"token 138");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
 		RewriteRuleSubtreeStream stream_importedNotation=new RewriteRuleSubtreeStream(adaptor,"rule importedNotation");
 		try { DebugEnterRule(GrammarFileName, "propertyReferenceSuffix");
-		DebugLocation(356, 4);
+		DebugLocation(359, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 56)) { return retval; }
-			// JavaScript.g3:357:5: ( '.' ( SkipSpace )* id= Identifier -> ^( DOT_ACCESSOR_EXPR $id) | '.' ( SkipSpace )* importId= importedNotation -> ^( INSTANCE_JSNI $importId) )
+			// JavaScript.g3:360:5: ( '.' ( SkipSpace )* id= Identifier -> ^( DOT_ACCESSOR_EXPR $id) | '.' ( SkipSpace )* importId= importedNotation -> ^( INSTANCE_JSNI $importId) )
 			int alt158=2;
 			try { DebugEnterDecision(158, decisionCanBacktrack[158]);
 			try
@@ -12904,14 +13050,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:357:7: '.' ( SkipSpace )* id= Identifier
+				// JavaScript.g3:360:7: '.' ( SkipSpace )* id= Identifier
 				{
-				DebugLocation(357, 7);
-				char_literal275=(CommonToken)Match(input,132,Follow._132_in_propertyReferenceSuffix2960); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_132.Add(char_literal275);
+				DebugLocation(360, 7);
+				char_literal268=(CommonToken)Match(input,138,Follow._138_in_propertyReferenceSuffix3029); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_138.Add(char_literal268);
 
-				DebugLocation(357, 11);
-				// JavaScript.g3:357:11: ( SkipSpace )*
+				DebugLocation(360, 11);
+				// JavaScript.g3:360:11: ( SkipSpace )*
 				try { DebugEnterSubRule(156);
 				while (true)
 				{
@@ -12930,11 +13076,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:357:11: SkipSpace
+						// JavaScript.g3:360:11: SkipSpace
 						{
-						DebugLocation(357, 11);
-						SkipSpace276=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyReferenceSuffix2962); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace276);
+						DebugLocation(360, 11);
+						SkipSpace269=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyReferenceSuffix3031); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace269);
 
 
 						}
@@ -12950,8 +13096,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(156); }
 
-				DebugLocation(357, 24);
-				id=(CommonToken)Match(input,Identifier,Follow._Identifier_in_propertyReferenceSuffix2967); if (state.failed) return retval; 
+				DebugLocation(360, 24);
+				id=(CommonToken)Match(input,Identifier,Follow._Identifier_in_propertyReferenceSuffix3036); if (state.failed) return retval; 
 				if ( state.backtracking == 0 ) stream_Identifier.Add(id);
 
 
@@ -12970,16 +13116,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 358:9: -> ^( DOT_ACCESSOR_EXPR $id)
+				// 361:9: -> ^( DOT_ACCESSOR_EXPR $id)
 				{
-					DebugLocation(358, 12);
-					// JavaScript.g3:358:12: ^( DOT_ACCESSOR_EXPR $id)
+					DebugLocation(361, 12);
+					// JavaScript.g3:361:12: ^( DOT_ACCESSOR_EXPR $id)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(358, 14);
+					DebugLocation(361, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(DOT_ACCESSOR_EXPR, "DOT_ACCESSOR_EXPR"), root_1);
 
-					DebugLocation(358, 33);
+					DebugLocation(361, 33);
 					adaptor.AddChild(root_1, stream_id.NextNode());
 
 					adaptor.AddChild(root_0, root_1);
@@ -12995,14 +13141,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:359:7: '.' ( SkipSpace )* importId= importedNotation
+				// JavaScript.g3:362:7: '.' ( SkipSpace )* importId= importedNotation
 				{
-				DebugLocation(359, 7);
-				char_literal277=(CommonToken)Match(input,132,Follow._132_in_propertyReferenceSuffix2992); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_132.Add(char_literal277);
+				DebugLocation(362, 7);
+				char_literal270=(CommonToken)Match(input,138,Follow._138_in_propertyReferenceSuffix3061); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_138.Add(char_literal270);
 
-				DebugLocation(359, 11);
-				// JavaScript.g3:359:11: ( SkipSpace )*
+				DebugLocation(362, 11);
+				// JavaScript.g3:362:11: ( SkipSpace )*
 				try { DebugEnterSubRule(157);
 				while (true)
 				{
@@ -13021,11 +13167,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:359:11: SkipSpace
+						// JavaScript.g3:362:11: SkipSpace
 						{
-						DebugLocation(359, 11);
-						SkipSpace278=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyReferenceSuffix2994); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace278);
+						DebugLocation(362, 11);
+						SkipSpace271=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyReferenceSuffix3063); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace271);
 
 
 						}
@@ -13041,8 +13187,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(157); }
 
-				DebugLocation(359, 30);
-				PushFollow(Follow._importedNotation_in_propertyReferenceSuffix2999);
+				DebugLocation(362, 30);
+				PushFollow(Follow._importedNotation_in_propertyReferenceSuffix3068);
 				importId=importedNotation();
 				PopFollow();
 				if (state.failed) return retval;
@@ -13063,16 +13209,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 360:9: -> ^( INSTANCE_JSNI $importId)
+				// 363:9: -> ^( INSTANCE_JSNI $importId)
 				{
-					DebugLocation(360, 12);
-					// JavaScript.g3:360:12: ^( INSTANCE_JSNI $importId)
+					DebugLocation(363, 12);
+					// JavaScript.g3:363:12: ^( INSTANCE_JSNI $importId)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(360, 14);
+					DebugLocation(363, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(INSTANCE_JSNI, "INSTANCE_JSNI"), root_1);
 
-					DebugLocation(360, 29);
+					DebugLocation(363, 29);
 					adaptor.AddChild(root_1, stream_importId.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -13110,7 +13256,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_propertyReferenceSuffix();
 			if (state.backtracking > 0) { Memoize(input, 56, propertyReferenceSuffix_StartIndex); }
 		}
-		DebugLocation(361, 4);
+		DebugLocation(364, 4);
 		} finally { DebugExitRule(GrammarFileName, "propertyReferenceSuffix"); }
 		return retval;
 
@@ -13127,7 +13273,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_conditionalExpression();
 
 	// $ANTLR start "conditionalExpression"
-	// JavaScript.g3:363:1: conditionalExpression : (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpression );
+	// JavaScript.g3:366:1: conditionalExpression : (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpression );
 	[GrammarRule("conditionalExpression")]
 	private JavaScriptParser.conditionalExpression_return conditionalExpression()
 	{
@@ -13139,34 +13285,34 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int conditionalExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace279=null;
-		CommonToken char_literal280=null;
-		CommonToken SkipSpace281=null;
-		CommonToken SkipSpace282=null;
-		CommonToken char_literal283=null;
-		CommonToken SkipSpace284=null;
+		CommonToken SkipSpace272=null;
+		CommonToken char_literal273=null;
+		CommonToken SkipSpace274=null;
+		CommonToken SkipSpace275=null;
+		CommonToken char_literal276=null;
+		CommonToken SkipSpace277=null;
 		JavaScriptParser.logicalORExpression_return cond = default(JavaScriptParser.logicalORExpression_return);
 		JavaScriptParser.assignmentExpression_return tV = default(JavaScriptParser.assignmentExpression_return);
 		JavaScriptParser.assignmentExpression_return fV = default(JavaScriptParser.assignmentExpression_return);
-		JavaScriptParser.logicalORExpression_return logicalORExpression285 = default(JavaScriptParser.logicalORExpression_return);
+		JavaScriptParser.logicalORExpression_return logicalORExpression278 = default(JavaScriptParser.logicalORExpression_return);
 
-		CommonTree SkipSpace279_tree=null;
-		CommonTree char_literal280_tree=null;
-		CommonTree SkipSpace281_tree=null;
-		CommonTree SkipSpace282_tree=null;
-		CommonTree char_literal283_tree=null;
-		CommonTree SkipSpace284_tree=null;
+		CommonTree SkipSpace272_tree=null;
+		CommonTree char_literal273_tree=null;
+		CommonTree SkipSpace274_tree=null;
+		CommonTree SkipSpace275_tree=null;
+		CommonTree char_literal276_tree=null;
+		CommonTree SkipSpace277_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_134=new RewriteRuleITokenStream(adaptor,"token 134");
-		RewriteRuleITokenStream stream_133=new RewriteRuleITokenStream(adaptor,"token 133");
+		RewriteRuleITokenStream stream_140=new RewriteRuleITokenStream(adaptor,"token 140");
+		RewriteRuleITokenStream stream_139=new RewriteRuleITokenStream(adaptor,"token 139");
 		RewriteRuleSubtreeStream stream_logicalORExpression=new RewriteRuleSubtreeStream(adaptor,"rule logicalORExpression");
 		RewriteRuleSubtreeStream stream_assignmentExpression=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpression");
 		try { DebugEnterRule(GrammarFileName, "conditionalExpression");
-		DebugLocation(363, 4);
+		DebugLocation(366, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 57)) { return retval; }
-			// JavaScript.g3:364:5: (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpression )
+			// JavaScript.g3:367:5: (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpression )
 			int alt163=2;
 			try { DebugEnterDecision(163, decisionCanBacktrack[163]);
 			try
@@ -13183,16 +13329,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:364:7: cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression
+				// JavaScript.g3:367:7: cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression
 				{
-				DebugLocation(364, 11);
-				PushFollow(Follow._logicalORExpression_in_conditionalExpression3035);
+				DebugLocation(367, 11);
+				PushFollow(Follow._logicalORExpression_in_conditionalExpression3104);
 				cond=logicalORExpression();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_logicalORExpression.Add(cond.Tree);
-				DebugLocation(364, 32);
-				// JavaScript.g3:364:32: ( SkipSpace )*
+				DebugLocation(367, 32);
+				// JavaScript.g3:367:32: ( SkipSpace )*
 				try { DebugEnterSubRule(159);
 				while (true)
 				{
@@ -13211,11 +13357,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:364:32: SkipSpace
+						// JavaScript.g3:367:32: SkipSpace
 						{
-						DebugLocation(364, 32);
-						SkipSpace279=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3037); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace279);
+						DebugLocation(367, 32);
+						SkipSpace272=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3106); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace272);
 
 
 						}
@@ -13231,12 +13377,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(159); }
 
-				DebugLocation(364, 43);
-				char_literal280=(CommonToken)Match(input,134,Follow._134_in_conditionalExpression3040); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_134.Add(char_literal280);
+				DebugLocation(367, 43);
+				char_literal273=(CommonToken)Match(input,140,Follow._140_in_conditionalExpression3109); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_140.Add(char_literal273);
 
-				DebugLocation(364, 47);
-				// JavaScript.g3:364:47: ( SkipSpace )*
+				DebugLocation(367, 47);
+				// JavaScript.g3:367:47: ( SkipSpace )*
 				try { DebugEnterSubRule(160);
 				while (true)
 				{
@@ -13255,11 +13401,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:364:47: SkipSpace
+						// JavaScript.g3:367:47: SkipSpace
 						{
-						DebugLocation(364, 47);
-						SkipSpace281=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3042); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace281);
+						DebugLocation(367, 47);
+						SkipSpace274=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3111); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace274);
 
 
 						}
@@ -13275,14 +13421,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(160); }
 
-				DebugLocation(364, 60);
-				PushFollow(Follow._assignmentExpression_in_conditionalExpression3047);
+				DebugLocation(367, 60);
+				PushFollow(Follow._assignmentExpression_in_conditionalExpression3116);
 				tV=assignmentExpression();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_assignmentExpression.Add(tV.Tree);
-				DebugLocation(364, 82);
-				// JavaScript.g3:364:82: ( SkipSpace )*
+				DebugLocation(367, 82);
+				// JavaScript.g3:367:82: ( SkipSpace )*
 				try { DebugEnterSubRule(161);
 				while (true)
 				{
@@ -13301,11 +13447,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:364:82: SkipSpace
+						// JavaScript.g3:367:82: SkipSpace
 						{
-						DebugLocation(364, 82);
-						SkipSpace282=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3049); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace282);
+						DebugLocation(367, 82);
+						SkipSpace275=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3118); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace275);
 
 
 						}
@@ -13321,12 +13467,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(161); }
 
-				DebugLocation(364, 93);
-				char_literal283=(CommonToken)Match(input,133,Follow._133_in_conditionalExpression3052); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_133.Add(char_literal283);
+				DebugLocation(367, 93);
+				char_literal276=(CommonToken)Match(input,139,Follow._139_in_conditionalExpression3121); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_139.Add(char_literal276);
 
-				DebugLocation(364, 97);
-				// JavaScript.g3:364:97: ( SkipSpace )*
+				DebugLocation(367, 97);
+				// JavaScript.g3:367:97: ( SkipSpace )*
 				try { DebugEnterSubRule(162);
 				while (true)
 				{
@@ -13345,11 +13491,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:364:97: SkipSpace
+						// JavaScript.g3:367:97: SkipSpace
 						{
-						DebugLocation(364, 97);
-						SkipSpace284=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3054); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace284);
+						DebugLocation(367, 97);
+						SkipSpace277=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpression3123); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace277);
 
 
 						}
@@ -13365,8 +13511,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(162); }
 
-				DebugLocation(364, 110);
-				PushFollow(Follow._assignmentExpression_in_conditionalExpression3059);
+				DebugLocation(367, 110);
+				PushFollow(Follow._assignmentExpression_in_conditionalExpression3128);
 				fV=assignmentExpression();
 				PopFollow();
 				if (state.failed) return retval;
@@ -13389,20 +13535,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 365:9: -> ^( CONDITIONAL_EXPR $cond $tV $fV)
+				// 368:9: -> ^( CONDITIONAL_EXPR $cond $tV $fV)
 				{
-					DebugLocation(365, 12);
-					// JavaScript.g3:365:12: ^( CONDITIONAL_EXPR $cond $tV $fV)
+					DebugLocation(368, 12);
+					// JavaScript.g3:368:12: ^( CONDITIONAL_EXPR $cond $tV $fV)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(365, 14);
+					DebugLocation(368, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(CONDITIONAL_EXPR, "CONDITIONAL_EXPR"), root_1);
 
-					DebugLocation(365, 32);
+					DebugLocation(368, 32);
 					adaptor.AddChild(root_1, stream_cond.NextTree());
-					DebugLocation(365, 38);
+					DebugLocation(368, 38);
 					adaptor.AddChild(root_1, stream_tV.NextTree());
-					DebugLocation(365, 42);
+					DebugLocation(368, 42);
 					adaptor.AddChild(root_1, stream_fV.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -13418,16 +13564,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:366:7: logicalORExpression
+				// JavaScript.g3:369:7: logicalORExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(366, 7);
-				PushFollow(Follow._logicalORExpression_in_conditionalExpression3090);
-				logicalORExpression285=logicalORExpression();
+				DebugLocation(369, 7);
+				PushFollow(Follow._logicalORExpression_in_conditionalExpression3159);
+				logicalORExpression278=logicalORExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, logicalORExpression285.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, logicalORExpression278.Tree);
 
 				}
 				break;
@@ -13455,7 +13601,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_conditionalExpression();
 			if (state.backtracking > 0) { Memoize(input, 57, conditionalExpression_StartIndex); }
 		}
-		DebugLocation(367, 4);
+		DebugLocation(370, 4);
 		} finally { DebugExitRule(GrammarFileName, "conditionalExpression"); }
 		return retval;
 
@@ -13472,7 +13618,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_conditionalExpressionNoIn();
 
 	// $ANTLR start "conditionalExpressionNoIn"
-	// JavaScript.g3:369:1: conditionalExpressionNoIn : (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpressionNoIn );
+	// JavaScript.g3:372:1: conditionalExpressionNoIn : (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpressionNoIn );
 	[GrammarRule("conditionalExpressionNoIn")]
 	private JavaScriptParser.conditionalExpressionNoIn_return conditionalExpressionNoIn()
 	{
@@ -13484,34 +13630,34 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int conditionalExpressionNoIn_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace286=null;
-		CommonToken char_literal287=null;
-		CommonToken SkipSpace288=null;
-		CommonToken SkipSpace289=null;
-		CommonToken char_literal290=null;
-		CommonToken SkipSpace291=null;
+		CommonToken SkipSpace279=null;
+		CommonToken char_literal280=null;
+		CommonToken SkipSpace281=null;
+		CommonToken SkipSpace282=null;
+		CommonToken char_literal283=null;
+		CommonToken SkipSpace284=null;
 		JavaScriptParser.logicalORExpressionNoIn_return cond = default(JavaScriptParser.logicalORExpressionNoIn_return);
 		JavaScriptParser.assignmentExpressionNoIn_return tV = default(JavaScriptParser.assignmentExpressionNoIn_return);
 		JavaScriptParser.assignmentExpressionNoIn_return fV = default(JavaScriptParser.assignmentExpressionNoIn_return);
-		JavaScriptParser.logicalORExpressionNoIn_return logicalORExpressionNoIn292 = default(JavaScriptParser.logicalORExpressionNoIn_return);
+		JavaScriptParser.logicalORExpressionNoIn_return logicalORExpressionNoIn285 = default(JavaScriptParser.logicalORExpressionNoIn_return);
 
-		CommonTree SkipSpace286_tree=null;
-		CommonTree char_literal287_tree=null;
-		CommonTree SkipSpace288_tree=null;
-		CommonTree SkipSpace289_tree=null;
-		CommonTree char_literal290_tree=null;
-		CommonTree SkipSpace291_tree=null;
+		CommonTree SkipSpace279_tree=null;
+		CommonTree char_literal280_tree=null;
+		CommonTree SkipSpace281_tree=null;
+		CommonTree SkipSpace282_tree=null;
+		CommonTree char_literal283_tree=null;
+		CommonTree SkipSpace284_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_134=new RewriteRuleITokenStream(adaptor,"token 134");
-		RewriteRuleITokenStream stream_133=new RewriteRuleITokenStream(adaptor,"token 133");
+		RewriteRuleITokenStream stream_140=new RewriteRuleITokenStream(adaptor,"token 140");
+		RewriteRuleITokenStream stream_139=new RewriteRuleITokenStream(adaptor,"token 139");
 		RewriteRuleSubtreeStream stream_logicalORExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule logicalORExpressionNoIn");
 		RewriteRuleSubtreeStream stream_assignmentExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "conditionalExpressionNoIn");
-		DebugLocation(369, 4);
+		DebugLocation(372, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 58)) { return retval; }
-			// JavaScript.g3:370:5: (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpressionNoIn )
+			// JavaScript.g3:373:5: (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpressionNoIn )
 			int alt168=2;
 			try { DebugEnterDecision(168, decisionCanBacktrack[168]);
 			try
@@ -13528,16 +13674,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:370:7: cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn
+				// JavaScript.g3:373:7: cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn
 				{
-				DebugLocation(370, 11);
-				PushFollow(Follow._logicalORExpressionNoIn_in_conditionalExpressionNoIn3109);
+				DebugLocation(373, 11);
+				PushFollow(Follow._logicalORExpressionNoIn_in_conditionalExpressionNoIn3178);
 				cond=logicalORExpressionNoIn();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_logicalORExpressionNoIn.Add(cond.Tree);
-				DebugLocation(370, 36);
-				// JavaScript.g3:370:36: ( SkipSpace )*
+				DebugLocation(373, 36);
+				// JavaScript.g3:373:36: ( SkipSpace )*
 				try { DebugEnterSubRule(164);
 				while (true)
 				{
@@ -13556,11 +13702,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:370:36: SkipSpace
+						// JavaScript.g3:373:36: SkipSpace
 						{
-						DebugLocation(370, 36);
-						SkipSpace286=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3111); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace286);
+						DebugLocation(373, 36);
+						SkipSpace279=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3180); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace279);
 
 
 						}
@@ -13576,12 +13722,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(164); }
 
-				DebugLocation(370, 47);
-				char_literal287=(CommonToken)Match(input,134,Follow._134_in_conditionalExpressionNoIn3114); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_134.Add(char_literal287);
+				DebugLocation(373, 47);
+				char_literal280=(CommonToken)Match(input,140,Follow._140_in_conditionalExpressionNoIn3183); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_140.Add(char_literal280);
 
-				DebugLocation(370, 51);
-				// JavaScript.g3:370:51: ( SkipSpace )*
+				DebugLocation(373, 51);
+				// JavaScript.g3:373:51: ( SkipSpace )*
 				try { DebugEnterSubRule(165);
 				while (true)
 				{
@@ -13600,11 +13746,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:370:51: SkipSpace
+						// JavaScript.g3:373:51: SkipSpace
 						{
-						DebugLocation(370, 51);
-						SkipSpace288=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3116); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace288);
+						DebugLocation(373, 51);
+						SkipSpace281=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3185); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace281);
 
 
 						}
@@ -13620,14 +13766,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(165); }
 
-				DebugLocation(370, 64);
-				PushFollow(Follow._assignmentExpressionNoIn_in_conditionalExpressionNoIn3121);
+				DebugLocation(373, 64);
+				PushFollow(Follow._assignmentExpressionNoIn_in_conditionalExpressionNoIn3190);
 				tV=assignmentExpressionNoIn();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_assignmentExpressionNoIn.Add(tV.Tree);
-				DebugLocation(370, 90);
-				// JavaScript.g3:370:90: ( SkipSpace )*
+				DebugLocation(373, 90);
+				// JavaScript.g3:373:90: ( SkipSpace )*
 				try { DebugEnterSubRule(166);
 				while (true)
 				{
@@ -13646,11 +13792,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:370:90: SkipSpace
+						// JavaScript.g3:373:90: SkipSpace
 						{
-						DebugLocation(370, 90);
-						SkipSpace289=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3123); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace289);
+						DebugLocation(373, 90);
+						SkipSpace282=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3192); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace282);
 
 
 						}
@@ -13666,12 +13812,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(166); }
 
-				DebugLocation(370, 101);
-				char_literal290=(CommonToken)Match(input,133,Follow._133_in_conditionalExpressionNoIn3126); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_133.Add(char_literal290);
+				DebugLocation(373, 101);
+				char_literal283=(CommonToken)Match(input,139,Follow._139_in_conditionalExpressionNoIn3195); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_139.Add(char_literal283);
 
-				DebugLocation(370, 105);
-				// JavaScript.g3:370:105: ( SkipSpace )*
+				DebugLocation(373, 105);
+				// JavaScript.g3:373:105: ( SkipSpace )*
 				try { DebugEnterSubRule(167);
 				while (true)
 				{
@@ -13690,11 +13836,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:370:105: SkipSpace
+						// JavaScript.g3:373:105: SkipSpace
 						{
-						DebugLocation(370, 105);
-						SkipSpace291=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3128); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace291);
+						DebugLocation(373, 105);
+						SkipSpace284=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_conditionalExpressionNoIn3197); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace284);
 
 
 						}
@@ -13710,8 +13856,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(167); }
 
-				DebugLocation(370, 118);
-				PushFollow(Follow._assignmentExpressionNoIn_in_conditionalExpressionNoIn3133);
+				DebugLocation(373, 118);
+				PushFollow(Follow._assignmentExpressionNoIn_in_conditionalExpressionNoIn3202);
 				fV=assignmentExpressionNoIn();
 				PopFollow();
 				if (state.failed) return retval;
@@ -13734,20 +13880,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 371:9: -> ^( CONDITIONAL_EXPR $cond $tV $fV)
+				// 374:9: -> ^( CONDITIONAL_EXPR $cond $tV $fV)
 				{
-					DebugLocation(371, 12);
-					// JavaScript.g3:371:12: ^( CONDITIONAL_EXPR $cond $tV $fV)
+					DebugLocation(374, 12);
+					// JavaScript.g3:374:12: ^( CONDITIONAL_EXPR $cond $tV $fV)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(371, 14);
+					DebugLocation(374, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(CONDITIONAL_EXPR, "CONDITIONAL_EXPR"), root_1);
 
-					DebugLocation(371, 32);
+					DebugLocation(374, 32);
 					adaptor.AddChild(root_1, stream_cond.NextTree());
-					DebugLocation(371, 38);
+					DebugLocation(374, 38);
 					adaptor.AddChild(root_1, stream_tV.NextTree());
-					DebugLocation(371, 42);
+					DebugLocation(374, 42);
 					adaptor.AddChild(root_1, stream_fV.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -13763,16 +13909,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:372:7: logicalORExpressionNoIn
+				// JavaScript.g3:375:7: logicalORExpressionNoIn
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(372, 7);
-				PushFollow(Follow._logicalORExpressionNoIn_in_conditionalExpressionNoIn3164);
-				logicalORExpressionNoIn292=logicalORExpressionNoIn();
+				DebugLocation(375, 7);
+				PushFollow(Follow._logicalORExpressionNoIn_in_conditionalExpressionNoIn3233);
+				logicalORExpressionNoIn285=logicalORExpressionNoIn();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, logicalORExpressionNoIn292.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, logicalORExpressionNoIn285.Tree);
 
 				}
 				break;
@@ -13800,7 +13946,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_conditionalExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 58, conditionalExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(373, 4);
+		DebugLocation(376, 4);
 		} finally { DebugExitRule(GrammarFileName, "conditionalExpressionNoIn"); }
 		return retval;
 
@@ -13817,7 +13963,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_logicalORExpression();
 
 	// $ANTLR start "logicalORExpression"
-	// JavaScript.g3:375:1: logicalORExpression : (lhs= logicalANDExpression -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )* ;
+	// JavaScript.g3:378:1: logicalORExpression : (lhs= logicalANDExpression -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )* ;
 	[GrammarRule("logicalORExpression")]
 	private JavaScriptParser.logicalORExpression_return logicalORExpression()
 	{
@@ -13830,33 +13976,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace293=null;
-		CommonToken SkipSpace294=null;
+		CommonToken SkipSpace286=null;
+		CommonToken SkipSpace287=null;
 		JavaScriptParser.logicalANDExpression_return lhs = default(JavaScriptParser.logicalANDExpression_return);
 		JavaScriptParser.logicalANDExpression_return rhs = default(JavaScriptParser.logicalANDExpression_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace293_tree=null;
-		CommonTree SkipSpace294_tree=null;
+		CommonTree SkipSpace286_tree=null;
+		CommonTree SkipSpace287_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_OR=new RewriteRuleITokenStream(adaptor,"token OR");
 		RewriteRuleSubtreeStream stream_logicalANDExpression=new RewriteRuleSubtreeStream(adaptor,"rule logicalANDExpression");
 		try { DebugEnterRule(GrammarFileName, "logicalORExpression");
-		DebugLocation(375, 4);
+		DebugLocation(378, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 59)) { return retval; }
-			// JavaScript.g3:376:5: ( (lhs= logicalANDExpression -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )* )
+			// JavaScript.g3:379:5: ( (lhs= logicalANDExpression -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:376:7: (lhs= logicalANDExpression -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )*
+			// JavaScript.g3:379:7: (lhs= logicalANDExpression -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )*
 			{
-			DebugLocation(376, 7);
-			// JavaScript.g3:376:7: (lhs= logicalANDExpression -> $lhs)
+			DebugLocation(379, 7);
+			// JavaScript.g3:379:7: (lhs= logicalANDExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:376:8: lhs= logicalANDExpression
+			// JavaScript.g3:379:8: lhs= logicalANDExpression
 			{
-			DebugLocation(376, 11);
-			PushFollow(Follow._logicalANDExpression_in_logicalORExpression3184);
+			DebugLocation(379, 11);
+			PushFollow(Follow._logicalANDExpression_in_logicalORExpression3253);
 			lhs=logicalANDExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -13877,9 +14023,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 376:33: -> $lhs
+			// 379:33: -> $lhs
 			{
-				DebugLocation(376, 37);
+				DebugLocation(379, 37);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -13890,8 +14036,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(377, 9);
-			// JavaScript.g3:377:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )*
+			DebugLocation(380, 9);
+			// JavaScript.g3:380:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )*
 			try { DebugEnterSubRule(171);
 			while (true)
 			{
@@ -13911,10 +14057,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:377:10: ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression
+					// JavaScript.g3:380:10: ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression
 					{
-					DebugLocation(377, 10);
-					// JavaScript.g3:377:10: ( SkipSpace )*
+					DebugLocation(380, 10);
+					// JavaScript.g3:380:10: ( SkipSpace )*
 					try { DebugEnterSubRule(169);
 					while (true)
 					{
@@ -13933,11 +14079,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:377:10: SkipSpace
+							// JavaScript.g3:380:10: SkipSpace
 							{
-							DebugLocation(377, 10);
-							SkipSpace293=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpression3201); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace293);
+							DebugLocation(380, 10);
+							SkipSpace286=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpression3270); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace286);
 
 
 							}
@@ -13953,12 +14099,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(169); }
 
-					DebugLocation(377, 23);
-					op=(CommonToken)Match(input,OR,Follow._OR_in_logicalORExpression3206); if (state.failed) return retval; 
+					DebugLocation(380, 23);
+					op=(CommonToken)Match(input,OR,Follow._OR_in_logicalORExpression3275); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_OR.Add(op);
 
-					DebugLocation(377, 27);
-					// JavaScript.g3:377:27: ( SkipSpace )*
+					DebugLocation(380, 27);
+					// JavaScript.g3:380:27: ( SkipSpace )*
 					try { DebugEnterSubRule(170);
 					while (true)
 					{
@@ -13977,11 +14123,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:377:27: SkipSpace
+							// JavaScript.g3:380:27: SkipSpace
 							{
-							DebugLocation(377, 27);
-							SkipSpace294=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpression3208); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace294);
+							DebugLocation(380, 27);
+							SkipSpace287=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpression3277); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace287);
 
 
 							}
@@ -13997,8 +14143,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(170); }
 
-					DebugLocation(377, 41);
-					PushFollow(Follow._logicalANDExpression_in_logicalORExpression3213);
+					DebugLocation(380, 41);
+					PushFollow(Follow._logicalANDExpression_in_logicalORExpression3282);
 					rhs=logicalANDExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -14020,20 +14166,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 377:63: -> ^( BINARY_EXPR $op $logicalORExpression $rhs)
+					// 380:63: -> ^( BINARY_EXPR $op $logicalORExpression $rhs)
 					{
-						DebugLocation(377, 66);
-						// JavaScript.g3:377:66: ^( BINARY_EXPR $op $logicalORExpression $rhs)
+						DebugLocation(380, 66);
+						// JavaScript.g3:380:66: ^( BINARY_EXPR $op $logicalORExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(377, 68);
+						DebugLocation(380, 68);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(377, 81);
+						DebugLocation(380, 81);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(377, 85);
+						DebugLocation(380, 85);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(377, 106);
+						DebugLocation(380, 106);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -14083,7 +14229,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_logicalORExpression();
 			if (state.backtracking > 0) { Memoize(input, 59, logicalORExpression_StartIndex); }
 		}
-		DebugLocation(378, 4);
+		DebugLocation(381, 4);
 		} finally { DebugExitRule(GrammarFileName, "logicalORExpression"); }
 		return retval;
 
@@ -14100,7 +14246,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_logicalORExpressionNoIn();
 
 	// $ANTLR start "logicalORExpressionNoIn"
-	// JavaScript.g3:380:1: logicalORExpressionNoIn : (lhs= logicalANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )* ;
+	// JavaScript.g3:383:1: logicalORExpressionNoIn : (lhs= logicalANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )* ;
 	[GrammarRule("logicalORExpressionNoIn")]
 	private JavaScriptParser.logicalORExpressionNoIn_return logicalORExpressionNoIn()
 	{
@@ -14113,33 +14259,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace295=null;
-		CommonToken SkipSpace296=null;
+		CommonToken SkipSpace288=null;
+		CommonToken SkipSpace289=null;
 		JavaScriptParser.logicalANDExpressionNoIn_return lhs = default(JavaScriptParser.logicalANDExpressionNoIn_return);
 		JavaScriptParser.logicalANDExpressionNoIn_return rhs = default(JavaScriptParser.logicalANDExpressionNoIn_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace295_tree=null;
-		CommonTree SkipSpace296_tree=null;
+		CommonTree SkipSpace288_tree=null;
+		CommonTree SkipSpace289_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_OR=new RewriteRuleITokenStream(adaptor,"token OR");
 		RewriteRuleSubtreeStream stream_logicalANDExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule logicalANDExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "logicalORExpressionNoIn");
-		DebugLocation(380, 4);
+		DebugLocation(383, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 60)) { return retval; }
-			// JavaScript.g3:381:5: ( (lhs= logicalANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )* )
+			// JavaScript.g3:384:5: ( (lhs= logicalANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:381:7: (lhs= logicalANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )*
+			// JavaScript.g3:384:7: (lhs= logicalANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )*
 			{
-			DebugLocation(381, 7);
-			// JavaScript.g3:381:7: (lhs= logicalANDExpressionNoIn -> $lhs)
+			DebugLocation(384, 7);
+			// JavaScript.g3:384:7: (lhs= logicalANDExpressionNoIn -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:381:8: lhs= logicalANDExpressionNoIn
+			// JavaScript.g3:384:8: lhs= logicalANDExpressionNoIn
 			{
-			DebugLocation(381, 11);
-			PushFollow(Follow._logicalANDExpressionNoIn_in_logicalORExpressionNoIn3251);
+			DebugLocation(384, 11);
+			PushFollow(Follow._logicalANDExpressionNoIn_in_logicalORExpressionNoIn3320);
 			lhs=logicalANDExpressionNoIn();
 			PopFollow();
 			if (state.failed) return retval;
@@ -14160,9 +14306,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 381:37: -> $lhs
+			// 384:37: -> $lhs
 			{
-				DebugLocation(381, 41);
+				DebugLocation(384, 41);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -14173,8 +14319,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(382, 9);
-			// JavaScript.g3:382:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )*
+			DebugLocation(385, 9);
+			// JavaScript.g3:385:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )*
 			try { DebugEnterSubRule(174);
 			while (true)
 			{
@@ -14194,10 +14340,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:382:10: ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn
+					// JavaScript.g3:385:10: ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn
 					{
-					DebugLocation(382, 10);
-					// JavaScript.g3:382:10: ( SkipSpace )*
+					DebugLocation(385, 10);
+					// JavaScript.g3:385:10: ( SkipSpace )*
 					try { DebugEnterSubRule(172);
 					while (true)
 					{
@@ -14216,11 +14362,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:382:10: SkipSpace
+							// JavaScript.g3:385:10: SkipSpace
 							{
-							DebugLocation(382, 10);
-							SkipSpace295=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpressionNoIn3268); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace295);
+							DebugLocation(385, 10);
+							SkipSpace288=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpressionNoIn3337); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace288);
 
 
 							}
@@ -14236,12 +14382,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(172); }
 
-					DebugLocation(382, 23);
-					op=(CommonToken)Match(input,OR,Follow._OR_in_logicalORExpressionNoIn3273); if (state.failed) return retval; 
+					DebugLocation(385, 23);
+					op=(CommonToken)Match(input,OR,Follow._OR_in_logicalORExpressionNoIn3342); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_OR.Add(op);
 
-					DebugLocation(382, 27);
-					// JavaScript.g3:382:27: ( SkipSpace )*
+					DebugLocation(385, 27);
+					// JavaScript.g3:385:27: ( SkipSpace )*
 					try { DebugEnterSubRule(173);
 					while (true)
 					{
@@ -14260,11 +14406,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:382:27: SkipSpace
+							// JavaScript.g3:385:27: SkipSpace
 							{
-							DebugLocation(382, 27);
-							SkipSpace296=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpressionNoIn3275); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace296);
+							DebugLocation(385, 27);
+							SkipSpace289=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalORExpressionNoIn3344); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace289);
 
 
 							}
@@ -14280,8 +14426,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(173); }
 
-					DebugLocation(382, 41);
-					PushFollow(Follow._logicalANDExpressionNoIn_in_logicalORExpressionNoIn3280);
+					DebugLocation(385, 41);
+					PushFollow(Follow._logicalANDExpressionNoIn_in_logicalORExpressionNoIn3349);
 					rhs=logicalANDExpressionNoIn();
 					PopFollow();
 					if (state.failed) return retval;
@@ -14303,20 +14449,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 382:67: -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs)
+					// 385:67: -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs)
 					{
-						DebugLocation(382, 70);
-						// JavaScript.g3:382:70: ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs)
+						DebugLocation(385, 70);
+						// JavaScript.g3:385:70: ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(382, 72);
+						DebugLocation(385, 72);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(382, 85);
+						DebugLocation(385, 85);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(382, 89);
+						DebugLocation(385, 89);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(382, 114);
+						DebugLocation(385, 114);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -14366,7 +14512,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_logicalORExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 60, logicalORExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(383, 4);
+		DebugLocation(386, 4);
 		} finally { DebugExitRule(GrammarFileName, "logicalORExpressionNoIn"); }
 		return retval;
 
@@ -14383,7 +14529,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_logicalANDExpression();
 
 	// $ANTLR start "logicalANDExpression"
-	// JavaScript.g3:385:1: logicalANDExpression : (lhs= bitwiseORExpression -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )* ;
+	// JavaScript.g3:388:1: logicalANDExpression : (lhs= bitwiseORExpression -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )* ;
 	[GrammarRule("logicalANDExpression")]
 	private JavaScriptParser.logicalANDExpression_return logicalANDExpression()
 	{
@@ -14396,33 +14542,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace297=null;
-		CommonToken SkipSpace298=null;
+		CommonToken SkipSpace290=null;
+		CommonToken SkipSpace291=null;
 		JavaScriptParser.bitwiseORExpression_return lhs = default(JavaScriptParser.bitwiseORExpression_return);
 		JavaScriptParser.bitwiseORExpression_return rhs = default(JavaScriptParser.bitwiseORExpression_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace297_tree=null;
-		CommonTree SkipSpace298_tree=null;
+		CommonTree SkipSpace290_tree=null;
+		CommonTree SkipSpace291_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_AND=new RewriteRuleITokenStream(adaptor,"token AND");
 		RewriteRuleSubtreeStream stream_bitwiseORExpression=new RewriteRuleSubtreeStream(adaptor,"rule bitwiseORExpression");
 		try { DebugEnterRule(GrammarFileName, "logicalANDExpression");
-		DebugLocation(385, 4);
+		DebugLocation(388, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 61)) { return retval; }
-			// JavaScript.g3:386:5: ( (lhs= bitwiseORExpression -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )* )
+			// JavaScript.g3:389:5: ( (lhs= bitwiseORExpression -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:386:7: (lhs= bitwiseORExpression -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )*
+			// JavaScript.g3:389:7: (lhs= bitwiseORExpression -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )*
 			{
-			DebugLocation(386, 7);
-			// JavaScript.g3:386:7: (lhs= bitwiseORExpression -> $lhs)
+			DebugLocation(389, 7);
+			// JavaScript.g3:389:7: (lhs= bitwiseORExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:386:8: lhs= bitwiseORExpression
+			// JavaScript.g3:389:8: lhs= bitwiseORExpression
 			{
-			DebugLocation(386, 11);
-			PushFollow(Follow._bitwiseORExpression_in_logicalANDExpression3318);
+			DebugLocation(389, 11);
+			PushFollow(Follow._bitwiseORExpression_in_logicalANDExpression3387);
 			lhs=bitwiseORExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -14443,9 +14589,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 386:32: -> $lhs
+			// 389:32: -> $lhs
 			{
-				DebugLocation(386, 36);
+				DebugLocation(389, 36);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -14456,8 +14602,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(387, 9);
-			// JavaScript.g3:387:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )*
+			DebugLocation(390, 9);
+			// JavaScript.g3:390:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )*
 			try { DebugEnterSubRule(177);
 			while (true)
 			{
@@ -14477,10 +14623,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:387:10: ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression
+					// JavaScript.g3:390:10: ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression
 					{
-					DebugLocation(387, 10);
-					// JavaScript.g3:387:10: ( SkipSpace )*
+					DebugLocation(390, 10);
+					// JavaScript.g3:390:10: ( SkipSpace )*
 					try { DebugEnterSubRule(175);
 					while (true)
 					{
@@ -14499,11 +14645,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:387:10: SkipSpace
+							// JavaScript.g3:390:10: SkipSpace
 							{
-							DebugLocation(387, 10);
-							SkipSpace297=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpression3335); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace297);
+							DebugLocation(390, 10);
+							SkipSpace290=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpression3404); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace290);
 
 
 							}
@@ -14519,12 +14665,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(175); }
 
-					DebugLocation(387, 23);
-					op=(CommonToken)Match(input,AND,Follow._AND_in_logicalANDExpression3340); if (state.failed) return retval; 
+					DebugLocation(390, 23);
+					op=(CommonToken)Match(input,AND,Follow._AND_in_logicalANDExpression3409); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_AND.Add(op);
 
-					DebugLocation(387, 28);
-					// JavaScript.g3:387:28: ( SkipSpace )*
+					DebugLocation(390, 28);
+					// JavaScript.g3:390:28: ( SkipSpace )*
 					try { DebugEnterSubRule(176);
 					while (true)
 					{
@@ -14543,11 +14689,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:387:28: SkipSpace
+							// JavaScript.g3:390:28: SkipSpace
 							{
-							DebugLocation(387, 28);
-							SkipSpace298=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpression3342); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace298);
+							DebugLocation(390, 28);
+							SkipSpace291=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpression3411); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace291);
 
 
 							}
@@ -14563,8 +14709,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(176); }
 
-					DebugLocation(387, 42);
-					PushFollow(Follow._bitwiseORExpression_in_logicalANDExpression3347);
+					DebugLocation(390, 42);
+					PushFollow(Follow._bitwiseORExpression_in_logicalANDExpression3416);
 					rhs=bitwiseORExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -14586,20 +14732,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 387:63: -> ^( BINARY_EXPR $op $logicalANDExpression $rhs)
+					// 390:63: -> ^( BINARY_EXPR $op $logicalANDExpression $rhs)
 					{
-						DebugLocation(387, 66);
-						// JavaScript.g3:387:66: ^( BINARY_EXPR $op $logicalANDExpression $rhs)
+						DebugLocation(390, 66);
+						// JavaScript.g3:390:66: ^( BINARY_EXPR $op $logicalANDExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(387, 68);
+						DebugLocation(390, 68);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(387, 81);
+						DebugLocation(390, 81);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(387, 85);
+						DebugLocation(390, 85);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(387, 107);
+						DebugLocation(390, 107);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -14649,7 +14795,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_logicalANDExpression();
 			if (state.backtracking > 0) { Memoize(input, 61, logicalANDExpression_StartIndex); }
 		}
-		DebugLocation(388, 4);
+		DebugLocation(391, 4);
 		} finally { DebugExitRule(GrammarFileName, "logicalANDExpression"); }
 		return retval;
 
@@ -14666,7 +14812,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_logicalANDExpressionNoIn();
 
 	// $ANTLR start "logicalANDExpressionNoIn"
-	// JavaScript.g3:390:1: logicalANDExpressionNoIn : (lhs= bitwiseORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )* ;
+	// JavaScript.g3:393:1: logicalANDExpressionNoIn : (lhs= bitwiseORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )* ;
 	[GrammarRule("logicalANDExpressionNoIn")]
 	private JavaScriptParser.logicalANDExpressionNoIn_return logicalANDExpressionNoIn()
 	{
@@ -14679,33 +14825,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace299=null;
-		CommonToken SkipSpace300=null;
+		CommonToken SkipSpace292=null;
+		CommonToken SkipSpace293=null;
 		JavaScriptParser.bitwiseORExpressionNoIn_return lhs = default(JavaScriptParser.bitwiseORExpressionNoIn_return);
 		JavaScriptParser.bitwiseORExpressionNoIn_return rhs = default(JavaScriptParser.bitwiseORExpressionNoIn_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace299_tree=null;
-		CommonTree SkipSpace300_tree=null;
+		CommonTree SkipSpace292_tree=null;
+		CommonTree SkipSpace293_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_AND=new RewriteRuleITokenStream(adaptor,"token AND");
 		RewriteRuleSubtreeStream stream_bitwiseORExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule bitwiseORExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "logicalANDExpressionNoIn");
-		DebugLocation(390, 4);
+		DebugLocation(393, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 62)) { return retval; }
-			// JavaScript.g3:391:5: ( (lhs= bitwiseORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )* )
+			// JavaScript.g3:394:5: ( (lhs= bitwiseORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:391:7: (lhs= bitwiseORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )*
+			// JavaScript.g3:394:7: (lhs= bitwiseORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )*
 			{
-			DebugLocation(391, 7);
-			// JavaScript.g3:391:7: (lhs= bitwiseORExpressionNoIn -> $lhs)
+			DebugLocation(394, 7);
+			// JavaScript.g3:394:7: (lhs= bitwiseORExpressionNoIn -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:391:8: lhs= bitwiseORExpressionNoIn
+			// JavaScript.g3:394:8: lhs= bitwiseORExpressionNoIn
 			{
-			DebugLocation(391, 11);
-			PushFollow(Follow._bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3385);
+			DebugLocation(394, 11);
+			PushFollow(Follow._bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3454);
 			lhs=bitwiseORExpressionNoIn();
 			PopFollow();
 			if (state.failed) return retval;
@@ -14726,9 +14872,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 391:36: -> $lhs
+			// 394:36: -> $lhs
 			{
-				DebugLocation(391, 40);
+				DebugLocation(394, 40);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -14739,8 +14885,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(392, 9);
-			// JavaScript.g3:392:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )*
+			DebugLocation(395, 9);
+			// JavaScript.g3:395:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )*
 			try { DebugEnterSubRule(180);
 			while (true)
 			{
@@ -14760,10 +14906,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:392:10: ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn
+					// JavaScript.g3:395:10: ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn
 					{
-					DebugLocation(392, 10);
-					// JavaScript.g3:392:10: ( SkipSpace )*
+					DebugLocation(395, 10);
+					// JavaScript.g3:395:10: ( SkipSpace )*
 					try { DebugEnterSubRule(178);
 					while (true)
 					{
@@ -14782,11 +14928,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:392:10: SkipSpace
+							// JavaScript.g3:395:10: SkipSpace
 							{
-							DebugLocation(392, 10);
-							SkipSpace299=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpressionNoIn3402); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace299);
+							DebugLocation(395, 10);
+							SkipSpace292=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpressionNoIn3471); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace292);
 
 
 							}
@@ -14802,12 +14948,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(178); }
 
-					DebugLocation(392, 23);
-					op=(CommonToken)Match(input,AND,Follow._AND_in_logicalANDExpressionNoIn3407); if (state.failed) return retval; 
+					DebugLocation(395, 23);
+					op=(CommonToken)Match(input,AND,Follow._AND_in_logicalANDExpressionNoIn3476); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_AND.Add(op);
 
-					DebugLocation(392, 28);
-					// JavaScript.g3:392:28: ( SkipSpace )*
+					DebugLocation(395, 28);
+					// JavaScript.g3:395:28: ( SkipSpace )*
 					try { DebugEnterSubRule(179);
 					while (true)
 					{
@@ -14826,11 +14972,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:392:28: SkipSpace
+							// JavaScript.g3:395:28: SkipSpace
 							{
-							DebugLocation(392, 28);
-							SkipSpace300=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpressionNoIn3409); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace300);
+							DebugLocation(395, 28);
+							SkipSpace293=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_logicalANDExpressionNoIn3478); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace293);
 
 
 							}
@@ -14846,8 +14992,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(179); }
 
-					DebugLocation(392, 42);
-					PushFollow(Follow._bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3414);
+					DebugLocation(395, 42);
+					PushFollow(Follow._bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3483);
 					rhs=bitwiseORExpressionNoIn();
 					PopFollow();
 					if (state.failed) return retval;
@@ -14869,20 +15015,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 392:67: -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs)
+					// 395:67: -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs)
 					{
-						DebugLocation(392, 70);
-						// JavaScript.g3:392:70: ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs)
+						DebugLocation(395, 70);
+						// JavaScript.g3:395:70: ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(392, 72);
+						DebugLocation(395, 72);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(392, 85);
+						DebugLocation(395, 85);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(392, 89);
+						DebugLocation(395, 89);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(392, 115);
+						DebugLocation(395, 115);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -14932,7 +15078,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_logicalANDExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 62, logicalANDExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(393, 4);
+		DebugLocation(396, 4);
 		} finally { DebugExitRule(GrammarFileName, "logicalANDExpressionNoIn"); }
 		return retval;
 
@@ -14949,7 +15095,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_bitwiseORExpression();
 
 	// $ANTLR start "bitwiseORExpression"
-	// JavaScript.g3:395:1: bitwiseORExpression : (lhs= bitwiseXORExpression -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )* ;
+	// JavaScript.g3:398:1: bitwiseORExpression : (lhs= bitwiseXORExpression -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )* ;
 	[GrammarRule("bitwiseORExpression")]
 	private JavaScriptParser.bitwiseORExpression_return bitwiseORExpression()
 	{
@@ -14962,33 +15108,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace301=null;
-		CommonToken SkipSpace302=null;
+		CommonToken SkipSpace294=null;
+		CommonToken SkipSpace295=null;
 		JavaScriptParser.bitwiseXORExpression_return lhs = default(JavaScriptParser.bitwiseXORExpression_return);
 		JavaScriptParser.bitwiseXORExpression_return rhs = default(JavaScriptParser.bitwiseXORExpression_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace301_tree=null;
-		CommonTree SkipSpace302_tree=null;
+		CommonTree SkipSpace294_tree=null;
+		CommonTree SkipSpace295_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_BIT_OR=new RewriteRuleITokenStream(adaptor,"token BIT_OR");
 		RewriteRuleSubtreeStream stream_bitwiseXORExpression=new RewriteRuleSubtreeStream(adaptor,"rule bitwiseXORExpression");
 		try { DebugEnterRule(GrammarFileName, "bitwiseORExpression");
-		DebugLocation(395, 4);
+		DebugLocation(398, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 63)) { return retval; }
-			// JavaScript.g3:396:5: ( (lhs= bitwiseXORExpression -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )* )
+			// JavaScript.g3:399:5: ( (lhs= bitwiseXORExpression -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:396:7: (lhs= bitwiseXORExpression -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )*
+			// JavaScript.g3:399:7: (lhs= bitwiseXORExpression -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )*
 			{
-			DebugLocation(396, 7);
-			// JavaScript.g3:396:7: (lhs= bitwiseXORExpression -> $lhs)
+			DebugLocation(399, 7);
+			// JavaScript.g3:399:7: (lhs= bitwiseXORExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:396:8: lhs= bitwiseXORExpression
+			// JavaScript.g3:399:8: lhs= bitwiseXORExpression
 			{
-			DebugLocation(396, 11);
-			PushFollow(Follow._bitwiseXORExpression_in_bitwiseORExpression3452);
+			DebugLocation(399, 11);
+			PushFollow(Follow._bitwiseXORExpression_in_bitwiseORExpression3521);
 			lhs=bitwiseXORExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -15009,9 +15155,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 396:33: -> $lhs
+			// 399:33: -> $lhs
 			{
-				DebugLocation(396, 37);
+				DebugLocation(399, 37);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -15022,8 +15168,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(397, 9);
-			// JavaScript.g3:397:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )*
+			DebugLocation(400, 9);
+			// JavaScript.g3:400:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )*
 			try { DebugEnterSubRule(183);
 			while (true)
 			{
@@ -15043,10 +15189,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:397:10: ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression
+					// JavaScript.g3:400:10: ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression
 					{
-					DebugLocation(397, 10);
-					// JavaScript.g3:397:10: ( SkipSpace )*
+					DebugLocation(400, 10);
+					// JavaScript.g3:400:10: ( SkipSpace )*
 					try { DebugEnterSubRule(181);
 					while (true)
 					{
@@ -15065,11 +15211,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:397:10: SkipSpace
+							// JavaScript.g3:400:10: SkipSpace
 							{
-							DebugLocation(397, 10);
-							SkipSpace301=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpression3469); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace301);
+							DebugLocation(400, 10);
+							SkipSpace294=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpression3538); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace294);
 
 
 							}
@@ -15085,12 +15231,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(181); }
 
-					DebugLocation(397, 23);
-					op=(CommonToken)Match(input,BIT_OR,Follow._BIT_OR_in_bitwiseORExpression3474); if (state.failed) return retval; 
+					DebugLocation(400, 23);
+					op=(CommonToken)Match(input,BIT_OR,Follow._BIT_OR_in_bitwiseORExpression3543); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_BIT_OR.Add(op);
 
-					DebugLocation(397, 31);
-					// JavaScript.g3:397:31: ( SkipSpace )*
+					DebugLocation(400, 31);
+					// JavaScript.g3:400:31: ( SkipSpace )*
 					try { DebugEnterSubRule(182);
 					while (true)
 					{
@@ -15109,11 +15255,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:397:31: SkipSpace
+							// JavaScript.g3:400:31: SkipSpace
 							{
-							DebugLocation(397, 31);
-							SkipSpace302=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpression3476); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace302);
+							DebugLocation(400, 31);
+							SkipSpace295=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpression3545); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace295);
 
 
 							}
@@ -15129,8 +15275,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(182); }
 
-					DebugLocation(397, 45);
-					PushFollow(Follow._bitwiseXORExpression_in_bitwiseORExpression3481);
+					DebugLocation(400, 45);
+					PushFollow(Follow._bitwiseXORExpression_in_bitwiseORExpression3550);
 					rhs=bitwiseXORExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -15152,20 +15298,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 397:67: -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs)
+					// 400:67: -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs)
 					{
-						DebugLocation(397, 70);
-						// JavaScript.g3:397:70: ^( BINARY_EXPR $op $bitwiseORExpression $rhs)
+						DebugLocation(400, 70);
+						// JavaScript.g3:400:70: ^( BINARY_EXPR $op $bitwiseORExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(397, 72);
+						DebugLocation(400, 72);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(397, 85);
+						DebugLocation(400, 85);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(397, 89);
+						DebugLocation(400, 89);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(397, 110);
+						DebugLocation(400, 110);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -15215,7 +15361,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_bitwiseORExpression();
 			if (state.backtracking > 0) { Memoize(input, 63, bitwiseORExpression_StartIndex); }
 		}
-		DebugLocation(398, 4);
+		DebugLocation(401, 4);
 		} finally { DebugExitRule(GrammarFileName, "bitwiseORExpression"); }
 		return retval;
 
@@ -15232,7 +15378,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_bitwiseORExpressionNoIn();
 
 	// $ANTLR start "bitwiseORExpressionNoIn"
-	// JavaScript.g3:400:1: bitwiseORExpressionNoIn : (lhs= bitwiseXORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )* ;
+	// JavaScript.g3:403:1: bitwiseORExpressionNoIn : (lhs= bitwiseXORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )* ;
 	[GrammarRule("bitwiseORExpressionNoIn")]
 	private JavaScriptParser.bitwiseORExpressionNoIn_return bitwiseORExpressionNoIn()
 	{
@@ -15245,33 +15391,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace303=null;
-		CommonToken SkipSpace304=null;
+		CommonToken SkipSpace296=null;
+		CommonToken SkipSpace297=null;
 		JavaScriptParser.bitwiseXORExpressionNoIn_return lhs = default(JavaScriptParser.bitwiseXORExpressionNoIn_return);
 		JavaScriptParser.bitwiseXORExpressionNoIn_return rhs = default(JavaScriptParser.bitwiseXORExpressionNoIn_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace303_tree=null;
-		CommonTree SkipSpace304_tree=null;
+		CommonTree SkipSpace296_tree=null;
+		CommonTree SkipSpace297_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_BIT_OR=new RewriteRuleITokenStream(adaptor,"token BIT_OR");
 		RewriteRuleSubtreeStream stream_bitwiseXORExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule bitwiseXORExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "bitwiseORExpressionNoIn");
-		DebugLocation(400, 4);
+		DebugLocation(403, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 64)) { return retval; }
-			// JavaScript.g3:401:5: ( (lhs= bitwiseXORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )* )
+			// JavaScript.g3:404:5: ( (lhs= bitwiseXORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:401:7: (lhs= bitwiseXORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )*
+			// JavaScript.g3:404:7: (lhs= bitwiseXORExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )*
 			{
-			DebugLocation(401, 7);
-			// JavaScript.g3:401:7: (lhs= bitwiseXORExpressionNoIn -> $lhs)
+			DebugLocation(404, 7);
+			// JavaScript.g3:404:7: (lhs= bitwiseXORExpressionNoIn -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:401:8: lhs= bitwiseXORExpressionNoIn
+			// JavaScript.g3:404:8: lhs= bitwiseXORExpressionNoIn
 			{
-			DebugLocation(401, 11);
-			PushFollow(Follow._bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3519);
+			DebugLocation(404, 11);
+			PushFollow(Follow._bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3588);
 			lhs=bitwiseXORExpressionNoIn();
 			PopFollow();
 			if (state.failed) return retval;
@@ -15292,9 +15438,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 401:37: -> $lhs
+			// 404:37: -> $lhs
 			{
-				DebugLocation(401, 41);
+				DebugLocation(404, 41);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -15305,8 +15451,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(402, 9);
-			// JavaScript.g3:402:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )*
+			DebugLocation(405, 9);
+			// JavaScript.g3:405:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )*
 			try { DebugEnterSubRule(186);
 			while (true)
 			{
@@ -15326,10 +15472,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:402:10: ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn
+					// JavaScript.g3:405:10: ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn
 					{
-					DebugLocation(402, 10);
-					// JavaScript.g3:402:10: ( SkipSpace )*
+					DebugLocation(405, 10);
+					// JavaScript.g3:405:10: ( SkipSpace )*
 					try { DebugEnterSubRule(184);
 					while (true)
 					{
@@ -15348,11 +15494,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:402:10: SkipSpace
+							// JavaScript.g3:405:10: SkipSpace
 							{
-							DebugLocation(402, 10);
-							SkipSpace303=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpressionNoIn3536); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace303);
+							DebugLocation(405, 10);
+							SkipSpace296=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpressionNoIn3605); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace296);
 
 
 							}
@@ -15368,12 +15514,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(184); }
 
-					DebugLocation(402, 23);
-					op=(CommonToken)Match(input,BIT_OR,Follow._BIT_OR_in_bitwiseORExpressionNoIn3541); if (state.failed) return retval; 
+					DebugLocation(405, 23);
+					op=(CommonToken)Match(input,BIT_OR,Follow._BIT_OR_in_bitwiseORExpressionNoIn3610); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_BIT_OR.Add(op);
 
-					DebugLocation(402, 31);
-					// JavaScript.g3:402:31: ( SkipSpace )*
+					DebugLocation(405, 31);
+					// JavaScript.g3:405:31: ( SkipSpace )*
 					try { DebugEnterSubRule(185);
 					while (true)
 					{
@@ -15392,11 +15538,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:402:31: SkipSpace
+							// JavaScript.g3:405:31: SkipSpace
 							{
-							DebugLocation(402, 31);
-							SkipSpace304=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpressionNoIn3543); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace304);
+							DebugLocation(405, 31);
+							SkipSpace297=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseORExpressionNoIn3612); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace297);
 
 
 							}
@@ -15412,8 +15558,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(185); }
 
-					DebugLocation(402, 45);
-					PushFollow(Follow._bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3548);
+					DebugLocation(405, 45);
+					PushFollow(Follow._bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3617);
 					rhs=bitwiseXORExpressionNoIn();
 					PopFollow();
 					if (state.failed) return retval;
@@ -15435,20 +15581,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 402:71: -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs)
+					// 405:71: -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs)
 					{
-						DebugLocation(402, 74);
-						// JavaScript.g3:402:74: ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs)
+						DebugLocation(405, 74);
+						// JavaScript.g3:405:74: ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(402, 76);
+						DebugLocation(405, 76);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(402, 89);
+						DebugLocation(405, 89);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(402, 93);
+						DebugLocation(405, 93);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(402, 118);
+						DebugLocation(405, 118);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -15498,7 +15644,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_bitwiseORExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 64, bitwiseORExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(403, 4);
+		DebugLocation(406, 4);
 		} finally { DebugExitRule(GrammarFileName, "bitwiseORExpressionNoIn"); }
 		return retval;
 
@@ -15515,7 +15661,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_bitwiseXORExpression();
 
 	// $ANTLR start "bitwiseXORExpression"
-	// JavaScript.g3:405:1: bitwiseXORExpression : (lhs= bitwiseANDExpression -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )* ;
+	// JavaScript.g3:408:1: bitwiseXORExpression : (lhs= bitwiseANDExpression -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )* ;
 	[GrammarRule("bitwiseXORExpression")]
 	private JavaScriptParser.bitwiseXORExpression_return bitwiseXORExpression()
 	{
@@ -15528,33 +15674,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace305=null;
-		CommonToken SkipSpace306=null;
+		CommonToken SkipSpace298=null;
+		CommonToken SkipSpace299=null;
 		JavaScriptParser.bitwiseANDExpression_return lhs = default(JavaScriptParser.bitwiseANDExpression_return);
 		JavaScriptParser.bitwiseANDExpression_return rhs = default(JavaScriptParser.bitwiseANDExpression_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace305_tree=null;
-		CommonTree SkipSpace306_tree=null;
+		CommonTree SkipSpace298_tree=null;
+		CommonTree SkipSpace299_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_BIT_XOR=new RewriteRuleITokenStream(adaptor,"token BIT_XOR");
 		RewriteRuleSubtreeStream stream_bitwiseANDExpression=new RewriteRuleSubtreeStream(adaptor,"rule bitwiseANDExpression");
 		try { DebugEnterRule(GrammarFileName, "bitwiseXORExpression");
-		DebugLocation(405, 4);
+		DebugLocation(408, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 65)) { return retval; }
-			// JavaScript.g3:406:5: ( (lhs= bitwiseANDExpression -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )* )
+			// JavaScript.g3:409:5: ( (lhs= bitwiseANDExpression -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:406:7: (lhs= bitwiseANDExpression -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )*
+			// JavaScript.g3:409:7: (lhs= bitwiseANDExpression -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )*
 			{
-			DebugLocation(406, 7);
-			// JavaScript.g3:406:7: (lhs= bitwiseANDExpression -> $lhs)
+			DebugLocation(409, 7);
+			// JavaScript.g3:409:7: (lhs= bitwiseANDExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:406:8: lhs= bitwiseANDExpression
+			// JavaScript.g3:409:8: lhs= bitwiseANDExpression
 			{
-			DebugLocation(406, 11);
-			PushFollow(Follow._bitwiseANDExpression_in_bitwiseXORExpression3586);
+			DebugLocation(409, 11);
+			PushFollow(Follow._bitwiseANDExpression_in_bitwiseXORExpression3655);
 			lhs=bitwiseANDExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -15575,9 +15721,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 406:33: -> $lhs
+			// 409:33: -> $lhs
 			{
-				DebugLocation(406, 37);
+				DebugLocation(409, 37);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -15588,8 +15734,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(407, 9);
-			// JavaScript.g3:407:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )*
+			DebugLocation(410, 9);
+			// JavaScript.g3:410:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )*
 			try { DebugEnterSubRule(189);
 			while (true)
 			{
@@ -15609,10 +15755,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:407:10: ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression
+					// JavaScript.g3:410:10: ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression
 					{
-					DebugLocation(407, 10);
-					// JavaScript.g3:407:10: ( SkipSpace )*
+					DebugLocation(410, 10);
+					// JavaScript.g3:410:10: ( SkipSpace )*
 					try { DebugEnterSubRule(187);
 					while (true)
 					{
@@ -15631,11 +15777,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:407:10: SkipSpace
+							// JavaScript.g3:410:10: SkipSpace
 							{
-							DebugLocation(407, 10);
-							SkipSpace305=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpression3603); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace305);
+							DebugLocation(410, 10);
+							SkipSpace298=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpression3672); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace298);
 
 
 							}
@@ -15651,12 +15797,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(187); }
 
-					DebugLocation(407, 23);
-					op=(CommonToken)Match(input,BIT_XOR,Follow._BIT_XOR_in_bitwiseXORExpression3608); if (state.failed) return retval; 
+					DebugLocation(410, 23);
+					op=(CommonToken)Match(input,BIT_XOR,Follow._BIT_XOR_in_bitwiseXORExpression3677); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_BIT_XOR.Add(op);
 
-					DebugLocation(407, 32);
-					// JavaScript.g3:407:32: ( SkipSpace )*
+					DebugLocation(410, 32);
+					// JavaScript.g3:410:32: ( SkipSpace )*
 					try { DebugEnterSubRule(188);
 					while (true)
 					{
@@ -15675,11 +15821,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:407:32: SkipSpace
+							// JavaScript.g3:410:32: SkipSpace
 							{
-							DebugLocation(407, 32);
-							SkipSpace306=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpression3610); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace306);
+							DebugLocation(410, 32);
+							SkipSpace299=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpression3679); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace299);
 
 
 							}
@@ -15695,8 +15841,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(188); }
 
-					DebugLocation(407, 46);
-					PushFollow(Follow._bitwiseANDExpression_in_bitwiseXORExpression3615);
+					DebugLocation(410, 46);
+					PushFollow(Follow._bitwiseANDExpression_in_bitwiseXORExpression3684);
 					rhs=bitwiseANDExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -15718,20 +15864,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 407:68: -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs)
+					// 410:68: -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs)
 					{
-						DebugLocation(407, 71);
-						// JavaScript.g3:407:71: ^( BINARY_EXPR $op $bitwiseXORExpression $rhs)
+						DebugLocation(410, 71);
+						// JavaScript.g3:410:71: ^( BINARY_EXPR $op $bitwiseXORExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(407, 73);
+						DebugLocation(410, 73);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(407, 86);
+						DebugLocation(410, 86);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(407, 90);
+						DebugLocation(410, 90);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(407, 112);
+						DebugLocation(410, 112);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -15781,7 +15927,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_bitwiseXORExpression();
 			if (state.backtracking > 0) { Memoize(input, 65, bitwiseXORExpression_StartIndex); }
 		}
-		DebugLocation(408, 4);
+		DebugLocation(411, 4);
 		} finally { DebugExitRule(GrammarFileName, "bitwiseXORExpression"); }
 		return retval;
 
@@ -15798,7 +15944,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_bitwiseXORExpressionNoIn();
 
 	// $ANTLR start "bitwiseXORExpressionNoIn"
-	// JavaScript.g3:410:1: bitwiseXORExpressionNoIn : (lhs= bitwiseANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )* ;
+	// JavaScript.g3:413:1: bitwiseXORExpressionNoIn : (lhs= bitwiseANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )* ;
 	[GrammarRule("bitwiseXORExpressionNoIn")]
 	private JavaScriptParser.bitwiseXORExpressionNoIn_return bitwiseXORExpressionNoIn()
 	{
@@ -15811,33 +15957,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace307=null;
-		CommonToken SkipSpace308=null;
+		CommonToken SkipSpace300=null;
+		CommonToken SkipSpace301=null;
 		JavaScriptParser.bitwiseANDExpressionNoIn_return lhs = default(JavaScriptParser.bitwiseANDExpressionNoIn_return);
 		JavaScriptParser.bitwiseANDExpressionNoIn_return rhs = default(JavaScriptParser.bitwiseANDExpressionNoIn_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace307_tree=null;
-		CommonTree SkipSpace308_tree=null;
+		CommonTree SkipSpace300_tree=null;
+		CommonTree SkipSpace301_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_BIT_XOR=new RewriteRuleITokenStream(adaptor,"token BIT_XOR");
 		RewriteRuleSubtreeStream stream_bitwiseANDExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule bitwiseANDExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "bitwiseXORExpressionNoIn");
-		DebugLocation(410, 4);
+		DebugLocation(413, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 66)) { return retval; }
-			// JavaScript.g3:411:5: ( (lhs= bitwiseANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )* )
+			// JavaScript.g3:414:5: ( (lhs= bitwiseANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:411:7: (lhs= bitwiseANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )*
+			// JavaScript.g3:414:7: (lhs= bitwiseANDExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )*
 			{
-			DebugLocation(411, 7);
-			// JavaScript.g3:411:7: (lhs= bitwiseANDExpressionNoIn -> $lhs)
+			DebugLocation(414, 7);
+			// JavaScript.g3:414:7: (lhs= bitwiseANDExpressionNoIn -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:411:8: lhs= bitwiseANDExpressionNoIn
+			// JavaScript.g3:414:8: lhs= bitwiseANDExpressionNoIn
 			{
-			DebugLocation(411, 11);
-			PushFollow(Follow._bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3653);
+			DebugLocation(414, 11);
+			PushFollow(Follow._bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3722);
 			lhs=bitwiseANDExpressionNoIn();
 			PopFollow();
 			if (state.failed) return retval;
@@ -15858,9 +16004,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 411:37: -> $lhs
+			// 414:37: -> $lhs
 			{
-				DebugLocation(411, 41);
+				DebugLocation(414, 41);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -15871,8 +16017,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(412, 9);
-			// JavaScript.g3:412:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )*
+			DebugLocation(415, 9);
+			// JavaScript.g3:415:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )*
 			try { DebugEnterSubRule(192);
 			while (true)
 			{
@@ -15892,10 +16038,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:412:10: ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn
+					// JavaScript.g3:415:10: ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn
 					{
-					DebugLocation(412, 10);
-					// JavaScript.g3:412:10: ( SkipSpace )*
+					DebugLocation(415, 10);
+					// JavaScript.g3:415:10: ( SkipSpace )*
 					try { DebugEnterSubRule(190);
 					while (true)
 					{
@@ -15914,11 +16060,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:412:10: SkipSpace
+							// JavaScript.g3:415:10: SkipSpace
 							{
-							DebugLocation(412, 10);
-							SkipSpace307=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpressionNoIn3670); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace307);
+							DebugLocation(415, 10);
+							SkipSpace300=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpressionNoIn3739); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace300);
 
 
 							}
@@ -15934,12 +16080,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(190); }
 
-					DebugLocation(412, 23);
-					op=(CommonToken)Match(input,BIT_XOR,Follow._BIT_XOR_in_bitwiseXORExpressionNoIn3675); if (state.failed) return retval; 
+					DebugLocation(415, 23);
+					op=(CommonToken)Match(input,BIT_XOR,Follow._BIT_XOR_in_bitwiseXORExpressionNoIn3744); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_BIT_XOR.Add(op);
 
-					DebugLocation(412, 32);
-					// JavaScript.g3:412:32: ( SkipSpace )*
+					DebugLocation(415, 32);
+					// JavaScript.g3:415:32: ( SkipSpace )*
 					try { DebugEnterSubRule(191);
 					while (true)
 					{
@@ -15958,11 +16104,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:412:32: SkipSpace
+							// JavaScript.g3:415:32: SkipSpace
 							{
-							DebugLocation(412, 32);
-							SkipSpace308=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpressionNoIn3677); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace308);
+							DebugLocation(415, 32);
+							SkipSpace301=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseXORExpressionNoIn3746); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace301);
 
 
 							}
@@ -15978,8 +16124,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(191); }
 
-					DebugLocation(412, 46);
-					PushFollow(Follow._bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3682);
+					DebugLocation(415, 46);
+					PushFollow(Follow._bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3751);
 					rhs=bitwiseANDExpressionNoIn();
 					PopFollow();
 					if (state.failed) return retval;
@@ -16001,20 +16147,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 412:72: -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs)
+					// 415:72: -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs)
 					{
-						DebugLocation(412, 75);
-						// JavaScript.g3:412:75: ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs)
+						DebugLocation(415, 75);
+						// JavaScript.g3:415:75: ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(412, 77);
+						DebugLocation(415, 77);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(412, 90);
+						DebugLocation(415, 90);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(412, 94);
+						DebugLocation(415, 94);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(412, 120);
+						DebugLocation(415, 120);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -16064,7 +16210,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_bitwiseXORExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 66, bitwiseXORExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(413, 4);
+		DebugLocation(416, 4);
 		} finally { DebugExitRule(GrammarFileName, "bitwiseXORExpressionNoIn"); }
 		return retval;
 
@@ -16081,7 +16227,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_bitwiseANDExpression();
 
 	// $ANTLR start "bitwiseANDExpression"
-	// JavaScript.g3:415:1: bitwiseANDExpression : (lhs= equalityExpression -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )* ;
+	// JavaScript.g3:418:1: bitwiseANDExpression : (lhs= equalityExpression -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )* ;
 	[GrammarRule("bitwiseANDExpression")]
 	private JavaScriptParser.bitwiseANDExpression_return bitwiseANDExpression()
 	{
@@ -16094,33 +16240,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace309=null;
-		CommonToken SkipSpace310=null;
+		CommonToken SkipSpace302=null;
+		CommonToken SkipSpace303=null;
 		JavaScriptParser.equalityExpression_return lhs = default(JavaScriptParser.equalityExpression_return);
 		JavaScriptParser.equalityExpression_return rhs = default(JavaScriptParser.equalityExpression_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace309_tree=null;
-		CommonTree SkipSpace310_tree=null;
+		CommonTree SkipSpace302_tree=null;
+		CommonTree SkipSpace303_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_BIT_AND=new RewriteRuleITokenStream(adaptor,"token BIT_AND");
 		RewriteRuleSubtreeStream stream_equalityExpression=new RewriteRuleSubtreeStream(adaptor,"rule equalityExpression");
 		try { DebugEnterRule(GrammarFileName, "bitwiseANDExpression");
-		DebugLocation(415, 4);
+		DebugLocation(418, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 67)) { return retval; }
-			// JavaScript.g3:416:5: ( (lhs= equalityExpression -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )* )
+			// JavaScript.g3:419:5: ( (lhs= equalityExpression -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:416:7: (lhs= equalityExpression -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )*
+			// JavaScript.g3:419:7: (lhs= equalityExpression -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )*
 			{
-			DebugLocation(416, 7);
-			// JavaScript.g3:416:7: (lhs= equalityExpression -> $lhs)
+			DebugLocation(419, 7);
+			// JavaScript.g3:419:7: (lhs= equalityExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:416:8: lhs= equalityExpression
+			// JavaScript.g3:419:8: lhs= equalityExpression
 			{
-			DebugLocation(416, 11);
-			PushFollow(Follow._equalityExpression_in_bitwiseANDExpression3720);
+			DebugLocation(419, 11);
+			PushFollow(Follow._equalityExpression_in_bitwiseANDExpression3789);
 			lhs=equalityExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -16141,9 +16287,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 416:31: -> $lhs
+			// 419:31: -> $lhs
 			{
-				DebugLocation(416, 35);
+				DebugLocation(419, 35);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -16154,8 +16300,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(417, 9);
-			// JavaScript.g3:417:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )*
+			DebugLocation(420, 9);
+			// JavaScript.g3:420:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )*
 			try { DebugEnterSubRule(195);
 			while (true)
 			{
@@ -16175,10 +16321,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:417:10: ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression
+					// JavaScript.g3:420:10: ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression
 					{
-					DebugLocation(417, 10);
-					// JavaScript.g3:417:10: ( SkipSpace )*
+					DebugLocation(420, 10);
+					// JavaScript.g3:420:10: ( SkipSpace )*
 					try { DebugEnterSubRule(193);
 					while (true)
 					{
@@ -16197,11 +16343,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:417:10: SkipSpace
+							// JavaScript.g3:420:10: SkipSpace
 							{
-							DebugLocation(417, 10);
-							SkipSpace309=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpression3737); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace309);
+							DebugLocation(420, 10);
+							SkipSpace302=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpression3806); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace302);
 
 
 							}
@@ -16217,12 +16363,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(193); }
 
-					DebugLocation(417, 23);
-					op=(CommonToken)Match(input,BIT_AND,Follow._BIT_AND_in_bitwiseANDExpression3742); if (state.failed) return retval; 
+					DebugLocation(420, 23);
+					op=(CommonToken)Match(input,BIT_AND,Follow._BIT_AND_in_bitwiseANDExpression3811); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_BIT_AND.Add(op);
 
-					DebugLocation(417, 32);
-					// JavaScript.g3:417:32: ( SkipSpace )*
+					DebugLocation(420, 32);
+					// JavaScript.g3:420:32: ( SkipSpace )*
 					try { DebugEnterSubRule(194);
 					while (true)
 					{
@@ -16241,11 +16387,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:417:32: SkipSpace
+							// JavaScript.g3:420:32: SkipSpace
 							{
-							DebugLocation(417, 32);
-							SkipSpace310=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpression3744); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace310);
+							DebugLocation(420, 32);
+							SkipSpace303=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpression3813); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace303);
 
 
 							}
@@ -16261,8 +16407,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(194); }
 
-					DebugLocation(417, 46);
-					PushFollow(Follow._equalityExpression_in_bitwiseANDExpression3749);
+					DebugLocation(420, 46);
+					PushFollow(Follow._equalityExpression_in_bitwiseANDExpression3818);
 					rhs=equalityExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -16284,20 +16430,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 417:66: -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs)
+					// 420:66: -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs)
 					{
-						DebugLocation(417, 69);
-						// JavaScript.g3:417:69: ^( BINARY_EXPR $op $bitwiseANDExpression $rhs)
+						DebugLocation(420, 69);
+						// JavaScript.g3:420:69: ^( BINARY_EXPR $op $bitwiseANDExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(417, 71);
+						DebugLocation(420, 71);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(417, 84);
+						DebugLocation(420, 84);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(417, 88);
+						DebugLocation(420, 88);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(417, 110);
+						DebugLocation(420, 110);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -16347,7 +16493,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_bitwiseANDExpression();
 			if (state.backtracking > 0) { Memoize(input, 67, bitwiseANDExpression_StartIndex); }
 		}
-		DebugLocation(418, 4);
+		DebugLocation(421, 4);
 		} finally { DebugExitRule(GrammarFileName, "bitwiseANDExpression"); }
 		return retval;
 
@@ -16364,7 +16510,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_bitwiseANDExpressionNoIn();
 
 	// $ANTLR start "bitwiseANDExpressionNoIn"
-	// JavaScript.g3:420:1: bitwiseANDExpressionNoIn : (lhs= equalityExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )* ;
+	// JavaScript.g3:423:1: bitwiseANDExpressionNoIn : (lhs= equalityExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )* ;
 	[GrammarRule("bitwiseANDExpressionNoIn")]
 	private JavaScriptParser.bitwiseANDExpressionNoIn_return bitwiseANDExpressionNoIn()
 	{
@@ -16377,33 +16523,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken op=null;
-		CommonToken SkipSpace311=null;
-		CommonToken SkipSpace312=null;
+		CommonToken SkipSpace304=null;
+		CommonToken SkipSpace305=null;
 		JavaScriptParser.equalityExpressionNoIn_return lhs = default(JavaScriptParser.equalityExpressionNoIn_return);
 		JavaScriptParser.equalityExpressionNoIn_return rhs = default(JavaScriptParser.equalityExpressionNoIn_return);
 
 		CommonTree op_tree=null;
-		CommonTree SkipSpace311_tree=null;
-		CommonTree SkipSpace312_tree=null;
+		CommonTree SkipSpace304_tree=null;
+		CommonTree SkipSpace305_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_BIT_AND=new RewriteRuleITokenStream(adaptor,"token BIT_AND");
 		RewriteRuleSubtreeStream stream_equalityExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule equalityExpressionNoIn");
 		try { DebugEnterRule(GrammarFileName, "bitwiseANDExpressionNoIn");
-		DebugLocation(420, 4);
+		DebugLocation(423, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 68)) { return retval; }
-			// JavaScript.g3:421:5: ( (lhs= equalityExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )* )
+			// JavaScript.g3:424:5: ( (lhs= equalityExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:421:7: (lhs= equalityExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )*
+			// JavaScript.g3:424:7: (lhs= equalityExpressionNoIn -> $lhs) ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )*
 			{
-			DebugLocation(421, 7);
-			// JavaScript.g3:421:7: (lhs= equalityExpressionNoIn -> $lhs)
+			DebugLocation(424, 7);
+			// JavaScript.g3:424:7: (lhs= equalityExpressionNoIn -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:421:8: lhs= equalityExpressionNoIn
+			// JavaScript.g3:424:8: lhs= equalityExpressionNoIn
 			{
-			DebugLocation(421, 11);
-			PushFollow(Follow._equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3787);
+			DebugLocation(424, 11);
+			PushFollow(Follow._equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3856);
 			lhs=equalityExpressionNoIn();
 			PopFollow();
 			if (state.failed) return retval;
@@ -16424,9 +16570,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 421:35: -> $lhs
+			// 424:35: -> $lhs
 			{
-				DebugLocation(421, 39);
+				DebugLocation(424, 39);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -16437,8 +16583,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(422, 9);
-			// JavaScript.g3:422:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )*
+			DebugLocation(425, 9);
+			// JavaScript.g3:425:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )*
 			try { DebugEnterSubRule(198);
 			while (true)
 			{
@@ -16458,10 +16604,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:422:10: ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn
+					// JavaScript.g3:425:10: ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn
 					{
-					DebugLocation(422, 10);
-					// JavaScript.g3:422:10: ( SkipSpace )*
+					DebugLocation(425, 10);
+					// JavaScript.g3:425:10: ( SkipSpace )*
 					try { DebugEnterSubRule(196);
 					while (true)
 					{
@@ -16480,11 +16626,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:422:10: SkipSpace
+							// JavaScript.g3:425:10: SkipSpace
 							{
-							DebugLocation(422, 10);
-							SkipSpace311=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpressionNoIn3804); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace311);
+							DebugLocation(425, 10);
+							SkipSpace304=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpressionNoIn3873); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace304);
 
 
 							}
@@ -16500,12 +16646,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(196); }
 
-					DebugLocation(422, 23);
-					op=(CommonToken)Match(input,BIT_AND,Follow._BIT_AND_in_bitwiseANDExpressionNoIn3809); if (state.failed) return retval; 
+					DebugLocation(425, 23);
+					op=(CommonToken)Match(input,BIT_AND,Follow._BIT_AND_in_bitwiseANDExpressionNoIn3878); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_BIT_AND.Add(op);
 
-					DebugLocation(422, 32);
-					// JavaScript.g3:422:32: ( SkipSpace )*
+					DebugLocation(425, 32);
+					// JavaScript.g3:425:32: ( SkipSpace )*
 					try { DebugEnterSubRule(197);
 					while (true)
 					{
@@ -16524,11 +16670,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:422:32: SkipSpace
+							// JavaScript.g3:425:32: SkipSpace
 							{
-							DebugLocation(422, 32);
-							SkipSpace312=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpressionNoIn3811); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace312);
+							DebugLocation(425, 32);
+							SkipSpace305=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_bitwiseANDExpressionNoIn3880); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace305);
 
 
 							}
@@ -16544,8 +16690,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(197); }
 
-					DebugLocation(422, 46);
-					PushFollow(Follow._equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3816);
+					DebugLocation(425, 46);
+					PushFollow(Follow._equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3885);
 					rhs=equalityExpressionNoIn();
 					PopFollow();
 					if (state.failed) return retval;
@@ -16567,20 +16713,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 422:70: -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs)
+					// 425:70: -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs)
 					{
-						DebugLocation(422, 73);
-						// JavaScript.g3:422:73: ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs)
+						DebugLocation(425, 73);
+						// JavaScript.g3:425:73: ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(422, 75);
+						DebugLocation(425, 75);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(422, 88);
+						DebugLocation(425, 88);
 						adaptor.AddChild(root_1, stream_op.NextNode());
-						DebugLocation(422, 92);
+						DebugLocation(425, 92);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(422, 118);
+						DebugLocation(425, 118);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -16630,7 +16776,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_bitwiseANDExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 68, bitwiseANDExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(423, 4);
+		DebugLocation(426, 4);
 		} finally { DebugExitRule(GrammarFileName, "bitwiseANDExpressionNoIn"); }
 		return retval;
 
@@ -16647,7 +16793,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_equalityExpression();
 
 	// $ANTLR start "equalityExpression"
-	// JavaScript.g3:425:1: equalityExpression : (rhs= relationalExpression -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )* ;
+	// JavaScript.g3:428:1: equalityExpression : (rhs= relationalExpression -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )* ;
 	[GrammarRule("equalityExpression")]
 	private JavaScriptParser.equalityExpression_return equalityExpression()
 	{
@@ -16659,32 +16805,32 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int equalityExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace313=null;
-		CommonToken SkipSpace314=null;
+		CommonToken SkipSpace306=null;
+		CommonToken SkipSpace307=null;
 		JavaScriptParser.relationalExpression_return rhs = default(JavaScriptParser.relationalExpression_return);
 		JavaScriptParser.equalityOperator_return op = default(JavaScriptParser.equalityOperator_return);
 
-		CommonTree SkipSpace313_tree=null;
-		CommonTree SkipSpace314_tree=null;
+		CommonTree SkipSpace306_tree=null;
+		CommonTree SkipSpace307_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_relationalExpression=new RewriteRuleSubtreeStream(adaptor,"rule relationalExpression");
 		RewriteRuleSubtreeStream stream_equalityOperator=new RewriteRuleSubtreeStream(adaptor,"rule equalityOperator");
 		try { DebugEnterRule(GrammarFileName, "equalityExpression");
-		DebugLocation(425, 4);
+		DebugLocation(428, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 69)) { return retval; }
-			// JavaScript.g3:426:5: ( (rhs= relationalExpression -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )* )
+			// JavaScript.g3:429:5: ( (rhs= relationalExpression -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:426:7: (rhs= relationalExpression -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )*
+			// JavaScript.g3:429:7: (rhs= relationalExpression -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )*
 			{
-			DebugLocation(426, 7);
-			// JavaScript.g3:426:7: (rhs= relationalExpression -> $rhs)
+			DebugLocation(429, 7);
+			// JavaScript.g3:429:7: (rhs= relationalExpression -> $rhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:426:8: rhs= relationalExpression
+			// JavaScript.g3:429:8: rhs= relationalExpression
 			{
-			DebugLocation(426, 11);
-			PushFollow(Follow._relationalExpression_in_equalityExpression3854);
+			DebugLocation(429, 11);
+			PushFollow(Follow._relationalExpression_in_equalityExpression3923);
 			rhs=relationalExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -16705,9 +16851,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 426:33: -> $rhs
+			// 429:33: -> $rhs
 			{
-				DebugLocation(426, 37);
+				DebugLocation(429, 37);
 				adaptor.AddChild(root_0, stream_rhs.NextTree());
 
 			}
@@ -16718,8 +16864,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(427, 9);
-			// JavaScript.g3:427:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )*
+			DebugLocation(430, 9);
+			// JavaScript.g3:430:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )*
 			try { DebugEnterSubRule(201);
 			while (true)
 			{
@@ -16739,10 +16885,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:427:10: ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression
+					// JavaScript.g3:430:10: ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression
 					{
-					DebugLocation(427, 10);
-					// JavaScript.g3:427:10: ( SkipSpace )*
+					DebugLocation(430, 10);
+					// JavaScript.g3:430:10: ( SkipSpace )*
 					try { DebugEnterSubRule(199);
 					while (true)
 					{
@@ -16761,11 +16907,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:427:10: SkipSpace
+							// JavaScript.g3:430:10: SkipSpace
 							{
-							DebugLocation(427, 10);
-							SkipSpace313=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpression3871); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace313);
+							DebugLocation(430, 10);
+							SkipSpace306=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpression3940); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace306);
 
 
 							}
@@ -16781,14 +16927,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(199); }
 
-					DebugLocation(427, 23);
-					PushFollow(Follow._equalityOperator_in_equalityExpression3876);
+					DebugLocation(430, 23);
+					PushFollow(Follow._equalityOperator_in_equalityExpression3945);
 					op=equalityOperator();
 					PopFollow();
 					if (state.failed) return retval;
 					if ( state.backtracking == 0 ) stream_equalityOperator.Add(op.Tree);
-					DebugLocation(427, 41);
-					// JavaScript.g3:427:41: ( SkipSpace )*
+					DebugLocation(430, 41);
+					// JavaScript.g3:430:41: ( SkipSpace )*
 					try { DebugEnterSubRule(200);
 					while (true)
 					{
@@ -16807,11 +16953,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:427:41: SkipSpace
+							// JavaScript.g3:430:41: SkipSpace
 							{
-							DebugLocation(427, 41);
-							SkipSpace314=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpression3878); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace314);
+							DebugLocation(430, 41);
+							SkipSpace307=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpression3947); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace307);
 
 
 							}
@@ -16827,8 +16973,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(200); }
 
-					DebugLocation(427, 55);
-					PushFollow(Follow._relationalExpression_in_equalityExpression3883);
+					DebugLocation(430, 55);
+					PushFollow(Follow._relationalExpression_in_equalityExpression3952);
 					rhs=relationalExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -16850,20 +16996,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 427:77: -> ^( BINARY_EXPR $op $equalityExpression $rhs)
+					// 430:77: -> ^( BINARY_EXPR $op $equalityExpression $rhs)
 					{
-						DebugLocation(427, 80);
-						// JavaScript.g3:427:80: ^( BINARY_EXPR $op $equalityExpression $rhs)
+						DebugLocation(430, 80);
+						// JavaScript.g3:430:80: ^( BINARY_EXPR $op $equalityExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(427, 82);
+						DebugLocation(430, 82);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(427, 95);
+						DebugLocation(430, 95);
 						adaptor.AddChild(root_1, stream_op.NextTree());
-						DebugLocation(427, 99);
+						DebugLocation(430, 99);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(427, 119);
+						DebugLocation(430, 119);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -16913,7 +17059,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_equalityExpression();
 			if (state.backtracking > 0) { Memoize(input, 69, equalityExpression_StartIndex); }
 		}
-		DebugLocation(428, 4);
+		DebugLocation(431, 4);
 		} finally { DebugExitRule(GrammarFileName, "equalityExpression"); }
 		return retval;
 
@@ -16930,7 +17076,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_equalityExpressionNoIn();
 
 	// $ANTLR start "equalityExpressionNoIn"
-	// JavaScript.g3:430:1: equalityExpressionNoIn : (rhs= relationalExpressionNoIn -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )* ;
+	// JavaScript.g3:433:1: equalityExpressionNoIn : (rhs= relationalExpressionNoIn -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )* ;
 	[GrammarRule("equalityExpressionNoIn")]
 	private JavaScriptParser.equalityExpressionNoIn_return equalityExpressionNoIn()
 	{
@@ -16942,32 +17088,32 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int equalityExpressionNoIn_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace315=null;
-		CommonToken SkipSpace316=null;
+		CommonToken SkipSpace308=null;
+		CommonToken SkipSpace309=null;
 		JavaScriptParser.relationalExpressionNoIn_return rhs = default(JavaScriptParser.relationalExpressionNoIn_return);
 		JavaScriptParser.equalityOperator_return op = default(JavaScriptParser.equalityOperator_return);
 
-		CommonTree SkipSpace315_tree=null;
-		CommonTree SkipSpace316_tree=null;
+		CommonTree SkipSpace308_tree=null;
+		CommonTree SkipSpace309_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_relationalExpressionNoIn=new RewriteRuleSubtreeStream(adaptor,"rule relationalExpressionNoIn");
 		RewriteRuleSubtreeStream stream_equalityOperator=new RewriteRuleSubtreeStream(adaptor,"rule equalityOperator");
 		try { DebugEnterRule(GrammarFileName, "equalityExpressionNoIn");
-		DebugLocation(430, 4);
+		DebugLocation(433, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 70)) { return retval; }
-			// JavaScript.g3:431:5: ( (rhs= relationalExpressionNoIn -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )* )
+			// JavaScript.g3:434:5: ( (rhs= relationalExpressionNoIn -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:431:7: (rhs= relationalExpressionNoIn -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )*
+			// JavaScript.g3:434:7: (rhs= relationalExpressionNoIn -> $rhs) ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )*
 			{
-			DebugLocation(431, 7);
-			// JavaScript.g3:431:7: (rhs= relationalExpressionNoIn -> $rhs)
+			DebugLocation(434, 7);
+			// JavaScript.g3:434:7: (rhs= relationalExpressionNoIn -> $rhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:431:8: rhs= relationalExpressionNoIn
+			// JavaScript.g3:434:8: rhs= relationalExpressionNoIn
 			{
-			DebugLocation(431, 11);
-			PushFollow(Follow._relationalExpressionNoIn_in_equalityExpressionNoIn3921);
+			DebugLocation(434, 11);
+			PushFollow(Follow._relationalExpressionNoIn_in_equalityExpressionNoIn3990);
 			rhs=relationalExpressionNoIn();
 			PopFollow();
 			if (state.failed) return retval;
@@ -16988,9 +17134,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 431:37: -> $rhs
+			// 434:37: -> $rhs
 			{
-				DebugLocation(431, 41);
+				DebugLocation(434, 41);
 				adaptor.AddChild(root_0, stream_rhs.NextTree());
 
 			}
@@ -17001,8 +17147,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(432, 9);
-			// JavaScript.g3:432:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )*
+			DebugLocation(435, 9);
+			// JavaScript.g3:435:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )*
 			try { DebugEnterSubRule(204);
 			while (true)
 			{
@@ -17022,10 +17168,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:432:10: ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn
+					// JavaScript.g3:435:10: ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn
 					{
-					DebugLocation(432, 10);
-					// JavaScript.g3:432:10: ( SkipSpace )*
+					DebugLocation(435, 10);
+					// JavaScript.g3:435:10: ( SkipSpace )*
 					try { DebugEnterSubRule(202);
 					while (true)
 					{
@@ -17044,11 +17190,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:432:10: SkipSpace
+							// JavaScript.g3:435:10: SkipSpace
 							{
-							DebugLocation(432, 10);
-							SkipSpace315=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpressionNoIn3938); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace315);
+							DebugLocation(435, 10);
+							SkipSpace308=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpressionNoIn4007); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace308);
 
 
 							}
@@ -17064,14 +17210,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(202); }
 
-					DebugLocation(432, 23);
-					PushFollow(Follow._equalityOperator_in_equalityExpressionNoIn3943);
+					DebugLocation(435, 23);
+					PushFollow(Follow._equalityOperator_in_equalityExpressionNoIn4012);
 					op=equalityOperator();
 					PopFollow();
 					if (state.failed) return retval;
 					if ( state.backtracking == 0 ) stream_equalityOperator.Add(op.Tree);
-					DebugLocation(432, 41);
-					// JavaScript.g3:432:41: ( SkipSpace )*
+					DebugLocation(435, 41);
+					// JavaScript.g3:435:41: ( SkipSpace )*
 					try { DebugEnterSubRule(203);
 					while (true)
 					{
@@ -17090,11 +17236,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:432:41: SkipSpace
+							// JavaScript.g3:435:41: SkipSpace
 							{
-							DebugLocation(432, 41);
-							SkipSpace316=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpressionNoIn3945); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace316);
+							DebugLocation(435, 41);
+							SkipSpace309=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_equalityExpressionNoIn4014); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace309);
 
 
 							}
@@ -17110,8 +17256,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(203); }
 
-					DebugLocation(432, 55);
-					PushFollow(Follow._relationalExpressionNoIn_in_equalityExpressionNoIn3950);
+					DebugLocation(435, 55);
+					PushFollow(Follow._relationalExpressionNoIn_in_equalityExpressionNoIn4019);
 					rhs=relationalExpressionNoIn();
 					PopFollow();
 					if (state.failed) return retval;
@@ -17133,20 +17279,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 432:81: -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs)
+					// 435:81: -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs)
 					{
-						DebugLocation(432, 84);
-						// JavaScript.g3:432:84: ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs)
+						DebugLocation(435, 84);
+						// JavaScript.g3:435:84: ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(432, 86);
+						DebugLocation(435, 86);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(432, 99);
+						DebugLocation(435, 99);
 						adaptor.AddChild(root_1, stream_op.NextTree());
-						DebugLocation(432, 103);
+						DebugLocation(435, 103);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(432, 127);
+						DebugLocation(435, 127);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -17196,7 +17342,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_equalityExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 70, equalityExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(433, 4);
+		DebugLocation(436, 4);
 		} finally { DebugExitRule(GrammarFileName, "equalityExpressionNoIn"); }
 		return retval;
 
@@ -17213,7 +17359,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_equalityOperator();
 
 	// $ANTLR start "equalityOperator"
-	// JavaScript.g3:435:1: equalityOperator : ( EQ | NEQ | REQ | RNQ );
+	// JavaScript.g3:438:1: equalityOperator : ( EQ | NEQ | REQ | RNQ );
 	[GrammarRule("equalityOperator")]
 	private JavaScriptParser.equalityOperator_return equalityOperator()
 	{
@@ -17225,27 +17371,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int equalityOperator_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set317=null;
+		CommonToken set310=null;
 
-		CommonTree set317_tree=null;
+		CommonTree set310_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "equalityOperator");
-		DebugLocation(435, 4);
+		DebugLocation(438, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 71)) { return retval; }
-			// JavaScript.g3:436:5: ( EQ | NEQ | REQ | RNQ )
+			// JavaScript.g3:439:5: ( EQ | NEQ | REQ | RNQ )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(436, 5);
-			set317=(CommonToken)input.LT(1);
+			DebugLocation(439, 5);
+			set310=(CommonToken)input.LT(1);
 			if (input.LA(1)==EQ||input.LA(1)==NEQ||input.LA(1)==REQ||input.LA(1)==RNQ)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set317));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set310));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -17281,7 +17427,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_equalityOperator();
 			if (state.backtracking > 0) { Memoize(input, 71, equalityOperator_StartIndex); }
 		}
-		DebugLocation(437, 4);
+		DebugLocation(440, 4);
 		} finally { DebugExitRule(GrammarFileName, "equalityOperator"); }
 		return retval;
 
@@ -17298,7 +17444,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_relationalExpression();
 
 	// $ANTLR start "relationalExpression"
-	// JavaScript.g3:439:1: relationalExpression : (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )* ;
+	// JavaScript.g3:442:1: relationalExpression : (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )* ;
 	[GrammarRule("relationalExpression")]
 	private JavaScriptParser.relationalExpression_return relationalExpression()
 	{
@@ -17310,33 +17456,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int relationalExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace318=null;
-		CommonToken SkipSpace319=null;
+		CommonToken SkipSpace311=null;
+		CommonToken SkipSpace312=null;
 		JavaScriptParser.shiftExpression_return lhs = default(JavaScriptParser.shiftExpression_return);
 		JavaScriptParser.relationalOperator_return op = default(JavaScriptParser.relationalOperator_return);
 		JavaScriptParser.shiftExpression_return rhs = default(JavaScriptParser.shiftExpression_return);
 
-		CommonTree SkipSpace318_tree=null;
-		CommonTree SkipSpace319_tree=null;
+		CommonTree SkipSpace311_tree=null;
+		CommonTree SkipSpace312_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_shiftExpression=new RewriteRuleSubtreeStream(adaptor,"rule shiftExpression");
 		RewriteRuleSubtreeStream stream_relationalOperator=new RewriteRuleSubtreeStream(adaptor,"rule relationalOperator");
 		try { DebugEnterRule(GrammarFileName, "relationalExpression");
-		DebugLocation(439, 4);
+		DebugLocation(442, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 72)) { return retval; }
-			// JavaScript.g3:440:5: ( (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )* )
+			// JavaScript.g3:443:5: ( (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:440:7: (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )*
+			// JavaScript.g3:443:7: (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )*
 			{
-			DebugLocation(440, 7);
-			// JavaScript.g3:440:7: (lhs= shiftExpression -> $lhs)
+			DebugLocation(443, 7);
+			// JavaScript.g3:443:7: (lhs= shiftExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:440:8: lhs= shiftExpression
+			// JavaScript.g3:443:8: lhs= shiftExpression
 			{
-			DebugLocation(440, 11);
-			PushFollow(Follow._shiftExpression_in_relationalExpression4017);
+			DebugLocation(443, 11);
+			PushFollow(Follow._shiftExpression_in_relationalExpression4086);
 			lhs=shiftExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -17357,9 +17503,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 440:28: -> $lhs
+			// 443:28: -> $lhs
 			{
-				DebugLocation(440, 32);
+				DebugLocation(443, 32);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -17370,8 +17516,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(441, 9);
-			// JavaScript.g3:441:9: ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )*
+			DebugLocation(444, 9);
+			// JavaScript.g3:444:9: ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )*
 			try { DebugEnterSubRule(207);
 			while (true)
 			{
@@ -17391,10 +17537,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:441:10: ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression
+					// JavaScript.g3:444:10: ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression
 					{
-					DebugLocation(441, 10);
-					// JavaScript.g3:441:10: ( SkipSpace )*
+					DebugLocation(444, 10);
+					// JavaScript.g3:444:10: ( SkipSpace )*
 					try { DebugEnterSubRule(205);
 					while (true)
 					{
@@ -17413,11 +17559,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:441:10: SkipSpace
+							// JavaScript.g3:444:10: SkipSpace
 							{
-							DebugLocation(441, 10);
-							SkipSpace318=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpression4034); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace318);
+							DebugLocation(444, 10);
+							SkipSpace311=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpression4103); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace311);
 
 
 							}
@@ -17433,14 +17579,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(205); }
 
-					DebugLocation(441, 23);
-					PushFollow(Follow._relationalOperator_in_relationalExpression4039);
+					DebugLocation(444, 23);
+					PushFollow(Follow._relationalOperator_in_relationalExpression4108);
 					op=relationalOperator();
 					PopFollow();
 					if (state.failed) return retval;
 					if ( state.backtracking == 0 ) stream_relationalOperator.Add(op.Tree);
-					DebugLocation(441, 43);
-					// JavaScript.g3:441:43: ( SkipSpace )*
+					DebugLocation(444, 43);
+					// JavaScript.g3:444:43: ( SkipSpace )*
 					try { DebugEnterSubRule(206);
 					while (true)
 					{
@@ -17459,11 +17605,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:441:43: SkipSpace
+							// JavaScript.g3:444:43: SkipSpace
 							{
-							DebugLocation(441, 43);
-							SkipSpace319=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpression4041); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace319);
+							DebugLocation(444, 43);
+							SkipSpace312=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpression4110); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace312);
 
 
 							}
@@ -17479,8 +17625,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(206); }
 
-					DebugLocation(441, 57);
-					PushFollow(Follow._shiftExpression_in_relationalExpression4046);
+					DebugLocation(444, 57);
+					PushFollow(Follow._shiftExpression_in_relationalExpression4115);
 					rhs=shiftExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -17502,20 +17648,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 441:74: -> ^( BINARY_EXPR $op $relationalExpression $rhs)
+					// 444:74: -> ^( BINARY_EXPR $op $relationalExpression $rhs)
 					{
-						DebugLocation(441, 77);
-						// JavaScript.g3:441:77: ^( BINARY_EXPR $op $relationalExpression $rhs)
+						DebugLocation(444, 77);
+						// JavaScript.g3:444:77: ^( BINARY_EXPR $op $relationalExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(441, 79);
+						DebugLocation(444, 79);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(441, 92);
+						DebugLocation(444, 92);
 						adaptor.AddChild(root_1, stream_op.NextTree());
-						DebugLocation(441, 96);
+						DebugLocation(444, 96);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(441, 118);
+						DebugLocation(444, 118);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -17565,7 +17711,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_relationalExpression();
 			if (state.backtracking > 0) { Memoize(input, 72, relationalExpression_StartIndex); }
 		}
-		DebugLocation(442, 4);
+		DebugLocation(445, 4);
 		} finally { DebugExitRule(GrammarFileName, "relationalExpression"); }
 		return retval;
 
@@ -17582,7 +17728,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_relationalExpressionNoIn();
 
 	// $ANTLR start "relationalExpressionNoIn"
-	// JavaScript.g3:444:1: relationalExpressionNoIn : (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )* ;
+	// JavaScript.g3:447:1: relationalExpressionNoIn : (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )* ;
 	[GrammarRule("relationalExpressionNoIn")]
 	private JavaScriptParser.relationalExpressionNoIn_return relationalExpressionNoIn()
 	{
@@ -17594,33 +17740,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int relationalExpressionNoIn_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace320=null;
-		CommonToken SkipSpace321=null;
+		CommonToken SkipSpace313=null;
+		CommonToken SkipSpace314=null;
 		JavaScriptParser.shiftExpression_return lhs = default(JavaScriptParser.shiftExpression_return);
 		JavaScriptParser.relationalOperatorNoIn_return op = default(JavaScriptParser.relationalOperatorNoIn_return);
 		JavaScriptParser.shiftExpression_return rhs = default(JavaScriptParser.shiftExpression_return);
 
-		CommonTree SkipSpace320_tree=null;
-		CommonTree SkipSpace321_tree=null;
+		CommonTree SkipSpace313_tree=null;
+		CommonTree SkipSpace314_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_shiftExpression=new RewriteRuleSubtreeStream(adaptor,"rule shiftExpression");
 		RewriteRuleSubtreeStream stream_relationalOperatorNoIn=new RewriteRuleSubtreeStream(adaptor,"rule relationalOperatorNoIn");
 		try { DebugEnterRule(GrammarFileName, "relationalExpressionNoIn");
-		DebugLocation(444, 4);
+		DebugLocation(447, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 73)) { return retval; }
-			// JavaScript.g3:445:5: ( (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )* )
+			// JavaScript.g3:448:5: ( (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:445:7: (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )*
+			// JavaScript.g3:448:7: (lhs= shiftExpression -> $lhs) ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )*
 			{
-			DebugLocation(445, 7);
-			// JavaScript.g3:445:7: (lhs= shiftExpression -> $lhs)
+			DebugLocation(448, 7);
+			// JavaScript.g3:448:7: (lhs= shiftExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:445:8: lhs= shiftExpression
+			// JavaScript.g3:448:8: lhs= shiftExpression
 			{
-			DebugLocation(445, 11);
-			PushFollow(Follow._shiftExpression_in_relationalExpressionNoIn4084);
+			DebugLocation(448, 11);
+			PushFollow(Follow._shiftExpression_in_relationalExpressionNoIn4153);
 			lhs=shiftExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -17641,9 +17787,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 445:28: -> $lhs
+			// 448:28: -> $lhs
 			{
-				DebugLocation(445, 32);
+				DebugLocation(448, 32);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -17654,8 +17800,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(446, 9);
-			// JavaScript.g3:446:9: ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )*
+			DebugLocation(449, 9);
+			// JavaScript.g3:449:9: ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )*
 			try { DebugEnterSubRule(210);
 			while (true)
 			{
@@ -17675,10 +17821,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:446:10: ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression
+					// JavaScript.g3:449:10: ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression
 					{
-					DebugLocation(446, 10);
-					// JavaScript.g3:446:10: ( SkipSpace )*
+					DebugLocation(449, 10);
+					// JavaScript.g3:449:10: ( SkipSpace )*
 					try { DebugEnterSubRule(208);
 					while (true)
 					{
@@ -17697,11 +17843,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:446:10: SkipSpace
+							// JavaScript.g3:449:10: SkipSpace
 							{
-							DebugLocation(446, 10);
-							SkipSpace320=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpressionNoIn4101); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace320);
+							DebugLocation(449, 10);
+							SkipSpace313=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpressionNoIn4170); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace313);
 
 
 							}
@@ -17717,14 +17863,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(208); }
 
-					DebugLocation(446, 23);
-					PushFollow(Follow._relationalOperatorNoIn_in_relationalExpressionNoIn4106);
+					DebugLocation(449, 23);
+					PushFollow(Follow._relationalOperatorNoIn_in_relationalExpressionNoIn4175);
 					op=relationalOperatorNoIn();
 					PopFollow();
 					if (state.failed) return retval;
 					if ( state.backtracking == 0 ) stream_relationalOperatorNoIn.Add(op.Tree);
-					DebugLocation(446, 47);
-					// JavaScript.g3:446:47: ( SkipSpace )*
+					DebugLocation(449, 47);
+					// JavaScript.g3:449:47: ( SkipSpace )*
 					try { DebugEnterSubRule(209);
 					while (true)
 					{
@@ -17743,11 +17889,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:446:47: SkipSpace
+							// JavaScript.g3:449:47: SkipSpace
 							{
-							DebugLocation(446, 47);
-							SkipSpace321=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpressionNoIn4108); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace321);
+							DebugLocation(449, 47);
+							SkipSpace314=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_relationalExpressionNoIn4177); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace314);
 
 
 							}
@@ -17763,8 +17909,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(209); }
 
-					DebugLocation(446, 61);
-					PushFollow(Follow._shiftExpression_in_relationalExpressionNoIn4113);
+					DebugLocation(449, 61);
+					PushFollow(Follow._shiftExpression_in_relationalExpressionNoIn4182);
 					rhs=shiftExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -17786,20 +17932,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 446:78: -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs)
+					// 449:78: -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs)
 					{
-						DebugLocation(446, 81);
-						// JavaScript.g3:446:81: ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs)
+						DebugLocation(449, 81);
+						// JavaScript.g3:449:81: ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(446, 83);
+						DebugLocation(449, 83);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(446, 96);
+						DebugLocation(449, 96);
 						adaptor.AddChild(root_1, stream_op.NextTree());
-						DebugLocation(446, 100);
+						DebugLocation(449, 100);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(446, 126);
+						DebugLocation(449, 126);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -17849,7 +17995,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_relationalExpressionNoIn();
 			if (state.backtracking > 0) { Memoize(input, 73, relationalExpressionNoIn_StartIndex); }
 		}
-		DebugLocation(447, 4);
+		DebugLocation(450, 4);
 		} finally { DebugExitRule(GrammarFileName, "relationalExpressionNoIn"); }
 		return retval;
 
@@ -17866,7 +18012,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_relationalOperator();
 
 	// $ANTLR start "relationalOperator"
-	// JavaScript.g3:449:1: relationalOperator : ( LT | GT | LTE | GTE | INST_OF | IN );
+	// JavaScript.g3:452:1: relationalOperator : ( LT | GT | LTE | GTE | INST_OF | IN );
 	[GrammarRule("relationalOperator")]
 	private JavaScriptParser.relationalOperator_return relationalOperator()
 	{
@@ -17878,27 +18024,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int relationalOperator_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set322=null;
+		CommonToken set315=null;
 
-		CommonTree set322_tree=null;
+		CommonTree set315_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "relationalOperator");
-		DebugLocation(449, 4);
+		DebugLocation(452, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 74)) { return retval; }
-			// JavaScript.g3:450:5: ( LT | GT | LTE | GTE | INST_OF | IN )
+			// JavaScript.g3:453:5: ( LT | GT | LTE | GTE | INST_OF | IN )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(450, 5);
-			set322=(CommonToken)input.LT(1);
+			DebugLocation(453, 5);
+			set315=(CommonToken)input.LT(1);
 			if ((input.LA(1)>=GT && input.LA(1)<=GTE)||input.LA(1)==IN||input.LA(1)==INST_OF||(input.LA(1)>=LT && input.LA(1)<=LTE))
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set322));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set315));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -17934,7 +18080,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_relationalOperator();
 			if (state.backtracking > 0) { Memoize(input, 74, relationalOperator_StartIndex); }
 		}
-		DebugLocation(451, 4);
+		DebugLocation(454, 4);
 		} finally { DebugExitRule(GrammarFileName, "relationalOperator"); }
 		return retval;
 
@@ -17951,7 +18097,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_relationalOperatorNoIn();
 
 	// $ANTLR start "relationalOperatorNoIn"
-	// JavaScript.g3:453:1: relationalOperatorNoIn : ( LT | GT | LTE | GTE | INST_OF );
+	// JavaScript.g3:456:1: relationalOperatorNoIn : ( LT | GT | LTE | GTE | INST_OF );
 	[GrammarRule("relationalOperatorNoIn")]
 	private JavaScriptParser.relationalOperatorNoIn_return relationalOperatorNoIn()
 	{
@@ -17963,27 +18109,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int relationalOperatorNoIn_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set323=null;
+		CommonToken set316=null;
 
-		CommonTree set323_tree=null;
+		CommonTree set316_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "relationalOperatorNoIn");
-		DebugLocation(453, 4);
+		DebugLocation(456, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 75)) { return retval; }
-			// JavaScript.g3:454:5: ( LT | GT | LTE | GTE | INST_OF )
+			// JavaScript.g3:457:5: ( LT | GT | LTE | GTE | INST_OF )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(454, 5);
-			set323=(CommonToken)input.LT(1);
+			DebugLocation(457, 5);
+			set316=(CommonToken)input.LT(1);
 			if ((input.LA(1)>=GT && input.LA(1)<=GTE)||input.LA(1)==INST_OF||(input.LA(1)>=LT && input.LA(1)<=LTE))
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set323));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set316));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -18019,7 +18165,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_relationalOperatorNoIn();
 			if (state.backtracking > 0) { Memoize(input, 75, relationalOperatorNoIn_StartIndex); }
 		}
-		DebugLocation(455, 4);
+		DebugLocation(458, 4);
 		} finally { DebugExitRule(GrammarFileName, "relationalOperatorNoIn"); }
 		return retval;
 
@@ -18036,7 +18182,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_shiftExpression();
 
 	// $ANTLR start "shiftExpression"
-	// JavaScript.g3:457:1: shiftExpression : (lhs= additiveExpression -> $lhs) ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )* ;
+	// JavaScript.g3:460:1: shiftExpression : (lhs= additiveExpression -> $lhs) ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )* ;
 	[GrammarRule("shiftExpression")]
 	private JavaScriptParser.shiftExpression_return shiftExpression()
 	{
@@ -18048,33 +18194,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int shiftExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace324=null;
-		CommonToken SkipSpace325=null;
+		CommonToken SkipSpace317=null;
+		CommonToken SkipSpace318=null;
 		JavaScriptParser.additiveExpression_return lhs = default(JavaScriptParser.additiveExpression_return);
 		JavaScriptParser.shiftOperator_return op = default(JavaScriptParser.shiftOperator_return);
 		JavaScriptParser.additiveExpression_return rhs = default(JavaScriptParser.additiveExpression_return);
 
-		CommonTree SkipSpace324_tree=null;
-		CommonTree SkipSpace325_tree=null;
+		CommonTree SkipSpace317_tree=null;
+		CommonTree SkipSpace318_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_additiveExpression=new RewriteRuleSubtreeStream(adaptor,"rule additiveExpression");
 		RewriteRuleSubtreeStream stream_shiftOperator=new RewriteRuleSubtreeStream(adaptor,"rule shiftOperator");
 		try { DebugEnterRule(GrammarFileName, "shiftExpression");
-		DebugLocation(457, 4);
+		DebugLocation(460, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 76)) { return retval; }
-			// JavaScript.g3:458:5: ( (lhs= additiveExpression -> $lhs) ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )* )
+			// JavaScript.g3:461:5: ( (lhs= additiveExpression -> $lhs) ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:458:7: (lhs= additiveExpression -> $lhs) ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )*
+			// JavaScript.g3:461:7: (lhs= additiveExpression -> $lhs) ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )*
 			{
-			DebugLocation(458, 7);
-			// JavaScript.g3:458:7: (lhs= additiveExpression -> $lhs)
+			DebugLocation(461, 7);
+			// JavaScript.g3:461:7: (lhs= additiveExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:458:8: lhs= additiveExpression
+			// JavaScript.g3:461:8: lhs= additiveExpression
 			{
-			DebugLocation(458, 11);
-			PushFollow(Follow._additiveExpression_in_shiftExpression4221);
+			DebugLocation(461, 11);
+			PushFollow(Follow._additiveExpression_in_shiftExpression4290);
 			lhs=additiveExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -18095,9 +18241,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 458:31: -> $lhs
+			// 461:31: -> $lhs
 			{
-				DebugLocation(458, 35);
+				DebugLocation(461, 35);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -18108,8 +18254,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(459, 9);
-			// JavaScript.g3:459:9: ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )*
+			DebugLocation(462, 9);
+			// JavaScript.g3:462:9: ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )*
 			try { DebugEnterSubRule(213);
 			while (true)
 			{
@@ -18129,10 +18275,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:459:10: ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression
+					// JavaScript.g3:462:10: ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression
 					{
-					DebugLocation(459, 10);
-					// JavaScript.g3:459:10: ( SkipSpace )*
+					DebugLocation(462, 10);
+					// JavaScript.g3:462:10: ( SkipSpace )*
 					try { DebugEnterSubRule(211);
 					while (true)
 					{
@@ -18151,11 +18297,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:459:10: SkipSpace
+							// JavaScript.g3:462:10: SkipSpace
 							{
-							DebugLocation(459, 10);
-							SkipSpace324=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_shiftExpression4238); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace324);
+							DebugLocation(462, 10);
+							SkipSpace317=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_shiftExpression4307); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace317);
 
 
 							}
@@ -18171,14 +18317,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(211); }
 
-					DebugLocation(459, 23);
-					PushFollow(Follow._shiftOperator_in_shiftExpression4243);
+					DebugLocation(462, 23);
+					PushFollow(Follow._shiftOperator_in_shiftExpression4312);
 					op=shiftOperator();
 					PopFollow();
 					if (state.failed) return retval;
 					if ( state.backtracking == 0 ) stream_shiftOperator.Add(op.Tree);
-					DebugLocation(459, 38);
-					// JavaScript.g3:459:38: ( SkipSpace )*
+					DebugLocation(462, 38);
+					// JavaScript.g3:462:38: ( SkipSpace )*
 					try { DebugEnterSubRule(212);
 					while (true)
 					{
@@ -18197,11 +18343,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:459:38: SkipSpace
+							// JavaScript.g3:462:38: SkipSpace
 							{
-							DebugLocation(459, 38);
-							SkipSpace325=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_shiftExpression4245); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace325);
+							DebugLocation(462, 38);
+							SkipSpace318=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_shiftExpression4314); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace318);
 
 
 							}
@@ -18217,8 +18363,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(212); }
 
-					DebugLocation(459, 52);
-					PushFollow(Follow._additiveExpression_in_shiftExpression4250);
+					DebugLocation(462, 52);
+					PushFollow(Follow._additiveExpression_in_shiftExpression4319);
 					rhs=additiveExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -18240,20 +18386,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 459:72: -> ^( BINARY_EXPR $op $shiftExpression $rhs)
+					// 462:72: -> ^( BINARY_EXPR $op $shiftExpression $rhs)
 					{
-						DebugLocation(459, 75);
-						// JavaScript.g3:459:75: ^( BINARY_EXPR $op $shiftExpression $rhs)
+						DebugLocation(462, 75);
+						// JavaScript.g3:462:75: ^( BINARY_EXPR $op $shiftExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(459, 77);
+						DebugLocation(462, 77);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(459, 90);
+						DebugLocation(462, 90);
 						adaptor.AddChild(root_1, stream_op.NextTree());
-						DebugLocation(459, 94);
+						DebugLocation(462, 94);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(459, 111);
+						DebugLocation(462, 111);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -18303,7 +18449,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_shiftExpression();
 			if (state.backtracking > 0) { Memoize(input, 76, shiftExpression_StartIndex); }
 		}
-		DebugLocation(460, 4);
+		DebugLocation(463, 4);
 		} finally { DebugExitRule(GrammarFileName, "shiftExpression"); }
 		return retval;
 
@@ -18320,7 +18466,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_shiftOperator();
 
 	// $ANTLR start "shiftOperator"
-	// JavaScript.g3:462:1: shiftOperator : ( SHL | SHR | USHR );
+	// JavaScript.g3:465:1: shiftOperator : ( SHL | SHR | USHR );
 	[GrammarRule("shiftOperator")]
 	private JavaScriptParser.shiftOperator_return shiftOperator()
 	{
@@ -18332,27 +18478,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int shiftOperator_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set326=null;
+		CommonToken set319=null;
 
-		CommonTree set326_tree=null;
+		CommonTree set319_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "shiftOperator");
-		DebugLocation(462, 4);
+		DebugLocation(465, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 77)) { return retval; }
-			// JavaScript.g3:463:5: ( SHL | SHR | USHR )
+			// JavaScript.g3:466:5: ( SHL | SHR | USHR )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(463, 5);
-			set326=(CommonToken)input.LT(1);
+			DebugLocation(466, 5);
+			set319=(CommonToken)input.LT(1);
 			if (input.LA(1)==SHL||input.LA(1)==SHR||input.LA(1)==USHR)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set326));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set319));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -18388,7 +18534,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_shiftOperator();
 			if (state.backtracking > 0) { Memoize(input, 77, shiftOperator_StartIndex); }
 		}
-		DebugLocation(464, 4);
+		DebugLocation(467, 4);
 		} finally { DebugExitRule(GrammarFileName, "shiftOperator"); }
 		return retval;
 
@@ -18405,7 +18551,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_additiveExpression();
 
 	// $ANTLR start "additiveExpression"
-	// JavaScript.g3:466:1: additiveExpression : (lhs= multiplicativeExpression -> $lhs) ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )* ;
+	// JavaScript.g3:469:1: additiveExpression : (lhs= multiplicativeExpression -> $lhs) ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )* ;
 	[GrammarRule("additiveExpression")]
 	private JavaScriptParser.additiveExpression_return additiveExpression()
 	{
@@ -18417,33 +18563,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int additiveExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace327=null;
-		CommonToken SkipSpace328=null;
+		CommonToken SkipSpace320=null;
+		CommonToken SkipSpace321=null;
 		JavaScriptParser.multiplicativeExpression_return lhs = default(JavaScriptParser.multiplicativeExpression_return);
 		JavaScriptParser.additiveOperator_return op = default(JavaScriptParser.additiveOperator_return);
 		JavaScriptParser.multiplicativeExpression_return rhs = default(JavaScriptParser.multiplicativeExpression_return);
 
-		CommonTree SkipSpace327_tree=null;
-		CommonTree SkipSpace328_tree=null;
+		CommonTree SkipSpace320_tree=null;
+		CommonTree SkipSpace321_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_multiplicativeExpression=new RewriteRuleSubtreeStream(adaptor,"rule multiplicativeExpression");
 		RewriteRuleSubtreeStream stream_additiveOperator=new RewriteRuleSubtreeStream(adaptor,"rule additiveOperator");
 		try { DebugEnterRule(GrammarFileName, "additiveExpression");
-		DebugLocation(466, 4);
+		DebugLocation(469, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 78)) { return retval; }
-			// JavaScript.g3:467:5: ( (lhs= multiplicativeExpression -> $lhs) ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )* )
+			// JavaScript.g3:470:5: ( (lhs= multiplicativeExpression -> $lhs) ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:467:7: (lhs= multiplicativeExpression -> $lhs) ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )*
+			// JavaScript.g3:470:7: (lhs= multiplicativeExpression -> $lhs) ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )*
 			{
-			DebugLocation(467, 7);
-			// JavaScript.g3:467:7: (lhs= multiplicativeExpression -> $lhs)
+			DebugLocation(470, 7);
+			// JavaScript.g3:470:7: (lhs= multiplicativeExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:467:8: lhs= multiplicativeExpression
+			// JavaScript.g3:470:8: lhs= multiplicativeExpression
 			{
-			DebugLocation(467, 11);
-			PushFollow(Follow._multiplicativeExpression_in_additiveExpression4313);
+			DebugLocation(470, 11);
+			PushFollow(Follow._multiplicativeExpression_in_additiveExpression4382);
 			lhs=multiplicativeExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -18464,9 +18610,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 467:37: -> $lhs
+			// 470:37: -> $lhs
 			{
-				DebugLocation(467, 41);
+				DebugLocation(470, 41);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -18477,8 +18623,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(468, 9);
-			// JavaScript.g3:468:9: ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )*
+			DebugLocation(471, 9);
+			// JavaScript.g3:471:9: ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )*
 			try { DebugEnterSubRule(216);
 			while (true)
 			{
@@ -18498,10 +18644,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:468:10: ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression
+					// JavaScript.g3:471:10: ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression
 					{
-					DebugLocation(468, 10);
-					// JavaScript.g3:468:10: ( SkipSpace )*
+					DebugLocation(471, 10);
+					// JavaScript.g3:471:10: ( SkipSpace )*
 					try { DebugEnterSubRule(214);
 					while (true)
 					{
@@ -18520,11 +18666,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:468:10: SkipSpace
+							// JavaScript.g3:471:10: SkipSpace
 							{
-							DebugLocation(468, 10);
-							SkipSpace327=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_additiveExpression4330); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace327);
+							DebugLocation(471, 10);
+							SkipSpace320=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_additiveExpression4399); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace320);
 
 
 							}
@@ -18540,14 +18686,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(214); }
 
-					DebugLocation(468, 23);
-					PushFollow(Follow._additiveOperator_in_additiveExpression4335);
+					DebugLocation(471, 23);
+					PushFollow(Follow._additiveOperator_in_additiveExpression4404);
 					op=additiveOperator();
 					PopFollow();
 					if (state.failed) return retval;
 					if ( state.backtracking == 0 ) stream_additiveOperator.Add(op.Tree);
-					DebugLocation(468, 41);
-					// JavaScript.g3:468:41: ( SkipSpace )*
+					DebugLocation(471, 41);
+					// JavaScript.g3:471:41: ( SkipSpace )*
 					try { DebugEnterSubRule(215);
 					while (true)
 					{
@@ -18566,11 +18712,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:468:41: SkipSpace
+							// JavaScript.g3:471:41: SkipSpace
 							{
-							DebugLocation(468, 41);
-							SkipSpace328=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_additiveExpression4337); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace328);
+							DebugLocation(471, 41);
+							SkipSpace321=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_additiveExpression4406); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace321);
 
 
 							}
@@ -18586,8 +18732,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(215); }
 
-					DebugLocation(468, 55);
-					PushFollow(Follow._multiplicativeExpression_in_additiveExpression4342);
+					DebugLocation(471, 55);
+					PushFollow(Follow._multiplicativeExpression_in_additiveExpression4411);
 					rhs=multiplicativeExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -18609,20 +18755,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 468:81: -> ^( BINARY_EXPR $op $additiveExpression $rhs)
+					// 471:81: -> ^( BINARY_EXPR $op $additiveExpression $rhs)
 					{
-						DebugLocation(468, 84);
-						// JavaScript.g3:468:84: ^( BINARY_EXPR $op $additiveExpression $rhs)
+						DebugLocation(471, 84);
+						// JavaScript.g3:471:84: ^( BINARY_EXPR $op $additiveExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(468, 86);
+						DebugLocation(471, 86);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(468, 99);
+						DebugLocation(471, 99);
 						adaptor.AddChild(root_1, stream_op.NextTree());
-						DebugLocation(468, 103);
+						DebugLocation(471, 103);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(468, 123);
+						DebugLocation(471, 123);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -18672,7 +18818,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_additiveExpression();
 			if (state.backtracking > 0) { Memoize(input, 78, additiveExpression_StartIndex); }
 		}
-		DebugLocation(469, 4);
+		DebugLocation(472, 4);
 		} finally { DebugExitRule(GrammarFileName, "additiveExpression"); }
 		return retval;
 
@@ -18689,7 +18835,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_additiveOperator();
 
 	// $ANTLR start "additiveOperator"
-	// JavaScript.g3:471:1: additiveOperator : ( PLUS | MINUS );
+	// JavaScript.g3:474:1: additiveOperator : ( PLUS | MINUS );
 	[GrammarRule("additiveOperator")]
 	private JavaScriptParser.additiveOperator_return additiveOperator()
 	{
@@ -18701,27 +18847,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int additiveOperator_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set329=null;
+		CommonToken set322=null;
 
-		CommonTree set329_tree=null;
+		CommonTree set322_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "additiveOperator");
-		DebugLocation(471, 4);
+		DebugLocation(474, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 79)) { return retval; }
-			// JavaScript.g3:472:5: ( PLUS | MINUS )
+			// JavaScript.g3:475:5: ( PLUS | MINUS )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(472, 5);
-			set329=(CommonToken)input.LT(1);
+			DebugLocation(475, 5);
+			set322=(CommonToken)input.LT(1);
 			if (input.LA(1)==MINUS||input.LA(1)==PLUS)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set329));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set322));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -18757,7 +18903,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_additiveOperator();
 			if (state.backtracking > 0) { Memoize(input, 79, additiveOperator_StartIndex); }
 		}
-		DebugLocation(473, 4);
+		DebugLocation(476, 4);
 		} finally { DebugExitRule(GrammarFileName, "additiveOperator"); }
 		return retval;
 
@@ -18774,7 +18920,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_multiplicativeExpression();
 
 	// $ANTLR start "multiplicativeExpression"
-	// JavaScript.g3:475:1: multiplicativeExpression : (lhs= unaryExpression -> $lhs) ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )* ;
+	// JavaScript.g3:478:1: multiplicativeExpression : (lhs= unaryExpression -> $lhs) ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )* ;
 	[GrammarRule("multiplicativeExpression")]
 	private JavaScriptParser.multiplicativeExpression_return multiplicativeExpression()
 	{
@@ -18786,33 +18932,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int multiplicativeExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace330=null;
-		CommonToken SkipSpace331=null;
+		CommonToken SkipSpace323=null;
+		CommonToken SkipSpace324=null;
 		JavaScriptParser.unaryExpression_return lhs = default(JavaScriptParser.unaryExpression_return);
 		JavaScriptParser.multiplicativeOperator_return op = default(JavaScriptParser.multiplicativeOperator_return);
 		JavaScriptParser.unaryExpression_return rhs = default(JavaScriptParser.unaryExpression_return);
 
-		CommonTree SkipSpace330_tree=null;
-		CommonTree SkipSpace331_tree=null;
+		CommonTree SkipSpace323_tree=null;
+		CommonTree SkipSpace324_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_unaryExpression=new RewriteRuleSubtreeStream(adaptor,"rule unaryExpression");
 		RewriteRuleSubtreeStream stream_multiplicativeOperator=new RewriteRuleSubtreeStream(adaptor,"rule multiplicativeOperator");
 		try { DebugEnterRule(GrammarFileName, "multiplicativeExpression");
-		DebugLocation(475, 4);
+		DebugLocation(478, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 80)) { return retval; }
-			// JavaScript.g3:476:5: ( (lhs= unaryExpression -> $lhs) ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )* )
+			// JavaScript.g3:479:5: ( (lhs= unaryExpression -> $lhs) ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )* )
 			DebugEnterAlt(1);
-			// JavaScript.g3:476:7: (lhs= unaryExpression -> $lhs) ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )*
+			// JavaScript.g3:479:7: (lhs= unaryExpression -> $lhs) ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )*
 			{
-			DebugLocation(476, 7);
-			// JavaScript.g3:476:7: (lhs= unaryExpression -> $lhs)
+			DebugLocation(479, 7);
+			// JavaScript.g3:479:7: (lhs= unaryExpression -> $lhs)
 			DebugEnterAlt(1);
-			// JavaScript.g3:476:8: lhs= unaryExpression
+			// JavaScript.g3:479:8: lhs= unaryExpression
 			{
-			DebugLocation(476, 11);
-			PushFollow(Follow._unaryExpression_in_multiplicativeExpression4401);
+			DebugLocation(479, 11);
+			PushFollow(Follow._unaryExpression_in_multiplicativeExpression4470);
 			lhs=unaryExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -18833,9 +18979,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 476:28: -> $lhs
+			// 479:28: -> $lhs
 			{
-				DebugLocation(476, 32);
+				DebugLocation(479, 32);
 				adaptor.AddChild(root_0, stream_lhs.NextTree());
 
 			}
@@ -18846,8 +18992,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			}
 
-			DebugLocation(477, 9);
-			// JavaScript.g3:477:9: ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )*
+			DebugLocation(480, 9);
+			// JavaScript.g3:480:9: ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )*
 			try { DebugEnterSubRule(219);
 			while (true)
 			{
@@ -18867,10 +19013,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:477:10: ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression
+					// JavaScript.g3:480:10: ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression
 					{
-					DebugLocation(477, 10);
-					// JavaScript.g3:477:10: ( SkipSpace )*
+					DebugLocation(480, 10);
+					// JavaScript.g3:480:10: ( SkipSpace )*
 					try { DebugEnterSubRule(217);
 					while (true)
 					{
@@ -18889,11 +19035,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:477:10: SkipSpace
+							// JavaScript.g3:480:10: SkipSpace
 							{
-							DebugLocation(477, 10);
-							SkipSpace330=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_multiplicativeExpression4418); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace330);
+							DebugLocation(480, 10);
+							SkipSpace323=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_multiplicativeExpression4487); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace323);
 
 
 							}
@@ -18909,14 +19055,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(217); }
 
-					DebugLocation(477, 23);
-					PushFollow(Follow._multiplicativeOperator_in_multiplicativeExpression4423);
+					DebugLocation(480, 23);
+					PushFollow(Follow._multiplicativeOperator_in_multiplicativeExpression4492);
 					op=multiplicativeOperator();
 					PopFollow();
 					if (state.failed) return retval;
 					if ( state.backtracking == 0 ) stream_multiplicativeOperator.Add(op.Tree);
-					DebugLocation(477, 47);
-					// JavaScript.g3:477:47: ( SkipSpace )*
+					DebugLocation(480, 47);
+					// JavaScript.g3:480:47: ( SkipSpace )*
 					try { DebugEnterSubRule(218);
 					while (true)
 					{
@@ -18935,11 +19081,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:477:47: SkipSpace
+							// JavaScript.g3:480:47: SkipSpace
 							{
-							DebugLocation(477, 47);
-							SkipSpace331=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_multiplicativeExpression4425); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace331);
+							DebugLocation(480, 47);
+							SkipSpace324=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_multiplicativeExpression4494); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace324);
 
 
 							}
@@ -18955,8 +19101,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(218); }
 
-					DebugLocation(477, 61);
-					PushFollow(Follow._unaryExpression_in_multiplicativeExpression4430);
+					DebugLocation(480, 61);
+					PushFollow(Follow._unaryExpression_in_multiplicativeExpression4499);
 					rhs=unaryExpression();
 					PopFollow();
 					if (state.failed) return retval;
@@ -18978,20 +19124,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 					root_0 = (CommonTree)adaptor.Nil();
-					// 477:78: -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs)
+					// 480:78: -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs)
 					{
-						DebugLocation(477, 81);
-						// JavaScript.g3:477:81: ^( BINARY_EXPR $op $multiplicativeExpression $rhs)
+						DebugLocation(480, 81);
+						// JavaScript.g3:480:81: ^( BINARY_EXPR $op $multiplicativeExpression $rhs)
 						{
 						CommonTree root_1 = (CommonTree)adaptor.Nil();
-						DebugLocation(477, 83);
+						DebugLocation(480, 83);
 						root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(BINARY_EXPR, "BINARY_EXPR"), root_1);
 
-						DebugLocation(477, 96);
+						DebugLocation(480, 96);
 						adaptor.AddChild(root_1, stream_op.NextTree());
-						DebugLocation(477, 100);
+						DebugLocation(480, 100);
 						adaptor.AddChild(root_1, stream_retval.NextTree());
-						DebugLocation(477, 126);
+						DebugLocation(480, 126);
 						adaptor.AddChild(root_1, stream_rhs.NextTree());
 
 						adaptor.AddChild(root_0, root_1);
@@ -19041,7 +19187,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_multiplicativeExpression();
 			if (state.backtracking > 0) { Memoize(input, 80, multiplicativeExpression_StartIndex); }
 		}
-		DebugLocation(478, 4);
+		DebugLocation(481, 4);
 		} finally { DebugExitRule(GrammarFileName, "multiplicativeExpression"); }
 		return retval;
 
@@ -19058,7 +19204,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_multiplicativeOperator();
 
 	// $ANTLR start "multiplicativeOperator"
-	// JavaScript.g3:480:1: multiplicativeOperator : ( MUL | DIV | MOD );
+	// JavaScript.g3:483:1: multiplicativeOperator : ( MUL | DIV | MOD );
 	[GrammarRule("multiplicativeOperator")]
 	private JavaScriptParser.multiplicativeOperator_return multiplicativeOperator()
 	{
@@ -19070,27 +19216,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int multiplicativeOperator_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set332=null;
+		CommonToken set325=null;
 
-		CommonTree set332_tree=null;
+		CommonTree set325_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "multiplicativeOperator");
-		DebugLocation(480, 4);
+		DebugLocation(483, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 81)) { return retval; }
-			// JavaScript.g3:481:5: ( MUL | DIV | MOD )
+			// JavaScript.g3:484:5: ( MUL | DIV | MOD )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(481, 5);
-			set332=(CommonToken)input.LT(1);
+			DebugLocation(484, 5);
+			set325=(CommonToken)input.LT(1);
 			if (input.LA(1)==DIV||input.LA(1)==MOD||input.LA(1)==MUL)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set332));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set325));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -19126,7 +19272,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_multiplicativeOperator();
 			if (state.backtracking > 0) { Memoize(input, 81, multiplicativeOperator_StartIndex); }
 		}
-		DebugLocation(482, 4);
+		DebugLocation(485, 4);
 		} finally { DebugExitRule(GrammarFileName, "multiplicativeOperator"); }
 		return retval;
 
@@ -19143,7 +19289,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_unaryExpression();
 
 	// $ANTLR start "unaryExpression"
-	// JavaScript.g3:484:1: unaryExpression : ( postfixExpression |op= prefixOperator ( SkipSpace )* unaryExpression -> ^( PREFIX $op unaryExpression ) );
+	// JavaScript.g3:487:1: unaryExpression : ( postfixExpression |op= prefixOperator ( SkipSpace )* unaryExpression -> ^( PREFIX $op unaryExpression ) );
 	[GrammarRule("unaryExpression")]
 	private JavaScriptParser.unaryExpression_return unaryExpression()
 	{
@@ -19155,26 +19301,26 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int unaryExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace334=null;
+		CommonToken SkipSpace327=null;
 		JavaScriptParser.prefixOperator_return op = default(JavaScriptParser.prefixOperator_return);
-		JavaScriptParser.postfixExpression_return postfixExpression333 = default(JavaScriptParser.postfixExpression_return);
-		JavaScriptParser.unaryExpression_return unaryExpression335 = default(JavaScriptParser.unaryExpression_return);
+		JavaScriptParser.postfixExpression_return postfixExpression326 = default(JavaScriptParser.postfixExpression_return);
+		JavaScriptParser.unaryExpression_return unaryExpression328 = default(JavaScriptParser.unaryExpression_return);
 
-		CommonTree SkipSpace334_tree=null;
+		CommonTree SkipSpace327_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleSubtreeStream stream_prefixOperator=new RewriteRuleSubtreeStream(adaptor,"rule prefixOperator");
 		RewriteRuleSubtreeStream stream_unaryExpression=new RewriteRuleSubtreeStream(adaptor,"rule unaryExpression");
 		try { DebugEnterRule(GrammarFileName, "unaryExpression");
-		DebugLocation(484, 4);
+		DebugLocation(487, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 82)) { return retval; }
-			// JavaScript.g3:485:5: ( postfixExpression |op= prefixOperator ( SkipSpace )* unaryExpression -> ^( PREFIX $op unaryExpression ) )
+			// JavaScript.g3:488:5: ( postfixExpression |op= prefixOperator ( SkipSpace )* unaryExpression -> ^( PREFIX $op unaryExpression ) )
 			int alt221=2;
 			try { DebugEnterDecision(221, decisionCanBacktrack[221]);
 			int LA221_0 = input.LA(1);
 
-			if ((LA221_0==BoolLiteral||LA221_0==FALSE||LA221_0==IMPORT_START||LA221_0==Identifier||LA221_0==NEW||LA221_0==NULL||LA221_0==NumericLiteral||(LA221_0>=StringLiteral && LA221_0<=THIS)||LA221_0==130||LA221_0==135||LA221_0==142||LA221_0==147))
+			if ((LA221_0==BoolLiteral||LA221_0==FALSE||LA221_0==IMPORT_START||LA221_0==Identifier||LA221_0==NEW||LA221_0==NULL||LA221_0==NumericLiteral||LA221_0==RegularExpressionLiteral||(LA221_0>=StringLiteral && LA221_0<=THIS)||LA221_0==136||LA221_0==141||LA221_0==148||LA221_0==153))
 			{
 				alt221=1;
 			}
@@ -19195,31 +19341,31 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:485:7: postfixExpression
+				// JavaScript.g3:488:7: postfixExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(485, 7);
-				PushFollow(Follow._postfixExpression_in_unaryExpression4490);
-				postfixExpression333=postfixExpression();
+				DebugLocation(488, 7);
+				PushFollow(Follow._postfixExpression_in_unaryExpression4559);
+				postfixExpression326=postfixExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, postfixExpression333.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, postfixExpression326.Tree);
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:486:7: op= prefixOperator ( SkipSpace )* unaryExpression
+				// JavaScript.g3:489:7: op= prefixOperator ( SkipSpace )* unaryExpression
 				{
-				DebugLocation(486, 9);
-				PushFollow(Follow._prefixOperator_in_unaryExpression4500);
+				DebugLocation(489, 9);
+				PushFollow(Follow._prefixOperator_in_unaryExpression4569);
 				op=prefixOperator();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_prefixOperator.Add(op.Tree);
-				DebugLocation(486, 25);
-				// JavaScript.g3:486:25: ( SkipSpace )*
+				DebugLocation(489, 25);
+				// JavaScript.g3:489:25: ( SkipSpace )*
 				try { DebugEnterSubRule(220);
 				while (true)
 				{
@@ -19238,11 +19384,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:486:25: SkipSpace
+						// JavaScript.g3:489:25: SkipSpace
 						{
-						DebugLocation(486, 25);
-						SkipSpace334=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_unaryExpression4502); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace334);
+						DebugLocation(489, 25);
+						SkipSpace327=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_unaryExpression4571); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace327);
 
 
 						}
@@ -19258,12 +19404,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(220); }
 
-				DebugLocation(486, 36);
-				PushFollow(Follow._unaryExpression_in_unaryExpression4505);
-				unaryExpression335=unaryExpression();
+				DebugLocation(489, 36);
+				PushFollow(Follow._unaryExpression_in_unaryExpression4574);
+				unaryExpression328=unaryExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) stream_unaryExpression.Add(unaryExpression335.Tree);
+				if ( state.backtracking == 0 ) stream_unaryExpression.Add(unaryExpression328.Tree);
 
 
 				{
@@ -19280,18 +19426,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 487:9: -> ^( PREFIX $op unaryExpression )
+				// 490:9: -> ^( PREFIX $op unaryExpression )
 				{
-					DebugLocation(487, 12);
-					// JavaScript.g3:487:12: ^( PREFIX $op unaryExpression )
+					DebugLocation(490, 12);
+					// JavaScript.g3:490:12: ^( PREFIX $op unaryExpression )
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(487, 14);
+					DebugLocation(490, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(PREFIX, "PREFIX"), root_1);
 
-					DebugLocation(487, 22);
+					DebugLocation(490, 22);
 					adaptor.AddChild(root_1, stream_op.NextTree());
-					DebugLocation(487, 25);
+					DebugLocation(490, 25);
 					adaptor.AddChild(root_1, stream_unaryExpression.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -19329,7 +19475,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_unaryExpression();
 			if (state.backtracking > 0) { Memoize(input, 82, unaryExpression_StartIndex); }
 		}
-		DebugLocation(488, 4);
+		DebugLocation(491, 4);
 		} finally { DebugExitRule(GrammarFileName, "unaryExpression"); }
 		return retval;
 
@@ -19346,7 +19492,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_prefixOperator();
 
 	// $ANTLR start "prefixOperator"
-	// JavaScript.g3:490:1: prefixOperator : ( DELETE | VOID | TYPE_OF | PLUS_INC | MINUS_INC | PLUS | MINUS | BIT_NOT | NOT | DOUBLE_NOT );
+	// JavaScript.g3:493:1: prefixOperator : ( DELETE | VOID | TYPE_OF | PLUS_INC | MINUS_INC | PLUS | MINUS | BIT_NOT | NOT | DOUBLE_NOT );
 	[GrammarRule("prefixOperator")]
 	private JavaScriptParser.prefixOperator_return prefixOperator()
 	{
@@ -19358,27 +19504,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int prefixOperator_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set336=null;
+		CommonToken set329=null;
 
-		CommonTree set336_tree=null;
+		CommonTree set329_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "prefixOperator");
-		DebugLocation(490, 4);
+		DebugLocation(493, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 83)) { return retval; }
-			// JavaScript.g3:491:5: ( DELETE | VOID | TYPE_OF | PLUS_INC | MINUS_INC | PLUS | MINUS | BIT_NOT | NOT | DOUBLE_NOT )
+			// JavaScript.g3:494:5: ( DELETE | VOID | TYPE_OF | PLUS_INC | MINUS_INC | PLUS | MINUS | BIT_NOT | NOT | DOUBLE_NOT )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(491, 5);
-			set336=(CommonToken)input.LT(1);
+			DebugLocation(494, 5);
+			set329=(CommonToken)input.LT(1);
 			if (input.LA(1)==BIT_NOT||input.LA(1)==DELETE||input.LA(1)==DOUBLE_NOT||input.LA(1)==MINUS||input.LA(1)==MINUS_INC||input.LA(1)==NOT||input.LA(1)==PLUS||input.LA(1)==PLUS_INC||input.LA(1)==TYPE_OF||input.LA(1)==VOID)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set336));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set329));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -19414,7 +19560,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_prefixOperator();
 			if (state.backtracking > 0) { Memoize(input, 83, prefixOperator_StartIndex); }
 		}
-		DebugLocation(492, 4);
+		DebugLocation(495, 4);
 		} finally { DebugExitRule(GrammarFileName, "prefixOperator"); }
 		return retval;
 
@@ -19431,7 +19577,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_postfixExpression();
 
 	// $ANTLR start "postfixExpression"
-	// JavaScript.g3:494:1: postfixExpression : ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression ) | leftHandSideExpression );
+	// JavaScript.g3:497:1: postfixExpression : ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression ) | leftHandSideExpression );
 	[GrammarRule("postfixExpression")]
 	private JavaScriptParser.postfixExpression_return postfixExpression()
 	{
@@ -19445,8 +19591,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 		CommonToken op1=null;
 		CommonToken op2=null;
-		JavaScriptParser.leftHandSideExpression_return leftHandSideExpression337 = default(JavaScriptParser.leftHandSideExpression_return);
-		JavaScriptParser.leftHandSideExpression_return leftHandSideExpression338 = default(JavaScriptParser.leftHandSideExpression_return);
+		JavaScriptParser.leftHandSideExpression_return leftHandSideExpression330 = default(JavaScriptParser.leftHandSideExpression_return);
+		JavaScriptParser.leftHandSideExpression_return leftHandSideExpression331 = default(JavaScriptParser.leftHandSideExpression_return);
 
 		CommonTree op1_tree=null;
 		CommonTree op2_tree=null;
@@ -19454,11 +19600,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		RewriteRuleITokenStream stream_MINUS_INC=new RewriteRuleITokenStream(adaptor,"token MINUS_INC");
 		RewriteRuleSubtreeStream stream_leftHandSideExpression=new RewriteRuleSubtreeStream(adaptor,"rule leftHandSideExpression");
 		try { DebugEnterRule(GrammarFileName, "postfixExpression");
-		DebugLocation(494, 4);
+		DebugLocation(497, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 84)) { return retval; }
-			// JavaScript.g3:495:5: ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression ) | leftHandSideExpression )
+			// JavaScript.g3:498:5: ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression ) | leftHandSideExpression )
 			int alt223=2;
 			try { DebugEnterDecision(223, decisionCanBacktrack[223]);
 			try
@@ -19475,16 +19621,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:495:7: leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC )
+				// JavaScript.g3:498:7: leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC )
 				{
-				DebugLocation(495, 7);
-				PushFollow(Follow._leftHandSideExpression_in_postfixExpression4594);
-				leftHandSideExpression337=leftHandSideExpression();
+				DebugLocation(498, 7);
+				PushFollow(Follow._leftHandSideExpression_in_postfixExpression4663);
+				leftHandSideExpression330=leftHandSideExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) stream_leftHandSideExpression.Add(leftHandSideExpression337.Tree);
-				DebugLocation(495, 30);
-				// JavaScript.g3:495:30: (op1= PLUS_INC |op2= MINUS_INC )
+				if ( state.backtracking == 0 ) stream_leftHandSideExpression.Add(leftHandSideExpression330.Tree);
+				DebugLocation(498, 30);
+				// JavaScript.g3:498:30: (op1= PLUS_INC |op2= MINUS_INC )
 				int alt222=2;
 				try { DebugEnterSubRule(222);
 				try { DebugEnterDecision(222, decisionCanBacktrack[222]);
@@ -19511,10 +19657,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:495:31: op1= PLUS_INC
+					// JavaScript.g3:498:31: op1= PLUS_INC
 					{
-					DebugLocation(495, 34);
-					op1=(CommonToken)Match(input,PLUS_INC,Follow._PLUS_INC_in_postfixExpression4599); if (state.failed) return retval; 
+					DebugLocation(498, 34);
+					op1=(CommonToken)Match(input,PLUS_INC,Follow._PLUS_INC_in_postfixExpression4668); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_PLUS_INC.Add(op1);
 
 
@@ -19522,10 +19668,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					break;
 				case 2:
 					DebugEnterAlt(2);
-					// JavaScript.g3:495:46: op2= MINUS_INC
+					// JavaScript.g3:498:46: op2= MINUS_INC
 					{
-					DebugLocation(495, 49);
-					op2=(CommonToken)Match(input,MINUS_INC,Follow._MINUS_INC_in_postfixExpression4605); if (state.failed) return retval; 
+					DebugLocation(498, 49);
+					op2=(CommonToken)Match(input,MINUS_INC,Follow._MINUS_INC_in_postfixExpression4674); if (state.failed) return retval; 
 					if ( state.backtracking == 0 ) stream_MINUS_INC.Add(op2);
 
 
@@ -19552,34 +19698,34 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 496:9: -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression )
+				// 499:9: -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression )
 				{
-					DebugLocation(496, 12);
-					// JavaScript.g3:496:12: ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression )
+					DebugLocation(499, 12);
+					// JavaScript.g3:499:12: ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression )
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(496, 14);
+					DebugLocation(499, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(POSTFIX, "POSTFIX"), root_1);
 
-					DebugLocation(496, 23);
-					// JavaScript.g3:496:23: ( $op1)?
+					DebugLocation(499, 23);
+					// JavaScript.g3:499:23: ( $op1)?
 					if ( stream_op1.HasNext )
 					{
-						DebugLocation(496, 23);
+						DebugLocation(499, 23);
 						adaptor.AddChild(root_1, stream_op1.NextNode());
 
 					}
 					stream_op1.Reset();
-					DebugLocation(496, 29);
-					// JavaScript.g3:496:29: ( $op2)?
+					DebugLocation(499, 29);
+					// JavaScript.g3:499:29: ( $op2)?
 					if ( stream_op2.HasNext )
 					{
-						DebugLocation(496, 29);
+						DebugLocation(499, 29);
 						adaptor.AddChild(root_1, stream_op2.NextNode());
 
 					}
 					stream_op2.Reset();
-					DebugLocation(496, 34);
+					DebugLocation(499, 34);
 					adaptor.AddChild(root_1, stream_leftHandSideExpression.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -19595,16 +19741,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:497:7: leftHandSideExpression
+				// JavaScript.g3:500:7: leftHandSideExpression
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(497, 7);
-				PushFollow(Follow._leftHandSideExpression_in_postfixExpression4638);
-				leftHandSideExpression338=leftHandSideExpression();
+				DebugLocation(500, 7);
+				PushFollow(Follow._leftHandSideExpression_in_postfixExpression4707);
+				leftHandSideExpression331=leftHandSideExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, leftHandSideExpression338.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, leftHandSideExpression331.Tree);
 
 				}
 				break;
@@ -19632,7 +19778,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_postfixExpression();
 			if (state.backtracking > 0) { Memoize(input, 84, postfixExpression_StartIndex); }
 		}
-		DebugLocation(498, 4);
+		DebugLocation(501, 4);
 		} finally { DebugExitRule(GrammarFileName, "postfixExpression"); }
 		return retval;
 
@@ -19649,7 +19795,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_primaryExpression();
 
 	// $ANTLR start "primaryExpression"
-	// JavaScript.g3:500:1: primaryExpression : ( THIS | Identifier | importedNotation | literal | arrayLiteral | objectLiteral | '(' ( SkipSpace )* expression ( SkipSpace )* ')' -> expression );
+	// JavaScript.g3:503:1: primaryExpression : ( THIS | Identifier | importedNotation | literal | arrayLiteral | objectLiteral | '(' ( SkipSpace )* expression ( SkipSpace )* ')' -> expression );
 	[GrammarRule("primaryExpression")]
 	private JavaScriptParser.primaryExpression_return primaryExpression()
 	{
@@ -19661,34 +19807,34 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int primaryExpression_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken THIS339=null;
-		CommonToken Identifier340=null;
-		CommonToken char_literal345=null;
-		CommonToken SkipSpace346=null;
-		CommonToken SkipSpace348=null;
-		CommonToken char_literal349=null;
-		JavaScriptParser.importedNotation_return importedNotation341 = default(JavaScriptParser.importedNotation_return);
-		JavaScriptParser.literal_return literal342 = default(JavaScriptParser.literal_return);
-		JavaScriptParser.arrayLiteral_return arrayLiteral343 = default(JavaScriptParser.arrayLiteral_return);
-		JavaScriptParser.objectLiteral_return objectLiteral344 = default(JavaScriptParser.objectLiteral_return);
-		JavaScriptParser.expression_return expression347 = default(JavaScriptParser.expression_return);
+		CommonToken THIS332=null;
+		CommonToken Identifier333=null;
+		CommonToken char_literal338=null;
+		CommonToken SkipSpace339=null;
+		CommonToken SkipSpace341=null;
+		CommonToken char_literal342=null;
+		JavaScriptParser.importedNotation_return importedNotation334 = default(JavaScriptParser.importedNotation_return);
+		JavaScriptParser.literal_return literal335 = default(JavaScriptParser.literal_return);
+		JavaScriptParser.arrayLiteral_return arrayLiteral336 = default(JavaScriptParser.arrayLiteral_return);
+		JavaScriptParser.objectLiteral_return objectLiteral337 = default(JavaScriptParser.objectLiteral_return);
+		JavaScriptParser.expression_return expression340 = default(JavaScriptParser.expression_return);
 
-		CommonTree THIS339_tree=null;
-		CommonTree Identifier340_tree=null;
-		CommonTree char_literal345_tree=null;
-		CommonTree SkipSpace346_tree=null;
-		CommonTree SkipSpace348_tree=null;
-		CommonTree char_literal349_tree=null;
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
+		CommonTree THIS332_tree=null;
+		CommonTree Identifier333_tree=null;
+		CommonTree char_literal338_tree=null;
+		CommonTree SkipSpace339_tree=null;
+		CommonTree SkipSpace341_tree=null;
+		CommonTree char_literal342_tree=null;
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 		RewriteRuleSubtreeStream stream_expression=new RewriteRuleSubtreeStream(adaptor,"rule expression");
 		try { DebugEnterRule(GrammarFileName, "primaryExpression");
-		DebugLocation(500, 4);
+		DebugLocation(503, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 85)) { return retval; }
-			// JavaScript.g3:501:5: ( THIS | Identifier | importedNotation | literal | arrayLiteral | objectLiteral | '(' ( SkipSpace )* expression ( SkipSpace )* ')' -> expression )
+			// JavaScript.g3:504:5: ( THIS | Identifier | importedNotation | literal | arrayLiteral | objectLiteral | '(' ( SkipSpace )* expression ( SkipSpace )* ')' -> expression )
 			int alt226=7;
 			try { DebugEnterDecision(226, decisionCanBacktrack[226]);
 			switch (input.LA(1))
@@ -19712,22 +19858,23 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			case FALSE:
 			case NULL:
 			case NumericLiteral:
+			case RegularExpressionLiteral:
 			case StringLiteral:
 				{
 				alt226=4;
 				}
 				break;
-			case 135:
+			case 141:
 				{
 				alt226=5;
 				}
 				break;
-			case 147:
+			case 153:
 				{
 				alt226=6;
 				}
 				break;
-			case 130:
+			case 136:
 				{
 				alt226=7;
 				}
@@ -19747,104 +19894,104 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:501:7: THIS
+				// JavaScript.g3:504:7: THIS
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(501, 7);
-				THIS339=(CommonToken)Match(input,THIS,Follow._THIS_in_primaryExpression4655); if (state.failed) return retval;
+				DebugLocation(504, 7);
+				THIS332=(CommonToken)Match(input,THIS,Follow._THIS_in_primaryExpression4724); if (state.failed) return retval;
 				if ( state.backtracking==0 ) {
-				THIS339_tree = (CommonTree)adaptor.Create(THIS339);
-				adaptor.AddChild(root_0, THIS339_tree);
+				THIS332_tree = (CommonTree)adaptor.Create(THIS332);
+				adaptor.AddChild(root_0, THIS332_tree);
 				}
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:502:7: Identifier
+				// JavaScript.g3:505:7: Identifier
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(502, 7);
-				Identifier340=(CommonToken)Match(input,Identifier,Follow._Identifier_in_primaryExpression4663); if (state.failed) return retval;
+				DebugLocation(505, 7);
+				Identifier333=(CommonToken)Match(input,Identifier,Follow._Identifier_in_primaryExpression4732); if (state.failed) return retval;
 				if ( state.backtracking==0 ) {
-				Identifier340_tree = (CommonTree)adaptor.Create(Identifier340);
-				adaptor.AddChild(root_0, Identifier340_tree);
+				Identifier333_tree = (CommonTree)adaptor.Create(Identifier333);
+				adaptor.AddChild(root_0, Identifier333_tree);
 				}
 
 				}
 				break;
 			case 3:
 				DebugEnterAlt(3);
-				// JavaScript.g3:503:7: importedNotation
+				// JavaScript.g3:506:7: importedNotation
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(503, 7);
-				PushFollow(Follow._importedNotation_in_primaryExpression4671);
-				importedNotation341=importedNotation();
+				DebugLocation(506, 7);
+				PushFollow(Follow._importedNotation_in_primaryExpression4740);
+				importedNotation334=importedNotation();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, importedNotation341.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, importedNotation334.Tree);
 
 				}
 				break;
 			case 4:
 				DebugEnterAlt(4);
-				// JavaScript.g3:504:7: literal
+				// JavaScript.g3:507:7: literal
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(504, 7);
-				PushFollow(Follow._literal_in_primaryExpression4679);
-				literal342=literal();
+				DebugLocation(507, 7);
+				PushFollow(Follow._literal_in_primaryExpression4748);
+				literal335=literal();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, literal342.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, literal335.Tree);
 
 				}
 				break;
 			case 5:
 				DebugEnterAlt(5);
-				// JavaScript.g3:505:7: arrayLiteral
+				// JavaScript.g3:508:7: arrayLiteral
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(505, 7);
-				PushFollow(Follow._arrayLiteral_in_primaryExpression4687);
-				arrayLiteral343=arrayLiteral();
+				DebugLocation(508, 7);
+				PushFollow(Follow._arrayLiteral_in_primaryExpression4756);
+				arrayLiteral336=arrayLiteral();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, arrayLiteral343.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, arrayLiteral336.Tree);
 
 				}
 				break;
 			case 6:
 				DebugEnterAlt(6);
-				// JavaScript.g3:506:7: objectLiteral
+				// JavaScript.g3:509:7: objectLiteral
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(506, 7);
-				PushFollow(Follow._objectLiteral_in_primaryExpression4695);
-				objectLiteral344=objectLiteral();
+				DebugLocation(509, 7);
+				PushFollow(Follow._objectLiteral_in_primaryExpression4764);
+				objectLiteral337=objectLiteral();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, objectLiteral344.Tree);
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, objectLiteral337.Tree);
 
 				}
 				break;
 			case 7:
 				DebugEnterAlt(7);
-				// JavaScript.g3:507:7: '(' ( SkipSpace )* expression ( SkipSpace )* ')'
+				// JavaScript.g3:510:7: '(' ( SkipSpace )* expression ( SkipSpace )* ')'
 				{
-				DebugLocation(507, 7);
-				char_literal345=(CommonToken)Match(input,130,Follow._130_in_primaryExpression4703); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_130.Add(char_literal345);
+				DebugLocation(510, 7);
+				char_literal338=(CommonToken)Match(input,136,Follow._136_in_primaryExpression4772); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_136.Add(char_literal338);
 
-				DebugLocation(507, 11);
-				// JavaScript.g3:507:11: ( SkipSpace )*
+				DebugLocation(510, 11);
+				// JavaScript.g3:510:11: ( SkipSpace )*
 				try { DebugEnterSubRule(224);
 				while (true)
 				{
@@ -19863,11 +20010,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:507:11: SkipSpace
+						// JavaScript.g3:510:11: SkipSpace
 						{
-						DebugLocation(507, 11);
-						SkipSpace346=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_primaryExpression4705); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace346);
+						DebugLocation(510, 11);
+						SkipSpace339=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_primaryExpression4774); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace339);
 
 
 						}
@@ -19883,14 +20030,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(224); }
 
-				DebugLocation(507, 22);
-				PushFollow(Follow._expression_in_primaryExpression4708);
-				expression347=expression();
+				DebugLocation(510, 22);
+				PushFollow(Follow._expression_in_primaryExpression4777);
+				expression340=expression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) stream_expression.Add(expression347.Tree);
-				DebugLocation(507, 33);
-				// JavaScript.g3:507:33: ( SkipSpace )*
+				if ( state.backtracking == 0 ) stream_expression.Add(expression340.Tree);
+				DebugLocation(510, 33);
+				// JavaScript.g3:510:33: ( SkipSpace )*
 				try { DebugEnterSubRule(225);
 				while (true)
 				{
@@ -19909,11 +20056,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:507:33: SkipSpace
+						// JavaScript.g3:510:33: SkipSpace
 						{
-						DebugLocation(507, 33);
-						SkipSpace348=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_primaryExpression4710); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace348);
+						DebugLocation(510, 33);
+						SkipSpace341=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_primaryExpression4779); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace341);
 
 
 						}
@@ -19929,9 +20076,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(225); }
 
-				DebugLocation(507, 44);
-				char_literal349=(CommonToken)Match(input,131,Follow._131_in_primaryExpression4713); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_131.Add(char_literal349);
+				DebugLocation(510, 44);
+				char_literal342=(CommonToken)Match(input,137,Follow._137_in_primaryExpression4782); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_137.Add(char_literal342);
 
 
 
@@ -19948,9 +20095,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 508:9: -> expression
+				// 511:9: -> expression
 				{
-					DebugLocation(508, 12);
+					DebugLocation(511, 12);
 					adaptor.AddChild(root_0, stream_expression.NextTree());
 
 				}
@@ -19985,7 +20132,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_primaryExpression();
 			if (state.backtracking > 0) { Memoize(input, 85, primaryExpression_StartIndex); }
 		}
-		DebugLocation(509, 4);
+		DebugLocation(512, 4);
 		} finally { DebugExitRule(GrammarFileName, "primaryExpression"); }
 		return retval;
 
@@ -20002,7 +20149,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_arrayLiteral();
 
 	// $ANTLR start "arrayLiteral"
-	// JavaScript.g3:512:1: arrayLiteral : '[' ( SkipSpace )* ( assignmentExpression )? ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )* ( SkipSpace )* ']' -> ^( INLINE_ARRAY_INIT ( assignmentExpression )* ) ;
+	// JavaScript.g3:515:1: arrayLiteral : '[' ( SkipSpace )* ( assignmentExpression )? ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )* ( SkipSpace )* ']' -> ^( INLINE_ARRAY_INIT ( assignmentExpression )* ) ;
 	[GrammarRule("arrayLiteral")]
 	private JavaScriptParser.arrayLiteral_return arrayLiteral()
 	{
@@ -20014,43 +20161,43 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int arrayLiteral_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken char_literal350=null;
-		CommonToken SkipSpace351=null;
-		CommonToken SkipSpace353=null;
-		CommonToken char_literal354=null;
-		CommonToken SkipSpace355=null;
-		CommonToken SkipSpace357=null;
-		CommonToken char_literal358=null;
-		JavaScriptParser.assignmentExpression_return assignmentExpression352 = default(JavaScriptParser.assignmentExpression_return);
-		JavaScriptParser.assignmentExpression_return assignmentExpression356 = default(JavaScriptParser.assignmentExpression_return);
+		CommonToken char_literal343=null;
+		CommonToken SkipSpace344=null;
+		CommonToken SkipSpace346=null;
+		CommonToken char_literal347=null;
+		CommonToken SkipSpace348=null;
+		CommonToken SkipSpace350=null;
+		CommonToken char_literal351=null;
+		JavaScriptParser.assignmentExpression_return assignmentExpression345 = default(JavaScriptParser.assignmentExpression_return);
+		JavaScriptParser.assignmentExpression_return assignmentExpression349 = default(JavaScriptParser.assignmentExpression_return);
 
-		CommonTree char_literal350_tree=null;
-		CommonTree SkipSpace351_tree=null;
-		CommonTree SkipSpace353_tree=null;
-		CommonTree char_literal354_tree=null;
-		CommonTree SkipSpace355_tree=null;
-		CommonTree SkipSpace357_tree=null;
-		CommonTree char_literal358_tree=null;
-		RewriteRuleITokenStream stream_135=new RewriteRuleITokenStream(adaptor,"token 135");
+		CommonTree char_literal343_tree=null;
+		CommonTree SkipSpace344_tree=null;
+		CommonTree SkipSpace346_tree=null;
+		CommonTree char_literal347_tree=null;
+		CommonTree SkipSpace348_tree=null;
+		CommonTree SkipSpace350_tree=null;
+		CommonTree char_literal351_tree=null;
+		RewriteRuleITokenStream stream_141=new RewriteRuleITokenStream(adaptor,"token 141");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_COMMA=new RewriteRuleITokenStream(adaptor,"token COMMA");
-		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
+		RewriteRuleITokenStream stream_142=new RewriteRuleITokenStream(adaptor,"token 142");
 		RewriteRuleSubtreeStream stream_assignmentExpression=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpression");
 		try { DebugEnterRule(GrammarFileName, "arrayLiteral");
-		DebugLocation(512, 4);
+		DebugLocation(515, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 86)) { return retval; }
-			// JavaScript.g3:513:5: ( '[' ( SkipSpace )* ( assignmentExpression )? ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )* ( SkipSpace )* ']' -> ^( INLINE_ARRAY_INIT ( assignmentExpression )* ) )
+			// JavaScript.g3:516:5: ( '[' ( SkipSpace )* ( assignmentExpression )? ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )* ( SkipSpace )* ']' -> ^( INLINE_ARRAY_INIT ( assignmentExpression )* ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:513:7: '[' ( SkipSpace )* ( assignmentExpression )? ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )* ( SkipSpace )* ']'
+			// JavaScript.g3:516:7: '[' ( SkipSpace )* ( assignmentExpression )? ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )* ( SkipSpace )* ']'
 			{
-			DebugLocation(513, 7);
-			char_literal350=(CommonToken)Match(input,135,Follow._135_in_arrayLiteral4743); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_135.Add(char_literal350);
+			DebugLocation(516, 7);
+			char_literal343=(CommonToken)Match(input,141,Follow._141_in_arrayLiteral4812); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_141.Add(char_literal343);
 
-			DebugLocation(513, 11);
-			// JavaScript.g3:513:11: ( SkipSpace )*
+			DebugLocation(516, 11);
+			// JavaScript.g3:516:11: ( SkipSpace )*
 			try { DebugEnterSubRule(227);
 			while (true)
 			{
@@ -20076,11 +20223,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:513:11: SkipSpace
+					// JavaScript.g3:516:11: SkipSpace
 					{
-					DebugLocation(513, 11);
-					SkipSpace351=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4745); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace351);
+					DebugLocation(516, 11);
+					SkipSpace344=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4814); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace344);
 
 
 					}
@@ -20096,14 +20243,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(227); }
 
-			DebugLocation(513, 22);
-			// JavaScript.g3:513:22: ( assignmentExpression )?
+			DebugLocation(516, 22);
+			// JavaScript.g3:516:22: ( assignmentExpression )?
 			int alt228=2;
 			try { DebugEnterSubRule(228);
 			try { DebugEnterDecision(228, decisionCanBacktrack[228]);
 			int LA228_0 = input.LA(1);
 
-			if ((LA228_0==BIT_NOT||LA228_0==BoolLiteral||LA228_0==DELETE||LA228_0==DOUBLE_NOT||LA228_0==FALSE||LA228_0==IMPORT_START||LA228_0==Identifier||LA228_0==MINUS||LA228_0==MINUS_INC||LA228_0==NEW||(LA228_0>=NOT && LA228_0<=NULL)||LA228_0==NumericLiteral||LA228_0==PLUS||LA228_0==PLUS_INC||(LA228_0>=StringLiteral && LA228_0<=THIS)||LA228_0==TYPE_OF||LA228_0==VOID||LA228_0==130||LA228_0==135||LA228_0==142||LA228_0==147))
+			if ((LA228_0==BIT_NOT||LA228_0==BoolLiteral||LA228_0==DELETE||LA228_0==DOUBLE_NOT||LA228_0==FALSE||LA228_0==IMPORT_START||LA228_0==Identifier||LA228_0==MINUS||LA228_0==MINUS_INC||LA228_0==NEW||(LA228_0>=NOT && LA228_0<=NULL)||LA228_0==NumericLiteral||LA228_0==PLUS||LA228_0==PLUS_INC||LA228_0==RegularExpressionLiteral||(LA228_0>=StringLiteral && LA228_0<=THIS)||LA228_0==TYPE_OF||LA228_0==VOID||LA228_0==136||LA228_0==141||LA228_0==148||LA228_0==153))
 			{
 				alt228=1;
 			}
@@ -20112,14 +20259,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:513:22: assignmentExpression
+				// JavaScript.g3:516:22: assignmentExpression
 				{
-				DebugLocation(513, 22);
-				PushFollow(Follow._assignmentExpression_in_arrayLiteral4748);
-				assignmentExpression352=assignmentExpression();
+				DebugLocation(516, 22);
+				PushFollow(Follow._assignmentExpression_in_arrayLiteral4817);
+				assignmentExpression345=assignmentExpression();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression352.Tree);
+				if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression345.Tree);
 
 				}
 				break;
@@ -20127,8 +20274,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			}
 			} finally { DebugExitSubRule(228); }
 
-			DebugLocation(513, 44);
-			// JavaScript.g3:513:44: ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )*
+			DebugLocation(516, 44);
+			// JavaScript.g3:516:44: ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )*
 			try { DebugEnterSubRule(232);
 			while (true)
 			{
@@ -20148,10 +20295,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:513:45: ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )?
+					// JavaScript.g3:516:45: ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )?
 					{
-					DebugLocation(513, 45);
-					// JavaScript.g3:513:45: ( SkipSpace )*
+					DebugLocation(516, 45);
+					// JavaScript.g3:516:45: ( SkipSpace )*
 					try { DebugEnterSubRule(229);
 					while (true)
 					{
@@ -20170,11 +20317,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 						{
 						case 1:
 							DebugEnterAlt(1);
-							// JavaScript.g3:513:45: SkipSpace
+							// JavaScript.g3:516:45: SkipSpace
 							{
-							DebugLocation(513, 45);
-							SkipSpace353=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4752); if (state.failed) return retval; 
-							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace353);
+							DebugLocation(516, 45);
+							SkipSpace346=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4821); if (state.failed) return retval; 
+							if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace346);
 
 
 							}
@@ -20190,12 +20337,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 					} finally { DebugExitSubRule(229); }
 
-					DebugLocation(513, 56);
-					char_literal354=(CommonToken)Match(input,COMMA,Follow._COMMA_in_arrayLiteral4755); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal354);
+					DebugLocation(516, 56);
+					char_literal347=(CommonToken)Match(input,COMMA,Follow._COMMA_in_arrayLiteral4824); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal347);
 
-					DebugLocation(513, 60);
-					// JavaScript.g3:513:60: ( ( SkipSpace )* assignmentExpression )?
+					DebugLocation(516, 60);
+					// JavaScript.g3:516:60: ( ( SkipSpace )* assignmentExpression )?
 					int alt231=2;
 					try { DebugEnterSubRule(231);
 					try { DebugEnterDecision(231, decisionCanBacktrack[231]);
@@ -20213,10 +20360,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:513:61: ( SkipSpace )* assignmentExpression
+						// JavaScript.g3:516:61: ( SkipSpace )* assignmentExpression
 						{
-						DebugLocation(513, 61);
-						// JavaScript.g3:513:61: ( SkipSpace )*
+						DebugLocation(516, 61);
+						// JavaScript.g3:516:61: ( SkipSpace )*
 						try { DebugEnterSubRule(230);
 						while (true)
 						{
@@ -20235,11 +20382,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							{
 							case 1:
 								DebugEnterAlt(1);
-								// JavaScript.g3:513:61: SkipSpace
+								// JavaScript.g3:516:61: SkipSpace
 								{
-								DebugLocation(513, 61);
-								SkipSpace355=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4758); if (state.failed) return retval; 
-								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace355);
+								DebugLocation(516, 61);
+								SkipSpace348=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4827); if (state.failed) return retval; 
+								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace348);
 
 
 								}
@@ -20255,12 +20402,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 						} finally { DebugExitSubRule(230); }
 
-						DebugLocation(513, 72);
-						PushFollow(Follow._assignmentExpression_in_arrayLiteral4761);
-						assignmentExpression356=assignmentExpression();
+						DebugLocation(516, 72);
+						PushFollow(Follow._assignmentExpression_in_arrayLiteral4830);
+						assignmentExpression349=assignmentExpression();
 						PopFollow();
 						if (state.failed) return retval;
-						if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression356.Tree);
+						if ( state.backtracking == 0 ) stream_assignmentExpression.Add(assignmentExpression349.Tree);
 
 						}
 						break;
@@ -20282,8 +20429,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(232); }
 
-			DebugLocation(513, 97);
-			// JavaScript.g3:513:97: ( SkipSpace )*
+			DebugLocation(516, 97);
+			// JavaScript.g3:516:97: ( SkipSpace )*
 			try { DebugEnterSubRule(233);
 			while (true)
 			{
@@ -20302,11 +20449,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:513:97: SkipSpace
+					// JavaScript.g3:516:97: SkipSpace
 					{
-					DebugLocation(513, 97);
-					SkipSpace357=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4767); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace357);
+					DebugLocation(516, 97);
+					SkipSpace350=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_arrayLiteral4836); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace350);
 
 
 					}
@@ -20322,9 +20469,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(233); }
 
-			DebugLocation(513, 108);
-			char_literal358=(CommonToken)Match(input,136,Follow._136_in_arrayLiteral4770); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_136.Add(char_literal358);
+			DebugLocation(516, 108);
+			char_literal351=(CommonToken)Match(input,142,Follow._142_in_arrayLiteral4839); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_142.Add(char_literal351);
 
 
 
@@ -20341,20 +20488,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 514:9: -> ^( INLINE_ARRAY_INIT ( assignmentExpression )* )
+			// 517:9: -> ^( INLINE_ARRAY_INIT ( assignmentExpression )* )
 			{
-				DebugLocation(514, 12);
-				// JavaScript.g3:514:12: ^( INLINE_ARRAY_INIT ( assignmentExpression )* )
+				DebugLocation(517, 12);
+				// JavaScript.g3:517:12: ^( INLINE_ARRAY_INIT ( assignmentExpression )* )
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(514, 14);
+				DebugLocation(517, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(INLINE_ARRAY_INIT, "INLINE_ARRAY_INIT"), root_1);
 
-				DebugLocation(514, 32);
-				// JavaScript.g3:514:32: ( assignmentExpression )*
+				DebugLocation(517, 32);
+				// JavaScript.g3:517:32: ( assignmentExpression )*
 				while ( stream_assignmentExpression.HasNext )
 				{
-					DebugLocation(514, 32);
+					DebugLocation(517, 32);
 					adaptor.AddChild(root_1, stream_assignmentExpression.NextTree());
 
 				}
@@ -20393,7 +20540,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_arrayLiteral();
 			if (state.backtracking > 0) { Memoize(input, 86, arrayLiteral_StartIndex); }
 		}
-		DebugLocation(515, 4);
+		DebugLocation(518, 4);
 		} finally { DebugExitRule(GrammarFileName, "arrayLiteral"); }
 		return retval;
 
@@ -20410,7 +20557,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_objectLiteral();
 
 	// $ANTLR start "objectLiteral"
-	// JavaScript.g3:518:1: objectLiteral : ( '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* pn2= propertyNameAndValue )* ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT propertyNameAndValue ( $pn2)* ) | '{' ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ) );
+	// JavaScript.g3:521:1: objectLiteral : ( '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* propertyNameAndValue )* ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ( propertyNameAndValue )+ ) | '{' ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ) );
 	[GrammarRule("objectLiteral")]
 	private JavaScriptParser.objectLiteral_return objectLiteral()
 	{
@@ -20422,40 +20569,40 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int objectLiteral_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken char_literal359=null;
-		CommonToken SkipSpace360=null;
+		CommonToken char_literal352=null;
+		CommonToken SkipSpace353=null;
+		CommonToken SkipSpace355=null;
+		CommonToken char_literal356=null;
+		CommonToken SkipSpace357=null;
+		CommonToken SkipSpace359=null;
+		CommonToken char_literal360=null;
+		CommonToken char_literal361=null;
 		CommonToken SkipSpace362=null;
 		CommonToken char_literal363=null;
-		CommonToken SkipSpace364=null;
-		CommonToken SkipSpace365=null;
-		CommonToken char_literal366=null;
-		CommonToken char_literal367=null;
-		CommonToken SkipSpace368=null;
-		CommonToken char_literal369=null;
-		JavaScriptParser.propertyNameAndValue_return pn2 = default(JavaScriptParser.propertyNameAndValue_return);
-		JavaScriptParser.propertyNameAndValue_return propertyNameAndValue361 = default(JavaScriptParser.propertyNameAndValue_return);
+		JavaScriptParser.propertyNameAndValue_return propertyNameAndValue354 = default(JavaScriptParser.propertyNameAndValue_return);
+		JavaScriptParser.propertyNameAndValue_return propertyNameAndValue358 = default(JavaScriptParser.propertyNameAndValue_return);
 
-		CommonTree char_literal359_tree=null;
-		CommonTree SkipSpace360_tree=null;
+		CommonTree char_literal352_tree=null;
+		CommonTree SkipSpace353_tree=null;
+		CommonTree SkipSpace355_tree=null;
+		CommonTree char_literal356_tree=null;
+		CommonTree SkipSpace357_tree=null;
+		CommonTree SkipSpace359_tree=null;
+		CommonTree char_literal360_tree=null;
+		CommonTree char_literal361_tree=null;
 		CommonTree SkipSpace362_tree=null;
 		CommonTree char_literal363_tree=null;
-		CommonTree SkipSpace364_tree=null;
-		CommonTree SkipSpace365_tree=null;
-		CommonTree char_literal366_tree=null;
-		CommonTree char_literal367_tree=null;
-		CommonTree SkipSpace368_tree=null;
-		CommonTree char_literal369_tree=null;
-		RewriteRuleITokenStream stream_147=new RewriteRuleITokenStream(adaptor,"token 147");
+		RewriteRuleITokenStream stream_153=new RewriteRuleITokenStream(adaptor,"token 153");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_COMMA=new RewriteRuleITokenStream(adaptor,"token COMMA");
-		RewriteRuleITokenStream stream_148=new RewriteRuleITokenStream(adaptor,"token 148");
+		RewriteRuleITokenStream stream_154=new RewriteRuleITokenStream(adaptor,"token 154");
 		RewriteRuleSubtreeStream stream_propertyNameAndValue=new RewriteRuleSubtreeStream(adaptor,"rule propertyNameAndValue");
 		try { DebugEnterRule(GrammarFileName, "objectLiteral");
-		DebugLocation(518, 4);
+		DebugLocation(521, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 87)) { return retval; }
-			// JavaScript.g3:519:5: ( '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* pn2= propertyNameAndValue )* ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT propertyNameAndValue ( $pn2)* ) | '{' ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ) )
+			// JavaScript.g3:522:5: ( '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* propertyNameAndValue )* ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ( propertyNameAndValue )+ ) | '{' ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ) )
 			int alt240=2;
 			try { DebugEnterDecision(240, decisionCanBacktrack[240]);
 			try
@@ -20472,14 +20619,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:519:7: '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* pn2= propertyNameAndValue )* ( SkipSpace )* '}'
+				// JavaScript.g3:522:7: '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* propertyNameAndValue )* ( SkipSpace )* '}'
 				{
-				DebugLocation(519, 7);
-				char_literal359=(CommonToken)Match(input,147,Follow._147_in_objectLiteral4805); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_147.Add(char_literal359);
+				DebugLocation(522, 7);
+				char_literal352=(CommonToken)Match(input,153,Follow._153_in_objectLiteral4874); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_153.Add(char_literal352);
 
-				DebugLocation(519, 11);
-				// JavaScript.g3:519:11: ( SkipSpace )*
+				DebugLocation(522, 11);
+				// JavaScript.g3:522:11: ( SkipSpace )*
 				try { DebugEnterSubRule(234);
 				while (true)
 				{
@@ -20498,11 +20645,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:519:11: SkipSpace
+						// JavaScript.g3:522:11: SkipSpace
 						{
-						DebugLocation(519, 11);
-						SkipSpace360=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4807); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace360);
+						DebugLocation(522, 11);
+						SkipSpace353=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4876); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace353);
 
 
 						}
@@ -20518,14 +20665,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(234); }
 
-				DebugLocation(519, 22);
-				PushFollow(Follow._propertyNameAndValue_in_objectLiteral4810);
-				propertyNameAndValue361=propertyNameAndValue();
+				DebugLocation(522, 22);
+				PushFollow(Follow._propertyNameAndValue_in_objectLiteral4879);
+				propertyNameAndValue354=propertyNameAndValue();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) stream_propertyNameAndValue.Add(propertyNameAndValue361.Tree);
-				DebugLocation(519, 43);
-				// JavaScript.g3:519:43: ( ( SkipSpace )* ',' ( SkipSpace )* pn2= propertyNameAndValue )*
+				if ( state.backtracking == 0 ) stream_propertyNameAndValue.Add(propertyNameAndValue354.Tree);
+				DebugLocation(522, 43);
+				// JavaScript.g3:522:43: ( ( SkipSpace )* ',' ( SkipSpace )* propertyNameAndValue )*
 				try { DebugEnterSubRule(237);
 				while (true)
 				{
@@ -20545,10 +20692,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:519:44: ( SkipSpace )* ',' ( SkipSpace )* pn2= propertyNameAndValue
+						// JavaScript.g3:522:44: ( SkipSpace )* ',' ( SkipSpace )* propertyNameAndValue
 						{
-						DebugLocation(519, 44);
-						// JavaScript.g3:519:44: ( SkipSpace )*
+						DebugLocation(522, 44);
+						// JavaScript.g3:522:44: ( SkipSpace )*
 						try { DebugEnterSubRule(235);
 						while (true)
 						{
@@ -20567,11 +20714,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							{
 							case 1:
 								DebugEnterAlt(1);
-								// JavaScript.g3:519:44: SkipSpace
+								// JavaScript.g3:522:44: SkipSpace
 								{
-								DebugLocation(519, 44);
-								SkipSpace362=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4813); if (state.failed) return retval; 
-								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace362);
+								DebugLocation(522, 44);
+								SkipSpace355=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4882); if (state.failed) return retval; 
+								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace355);
 
 
 								}
@@ -20587,12 +20734,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 						} finally { DebugExitSubRule(235); }
 
-						DebugLocation(519, 55);
-						char_literal363=(CommonToken)Match(input,COMMA,Follow._COMMA_in_objectLiteral4816); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal363);
+						DebugLocation(522, 55);
+						char_literal356=(CommonToken)Match(input,COMMA,Follow._COMMA_in_objectLiteral4885); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal356);
 
-						DebugLocation(519, 59);
-						// JavaScript.g3:519:59: ( SkipSpace )*
+						DebugLocation(522, 59);
+						// JavaScript.g3:522:59: ( SkipSpace )*
 						try { DebugEnterSubRule(236);
 						while (true)
 						{
@@ -20611,11 +20758,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							{
 							case 1:
 								DebugEnterAlt(1);
-								// JavaScript.g3:519:59: SkipSpace
+								// JavaScript.g3:522:59: SkipSpace
 								{
-								DebugLocation(519, 59);
-								SkipSpace364=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4818); if (state.failed) return retval; 
-								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace364);
+								DebugLocation(522, 59);
+								SkipSpace357=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4887); if (state.failed) return retval; 
+								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace357);
 
 
 								}
@@ -20631,12 +20778,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 						} finally { DebugExitSubRule(236); }
 
-						DebugLocation(519, 73);
-						PushFollow(Follow._propertyNameAndValue_in_objectLiteral4823);
-						pn2=propertyNameAndValue();
+						DebugLocation(522, 70);
+						PushFollow(Follow._propertyNameAndValue_in_objectLiteral4890);
+						propertyNameAndValue358=propertyNameAndValue();
 						PopFollow();
 						if (state.failed) return retval;
-						if ( state.backtracking == 0 ) stream_propertyNameAndValue.Add(pn2.Tree);
+						if ( state.backtracking == 0 ) stream_propertyNameAndValue.Add(propertyNameAndValue358.Tree);
 
 						}
 						break;
@@ -20651,8 +20798,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(237); }
 
-				DebugLocation(519, 97);
-				// JavaScript.g3:519:97: ( SkipSpace )*
+				DebugLocation(522, 93);
+				// JavaScript.g3:522:93: ( SkipSpace )*
 				try { DebugEnterSubRule(238);
 				while (true)
 				{
@@ -20671,11 +20818,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:519:97: SkipSpace
+						// JavaScript.g3:522:93: SkipSpace
 						{
-						DebugLocation(519, 97);
-						SkipSpace365=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4827); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace365);
+						DebugLocation(522, 93);
+						SkipSpace359=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4894); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace359);
 
 
 						}
@@ -20691,46 +20838,46 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(238); }
 
-				DebugLocation(519, 108);
-				char_literal366=(CommonToken)Match(input,148,Follow._148_in_objectLiteral4830); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_148.Add(char_literal366);
+				DebugLocation(522, 104);
+				char_literal360=(CommonToken)Match(input,154,Follow._154_in_objectLiteral4897); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_154.Add(char_literal360);
 
 
 
 				{
 				// AST REWRITE
-				// elements: propertyNameAndValue, pn2
+				// elements: propertyNameAndValue
 				// token labels: 
-				// rule labels: pn2, retval
+				// rule labels: retval
 				// token list labels: 
 				// rule list labels: 
 				// wildcard labels: 
 				if ( state.backtracking == 0 ) {
 				retval.Tree = root_0;
-				RewriteRuleSubtreeStream stream_pn2=new RewriteRuleSubtreeStream(adaptor,"rule pn2",pn2!=null?pn2.Tree:null);
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 520:9: -> ^( INLINE_OBJ_INIT propertyNameAndValue ( $pn2)* )
+				// 523:9: -> ^( INLINE_OBJ_INIT ( propertyNameAndValue )+ )
 				{
-					DebugLocation(520, 12);
-					// JavaScript.g3:520:12: ^( INLINE_OBJ_INIT propertyNameAndValue ( $pn2)* )
+					DebugLocation(523, 12);
+					// JavaScript.g3:523:12: ^( INLINE_OBJ_INIT ( propertyNameAndValue )+ )
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(520, 14);
+					DebugLocation(523, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(INLINE_OBJ_INIT, "INLINE_OBJ_INIT"), root_1);
 
-					DebugLocation(520, 30);
-					adaptor.AddChild(root_1, stream_propertyNameAndValue.NextTree());
-					DebugLocation(520, 52);
-					// JavaScript.g3:520:52: ( $pn2)*
-					while ( stream_pn2.HasNext )
+					DebugLocation(523, 30);
+					if ( !(stream_propertyNameAndValue.HasNext) )
 					{
-						DebugLocation(520, 52);
-						adaptor.AddChild(root_1, stream_pn2.NextTree());
+						throw new RewriteEarlyExitException();
+					}
+					while ( stream_propertyNameAndValue.HasNext )
+					{
+						DebugLocation(523, 30);
+						adaptor.AddChild(root_1, stream_propertyNameAndValue.NextTree());
 
 					}
-					stream_pn2.Reset();
+					stream_propertyNameAndValue.Reset();
 
 					adaptor.AddChild(root_0, root_1);
 					}
@@ -20745,14 +20892,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:521:7: '{' ( SkipSpace )* '}'
+				// JavaScript.g3:524:7: '{' ( SkipSpace )* '}'
 				{
-				DebugLocation(521, 7);
-				char_literal367=(CommonToken)Match(input,147,Follow._147_in_objectLiteral4858); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_147.Add(char_literal367);
+				DebugLocation(524, 7);
+				char_literal361=(CommonToken)Match(input,153,Follow._153_in_objectLiteral4922); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_153.Add(char_literal361);
 
-				DebugLocation(521, 11);
-				// JavaScript.g3:521:11: ( SkipSpace )*
+				DebugLocation(524, 11);
+				// JavaScript.g3:524:11: ( SkipSpace )*
 				try { DebugEnterSubRule(239);
 				while (true)
 				{
@@ -20771,11 +20918,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:521:11: SkipSpace
+						// JavaScript.g3:524:11: SkipSpace
 						{
-						DebugLocation(521, 11);
-						SkipSpace368=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4860); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace368);
+						DebugLocation(524, 11);
+						SkipSpace362=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_objectLiteral4924); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace362);
 
 
 						}
@@ -20791,9 +20938,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(239); }
 
-				DebugLocation(521, 22);
-				char_literal369=(CommonToken)Match(input,148,Follow._148_in_objectLiteral4863); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_148.Add(char_literal369);
+				DebugLocation(524, 22);
+				char_literal363=(CommonToken)Match(input,154,Follow._154_in_objectLiteral4927); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_154.Add(char_literal363);
 
 
 
@@ -20810,13 +20957,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 521:26: -> ^( INLINE_OBJ_INIT )
+				// 524:26: -> ^( INLINE_OBJ_INIT )
 				{
-					DebugLocation(521, 29);
-					// JavaScript.g3:521:29: ^( INLINE_OBJ_INIT )
+					DebugLocation(524, 29);
+					// JavaScript.g3:524:29: ^( INLINE_OBJ_INIT )
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(521, 31);
+					DebugLocation(524, 31);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(INLINE_OBJ_INIT, "INLINE_OBJ_INIT"), root_1);
 
 					adaptor.AddChild(root_0, root_1);
@@ -20854,7 +21001,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_objectLiteral();
 			if (state.backtracking > 0) { Memoize(input, 87, objectLiteral_StartIndex); }
 		}
-		DebugLocation(522, 4);
+		DebugLocation(525, 4);
 		} finally { DebugExitRule(GrammarFileName, "objectLiteral"); }
 		return retval;
 
@@ -20871,7 +21018,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_propertyInitializers();
 
 	// $ANTLR start "propertyInitializers"
-	// JavaScript.g3:524:1: propertyInitializers : propertyNameAndValue ( ( SkipSpace )* ',' propertyInitializers ) ;
+	// JavaScript.g3:527:1: propertyInitializers : propertyNameAndValue ( ( SkipSpace )* ',' propertyInitializers ) ;
 	[GrammarRule("propertyInitializers")]
 	private JavaScriptParser.propertyInitializers_return propertyInitializers()
 	{
@@ -20883,38 +21030,38 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int propertyInitializers_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace371=null;
-		CommonToken char_literal372=null;
-		JavaScriptParser.propertyNameAndValue_return propertyNameAndValue370 = default(JavaScriptParser.propertyNameAndValue_return);
-		JavaScriptParser.propertyInitializers_return propertyInitializers373 = default(JavaScriptParser.propertyInitializers_return);
+		CommonToken SkipSpace365=null;
+		CommonToken char_literal366=null;
+		JavaScriptParser.propertyNameAndValue_return propertyNameAndValue364 = default(JavaScriptParser.propertyNameAndValue_return);
+		JavaScriptParser.propertyInitializers_return propertyInitializers367 = default(JavaScriptParser.propertyInitializers_return);
 
-		CommonTree SkipSpace371_tree=null;
-		CommonTree char_literal372_tree=null;
+		CommonTree SkipSpace365_tree=null;
+		CommonTree char_literal366_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "propertyInitializers");
-		DebugLocation(524, 4);
+		DebugLocation(527, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 88)) { return retval; }
-			// JavaScript.g3:525:5: ( propertyNameAndValue ( ( SkipSpace )* ',' propertyInitializers ) )
+			// JavaScript.g3:528:5: ( propertyNameAndValue ( ( SkipSpace )* ',' propertyInitializers ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:525:7: propertyNameAndValue ( ( SkipSpace )* ',' propertyInitializers )
+			// JavaScript.g3:528:7: propertyNameAndValue ( ( SkipSpace )* ',' propertyInitializers )
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(525, 7);
-			PushFollow(Follow._propertyNameAndValue_in_propertyInitializers4886);
-			propertyNameAndValue370=propertyNameAndValue();
+			DebugLocation(528, 7);
+			PushFollow(Follow._propertyNameAndValue_in_propertyInitializers4950);
+			propertyNameAndValue364=propertyNameAndValue();
 			PopFollow();
 			if (state.failed) return retval;
-			if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyNameAndValue370.Tree);
-			DebugLocation(525, 28);
-			// JavaScript.g3:525:28: ( ( SkipSpace )* ',' propertyInitializers )
+			if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyNameAndValue364.Tree);
+			DebugLocation(528, 28);
+			// JavaScript.g3:528:28: ( ( SkipSpace )* ',' propertyInitializers )
 			DebugEnterAlt(1);
-			// JavaScript.g3:525:29: ( SkipSpace )* ',' propertyInitializers
+			// JavaScript.g3:528:29: ( SkipSpace )* ',' propertyInitializers
 			{
-			DebugLocation(525, 29);
-			// JavaScript.g3:525:29: ( SkipSpace )*
+			DebugLocation(528, 29);
+			// JavaScript.g3:528:29: ( SkipSpace )*
 			try { DebugEnterSubRule(241);
 			while (true)
 			{
@@ -20933,13 +21080,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:525:29: SkipSpace
+					// JavaScript.g3:528:29: SkipSpace
 					{
-					DebugLocation(525, 29);
-					SkipSpace371=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyInitializers4889); if (state.failed) return retval;
+					DebugLocation(528, 29);
+					SkipSpace365=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyInitializers4953); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
-					SkipSpace371_tree = (CommonTree)adaptor.Create(SkipSpace371);
-					adaptor.AddChild(root_0, SkipSpace371_tree);
+					SkipSpace365_tree = (CommonTree)adaptor.Create(SkipSpace365);
+					adaptor.AddChild(root_0, SkipSpace365_tree);
 					}
 
 					}
@@ -20955,18 +21102,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(241); }
 
-			DebugLocation(525, 40);
-			char_literal372=(CommonToken)Match(input,COMMA,Follow._COMMA_in_propertyInitializers4892); if (state.failed) return retval;
+			DebugLocation(528, 40);
+			char_literal366=(CommonToken)Match(input,COMMA,Follow._COMMA_in_propertyInitializers4956); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
-			char_literal372_tree = (CommonTree)adaptor.Create(char_literal372);
-			adaptor.AddChild(root_0, char_literal372_tree);
+			char_literal366_tree = (CommonTree)adaptor.Create(char_literal366);
+			adaptor.AddChild(root_0, char_literal366_tree);
 			}
-			DebugLocation(525, 44);
-			PushFollow(Follow._propertyInitializers_in_propertyInitializers4894);
-			propertyInitializers373=propertyInitializers();
+			DebugLocation(528, 44);
+			PushFollow(Follow._propertyInitializers_in_propertyInitializers4958);
+			propertyInitializers367=propertyInitializers();
 			PopFollow();
 			if (state.failed) return retval;
-			if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyInitializers373.Tree);
+			if ( state.backtracking == 0 ) adaptor.AddChild(root_0, propertyInitializers367.Tree);
 
 			}
 
@@ -20995,7 +21142,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_propertyInitializers();
 			if (state.backtracking > 0) { Memoize(input, 88, propertyInitializers_StartIndex); }
 		}
-		DebugLocation(526, 4);
+		DebugLocation(529, 4);
 		} finally { DebugExitRule(GrammarFileName, "propertyInitializers"); }
 		return retval;
 
@@ -21012,7 +21159,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_propertyNameAndValue();
 
 	// $ANTLR start "propertyNameAndValue"
-	// JavaScript.g3:528:1: propertyNameAndValue : propName= propertyName ( SkipSpace )* ':' ( SkipSpace )* assignment= assignmentExpression -> ^( PROP_NAME_VALUE $propName $assignment) ;
+	// JavaScript.g3:531:1: propertyNameAndValue : propName= propertyName ( SkipSpace )* ':' ( SkipSpace )* assignment= assignmentExpression -> ^( PROP_NAME_VALUE $propName $assignment) ;
 	[GrammarRule("propertyNameAndValue")]
 	private JavaScriptParser.propertyNameAndValue_return propertyNameAndValue()
 	{
@@ -21024,36 +21171,36 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int propertyNameAndValue_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken SkipSpace374=null;
-		CommonToken char_literal375=null;
-		CommonToken SkipSpace376=null;
+		CommonToken SkipSpace368=null;
+		CommonToken char_literal369=null;
+		CommonToken SkipSpace370=null;
 		JavaScriptParser.propertyName_return propName = default(JavaScriptParser.propertyName_return);
 		JavaScriptParser.assignmentExpression_return assignment = default(JavaScriptParser.assignmentExpression_return);
 
-		CommonTree SkipSpace374_tree=null;
-		CommonTree char_literal375_tree=null;
-		CommonTree SkipSpace376_tree=null;
+		CommonTree SkipSpace368_tree=null;
+		CommonTree char_literal369_tree=null;
+		CommonTree SkipSpace370_tree=null;
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
-		RewriteRuleITokenStream stream_133=new RewriteRuleITokenStream(adaptor,"token 133");
+		RewriteRuleITokenStream stream_139=new RewriteRuleITokenStream(adaptor,"token 139");
 		RewriteRuleSubtreeStream stream_propertyName=new RewriteRuleSubtreeStream(adaptor,"rule propertyName");
 		RewriteRuleSubtreeStream stream_assignmentExpression=new RewriteRuleSubtreeStream(adaptor,"rule assignmentExpression");
 		try { DebugEnterRule(GrammarFileName, "propertyNameAndValue");
-		DebugLocation(528, 4);
+		DebugLocation(531, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 89)) { return retval; }
-			// JavaScript.g3:529:5: (propName= propertyName ( SkipSpace )* ':' ( SkipSpace )* assignment= assignmentExpression -> ^( PROP_NAME_VALUE $propName $assignment) )
+			// JavaScript.g3:532:5: (propName= propertyName ( SkipSpace )* ':' ( SkipSpace )* assignment= assignmentExpression -> ^( PROP_NAME_VALUE $propName $assignment) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:529:7: propName= propertyName ( SkipSpace )* ':' ( SkipSpace )* assignment= assignmentExpression
+			// JavaScript.g3:532:7: propName= propertyName ( SkipSpace )* ':' ( SkipSpace )* assignment= assignmentExpression
 			{
-			DebugLocation(529, 15);
-			PushFollow(Follow._propertyName_in_propertyNameAndValue4914);
+			DebugLocation(532, 15);
+			PushFollow(Follow._propertyName_in_propertyNameAndValue4978);
 			propName=propertyName();
 			PopFollow();
 			if (state.failed) return retval;
 			if ( state.backtracking == 0 ) stream_propertyName.Add(propName.Tree);
-			DebugLocation(529, 29);
-			// JavaScript.g3:529:29: ( SkipSpace )*
+			DebugLocation(532, 29);
+			// JavaScript.g3:532:29: ( SkipSpace )*
 			try { DebugEnterSubRule(242);
 			while (true)
 			{
@@ -21072,11 +21219,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:529:29: SkipSpace
+					// JavaScript.g3:532:29: SkipSpace
 					{
-					DebugLocation(529, 29);
-					SkipSpace374=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyNameAndValue4916); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace374);
+					DebugLocation(532, 29);
+					SkipSpace368=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyNameAndValue4980); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace368);
 
 
 					}
@@ -21092,12 +21239,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(242); }
 
-			DebugLocation(529, 40);
-			char_literal375=(CommonToken)Match(input,133,Follow._133_in_propertyNameAndValue4919); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_133.Add(char_literal375);
+			DebugLocation(532, 40);
+			char_literal369=(CommonToken)Match(input,139,Follow._139_in_propertyNameAndValue4983); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_139.Add(char_literal369);
 
-			DebugLocation(529, 44);
-			// JavaScript.g3:529:44: ( SkipSpace )*
+			DebugLocation(532, 44);
+			// JavaScript.g3:532:44: ( SkipSpace )*
 			try { DebugEnterSubRule(243);
 			while (true)
 			{
@@ -21116,11 +21263,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:529:44: SkipSpace
+					// JavaScript.g3:532:44: SkipSpace
 					{
-					DebugLocation(529, 44);
-					SkipSpace376=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyNameAndValue4921); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace376);
+					DebugLocation(532, 44);
+					SkipSpace370=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_propertyNameAndValue4985); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace370);
 
 
 					}
@@ -21136,8 +21283,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(243); }
 
-			DebugLocation(529, 65);
-			PushFollow(Follow._assignmentExpression_in_propertyNameAndValue4926);
+			DebugLocation(532, 65);
+			PushFollow(Follow._assignmentExpression_in_propertyNameAndValue4990);
 			assignment=assignmentExpression();
 			PopFollow();
 			if (state.failed) return retval;
@@ -21159,18 +21306,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 529:87: -> ^( PROP_NAME_VALUE $propName $assignment)
+			// 532:87: -> ^( PROP_NAME_VALUE $propName $assignment)
 			{
-				DebugLocation(529, 90);
-				// JavaScript.g3:529:90: ^( PROP_NAME_VALUE $propName $assignment)
+				DebugLocation(532, 90);
+				// JavaScript.g3:532:90: ^( PROP_NAME_VALUE $propName $assignment)
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(529, 92);
+				DebugLocation(532, 92);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(PROP_NAME_VALUE, "PROP_NAME_VALUE"), root_1);
 
-				DebugLocation(529, 109);
+				DebugLocation(532, 109);
 				adaptor.AddChild(root_1, stream_propName.NextTree());
-				DebugLocation(529, 119);
+				DebugLocation(532, 119);
 				adaptor.AddChild(root_1, stream_assignment.NextTree());
 
 				adaptor.AddChild(root_0, root_1);
@@ -21206,7 +21353,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_propertyNameAndValue();
 			if (state.backtracking > 0) { Memoize(input, 89, propertyNameAndValue_StartIndex); }
 		}
-		DebugLocation(530, 4);
+		DebugLocation(533, 4);
 		} finally { DebugExitRule(GrammarFileName, "propertyNameAndValue"); }
 		return retval;
 
@@ -21223,7 +21370,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_propertyName();
 
 	// $ANTLR start "propertyName"
-	// JavaScript.g3:532:1: propertyName : ( Identifier | StringLiteral | NumericLiteral );
+	// JavaScript.g3:535:1: propertyName : ( Identifier | StringLiteral | NumericLiteral );
 	[GrammarRule("propertyName")]
 	private JavaScriptParser.propertyName_return propertyName()
 	{
@@ -21235,27 +21382,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int propertyName_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set377=null;
+		CommonToken set371=null;
 
-		CommonTree set377_tree=null;
+		CommonTree set371_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "propertyName");
-		DebugLocation(532, 4);
+		DebugLocation(535, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 90)) { return retval; }
-			// JavaScript.g3:533:5: ( Identifier | StringLiteral | NumericLiteral )
+			// JavaScript.g3:536:5: ( Identifier | StringLiteral | NumericLiteral )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(533, 5);
-			set377=(CommonToken)input.LT(1);
+			DebugLocation(536, 5);
+			set371=(CommonToken)input.LT(1);
 			if (input.LA(1)==Identifier||input.LA(1)==NumericLiteral||input.LA(1)==StringLiteral)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set377));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set371));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -21291,7 +21438,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_propertyName();
 			if (state.backtracking > 0) { Memoize(input, 90, propertyName_StartIndex); }
 		}
-		DebugLocation(536, 4);
+		DebugLocation(539, 4);
 		} finally { DebugExitRule(GrammarFileName, "propertyName"); }
 		return retval;
 
@@ -21308,7 +21455,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_literal();
 
 	// $ANTLR start "literal"
-	// JavaScript.g3:539:1: literal : ( NULL | BoolLiteral | FALSE | StringLiteral | NumericLiteral );
+	// JavaScript.g3:542:1: literal : ( NULL | BoolLiteral | FALSE | StringLiteral | NumericLiteral | RegularExpressionLiteral );
 	[GrammarRule("literal")]
 	private JavaScriptParser.literal_return literal()
 	{
@@ -21320,27 +21467,27 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int literal_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken set378=null;
+		CommonToken set372=null;
 
-		CommonTree set378_tree=null;
+		CommonTree set372_tree=null;
 
 		try { DebugEnterRule(GrammarFileName, "literal");
-		DebugLocation(539, 4);
+		DebugLocation(542, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 91)) { return retval; }
-			// JavaScript.g3:540:5: ( NULL | BoolLiteral | FALSE | StringLiteral | NumericLiteral )
+			// JavaScript.g3:543:5: ( NULL | BoolLiteral | FALSE | StringLiteral | NumericLiteral | RegularExpressionLiteral )
 			DebugEnterAlt(1);
 			// JavaScript.g3:
 			{
 			root_0 = (CommonTree)adaptor.Nil();
 
-			DebugLocation(540, 5);
-			set378=(CommonToken)input.LT(1);
-			if (input.LA(1)==BoolLiteral||input.LA(1)==FALSE||input.LA(1)==NULL||input.LA(1)==NumericLiteral||input.LA(1)==StringLiteral)
+			DebugLocation(543, 5);
+			set372=(CommonToken)input.LT(1);
+			if (input.LA(1)==BoolLiteral||input.LA(1)==FALSE||input.LA(1)==NULL||input.LA(1)==NumericLiteral||input.LA(1)==RegularExpressionLiteral||input.LA(1)==StringLiteral)
 			{
 				input.Consume();
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set378));
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, (CommonTree)adaptor.Create(set372));
 				state.errorRecovery=false;state.failed=false;
 			}
 			else
@@ -21376,7 +21523,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_literal();
 			if (state.backtracking > 0) { Memoize(input, 91, literal_StartIndex); }
 		}
-		DebugLocation(545, 4);
+		DebugLocation(549, 4);
 		} finally { DebugExitRule(GrammarFileName, "literal"); }
 		return retval;
 
@@ -21393,7 +21540,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_importedNotation();
 
 	// $ANTLR start "importedNotation"
-	// JavaScript.g3:547:1: importedNotation : ( IMPORT_START importedTypeName '}' | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}' -> ^( TYPE_SEPERATOR $type $ident) | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}' -> ^( TYPE_SEPERATOR $type $ident $args) );
+	// JavaScript.g3:551:1: importedNotation : ( IMPORT_START importedTypeName '}' | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}' -> ^( TYPE_SEPERATOR $type $ident) | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}' -> ^( TYPE_SEPERATOR $type $ident $args) );
 	[GrammarRule("importedNotation")]
 	private JavaScriptParser.importedNotation_return importedNotation()
 	{
@@ -21406,39 +21553,39 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		CommonTree root_0 = null;
 
 		CommonToken ident=null;
+		CommonToken IMPORT_START373=null;
+		CommonToken char_literal375=null;
+		CommonToken IMPORT_START376=null;
+		CommonToken TYPE_SEPERATOR377=null;
+		CommonToken char_literal378=null;
 		CommonToken IMPORT_START379=null;
+		CommonToken TYPE_SEPERATOR380=null;
 		CommonToken char_literal381=null;
-		CommonToken IMPORT_START382=null;
-		CommonToken TYPE_SEPERATOR383=null;
-		CommonToken char_literal384=null;
-		CommonToken IMPORT_START385=null;
-		CommonToken TYPE_SEPERATOR386=null;
-		CommonToken char_literal387=null;
 		JavaScriptParser.importedTypeName_return type = default(JavaScriptParser.importedTypeName_return);
 		JavaScriptParser.importedMethodArguments_return args = default(JavaScriptParser.importedMethodArguments_return);
-		JavaScriptParser.importedTypeName_return importedTypeName380 = default(JavaScriptParser.importedTypeName_return);
+		JavaScriptParser.importedTypeName_return importedTypeName374 = default(JavaScriptParser.importedTypeName_return);
 
 		CommonTree ident_tree=null;
+		CommonTree IMPORT_START373_tree=null;
+		CommonTree char_literal375_tree=null;
+		CommonTree IMPORT_START376_tree=null;
+		CommonTree TYPE_SEPERATOR377_tree=null;
+		CommonTree char_literal378_tree=null;
 		CommonTree IMPORT_START379_tree=null;
+		CommonTree TYPE_SEPERATOR380_tree=null;
 		CommonTree char_literal381_tree=null;
-		CommonTree IMPORT_START382_tree=null;
-		CommonTree TYPE_SEPERATOR383_tree=null;
-		CommonTree char_literal384_tree=null;
-		CommonTree IMPORT_START385_tree=null;
-		CommonTree TYPE_SEPERATOR386_tree=null;
-		CommonTree char_literal387_tree=null;
 		RewriteRuleITokenStream stream_IMPORT_START=new RewriteRuleITokenStream(adaptor,"token IMPORT_START");
 		RewriteRuleITokenStream stream_TYPE_SEPERATOR=new RewriteRuleITokenStream(adaptor,"token TYPE_SEPERATOR");
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
-		RewriteRuleITokenStream stream_148=new RewriteRuleITokenStream(adaptor,"token 148");
+		RewriteRuleITokenStream stream_154=new RewriteRuleITokenStream(adaptor,"token 154");
 		RewriteRuleSubtreeStream stream_importedTypeName=new RewriteRuleSubtreeStream(adaptor,"rule importedTypeName");
 		RewriteRuleSubtreeStream stream_importedMethodArguments=new RewriteRuleSubtreeStream(adaptor,"rule importedMethodArguments");
 		try { DebugEnterRule(GrammarFileName, "importedNotation");
-		DebugLocation(547, 4);
+		DebugLocation(551, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 92)) { return retval; }
-			// JavaScript.g3:548:5: ( IMPORT_START importedTypeName '}' | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}' -> ^( TYPE_SEPERATOR $type $ident) | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}' -> ^( TYPE_SEPERATOR $type $ident $args) )
+			// JavaScript.g3:552:5: ( IMPORT_START importedTypeName '}' | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}' -> ^( TYPE_SEPERATOR $type $ident) | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}' -> ^( TYPE_SEPERATOR $type $ident $args) )
 			int alt244=3;
 			try { DebugEnterDecision(244, decisionCanBacktrack[244]);
 			try
@@ -21455,48 +21602,48 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:548:7: IMPORT_START importedTypeName '}'
+				// JavaScript.g3:552:7: IMPORT_START importedTypeName '}'
 				{
 				root_0 = (CommonTree)adaptor.Nil();
 
-				DebugLocation(548, 19);
-				IMPORT_START379=(CommonToken)Match(input,IMPORT_START,Follow._IMPORT_START_in_importedNotation5038); if (state.failed) return retval;
-				DebugLocation(548, 21);
-				PushFollow(Follow._importedTypeName_in_importedNotation5041);
-				importedTypeName380=importedTypeName();
+				DebugLocation(552, 19);
+				IMPORT_START373=(CommonToken)Match(input,IMPORT_START,Follow._IMPORT_START_in_importedNotation5110); if (state.failed) return retval;
+				DebugLocation(552, 21);
+				PushFollow(Follow._importedTypeName_in_importedNotation5113);
+				importedTypeName374=importedTypeName();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, importedTypeName380.Tree);
-				DebugLocation(548, 41);
-				char_literal381=(CommonToken)Match(input,148,Follow._148_in_importedNotation5043); if (state.failed) return retval;
+				if ( state.backtracking == 0 ) adaptor.AddChild(root_0, importedTypeName374.Tree);
+				DebugLocation(552, 41);
+				char_literal375=(CommonToken)Match(input,154,Follow._154_in_importedNotation5115); if (state.failed) return retval;
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:549:7: IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}'
+				// JavaScript.g3:553:7: IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}'
 				{
-				DebugLocation(549, 7);
-				IMPORT_START382=(CommonToken)Match(input,IMPORT_START,Follow._IMPORT_START_in_importedNotation5052); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_IMPORT_START.Add(IMPORT_START382);
+				DebugLocation(553, 7);
+				IMPORT_START376=(CommonToken)Match(input,IMPORT_START,Follow._IMPORT_START_in_importedNotation5124); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_IMPORT_START.Add(IMPORT_START376);
 
-				DebugLocation(549, 24);
-				PushFollow(Follow._importedTypeName_in_importedNotation5056);
+				DebugLocation(553, 24);
+				PushFollow(Follow._importedTypeName_in_importedNotation5128);
 				type=importedTypeName();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_importedTypeName.Add(type.Tree);
-				DebugLocation(549, 42);
-				TYPE_SEPERATOR383=(CommonToken)Match(input,TYPE_SEPERATOR,Follow._TYPE_SEPERATOR_in_importedNotation5058); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_TYPE_SEPERATOR.Add(TYPE_SEPERATOR383);
+				DebugLocation(553, 42);
+				TYPE_SEPERATOR377=(CommonToken)Match(input,TYPE_SEPERATOR,Follow._TYPE_SEPERATOR_in_importedNotation5130); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_TYPE_SEPERATOR.Add(TYPE_SEPERATOR377);
 
-				DebugLocation(549, 62);
-				ident=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedNotation5062); if (state.failed) return retval; 
+				DebugLocation(553, 62);
+				ident=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedNotation5134); if (state.failed) return retval; 
 				if ( state.backtracking == 0 ) stream_Identifier.Add(ident);
 
-				DebugLocation(549, 74);
-				char_literal384=(CommonToken)Match(input,148,Follow._148_in_importedNotation5064); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_148.Add(char_literal384);
+				DebugLocation(553, 74);
+				char_literal378=(CommonToken)Match(input,154,Follow._154_in_importedNotation5136); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_154.Add(char_literal378);
 
 
 
@@ -21515,18 +21662,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 550:9: -> ^( TYPE_SEPERATOR $type $ident)
+				// 554:9: -> ^( TYPE_SEPERATOR $type $ident)
 				{
-					DebugLocation(550, 12);
-					// JavaScript.g3:550:12: ^( TYPE_SEPERATOR $type $ident)
+					DebugLocation(554, 12);
+					// JavaScript.g3:554:12: ^( TYPE_SEPERATOR $type $ident)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(550, 14);
+					DebugLocation(554, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot(stream_TYPE_SEPERATOR.NextNode(), root_1);
 
-					DebugLocation(550, 30);
+					DebugLocation(554, 30);
 					adaptor.AddChild(root_1, stream_type.NextTree());
-					DebugLocation(550, 36);
+					DebugLocation(554, 36);
 					adaptor.AddChild(root_1, stream_ident.NextNode());
 
 					adaptor.AddChild(root_0, root_1);
@@ -21542,35 +21689,35 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 3:
 				DebugEnterAlt(3);
-				// JavaScript.g3:551:7: IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}'
+				// JavaScript.g3:555:7: IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}'
 				{
-				DebugLocation(551, 7);
-				IMPORT_START385=(CommonToken)Match(input,IMPORT_START,Follow._IMPORT_START_in_importedNotation5092); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_IMPORT_START.Add(IMPORT_START385);
+				DebugLocation(555, 7);
+				IMPORT_START379=(CommonToken)Match(input,IMPORT_START,Follow._IMPORT_START_in_importedNotation5164); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_IMPORT_START.Add(IMPORT_START379);
 
-				DebugLocation(551, 24);
-				PushFollow(Follow._importedTypeName_in_importedNotation5096);
+				DebugLocation(555, 24);
+				PushFollow(Follow._importedTypeName_in_importedNotation5168);
 				type=importedTypeName();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_importedTypeName.Add(type.Tree);
-				DebugLocation(551, 42);
-				TYPE_SEPERATOR386=(CommonToken)Match(input,TYPE_SEPERATOR,Follow._TYPE_SEPERATOR_in_importedNotation5098); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_TYPE_SEPERATOR.Add(TYPE_SEPERATOR386);
+				DebugLocation(555, 42);
+				TYPE_SEPERATOR380=(CommonToken)Match(input,TYPE_SEPERATOR,Follow._TYPE_SEPERATOR_in_importedNotation5170); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_TYPE_SEPERATOR.Add(TYPE_SEPERATOR380);
 
-				DebugLocation(551, 62);
-				ident=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedNotation5102); if (state.failed) return retval; 
+				DebugLocation(555, 62);
+				ident=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedNotation5174); if (state.failed) return retval; 
 				if ( state.backtracking == 0 ) stream_Identifier.Add(ident);
 
-				DebugLocation(551, 78);
-				PushFollow(Follow._importedMethodArguments_in_importedNotation5106);
+				DebugLocation(555, 78);
+				PushFollow(Follow._importedMethodArguments_in_importedNotation5178);
 				args=importedMethodArguments();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_importedMethodArguments.Add(args.Tree);
-				DebugLocation(551, 103);
-				char_literal387=(CommonToken)Match(input,148,Follow._148_in_importedNotation5108); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_148.Add(char_literal387);
+				DebugLocation(555, 103);
+				char_literal381=(CommonToken)Match(input,154,Follow._154_in_importedNotation5180); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_154.Add(char_literal381);
 
 
 
@@ -21590,20 +21737,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 552:9: -> ^( TYPE_SEPERATOR $type $ident $args)
+				// 556:9: -> ^( TYPE_SEPERATOR $type $ident $args)
 				{
-					DebugLocation(552, 12);
-					// JavaScript.g3:552:12: ^( TYPE_SEPERATOR $type $ident $args)
+					DebugLocation(556, 12);
+					// JavaScript.g3:556:12: ^( TYPE_SEPERATOR $type $ident $args)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(552, 14);
+					DebugLocation(556, 14);
 					root_1 = (CommonTree)adaptor.BecomeRoot(stream_TYPE_SEPERATOR.NextNode(), root_1);
 
-					DebugLocation(552, 30);
+					DebugLocation(556, 30);
 					adaptor.AddChild(root_1, stream_type.NextTree());
-					DebugLocation(552, 36);
+					DebugLocation(556, 36);
 					adaptor.AddChild(root_1, stream_ident.NextNode());
-					DebugLocation(552, 43);
+					DebugLocation(556, 43);
 					adaptor.AddChild(root_1, stream_args.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -21641,7 +21788,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_importedNotation();
 			if (state.backtracking > 0) { Memoize(input, 92, importedNotation_StartIndex); }
 		}
-		DebugLocation(553, 4);
+		DebugLocation(557, 4);
 		} finally { DebugExitRule(GrammarFileName, "importedNotation"); }
 		return retval;
 
@@ -21658,7 +21805,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_importedMethodArguments();
 
 	// $ANTLR start "importedMethodArguments"
-	// JavaScript.g3:555:1: importedMethodArguments : '(' ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )? ( SkipSpace )* ')' -> ^( ARGS ( importedTypeName )* ) ;
+	// JavaScript.g3:559:1: importedMethodArguments : '(' ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )? ( SkipSpace )* ')' -> ^( ARGS ( importedTypeName )* ) ;
 	[GrammarRule("importedMethodArguments")]
 	private JavaScriptParser.importedMethodArguments_return importedMethodArguments()
 	{
@@ -21670,43 +21817,43 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int importedMethodArguments_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken char_literal388=null;
+		CommonToken char_literal382=null;
+		CommonToken SkipSpace383=null;
+		CommonToken SkipSpace385=null;
+		CommonToken char_literal386=null;
+		CommonToken SkipSpace387=null;
 		CommonToken SkipSpace389=null;
-		CommonToken SkipSpace391=null;
-		CommonToken char_literal392=null;
-		CommonToken SkipSpace393=null;
-		CommonToken SkipSpace395=null;
-		CommonToken char_literal396=null;
-		JavaScriptParser.importedTypeName_return importedTypeName390 = default(JavaScriptParser.importedTypeName_return);
-		JavaScriptParser.importedTypeName_return importedTypeName394 = default(JavaScriptParser.importedTypeName_return);
+		CommonToken char_literal390=null;
+		JavaScriptParser.importedTypeName_return importedTypeName384 = default(JavaScriptParser.importedTypeName_return);
+		JavaScriptParser.importedTypeName_return importedTypeName388 = default(JavaScriptParser.importedTypeName_return);
 
-		CommonTree char_literal388_tree=null;
+		CommonTree char_literal382_tree=null;
+		CommonTree SkipSpace383_tree=null;
+		CommonTree SkipSpace385_tree=null;
+		CommonTree char_literal386_tree=null;
+		CommonTree SkipSpace387_tree=null;
 		CommonTree SkipSpace389_tree=null;
-		CommonTree SkipSpace391_tree=null;
-		CommonTree char_literal392_tree=null;
-		CommonTree SkipSpace393_tree=null;
-		CommonTree SkipSpace395_tree=null;
-		CommonTree char_literal396_tree=null;
-		RewriteRuleITokenStream stream_130=new RewriteRuleITokenStream(adaptor,"token 130");
+		CommonTree char_literal390_tree=null;
+		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
 		RewriteRuleITokenStream stream_SkipSpace=new RewriteRuleITokenStream(adaptor,"token SkipSpace");
 		RewriteRuleITokenStream stream_COMMA=new RewriteRuleITokenStream(adaptor,"token COMMA");
-		RewriteRuleITokenStream stream_131=new RewriteRuleITokenStream(adaptor,"token 131");
+		RewriteRuleITokenStream stream_137=new RewriteRuleITokenStream(adaptor,"token 137");
 		RewriteRuleSubtreeStream stream_importedTypeName=new RewriteRuleSubtreeStream(adaptor,"rule importedTypeName");
 		try { DebugEnterRule(GrammarFileName, "importedMethodArguments");
-		DebugLocation(555, 4);
+		DebugLocation(559, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 93)) { return retval; }
-			// JavaScript.g3:556:5: ( '(' ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )? ( SkipSpace )* ')' -> ^( ARGS ( importedTypeName )* ) )
+			// JavaScript.g3:560:5: ( '(' ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )? ( SkipSpace )* ')' -> ^( ARGS ( importedTypeName )* ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:556:7: '(' ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )? ( SkipSpace )* ')'
+			// JavaScript.g3:560:7: '(' ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )? ( SkipSpace )* ')'
 			{
-			DebugLocation(556, 7);
-			char_literal388=(CommonToken)Match(input,130,Follow._130_in_importedMethodArguments5148); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_130.Add(char_literal388);
+			DebugLocation(560, 7);
+			char_literal382=(CommonToken)Match(input,136,Follow._136_in_importedMethodArguments5220); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_136.Add(char_literal382);
 
-			DebugLocation(556, 11);
-			// JavaScript.g3:556:11: ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )?
+			DebugLocation(560, 11);
+			// JavaScript.g3:560:11: ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )?
 			int alt249=2;
 			try { DebugEnterSubRule(249);
 			try { DebugEnterDecision(249, decisionCanBacktrack[249]);
@@ -21724,10 +21871,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:556:12: ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )*
+				// JavaScript.g3:560:12: ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )*
 				{
-				DebugLocation(556, 12);
-				// JavaScript.g3:556:12: ( SkipSpace )*
+				DebugLocation(560, 12);
+				// JavaScript.g3:560:12: ( SkipSpace )*
 				try { DebugEnterSubRule(245);
 				while (true)
 				{
@@ -21746,11 +21893,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:556:12: SkipSpace
+						// JavaScript.g3:560:12: SkipSpace
 						{
-						DebugLocation(556, 12);
-						SkipSpace389=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5151); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace389);
+						DebugLocation(560, 12);
+						SkipSpace383=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5223); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace383);
 
 
 						}
@@ -21766,14 +21913,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 				} finally { DebugExitSubRule(245); }
 
-				DebugLocation(556, 23);
-				PushFollow(Follow._importedTypeName_in_importedMethodArguments5154);
-				importedTypeName390=importedTypeName();
+				DebugLocation(560, 23);
+				PushFollow(Follow._importedTypeName_in_importedMethodArguments5226);
+				importedTypeName384=importedTypeName();
 				PopFollow();
 				if (state.failed) return retval;
-				if ( state.backtracking == 0 ) stream_importedTypeName.Add(importedTypeName390.Tree);
-				DebugLocation(556, 40);
-				// JavaScript.g3:556:40: ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )*
+				if ( state.backtracking == 0 ) stream_importedTypeName.Add(importedTypeName384.Tree);
+				DebugLocation(560, 40);
+				// JavaScript.g3:560:40: ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )*
 				try { DebugEnterSubRule(248);
 				while (true)
 				{
@@ -21793,10 +21940,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 					{
 					case 1:
 						DebugEnterAlt(1);
-						// JavaScript.g3:556:41: ( SkipSpace )* ',' ( SkipSpace )* importedTypeName
+						// JavaScript.g3:560:41: ( SkipSpace )* ',' ( SkipSpace )* importedTypeName
 						{
-						DebugLocation(556, 41);
-						// JavaScript.g3:556:41: ( SkipSpace )*
+						DebugLocation(560, 41);
+						// JavaScript.g3:560:41: ( SkipSpace )*
 						try { DebugEnterSubRule(246);
 						while (true)
 						{
@@ -21815,11 +21962,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							{
 							case 1:
 								DebugEnterAlt(1);
-								// JavaScript.g3:556:41: SkipSpace
+								// JavaScript.g3:560:41: SkipSpace
 								{
-								DebugLocation(556, 41);
-								SkipSpace391=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5157); if (state.failed) return retval; 
-								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace391);
+								DebugLocation(560, 41);
+								SkipSpace385=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5229); if (state.failed) return retval; 
+								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace385);
 
 
 								}
@@ -21835,12 +21982,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 						} finally { DebugExitSubRule(246); }
 
-						DebugLocation(556, 52);
-						char_literal392=(CommonToken)Match(input,COMMA,Follow._COMMA_in_importedMethodArguments5160); if (state.failed) return retval; 
-						if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal392);
+						DebugLocation(560, 52);
+						char_literal386=(CommonToken)Match(input,COMMA,Follow._COMMA_in_importedMethodArguments5232); if (state.failed) return retval; 
+						if ( state.backtracking == 0 ) stream_COMMA.Add(char_literal386);
 
-						DebugLocation(556, 56);
-						// JavaScript.g3:556:56: ( SkipSpace )*
+						DebugLocation(560, 56);
+						// JavaScript.g3:560:56: ( SkipSpace )*
 						try { DebugEnterSubRule(247);
 						while (true)
 						{
@@ -21859,11 +22006,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 							{
 							case 1:
 								DebugEnterAlt(1);
-								// JavaScript.g3:556:56: SkipSpace
+								// JavaScript.g3:560:56: SkipSpace
 								{
-								DebugLocation(556, 56);
-								SkipSpace393=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5162); if (state.failed) return retval; 
-								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace393);
+								DebugLocation(560, 56);
+								SkipSpace387=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5234); if (state.failed) return retval; 
+								if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace387);
 
 
 								}
@@ -21879,12 +22026,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 						} finally { DebugExitSubRule(247); }
 
-						DebugLocation(556, 67);
-						PushFollow(Follow._importedTypeName_in_importedMethodArguments5165);
-						importedTypeName394=importedTypeName();
+						DebugLocation(560, 67);
+						PushFollow(Follow._importedTypeName_in_importedMethodArguments5237);
+						importedTypeName388=importedTypeName();
 						PopFollow();
 						if (state.failed) return retval;
-						if ( state.backtracking == 0 ) stream_importedTypeName.Add(importedTypeName394.Tree);
+						if ( state.backtracking == 0 ) stream_importedTypeName.Add(importedTypeName388.Tree);
 
 						}
 						break;
@@ -21906,8 +22053,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			}
 			} finally { DebugExitSubRule(249); }
 
-			DebugLocation(556, 88);
-			// JavaScript.g3:556:88: ( SkipSpace )*
+			DebugLocation(560, 88);
+			// JavaScript.g3:560:88: ( SkipSpace )*
 			try { DebugEnterSubRule(250);
 			while (true)
 			{
@@ -21926,11 +22073,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:556:88: SkipSpace
+					// JavaScript.g3:560:88: SkipSpace
 					{
-					DebugLocation(556, 88);
-					SkipSpace395=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5171); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace395);
+					DebugLocation(560, 88);
+					SkipSpace389=(CommonToken)Match(input,SkipSpace,Follow._SkipSpace_in_importedMethodArguments5243); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_SkipSpace.Add(SkipSpace389);
 
 
 					}
@@ -21946,9 +22093,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(250); }
 
-			DebugLocation(556, 99);
-			char_literal396=(CommonToken)Match(input,131,Follow._131_in_importedMethodArguments5174); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_131.Add(char_literal396);
+			DebugLocation(560, 99);
+			char_literal390=(CommonToken)Match(input,137,Follow._137_in_importedMethodArguments5246); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_137.Add(char_literal390);
 
 
 
@@ -21965,20 +22112,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 557:9: -> ^( ARGS ( importedTypeName )* )
+			// 561:9: -> ^( ARGS ( importedTypeName )* )
 			{
-				DebugLocation(557, 12);
-				// JavaScript.g3:557:12: ^( ARGS ( importedTypeName )* )
+				DebugLocation(561, 12);
+				// JavaScript.g3:561:12: ^( ARGS ( importedTypeName )* )
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(557, 14);
+				DebugLocation(561, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(ARGS, "ARGS"), root_1);
 
-				DebugLocation(557, 19);
-				// JavaScript.g3:557:19: ( importedTypeName )*
+				DebugLocation(561, 19);
+				// JavaScript.g3:561:19: ( importedTypeName )*
 				while ( stream_importedTypeName.HasNext )
 				{
-					DebugLocation(557, 19);
+					DebugLocation(561, 19);
 					adaptor.AddChild(root_1, stream_importedTypeName.NextTree());
 
 				}
@@ -22017,7 +22164,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_importedMethodArguments();
 			if (state.backtracking > 0) { Memoize(input, 93, importedMethodArguments_StartIndex); }
 		}
-		DebugLocation(558, 4);
+		DebugLocation(562, 4);
 		} finally { DebugExitRule(GrammarFileName, "importedMethodArguments"); }
 		return retval;
 
@@ -22034,7 +22181,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_importedTypeName();
 
 	// $ANTLR start "importedTypeName"
-	// JavaScript.g3:560:1: importedTypeName : ( '[' assem= importedTypeNamePart ']' type= importedTypeNamePart -> ^( TYPENAME $assem $type) | Identifier -> ^( TYPENAME Identifier ) | GenericSignature -> ^( TYPENAME GenericSignature ) );
+	// JavaScript.g3:564:1: importedTypeName : ( '[' assem= importedTypeNamePart ']' type= importedTypeNamePart -> ^( TYPENAME $assem $type) | Identifier -> ^( TYPENAME Identifier ) | GenericSignature -> ^( TYPENAME GenericSignature ) );
 	[GrammarRule("importedTypeName")]
 	private JavaScriptParser.importedTypeName_return importedTypeName()
 	{
@@ -22046,33 +22193,33 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int importedTypeName_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken char_literal397=null;
-		CommonToken char_literal398=null;
-		CommonToken Identifier399=null;
-		CommonToken GenericSignature400=null;
+		CommonToken char_literal391=null;
+		CommonToken char_literal392=null;
+		CommonToken Identifier393=null;
+		CommonToken GenericSignature394=null;
 		JavaScriptParser.importedTypeNamePart_return assem = default(JavaScriptParser.importedTypeNamePart_return);
 		JavaScriptParser.importedTypeNamePart_return type = default(JavaScriptParser.importedTypeNamePart_return);
 
-		CommonTree char_literal397_tree=null;
-		CommonTree char_literal398_tree=null;
-		CommonTree Identifier399_tree=null;
-		CommonTree GenericSignature400_tree=null;
-		RewriteRuleITokenStream stream_135=new RewriteRuleITokenStream(adaptor,"token 135");
-		RewriteRuleITokenStream stream_136=new RewriteRuleITokenStream(adaptor,"token 136");
+		CommonTree char_literal391_tree=null;
+		CommonTree char_literal392_tree=null;
+		CommonTree Identifier393_tree=null;
+		CommonTree GenericSignature394_tree=null;
+		RewriteRuleITokenStream stream_141=new RewriteRuleITokenStream(adaptor,"token 141");
+		RewriteRuleITokenStream stream_142=new RewriteRuleITokenStream(adaptor,"token 142");
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
 		RewriteRuleITokenStream stream_GenericSignature=new RewriteRuleITokenStream(adaptor,"token GenericSignature");
 		RewriteRuleSubtreeStream stream_importedTypeNamePart=new RewriteRuleSubtreeStream(adaptor,"rule importedTypeNamePart");
 		try { DebugEnterRule(GrammarFileName, "importedTypeName");
-		DebugLocation(560, 4);
+		DebugLocation(564, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 94)) { return retval; }
-			// JavaScript.g3:561:5: ( '[' assem= importedTypeNamePart ']' type= importedTypeNamePart -> ^( TYPENAME $assem $type) | Identifier -> ^( TYPENAME Identifier ) | GenericSignature -> ^( TYPENAME GenericSignature ) )
+			// JavaScript.g3:565:5: ( '[' assem= importedTypeNamePart ']' type= importedTypeNamePart -> ^( TYPENAME $assem $type) | Identifier -> ^( TYPENAME Identifier ) | GenericSignature -> ^( TYPENAME GenericSignature ) )
 			int alt251=3;
 			try { DebugEnterDecision(251, decisionCanBacktrack[251]);
 			switch (input.LA(1))
 			{
-			case 135:
+			case 141:
 				{
 				alt251=1;
 				}
@@ -22102,24 +22249,24 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:561:7: '[' assem= importedTypeNamePart ']' type= importedTypeNamePart
+				// JavaScript.g3:565:7: '[' assem= importedTypeNamePart ']' type= importedTypeNamePart
 				{
-				DebugLocation(561, 7);
-				char_literal397=(CommonToken)Match(input,135,Follow._135_in_importedTypeName5208); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_135.Add(char_literal397);
+				DebugLocation(565, 7);
+				char_literal391=(CommonToken)Match(input,141,Follow._141_in_importedTypeName5280); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_141.Add(char_literal391);
 
-				DebugLocation(561, 16);
-				PushFollow(Follow._importedTypeNamePart_in_importedTypeName5212);
+				DebugLocation(565, 16);
+				PushFollow(Follow._importedTypeNamePart_in_importedTypeName5284);
 				assem=importedTypeNamePart();
 				PopFollow();
 				if (state.failed) return retval;
 				if ( state.backtracking == 0 ) stream_importedTypeNamePart.Add(assem.Tree);
-				DebugLocation(561, 38);
-				char_literal398=(CommonToken)Match(input,136,Follow._136_in_importedTypeName5214); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_136.Add(char_literal398);
+				DebugLocation(565, 38);
+				char_literal392=(CommonToken)Match(input,142,Follow._142_in_importedTypeName5286); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_142.Add(char_literal392);
 
-				DebugLocation(561, 46);
-				PushFollow(Follow._importedTypeNamePart_in_importedTypeName5218);
+				DebugLocation(565, 46);
+				PushFollow(Follow._importedTypeNamePart_in_importedTypeName5290);
 				type=importedTypeNamePart();
 				PopFollow();
 				if (state.failed) return retval;
@@ -22141,18 +22288,18 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 561:68: -> ^( TYPENAME $assem $type)
+				// 565:68: -> ^( TYPENAME $assem $type)
 				{
-					DebugLocation(561, 71);
-					// JavaScript.g3:561:71: ^( TYPENAME $assem $type)
+					DebugLocation(565, 71);
+					// JavaScript.g3:565:71: ^( TYPENAME $assem $type)
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(561, 73);
+					DebugLocation(565, 73);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(TYPENAME, "TYPENAME"), root_1);
 
-					DebugLocation(561, 83);
+					DebugLocation(565, 83);
 					adaptor.AddChild(root_1, stream_assem.NextTree());
-					DebugLocation(561, 90);
+					DebugLocation(565, 90);
 					adaptor.AddChild(root_1, stream_type.NextTree());
 
 					adaptor.AddChild(root_0, root_1);
@@ -22168,11 +22315,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:562:7: Identifier
+				// JavaScript.g3:566:7: Identifier
 				{
-				DebugLocation(562, 7);
-				Identifier399=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedTypeName5238); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier399);
+				DebugLocation(566, 7);
+				Identifier393=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedTypeName5310); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier393);
 
 
 
@@ -22189,16 +22336,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 562:18: -> ^( TYPENAME Identifier )
+				// 566:18: -> ^( TYPENAME Identifier )
 				{
-					DebugLocation(562, 21);
-					// JavaScript.g3:562:21: ^( TYPENAME Identifier )
+					DebugLocation(566, 21);
+					// JavaScript.g3:566:21: ^( TYPENAME Identifier )
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(562, 23);
+					DebugLocation(566, 23);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(TYPENAME, "TYPENAME"), root_1);
 
-					DebugLocation(562, 32);
+					DebugLocation(566, 32);
 					adaptor.AddChild(root_1, stream_Identifier.NextNode());
 
 					adaptor.AddChild(root_0, root_1);
@@ -22214,11 +22361,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				break;
 			case 3:
 				DebugEnterAlt(3);
-				// JavaScript.g3:563:7: GenericSignature
+				// JavaScript.g3:567:7: GenericSignature
 				{
-				DebugLocation(563, 7);
-				GenericSignature400=(CommonToken)Match(input,GenericSignature,Follow._GenericSignature_in_importedTypeName5254); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_GenericSignature.Add(GenericSignature400);
+				DebugLocation(567, 7);
+				GenericSignature394=(CommonToken)Match(input,GenericSignature,Follow._GenericSignature_in_importedTypeName5326); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_GenericSignature.Add(GenericSignature394);
 
 
 
@@ -22235,16 +22382,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 				root_0 = (CommonTree)adaptor.Nil();
-				// 563:24: -> ^( TYPENAME GenericSignature )
+				// 567:24: -> ^( TYPENAME GenericSignature )
 				{
-					DebugLocation(563, 27);
-					// JavaScript.g3:563:27: ^( TYPENAME GenericSignature )
+					DebugLocation(567, 27);
+					// JavaScript.g3:567:27: ^( TYPENAME GenericSignature )
 					{
 					CommonTree root_1 = (CommonTree)adaptor.Nil();
-					DebugLocation(563, 29);
+					DebugLocation(567, 29);
 					root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(TYPENAME, "TYPENAME"), root_1);
 
-					DebugLocation(563, 38);
+					DebugLocation(567, 38);
 					adaptor.AddChild(root_1, stream_GenericSignature.NextNode());
 
 					adaptor.AddChild(root_0, root_1);
@@ -22282,7 +22429,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_importedTypeName();
 			if (state.backtracking > 0) { Memoize(input, 94, importedTypeName_StartIndex); }
 		}
-		DebugLocation(564, 4);
+		DebugLocation(568, 4);
 		} finally { DebugExitRule(GrammarFileName, "importedTypeName"); }
 		return retval;
 
@@ -22299,7 +22446,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_importedAssemblyNamePart();
 
 	// $ANTLR start "importedAssemblyNamePart"
-	// JavaScript.g3:566:1: importedAssemblyNamePart : Identifier ( '.' Identifier )* -> ^( TYPEPART ( Identifier )* ) ;
+	// JavaScript.g3:570:1: importedAssemblyNamePart : Identifier ( '.' Identifier )* -> ^( TYPEPART ( Identifier )* ) ;
 	[GrammarRule("importedAssemblyNamePart")]
 	private JavaScriptParser.importedAssemblyNamePart_return importedAssemblyNamePart()
 	{
@@ -22311,31 +22458,31 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int importedAssemblyNamePart_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken Identifier401=null;
-		CommonToken char_literal402=null;
-		CommonToken Identifier403=null;
+		CommonToken Identifier395=null;
+		CommonToken char_literal396=null;
+		CommonToken Identifier397=null;
 
-		CommonTree Identifier401_tree=null;
-		CommonTree char_literal402_tree=null;
-		CommonTree Identifier403_tree=null;
+		CommonTree Identifier395_tree=null;
+		CommonTree char_literal396_tree=null;
+		CommonTree Identifier397_tree=null;
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
-		RewriteRuleITokenStream stream_132=new RewriteRuleITokenStream(adaptor,"token 132");
+		RewriteRuleITokenStream stream_138=new RewriteRuleITokenStream(adaptor,"token 138");
 
 		try { DebugEnterRule(GrammarFileName, "importedAssemblyNamePart");
-		DebugLocation(566, 4);
+		DebugLocation(570, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 95)) { return retval; }
-			// JavaScript.g3:567:5: ( Identifier ( '.' Identifier )* -> ^( TYPEPART ( Identifier )* ) )
+			// JavaScript.g3:571:5: ( Identifier ( '.' Identifier )* -> ^( TYPEPART ( Identifier )* ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:567:7: Identifier ( '.' Identifier )*
+			// JavaScript.g3:571:7: Identifier ( '.' Identifier )*
 			{
-			DebugLocation(567, 7);
-			Identifier401=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedAssemblyNamePart5279); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier401);
+			DebugLocation(571, 7);
+			Identifier395=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedAssemblyNamePart5351); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier395);
 
-			DebugLocation(567, 18);
-			// JavaScript.g3:567:18: ( '.' Identifier )*
+			DebugLocation(571, 18);
+			// JavaScript.g3:571:18: ( '.' Identifier )*
 			try { DebugEnterSubRule(252);
 			while (true)
 			{
@@ -22343,7 +22490,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				try { DebugEnterDecision(252, decisionCanBacktrack[252]);
 				int LA252_0 = input.LA(1);
 
-				if ((LA252_0==132))
+				if ((LA252_0==138))
 				{
 					alt252=1;
 				}
@@ -22354,15 +22501,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:567:19: '.' Identifier
+					// JavaScript.g3:571:19: '.' Identifier
 					{
-					DebugLocation(567, 19);
-					char_literal402=(CommonToken)Match(input,132,Follow._132_in_importedAssemblyNamePart5282); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_132.Add(char_literal402);
+					DebugLocation(571, 19);
+					char_literal396=(CommonToken)Match(input,138,Follow._138_in_importedAssemblyNamePart5354); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_138.Add(char_literal396);
 
-					DebugLocation(567, 23);
-					Identifier403=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedAssemblyNamePart5284); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier403);
+					DebugLocation(571, 23);
+					Identifier397=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedAssemblyNamePart5356); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier397);
 
 
 					}
@@ -22393,20 +22540,20 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 568:9: -> ^( TYPEPART ( Identifier )* )
+			// 572:9: -> ^( TYPEPART ( Identifier )* )
 			{
-				DebugLocation(568, 12);
-				// JavaScript.g3:568:12: ^( TYPEPART ( Identifier )* )
+				DebugLocation(572, 12);
+				// JavaScript.g3:572:12: ^( TYPEPART ( Identifier )* )
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(568, 14);
+				DebugLocation(572, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(TYPEPART, "TYPEPART"), root_1);
 
-				DebugLocation(568, 23);
-				// JavaScript.g3:568:23: ( Identifier )*
+				DebugLocation(572, 23);
+				// JavaScript.g3:572:23: ( Identifier )*
 				while ( stream_Identifier.HasNext )
 				{
-					DebugLocation(568, 23);
+					DebugLocation(572, 23);
 					adaptor.AddChild(root_1, stream_Identifier.NextNode());
 
 				}
@@ -22445,7 +22592,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_importedAssemblyNamePart();
 			if (state.backtracking > 0) { Memoize(input, 95, importedAssemblyNamePart_StartIndex); }
 		}
-		DebugLocation(569, 4);
+		DebugLocation(573, 4);
 		} finally { DebugExitRule(GrammarFileName, "importedAssemblyNamePart"); }
 		return retval;
 
@@ -22462,7 +22609,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	partial void Leave_importedTypeNamePart();
 
 	// $ANTLR start "importedTypeNamePart"
-	// JavaScript.g3:571:1: importedTypeNamePart : Identifier ( '.' Identifier )* ( '.' TypeNameIdentifier )? -> ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? ) ;
+	// JavaScript.g3:575:1: importedTypeNamePart : Identifier ( '.' Identifier )* ( '.' TypeNameIdentifier )? -> ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? ) ;
 	[GrammarRule("importedTypeNamePart")]
 	private JavaScriptParser.importedTypeNamePart_return importedTypeNamePart()
 	{
@@ -22474,36 +22621,36 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		int importedTypeNamePart_StartIndex = input.Index;
 		CommonTree root_0 = null;
 
-		CommonToken Identifier404=null;
-		CommonToken char_literal405=null;
-		CommonToken Identifier406=null;
-		CommonToken char_literal407=null;
-		CommonToken TypeNameIdentifier408=null;
+		CommonToken Identifier398=null;
+		CommonToken char_literal399=null;
+		CommonToken Identifier400=null;
+		CommonToken char_literal401=null;
+		CommonToken TypeNameIdentifier402=null;
 
-		CommonTree Identifier404_tree=null;
-		CommonTree char_literal405_tree=null;
-		CommonTree Identifier406_tree=null;
-		CommonTree char_literal407_tree=null;
-		CommonTree TypeNameIdentifier408_tree=null;
+		CommonTree Identifier398_tree=null;
+		CommonTree char_literal399_tree=null;
+		CommonTree Identifier400_tree=null;
+		CommonTree char_literal401_tree=null;
+		CommonTree TypeNameIdentifier402_tree=null;
 		RewriteRuleITokenStream stream_Identifier=new RewriteRuleITokenStream(adaptor,"token Identifier");
-		RewriteRuleITokenStream stream_132=new RewriteRuleITokenStream(adaptor,"token 132");
+		RewriteRuleITokenStream stream_138=new RewriteRuleITokenStream(adaptor,"token 138");
 		RewriteRuleITokenStream stream_TypeNameIdentifier=new RewriteRuleITokenStream(adaptor,"token TypeNameIdentifier");
 
 		try { DebugEnterRule(GrammarFileName, "importedTypeNamePart");
-		DebugLocation(571, 4);
+		DebugLocation(575, 4);
 		try
 		{
 			if (state.backtracking > 0 && AlreadyParsedRule(input, 96)) { return retval; }
-			// JavaScript.g3:572:5: ( Identifier ( '.' Identifier )* ( '.' TypeNameIdentifier )? -> ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? ) )
+			// JavaScript.g3:576:5: ( Identifier ( '.' Identifier )* ( '.' TypeNameIdentifier )? -> ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:572:7: Identifier ( '.' Identifier )* ( '.' TypeNameIdentifier )?
+			// JavaScript.g3:576:7: Identifier ( '.' Identifier )* ( '.' TypeNameIdentifier )?
 			{
-			DebugLocation(572, 7);
-			Identifier404=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedTypeNamePart5320); if (state.failed) return retval; 
-			if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier404);
+			DebugLocation(576, 7);
+			Identifier398=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedTypeNamePart5392); if (state.failed) return retval; 
+			if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier398);
 
-			DebugLocation(572, 18);
-			// JavaScript.g3:572:18: ( '.' Identifier )*
+			DebugLocation(576, 18);
+			// JavaScript.g3:576:18: ( '.' Identifier )*
 			try { DebugEnterSubRule(253);
 			while (true)
 			{
@@ -22511,7 +22658,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				try { DebugEnterDecision(253, decisionCanBacktrack[253]);
 				int LA253_0 = input.LA(1);
 
-				if ((LA253_0==132))
+				if ((LA253_0==138))
 				{
 					int LA253_1 = input.LA(2);
 
@@ -22529,15 +22676,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:572:19: '.' Identifier
+					// JavaScript.g3:576:19: '.' Identifier
 					{
-					DebugLocation(572, 19);
-					char_literal405=(CommonToken)Match(input,132,Follow._132_in_importedTypeNamePart5323); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_132.Add(char_literal405);
+					DebugLocation(576, 19);
+					char_literal399=(CommonToken)Match(input,138,Follow._138_in_importedTypeNamePart5395); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_138.Add(char_literal399);
 
-					DebugLocation(572, 23);
-					Identifier406=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedTypeNamePart5325); if (state.failed) return retval; 
-					if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier406);
+					DebugLocation(576, 23);
+					Identifier400=(CommonToken)Match(input,Identifier,Follow._Identifier_in_importedTypeNamePart5397); if (state.failed) return retval; 
+					if ( state.backtracking == 0 ) stream_Identifier.Add(Identifier400);
 
 
 					}
@@ -22553,14 +22700,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(253); }
 
-			DebugLocation(572, 36);
-			// JavaScript.g3:572:36: ( '.' TypeNameIdentifier )?
+			DebugLocation(576, 36);
+			// JavaScript.g3:576:36: ( '.' TypeNameIdentifier )?
 			int alt254=2;
 			try { DebugEnterSubRule(254);
 			try { DebugEnterDecision(254, decisionCanBacktrack[254]);
 			int LA254_0 = input.LA(1);
 
-			if ((LA254_0==132))
+			if ((LA254_0==138))
 			{
 				alt254=1;
 			}
@@ -22569,15 +22716,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:572:37: '.' TypeNameIdentifier
+				// JavaScript.g3:576:37: '.' TypeNameIdentifier
 				{
-				DebugLocation(572, 37);
-				char_literal407=(CommonToken)Match(input,132,Follow._132_in_importedTypeNamePart5330); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_132.Add(char_literal407);
+				DebugLocation(576, 37);
+				char_literal401=(CommonToken)Match(input,138,Follow._138_in_importedTypeNamePart5402); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_138.Add(char_literal401);
 
-				DebugLocation(572, 41);
-				TypeNameIdentifier408=(CommonToken)Match(input,TypeNameIdentifier,Follow._TypeNameIdentifier_in_importedTypeNamePart5332); if (state.failed) return retval; 
-				if ( state.backtracking == 0 ) stream_TypeNameIdentifier.Add(TypeNameIdentifier408);
+				DebugLocation(576, 41);
+				TypeNameIdentifier402=(CommonToken)Match(input,TypeNameIdentifier,Follow._TypeNameIdentifier_in_importedTypeNamePart5404); if (state.failed) return retval; 
+				if ( state.backtracking == 0 ) stream_TypeNameIdentifier.Add(TypeNameIdentifier402);
 
 
 				}
@@ -22601,29 +22748,29 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.Tree:null);
 
 			root_0 = (CommonTree)adaptor.Nil();
-			// 573:9: -> ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? )
+			// 577:9: -> ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? )
 			{
-				DebugLocation(573, 12);
-				// JavaScript.g3:573:12: ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? )
+				DebugLocation(577, 12);
+				// JavaScript.g3:577:12: ^( TYPEPART ( Identifier )* ( TypeNameIdentifier )? )
 				{
 				CommonTree root_1 = (CommonTree)adaptor.Nil();
-				DebugLocation(573, 14);
+				DebugLocation(577, 14);
 				root_1 = (CommonTree)adaptor.BecomeRoot((CommonTree)adaptor.Create(TYPEPART, "TYPEPART"), root_1);
 
-				DebugLocation(573, 23);
-				// JavaScript.g3:573:23: ( Identifier )*
+				DebugLocation(577, 23);
+				// JavaScript.g3:577:23: ( Identifier )*
 				while ( stream_Identifier.HasNext )
 				{
-					DebugLocation(573, 23);
+					DebugLocation(577, 23);
 					adaptor.AddChild(root_1, stream_Identifier.NextNode());
 
 				}
 				stream_Identifier.Reset();
-				DebugLocation(573, 35);
-				// JavaScript.g3:573:35: ( TypeNameIdentifier )?
+				DebugLocation(577, 35);
+				// JavaScript.g3:577:35: ( TypeNameIdentifier )?
 				if ( stream_TypeNameIdentifier.HasNext )
 				{
-					DebugLocation(573, 35);
+					DebugLocation(577, 35);
 					adaptor.AddChild(root_1, stream_TypeNameIdentifier.NextNode());
 
 				}
@@ -22662,7 +22809,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			Leave_importedTypeNamePart();
 			if (state.backtracking > 0) { Memoize(input, 96, importedTypeNamePart_StartIndex); }
 		}
-		DebugLocation(574, 4);
+		DebugLocation(578, 4);
 		} finally { DebugExitRule(GrammarFileName, "importedTypeNamePart"); }
 		return retval;
 
@@ -22917,7 +23064,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			} finally { DebugExitSubRule(267); }
 
 			DebugLocation(164, 106);
-			Match(input,140,Follow._140_in_synpred60_JavaScript1203); if (state.failed) return;
+			Match(input,146,Follow._146_in_synpred60_JavaScript1203); if (state.failed) return;
 			DebugLocation(164, 113);
 			// JavaScript.g3:164:113: ( SkipSpace )*
 			try { DebugEnterSubRule(268);
@@ -23113,7 +23260,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:237:62: SkipSpace
 			{
 			DebugLocation(237, 53);
-			Match(input,SkipSpace,Follow._SkipSpace_in_synpred120_JavaScript1967); if (state.failed) return;
+			Match(input,SkipSpace,Follow._SkipSpace_in_synpred120_JavaScript1968); if (state.failed) return;
 
 			}
 
@@ -23143,7 +23290,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			// JavaScript.g3:241:42: SkipSpace
 			{
 			DebugLocation(241, 33);
-			Match(input,SkipSpace,Follow._SkipSpace_in_synpred123_JavaScript1997); if (state.failed) return;
+			Match(input,SkipSpace,Follow._SkipSpace_in_synpred123_JavaScript1998); if (state.failed) return;
 
 			}
 
@@ -23168,12 +23315,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred143_JavaScript_fragment", 239);
 		try
 		{
-			// JavaScript.g3:273:7: ( conditionalExpression )
+			// JavaScript.g3:276:7: ( conditionalExpression )
 			DebugEnterAlt(1);
-			// JavaScript.g3:273:7: conditionalExpression
+			// JavaScript.g3:276:7: conditionalExpression
 			{
-			DebugLocation(273, 7);
-			PushFollow(Follow._conditionalExpression_in_synpred143_JavaScript2257);
+			DebugLocation(276, 7);
+			PushFollow(Follow._conditionalExpression_in_synpred143_JavaScript2326);
 			conditionalExpression();
 			PopFollow();
 			if (state.failed) return;
@@ -23201,12 +23348,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred146_JavaScript_fragment", 242);
 		try
 		{
-			// JavaScript.g3:279:7: ( conditionalExpressionNoIn )
+			// JavaScript.g3:282:7: ( conditionalExpressionNoIn )
 			DebugEnterAlt(1);
-			// JavaScript.g3:279:7: conditionalExpressionNoIn
+			// JavaScript.g3:282:7: conditionalExpressionNoIn
 			{
-			DebugLocation(279, 7);
-			PushFollow(Follow._conditionalExpressionNoIn_in_synpred146_JavaScript2321);
+			DebugLocation(282, 7);
+			PushFollow(Follow._conditionalExpressionNoIn_in_synpred146_JavaScript2390);
 			conditionalExpressionNoIn();
 			PopFollow();
 			if (state.failed) return;
@@ -23234,12 +23381,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred160_JavaScript_fragment", 256);
 		try
 		{
-			// JavaScript.g3:300:7: ( callExpression )
+			// JavaScript.g3:303:7: ( callExpression )
 			DebugEnterAlt(1);
-			// JavaScript.g3:300:7: callExpression
+			// JavaScript.g3:303:7: callExpression
 			{
-			DebugLocation(300, 7);
-			PushFollow(Follow._callExpression_in_synpred160_JavaScript2490);
+			DebugLocation(303, 7);
+			PushFollow(Follow._callExpression_in_synpred160_JavaScript2559);
 			callExpression();
 			PopFollow();
 			if (state.failed) return;
@@ -23267,12 +23414,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred161_JavaScript_fragment", 257);
 		try
 		{
-			// JavaScript.g3:305:7: ( memberExpression )
+			// JavaScript.g3:308:7: ( memberExpression )
 			DebugEnterAlt(1);
-			// JavaScript.g3:305:7: memberExpression
+			// JavaScript.g3:308:7: memberExpression
 			{
-			DebugLocation(305, 7);
-			PushFollow(Follow._memberExpression_in_synpred161_JavaScript2515);
+			DebugLocation(308, 7);
+			PushFollow(Follow._memberExpression_in_synpred161_JavaScript2584);
 			memberExpression();
 			PopFollow();
 			if (state.failed) return;
@@ -23304,17 +23451,17 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred190_JavaScript_fragment", 286);
 		try
 		{
-			// JavaScript.g3:364:7: (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression )
+			// JavaScript.g3:367:7: (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression )
 			DebugEnterAlt(1);
-			// JavaScript.g3:364:7: cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression
+			// JavaScript.g3:367:7: cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression
 			{
-			DebugLocation(364, 11);
-			PushFollow(Follow._logicalORExpression_in_synpred190_JavaScript3035);
+			DebugLocation(367, 11);
+			PushFollow(Follow._logicalORExpression_in_synpred190_JavaScript3104);
 			cond=logicalORExpression();
 			PopFollow();
 			if (state.failed) return;
-			DebugLocation(364, 32);
-			// JavaScript.g3:364:32: ( SkipSpace )*
+			DebugLocation(367, 32);
+			// JavaScript.g3:367:32: ( SkipSpace )*
 			try { DebugEnterSubRule(290);
 			while (true)
 			{
@@ -23333,10 +23480,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:364:32: SkipSpace
+					// JavaScript.g3:367:32: SkipSpace
 					{
-					DebugLocation(364, 32);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3037); if (state.failed) return;
+					DebugLocation(367, 32);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3106); if (state.failed) return;
 
 					}
 					break;
@@ -23351,10 +23498,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(290); }
 
-			DebugLocation(364, 43);
-			Match(input,134,Follow._134_in_synpred190_JavaScript3040); if (state.failed) return;
-			DebugLocation(364, 47);
-			// JavaScript.g3:364:47: ( SkipSpace )*
+			DebugLocation(367, 43);
+			Match(input,140,Follow._140_in_synpred190_JavaScript3109); if (state.failed) return;
+			DebugLocation(367, 47);
+			// JavaScript.g3:367:47: ( SkipSpace )*
 			try { DebugEnterSubRule(291);
 			while (true)
 			{
@@ -23373,10 +23520,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:364:47: SkipSpace
+					// JavaScript.g3:367:47: SkipSpace
 					{
-					DebugLocation(364, 47);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3042); if (state.failed) return;
+					DebugLocation(367, 47);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3111); if (state.failed) return;
 
 					}
 					break;
@@ -23391,13 +23538,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(291); }
 
-			DebugLocation(364, 60);
-			PushFollow(Follow._assignmentExpression_in_synpred190_JavaScript3047);
+			DebugLocation(367, 60);
+			PushFollow(Follow._assignmentExpression_in_synpred190_JavaScript3116);
 			tV=assignmentExpression();
 			PopFollow();
 			if (state.failed) return;
-			DebugLocation(364, 82);
-			// JavaScript.g3:364:82: ( SkipSpace )*
+			DebugLocation(367, 82);
+			// JavaScript.g3:367:82: ( SkipSpace )*
 			try { DebugEnterSubRule(292);
 			while (true)
 			{
@@ -23416,10 +23563,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:364:82: SkipSpace
+					// JavaScript.g3:367:82: SkipSpace
 					{
-					DebugLocation(364, 82);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3049); if (state.failed) return;
+					DebugLocation(367, 82);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3118); if (state.failed) return;
 
 					}
 					break;
@@ -23434,10 +23581,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(292); }
 
-			DebugLocation(364, 93);
-			Match(input,133,Follow._133_in_synpred190_JavaScript3052); if (state.failed) return;
-			DebugLocation(364, 97);
-			// JavaScript.g3:364:97: ( SkipSpace )*
+			DebugLocation(367, 93);
+			Match(input,139,Follow._139_in_synpred190_JavaScript3121); if (state.failed) return;
+			DebugLocation(367, 97);
+			// JavaScript.g3:367:97: ( SkipSpace )*
 			try { DebugEnterSubRule(293);
 			while (true)
 			{
@@ -23456,10 +23603,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:364:97: SkipSpace
+					// JavaScript.g3:367:97: SkipSpace
 					{
-					DebugLocation(364, 97);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3054); if (state.failed) return;
+					DebugLocation(367, 97);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred190_JavaScript3123); if (state.failed) return;
 
 					}
 					break;
@@ -23474,8 +23621,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(293); }
 
-			DebugLocation(364, 110);
-			PushFollow(Follow._assignmentExpression_in_synpred190_JavaScript3059);
+			DebugLocation(367, 110);
+			PushFollow(Follow._assignmentExpression_in_synpred190_JavaScript3128);
 			fV=assignmentExpression();
 			PopFollow();
 			if (state.failed) return;
@@ -23507,17 +23654,17 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred195_JavaScript_fragment", 291);
 		try
 		{
-			// JavaScript.g3:370:7: (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn )
+			// JavaScript.g3:373:7: (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn )
 			DebugEnterAlt(1);
-			// JavaScript.g3:370:7: cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn
+			// JavaScript.g3:373:7: cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn
 			{
-			DebugLocation(370, 11);
-			PushFollow(Follow._logicalORExpressionNoIn_in_synpred195_JavaScript3109);
+			DebugLocation(373, 11);
+			PushFollow(Follow._logicalORExpressionNoIn_in_synpred195_JavaScript3178);
 			cond=logicalORExpressionNoIn();
 			PopFollow();
 			if (state.failed) return;
-			DebugLocation(370, 36);
-			// JavaScript.g3:370:36: ( SkipSpace )*
+			DebugLocation(373, 36);
+			// JavaScript.g3:373:36: ( SkipSpace )*
 			try { DebugEnterSubRule(294);
 			while (true)
 			{
@@ -23536,10 +23683,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:370:36: SkipSpace
+					// JavaScript.g3:373:36: SkipSpace
 					{
-					DebugLocation(370, 36);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3111); if (state.failed) return;
+					DebugLocation(373, 36);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3180); if (state.failed) return;
 
 					}
 					break;
@@ -23554,10 +23701,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(294); }
 
-			DebugLocation(370, 47);
-			Match(input,134,Follow._134_in_synpred195_JavaScript3114); if (state.failed) return;
-			DebugLocation(370, 51);
-			// JavaScript.g3:370:51: ( SkipSpace )*
+			DebugLocation(373, 47);
+			Match(input,140,Follow._140_in_synpred195_JavaScript3183); if (state.failed) return;
+			DebugLocation(373, 51);
+			// JavaScript.g3:373:51: ( SkipSpace )*
 			try { DebugEnterSubRule(295);
 			while (true)
 			{
@@ -23576,10 +23723,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:370:51: SkipSpace
+					// JavaScript.g3:373:51: SkipSpace
 					{
-					DebugLocation(370, 51);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3116); if (state.failed) return;
+					DebugLocation(373, 51);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3185); if (state.failed) return;
 
 					}
 					break;
@@ -23594,13 +23741,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(295); }
 
-			DebugLocation(370, 64);
-			PushFollow(Follow._assignmentExpressionNoIn_in_synpred195_JavaScript3121);
+			DebugLocation(373, 64);
+			PushFollow(Follow._assignmentExpressionNoIn_in_synpred195_JavaScript3190);
 			tV=assignmentExpressionNoIn();
 			PopFollow();
 			if (state.failed) return;
-			DebugLocation(370, 90);
-			// JavaScript.g3:370:90: ( SkipSpace )*
+			DebugLocation(373, 90);
+			// JavaScript.g3:373:90: ( SkipSpace )*
 			try { DebugEnterSubRule(296);
 			while (true)
 			{
@@ -23619,10 +23766,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:370:90: SkipSpace
+					// JavaScript.g3:373:90: SkipSpace
 					{
-					DebugLocation(370, 90);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3123); if (state.failed) return;
+					DebugLocation(373, 90);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3192); if (state.failed) return;
 
 					}
 					break;
@@ -23637,10 +23784,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(296); }
 
-			DebugLocation(370, 101);
-			Match(input,133,Follow._133_in_synpred195_JavaScript3126); if (state.failed) return;
-			DebugLocation(370, 105);
-			// JavaScript.g3:370:105: ( SkipSpace )*
+			DebugLocation(373, 101);
+			Match(input,139,Follow._139_in_synpred195_JavaScript3195); if (state.failed) return;
+			DebugLocation(373, 105);
+			// JavaScript.g3:373:105: ( SkipSpace )*
 			try { DebugEnterSubRule(297);
 			while (true)
 			{
@@ -23659,10 +23806,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				{
 				case 1:
 					DebugEnterAlt(1);
-					// JavaScript.g3:370:105: SkipSpace
+					// JavaScript.g3:373:105: SkipSpace
 					{
-					DebugLocation(370, 105);
-					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3128); if (state.failed) return;
+					DebugLocation(373, 105);
+					Match(input,SkipSpace,Follow._SkipSpace_in_synpred195_JavaScript3197); if (state.failed) return;
 
 					}
 					break;
@@ -23677,8 +23824,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 
 			} finally { DebugExitSubRule(297); }
 
-			DebugLocation(370, 118);
-			PushFollow(Follow._assignmentExpressionNoIn_in_synpred195_JavaScript3133);
+			DebugLocation(373, 118);
+			PushFollow(Follow._assignmentExpressionNoIn_in_synpred195_JavaScript3202);
 			fV=assignmentExpressionNoIn();
 			PopFollow();
 			if (state.failed) return;
@@ -23709,17 +23856,17 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred276_JavaScript_fragment", 372);
 		try
 		{
-			// JavaScript.g3:495:7: ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) )
+			// JavaScript.g3:498:7: ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) )
 			DebugEnterAlt(1);
-			// JavaScript.g3:495:7: leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC )
+			// JavaScript.g3:498:7: leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC )
 			{
-			DebugLocation(495, 7);
-			PushFollow(Follow._leftHandSideExpression_in_synpred276_JavaScript4594);
+			DebugLocation(498, 7);
+			PushFollow(Follow._leftHandSideExpression_in_synpred276_JavaScript4663);
 			leftHandSideExpression();
 			PopFollow();
 			if (state.failed) return;
-			DebugLocation(495, 30);
-			// JavaScript.g3:495:30: (op1= PLUS_INC |op2= MINUS_INC )
+			DebugLocation(498, 30);
+			// JavaScript.g3:498:30: (op1= PLUS_INC |op2= MINUS_INC )
 			int alt332=2;
 			try { DebugEnterSubRule(332);
 			try { DebugEnterDecision(332, decisionCanBacktrack[332]);
@@ -23746,19 +23893,19 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 			case 1:
 				DebugEnterAlt(1);
-				// JavaScript.g3:495:31: op1= PLUS_INC
+				// JavaScript.g3:498:31: op1= PLUS_INC
 				{
-				DebugLocation(495, 34);
-				op1=(CommonToken)Match(input,PLUS_INC,Follow._PLUS_INC_in_synpred276_JavaScript4599); if (state.failed) return;
+				DebugLocation(498, 34);
+				op1=(CommonToken)Match(input,PLUS_INC,Follow._PLUS_INC_in_synpred276_JavaScript4668); if (state.failed) return;
 
 				}
 				break;
 			case 2:
 				DebugEnterAlt(2);
-				// JavaScript.g3:495:46: op2= MINUS_INC
+				// JavaScript.g3:498:46: op2= MINUS_INC
 				{
-				DebugLocation(495, 49);
-				op2=(CommonToken)Match(input,MINUS_INC,Follow._MINUS_INC_in_synpred276_JavaScript4605); if (state.failed) return;
+				DebugLocation(498, 49);
+				op2=(CommonToken)Match(input,MINUS_INC,Follow._MINUS_INC_in_synpred276_JavaScript4674); if (state.failed) return;
 
 				}
 				break;
@@ -23790,12 +23937,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		TraceIn("synpred285_JavaScript_fragment", 381);
 		try
 		{
-			// JavaScript.g3:513:11: ( SkipSpace )
+			// JavaScript.g3:516:11: ( SkipSpace )
 			DebugEnterAlt(1);
-			// JavaScript.g3:513:11: SkipSpace
+			// JavaScript.g3:516:11: SkipSpace
 			{
-			DebugLocation(513, 11);
-			Match(input,SkipSpace,Follow._SkipSpace_in_synpred285_JavaScript4745); if (state.failed) return;
+			DebugLocation(516, 11);
+			Match(input,SkipSpace,Follow._SkipSpace_in_synpred285_JavaScript4814); if (state.failed) return;
 
 			}
 
@@ -23957,7 +24104,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA4_minS =
 			"\x2\xC\x2\xFFFF";
 		private const string DFA4_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA4_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA4_specialS =
@@ -23967,13 +24114,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x3\x5\xFFFF\x2\x3\x3\xFFFF\x1\x3\x2\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA"+
 				"\xFFFF\x1\x3\xD\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF\x1"+
 				"\x3\x5\xFFFF\x1\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF"+
-				"\x1\x3\x4\xFFFF\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
+				"\x1\x3\x4\xFFFF\x1\x3\x7\xFFFF\x2\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
 				"\x3\x2\xFFFF\x1\x3\x9\xFFFF\x2\x3\x2\xFFFF\x1\x3\x4\xFFFF\x1\x3\x3\xFFFF"+
 				"\x1\x3\x1\xFFFF\x7\x3\x1\x2",
 				"\x1\x3\x5\xFFFF\x2\x3\x3\xFFFF\x1\x3\x2\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA"+
 				"\xFFFF\x1\x3\xD\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF\x1"+
 				"\x3\x5\xFFFF\x1\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF"+
-				"\x1\x3\x4\xFFFF\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
+				"\x1\x3\x4\xFFFF\x1\x3\x7\xFFFF\x2\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
 				"\x3\x2\xFFFF\x1\x3\x9\xFFFF\x2\x3\x2\xFFFF\x1\x3\x4\xFFFF\x1\x3\x3\xFFFF"+
 				"\x1\x3\x1\xFFFF\x7\x3\x1\x2",
 				"",
@@ -24028,7 +24175,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA5_minS =
 			"\x1\xC\x1\x0\x17\xFFFF";
 		private const string DFA5_maxS =
-			"\x1\x93\x1\x0\x17\xFFFF";
+			"\x1\x99\x1\x0\x17\xFFFF";
 		private const string DFA5_acceptS =
 			"\x2\xFFFF\x1\x2\x15\xFFFF\x1\x1";
 		private const string DFA5_specialS =
@@ -24038,7 +24185,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x2\x5\xFFFF\x2\x2\x3\xFFFF\x1\x2\x2\xFFFF\x1\x2\x3\xFFFF\x1\x2\xA"+
 				"\xFFFF\x1\x2\xD\xFFFF\x1\x2\x7\xFFFF\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1"+
 				"\x2\x5\xFFFF\x1\x2\x2\xFFFF\x2\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x1\xFFFF"+
-				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\xA\xFFFF\x3\x2\x1\xFFFF\x1\x2\x2"+
+				"\x1\x2\x4\xFFFF\x1\x2\x7\xFFFF\x2\x2\xA\xFFFF\x3\x2\x1\xFFFF\x1\x2\x2"+
 				"\xFFFF\x1\x2\x9\xFFFF\x2\x2\x2\xFFFF\x1\x2\x4\xFFFF\x1\x2\x3\xFFFF\x1"+
 				"\x2\x1\xFFFF\x1\x2\x1\x1\x5\x2",
 				"\x1\xFFFF",
@@ -24143,15 +24290,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA17_minS =
 			"\x2\x3F\x2\xFFFF";
 		private const string DFA17_maxS =
-			"\x2\x83\x2\xFFFF";
+			"\x2\x89\x2\xFFFF";
 		private const string DFA17_acceptS =
 			"\x2\xFFFF\x1\x1\x1\x2";
 		private const string DFA17_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA17_transitionS =
 			{
-				"\x1\x2\x2C\xFFFF\x1\x1\x16\xFFFF\x1\x3",
-				"\x1\x2\x2C\xFFFF\x1\x1\x16\xFFFF\x1\x3",
+				"\x1\x2\x32\xFFFF\x1\x1\x16\xFFFF\x1\x3",
+				"\x1\x2\x32\xFFFF\x1\x1\x16\xFFFF\x1\x3",
 				"",
 				""
 			};
@@ -24204,15 +24351,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA16_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA16_maxS =
-			"\x2\x83\x2\xFFFF";
+			"\x2\x89\x2\xFFFF";
 		private const string DFA16_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA16_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA16_transitionS =
 			{
-				"\x1\x3\x56\xFFFF\x1\x1\x16\xFFFF\x1\x2",
-				"\x1\x3\x56\xFFFF\x1\x1\x16\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x16\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x16\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -24265,7 +24412,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA21_minS =
 			"\x1\xC\x1\x0\x3\xFFFF\x1\x0\x14\xFFFF";
 		private const string DFA21_maxS =
-			"\x1\x93\x1\x0\x3\xFFFF\x1\x0\x14\xFFFF";
+			"\x1\x99\x1\x0\x3\xFFFF\x1\x0\x14\xFFFF";
 		private const string DFA21_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x3\x1\x4\x8\xFFFF\x1\x5\x1\x6\x2\xFFFF\x1\x7\x1\x8"+
 			"\x1\x9\x1\xA\x1\xC\x1\xD\x1\xE\x1\x1\x1\xB";
@@ -24276,9 +24423,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x4\x5\xFFFF\x1\x12\x1\x4\x3\xFFFF\x1\x11\x2\xFFFF\x1\x4\x3\xFFFF"+
 				"\x1\x4\xA\xFFFF\x1\x4\xD\xFFFF\x1\x4\x7\xFFFF\x1\x5\x7\xFFFF\x1\x4\x1"+
 				"\xFFFF\x1\x4\x5\xFFFF\x1\x4\x2\xFFFF\x2\x4\x2\xFFFF\x1\x4\x1\xFFFF\x1"+
-				"\x4\x1\xFFFF\x1\x4\x4\xFFFF\x1\x13\x2\xFFFF\x1\x3\xA\xFFFF\x2\x4\x1"+
-				"\x16\x1\xFFFF\x1\x17\x2\xFFFF\x1\x4\x9\xFFFF\x1\x2\x1\x4\x2\xFFFF\x1"+
-				"\x4\x4\xFFFF\x1\x4\x3\xFFFF\x1\xE\x1\xFFFF\x1\xE\x1\x4\x1\xD\x1\x15"+
+				"\x4\x1\xFFFF\x1\x4\x4\xFFFF\x1\x13\x7\xFFFF\x1\x4\x1\x3\xA\xFFFF\x2"+
+				"\x4\x1\x16\x1\xFFFF\x1\x17\x2\xFFFF\x1\x4\x9\xFFFF\x1\x2\x1\x4\x2\xFFFF"+
+				"\x1\x4\x4\xFFFF\x1\x4\x3\xFFFF\x1\xE\x1\xFFFF\x1\xE\x1\x4\x1\xD\x1\x15"+
 				"\x1\xE\x1\x14\x1\x1",
 				"\x1\xFFFF",
 				"",
@@ -24398,7 +24545,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA26_minS =
 			"\x2\xC\x2\xFFFF";
 		private const string DFA26_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA26_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA26_specialS =
@@ -24408,13 +24555,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x3\x5\xFFFF\x2\x3\x3\xFFFF\x1\x3\x2\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA"+
 				"\xFFFF\x1\x3\xD\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF\x1"+
 				"\x3\x5\xFFFF\x1\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF"+
-				"\x1\x3\x4\xFFFF\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
+				"\x1\x3\x4\xFFFF\x1\x3\x7\xFFFF\x2\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
 				"\x3\x2\xFFFF\x1\x3\x9\xFFFF\x2\x3\x2\xFFFF\x1\x3\x4\xFFFF\x1\x3\x1\xFFFF"+
 				"\x2\x2\x1\x3\x1\xFFFF\x7\x3\x1\x2",
 				"\x1\x3\x5\xFFFF\x2\x3\x3\xFFFF\x1\x3\x2\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA"+
 				"\xFFFF\x1\x3\xD\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF\x1"+
 				"\x3\x5\xFFFF\x1\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF"+
-				"\x1\x3\x4\xFFFF\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
+				"\x1\x3\x4\xFFFF\x1\x3\x7\xFFFF\x2\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF\x1"+
 				"\x3\x2\xFFFF\x1\x3\x9\xFFFF\x2\x3\x2\xFFFF\x1\x3\x4\xFFFF\x1\x3\x1\xFFFF"+
 				"\x2\x2\x1\x3\x1\xFFFF\x7\x3\x1\x2",
 				"",
@@ -24469,15 +24616,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA31_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA31_maxS =
-			"\x2\x6C\x2\xFFFF";
+			"\x2\x72\x2\xFFFF";
 		private const string DFA31_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA31_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA31_transitionS =
 			{
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1",
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1",
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1",
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1",
 				"",
 				""
 			};
@@ -24530,15 +24677,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA34_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA34_maxS =
-			"\x2\x6C\x2\xFFFF";
+			"\x2\x72\x2\xFFFF";
 		private const string DFA34_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA34_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA34_transitionS =
 			{
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1",
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1",
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1",
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1",
 				"",
 				""
 			};
@@ -24591,7 +24738,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA37_minS =
 			"\x1\x3F\x2\x8\x2\xFFFF";
 		private const string DFA37_maxS =
-			"\x1\x3F\x2\x6C\x2\xFFFF";
+			"\x1\x3F\x2\x72\x2\xFFFF";
 		private const string DFA37_acceptS =
 			"\x3\xFFFF\x1\x1\x1\x2";
 		private const string DFA37_specialS =
@@ -24599,8 +24746,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA37_transitionS =
 			{
 				"\x1\x1",
-				"\x1\x4\xC\xFFFF\x1\x3\x4C\xFFFF\x1\x3\x9\xFFFF\x1\x2",
-				"\x1\x4\xC\xFFFF\x1\x3\x4C\xFFFF\x1\x3\x9\xFFFF\x1\x2",
+				"\x1\x4\xC\xFFFF\x1\x3\x52\xFFFF\x1\x3\x9\xFFFF\x1\x2",
+				"\x1\x4\xC\xFFFF\x1\x3\x52\xFFFF\x1\x3\x9\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -24653,7 +24800,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA40_minS =
 			"\x1\x3F\x2\x8\x2\xFFFF";
 		private const string DFA40_maxS =
-			"\x1\x3F\x2\x6C\x2\xFFFF";
+			"\x1\x3F\x2\x72\x2\xFFFF";
 		private const string DFA40_acceptS =
 			"\x3\xFFFF\x1\x1\x1\x2";
 		private const string DFA40_specialS =
@@ -24661,8 +24808,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA40_transitionS =
 			{
 				"\x1\x1",
-				"\x1\x4\xC\xFFFF\x1\x3\x22\xFFFF\x1\x3\x29\xFFFF\x1\x3\x9\xFFFF\x1\x2",
-				"\x1\x4\xC\xFFFF\x1\x3\x22\xFFFF\x1\x3\x29\xFFFF\x1\x3\x9\xFFFF\x1\x2",
+				"\x1\x4\xC\xFFFF\x1\x3\x22\xFFFF\x1\x3\x2F\xFFFF\x1\x3\x9\xFFFF\x1\x2",
+				"\x1\x4\xC\xFFFF\x1\x3\x22\xFFFF\x1\x3\x2F\xFFFF\x1\x3\x9\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -24715,7 +24862,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA86_minS =
 			"\x1\x5F\x2\xC\x2\xFFFF";
 		private const string DFA86_maxS =
-			"\x1\x5F\x2\x93\x2\xFFFF";
+			"\x1\x5F\x2\x99\x2\xFFFF";
 		private const string DFA86_acceptS =
 			"\x3\xFFFF\x1\x1\x1\x2";
 		private const string DFA86_specialS =
@@ -24725,14 +24872,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x1",
 				"\x1\x3\x6\xFFFF\x1\x3\x6\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA\xFFFF\x1\x3\xD"+
 				"\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF\x1\x3\x5\xFFFF\x1"+
-				"\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF\x1\x3\x7\xFFFF"+
-				"\x1\x4\x9\xFFFF\x1\x2\x2\x3\x5\xFFFF\x1\x3\xA\xFFFF\x1\x3\x2\xFFFF\x1"+
-				"\x3\x4\xFFFF\x1\x3\x6\xFFFF\x1\x3\x4\xFFFF\x1\x3",
+				"\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF\x1\x3\xC\xFFFF"+
+				"\x1\x3\x1\x4\x9\xFFFF\x1\x2\x2\x3\x5\xFFFF\x1\x3\xA\xFFFF\x1\x3\x2\xFFFF"+
+				"\x1\x3\x4\xFFFF\x1\x3\x6\xFFFF\x1\x3\x4\xFFFF\x1\x3",
 				"\x1\x3\x6\xFFFF\x1\x3\x6\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA\xFFFF\x1\x3\xD"+
 				"\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF\x1\x3\x5\xFFFF\x1"+
-				"\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF\x1\x3\x7\xFFFF"+
-				"\x1\x4\x9\xFFFF\x1\x2\x2\x3\x5\xFFFF\x1\x3\xA\xFFFF\x1\x3\x2\xFFFF\x1"+
-				"\x3\x4\xFFFF\x1\x3\x6\xFFFF\x1\x3\x4\xFFFF\x1\x3",
+				"\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF\x1\x3\xC\xFFFF"+
+				"\x1\x3\x1\x4\x9\xFFFF\x1\x2\x2\x3\x5\xFFFF\x1\x3\xA\xFFFF\x1\x3\x2\xFFFF"+
+				"\x1\x3\x4\xFFFF\x1\x3\x6\xFFFF\x1\x3\x4\xFFFF\x1\x3",
 				"",
 				""
 			};
@@ -24783,9 +24930,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA98_eofS =
 			"\x4\xFFFF";
 		private const string DFA98_minS =
-			"\x2\x6C\x2\xFFFF";
+			"\x2\x72\x2\xFFFF";
 		private const string DFA98_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA98_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA98_specialS =
@@ -24844,9 +24991,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA102_eofS =
 			"\x4\xFFFF";
 		private const string DFA102_minS =
-			"\x2\x6C\x2\xFFFF";
+			"\x2\x72\x2\xFFFF";
 		private const string DFA102_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA102_acceptS =
 			"\x2\xFFFF\x1\x1\x1\x2";
 		private const string DFA102_specialS =
@@ -24905,9 +25052,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA101_eofS =
 			"\x4\xFFFF";
 		private const string DFA101_minS =
-			"\x2\x6C\x2\xFFFF";
+			"\x2\x72\x2\xFFFF";
 		private const string DFA101_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA101_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA101_specialS =
@@ -24968,7 +25115,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA116_minS =
 			"\x2\xC\x2\xFFFF";
 		private const string DFA116_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA116_acceptS =
 			"\x2\xFFFF\x1\x1\x1\x2";
 		private const string DFA116_specialS =
@@ -24978,13 +25125,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x3\x5\xFFFF\x2\x3\x3\xFFFF\x1\x3\x2\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA"+
 				"\xFFFF\x1\x3\x1\x2\xC\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF"+
 				"\x1\x3\x5\xFFFF\x1\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1"+
-				"\xFFFF\x1\x3\x4\xFFFF\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF"+
+				"\xFFFF\x1\x3\x4\xFFFF\x1\x3\x7\xFFFF\x2\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF"+
 				"\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x2\x3\x2\xFFFF\x1\x3\x4\xFFFF\x1\x3\x1"+
 				"\xFFFF\xC\x3",
 				"\x1\x3\x5\xFFFF\x2\x3\x3\xFFFF\x1\x3\x2\xFFFF\x1\x3\x3\xFFFF\x1\x3\xA"+
 				"\xFFFF\x1\x3\x1\x2\xC\xFFFF\x1\x3\x7\xFFFF\x1\x3\x7\xFFFF\x1\x3\x1\xFFFF"+
 				"\x1\x3\x5\xFFFF\x1\x3\x2\xFFFF\x2\x3\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1"+
-				"\xFFFF\x1\x3\x4\xFFFF\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF"+
+				"\xFFFF\x1\x3\x4\xFFFF\x1\x3\x7\xFFFF\x2\x3\x9\xFFFF\x1\x1\x3\x3\x1\xFFFF"+
 				"\x1\x3\x2\xFFFF\x1\x3\x9\xFFFF\x2\x3\x2\xFFFF\x1\x3\x4\xFFFF\x1\x3\x1"+
 				"\xFFFF\xC\x3",
 				"",
@@ -25022,7 +25169,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA116_transition;
 		}
 
-		public override string Description { get { return "250:79: ( ( SkipSpace )* finallyClause )?"; } }
+		public override string Description { get { return "250:90: ( ( SkipSpace )* fin= finallyClause )?"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25039,16 +25186,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA125_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA125_maxS =
-			"\x2\x88\x2\xFFFF";
+			"\x2\x8E\x2\xFFFF";
 		private const string DFA125_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA125_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA125_transitionS =
 			{
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x1\x2"+
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x1\x2"+
 				"\x2\xFFFF\x1\x2",
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x1\x2"+
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x1\x2"+
 				"\x2\xFFFF\x1\x2",
 				"",
 				""
@@ -25085,7 +25232,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA125_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 263:28: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*"; } }
+		public override string Description { get { return "()* loopback of 266:28: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25102,15 +25249,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA128_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA128_maxS =
-			"\x2\x6C\x2\xFFFF";
+			"\x2\x72\x2\xFFFF";
 		private const string DFA128_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA128_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA128_transitionS =
 			{
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1",
-				"\x1\x3\x4C\xFFFF\x1\x2\x9\xFFFF\x1\x1",
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1",
+				"\x1\x3\x52\xFFFF\x1\x2\x9\xFFFF\x1\x1",
 				"",
 				""
 			};
@@ -25146,7 +25293,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA128_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 268:32: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )*"; } }
+		public override string Description { get { return "()* loopback of 271:32: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpressionNoIn )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25163,7 +25310,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA131_minS =
 			"\x1\xC\x9\x0\x2\xFFFF";
 		private const string DFA131_maxS =
-			"\x1\x93\x9\x0\x2\xFFFF";
+			"\x1\x99\x9\x0\x2\xFFFF";
 		private const string DFA131_acceptS =
 			"\xA\xFFFF\x1\x1\x1\x2";
 		private const string DFA131_specialS =
@@ -25173,8 +25320,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\xA\x6\xFFFF\x1\x4\x6\xFFFF\x1\xA\x3\xFFFF\x1\xA\xA\xFFFF\x1\x4\xD"+
 				"\xFFFF\x1\x3\x7\xFFFF\x1\x2\x7\xFFFF\x1\xA\x1\xFFFF\x1\xA\x5\xFFFF\x1"+
 				"\x9\x2\xFFFF\x1\xA\x1\x4\x2\xFFFF\x1\x4\x1\xFFFF\x1\xA\x1\xFFFF\x1\xA"+
-				"\x12\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2\xFFFF\x1\x7"+
-				"\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
+				"\xC\xFFFF\x1\x4\xB\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2"+
+				"\xFFFF\x1\x7\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
@@ -25220,7 +25367,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA131_transition;
 		}
 
-		public override string Description { get { return "272:1: assignmentExpression : ( conditionalExpression |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression -> ^( BINARY_EXPR $op $lhs $rhs) );"; } }
+		public override string Description { get { return "275:1: assignmentExpression : ( conditionalExpression |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpression -> ^( BINARY_EXPR $op $lhs $rhs) );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25384,7 +25531,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA134_minS =
 			"\x1\xC\x9\x0\x2\xFFFF";
 		private const string DFA134_maxS =
-			"\x1\x93\x9\x0\x2\xFFFF";
+			"\x1\x99\x9\x0\x2\xFFFF";
 		private const string DFA134_acceptS =
 			"\xA\xFFFF\x1\x1\x1\x2";
 		private const string DFA134_specialS =
@@ -25394,8 +25541,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\xA\x6\xFFFF\x1\x4\x6\xFFFF\x1\xA\x3\xFFFF\x1\xA\xA\xFFFF\x1\x4\xD"+
 				"\xFFFF\x1\x3\x7\xFFFF\x1\x2\x7\xFFFF\x1\xA\x1\xFFFF\x1\xA\x5\xFFFF\x1"+
 				"\x9\x2\xFFFF\x1\xA\x1\x4\x2\xFFFF\x1\x4\x1\xFFFF\x1\xA\x1\xFFFF\x1\xA"+
-				"\x12\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2\xFFFF\x1\x7"+
-				"\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
+				"\xC\xFFFF\x1\x4\xB\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2"+
+				"\xFFFF\x1\x7\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
@@ -25441,7 +25588,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA134_transition;
 		}
 
-		public override string Description { get { return "278:1: assignmentExpressionNoIn : ( conditionalExpressionNoIn |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn -> ^( BINARY_EXPR $op $lhs $rhs) );"; } }
+		public override string Description { get { return "281:1: assignmentExpressionNoIn : ( conditionalExpressionNoIn |lhs= leftHandSideExpression ( SkipSpace )* op= assignmentOperator ( SkipSpace )* rhs= assignmentExpressionNoIn -> ^( BINARY_EXPR $op $lhs $rhs) );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25605,7 +25752,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA135_minS =
 			"\x1\x13\x9\x0\x2\xFFFF";
 		private const string DFA135_maxS =
-			"\x1\x93\x9\x0\x2\xFFFF";
+			"\x1\x99\x9\x0\x2\xFFFF";
 		private const string DFA135_acceptS =
 			"\xA\xFFFF\x1\x1\x1\x2";
 		private const string DFA135_specialS =
@@ -25613,8 +25760,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA135_transitionS =
 			{
 				"\x1\x4\x15\xFFFF\x1\x4\xD\xFFFF\x1\x3\x7\xFFFF\x1\x2\xF\xFFFF\x1\x9"+
-				"\x3\xFFFF\x1\x4\x2\xFFFF\x1\x4\x16\xFFFF\x1\x4\x1\x1\x13\xFFFF\x1\x7"+
-				"\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
+				"\x3\xFFFF\x1\x4\x2\xFFFF\x1\x4\x10\xFFFF\x1\x4\xB\xFFFF\x1\x4\x1\x1"+
+				"\x13\xFFFF\x1\x7\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
@@ -25660,7 +25807,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA135_transition;
 		}
 
-		public override string Description { get { return "299:1: leftHandSideExpression : ( callExpression | newExpression );"; } }
+		public override string Description { get { return "302:1: leftHandSideExpression : ( callExpression | newExpression );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25824,7 +25971,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA137_minS =
 			"\x1\x13\x8\xFFFF\x1\x0\x1\xFFFF";
 		private const string DFA137_maxS =
-			"\x1\x93\x8\xFFFF\x1\x0\x1\xFFFF";
+			"\x1\x99\x8\xFFFF\x1\x0\x1\xFFFF";
 		private const string DFA137_acceptS =
 			"\x1\xFFFF\x1\x1\x8\xFFFF\x1\x2";
 		private const string DFA137_specialS =
@@ -25832,8 +25979,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA137_transitionS =
 			{
 				"\x1\x1\x15\xFFFF\x1\x1\xD\xFFFF\x1\x1\x7\xFFFF\x1\x1\xF\xFFFF\x1\x9"+
-				"\x3\xFFFF\x1\x1\x2\xFFFF\x1\x1\x16\xFFFF\x2\x1\x13\xFFFF\x1\x1\x4\xFFFF"+
-				"\x1\x1\x6\xFFFF\x1\x1\x4\xFFFF\x1\x1",
+				"\x3\xFFFF\x1\x1\x2\xFFFF\x1\x1\x10\xFFFF\x1\x1\xB\xFFFF\x2\x1\x13\xFFFF"+
+				"\x1\x1\x4\xFFFF\x1\x1\x6\xFFFF\x1\x1\x4\xFFFF\x1\x1",
 				"",
 				"",
 				"",
@@ -25878,7 +26025,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA137_transition;
 		}
 
-		public override string Description { get { return "304:1: newExpression : ( memberExpression | 'new' ( SkipSpace )* newExpression );"; } }
+		public override string Description { get { return "307:1: newExpression : ( memberExpression | 'new' ( SkipSpace )* newExpression );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25922,7 +26069,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA139_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA139_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA139_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA139_specialS =
@@ -25932,13 +26079,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x4\x2\x4\xFFFF\x1\x2\x5"+
 				"\xFFFF\x2\x2\x7\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1"+
 				"\x2\x3\xFFFF\x2\x2\x3\xFFFF\x8\x2\x8\xFFFF\x4\x2\x3\xFFFF\x1\x2\x2\xFFFF"+
-				"\x6\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9\xFFFF\x2\x2\x1\x3\x2\x2\x1\x3"+
-				"\x1\x2\xB\xFFFF\x1\x2",
+				"\x1\x2\x6\xFFFF\x5\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9\xFFFF\x2\x2\x1"+
+				"\x3\x2\x2\x1\x3\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x4\x2\x4\xFFFF\x1\x2\x5"+
 				"\xFFFF\x2\x2\x7\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1"+
 				"\x2\x3\xFFFF\x2\x2\x3\xFFFF\x2\x2\x1\xFFFF\x5\x2\x8\xFFFF\x3\x2\x4\xFFFF"+
-				"\x1\x2\x2\xFFFF\x6\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9\xFFFF\x2\x2\x1"+
-				"\x3\x2\x2\x1\x3\x1\x2\xB\xFFFF\x1\x2",
+				"\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF\x5\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9"+
+				"\xFFFF\x2\x2\x1\x3\x2\x2\x1\x3\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -25974,7 +26121,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA139_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 311:9: ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 314:9: ( ( SkipSpace )* rhs= memberExpressionSuffix -> ^( ACCESSOR_EXPR $memberExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -25991,7 +26138,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA145_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA145_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA145_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA145_specialS =
@@ -26001,13 +26148,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x4\x2\x4\xFFFF\x1\x2\x5"+
 				"\xFFFF\x2\x2\x7\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1"+
 				"\x2\x3\xFFFF\x2\x2\x3\xFFFF\x8\x2\x8\xFFFF\x4\x2\x3\xFFFF\x1\x2\x2\xFFFF"+
-				"\x6\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9\xFFFF\x1\x3\x1\x2\x1\x3\x2\x2"+
-				"\x1\x3\x1\x2\xB\xFFFF\x1\x2",
+				"\x1\x2\x6\xFFFF\x5\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9\xFFFF\x1\x3\x1"+
+				"\x2\x1\x3\x2\x2\x1\x3\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x4\x2\x4\xFFFF\x1\x2\x5"+
 				"\xFFFF\x2\x2\x7\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1"+
 				"\x2\x3\xFFFF\x2\x2\x3\xFFFF\x2\x2\x1\xFFFF\x5\x2\x8\xFFFF\x3\x2\x4\xFFFF"+
-				"\x1\x2\x2\xFFFF\x6\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9\xFFFF\x1\x3\x1"+
-				"\x2\x1\x3\x2\x2\x1\x3\x1\x2\xB\xFFFF\x1\x2",
+				"\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF\x5\x2\x5\xFFFF\x1\x1\xA\xFFFF\x2\x2\x9"+
+				"\xFFFF\x1\x3\x1\x2\x1\x3\x2\x2\x1\x3\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -26043,7 +26190,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA145_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 332:9: ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 335:9: ( ( SkipSpace )* rhs= callExpressionSuffix -> ^( ACCESSOR_EXPR $callExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26060,7 +26207,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA152_minS =
 			"\x2\xC\x2\xFFFF";
 		private const string DFA152_maxS =
-			"\x2\x93\x2\xFFFF";
+			"\x2\x99\x2\xFFFF";
 		private const string DFA152_acceptS =
 			"\x2\xFFFF\x1\x1\x1\x2";
 		private const string DFA152_specialS =
@@ -26069,14 +26216,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 				"\x1\x2\x6\xFFFF\x1\x2\x6\xFFFF\x1\x2\x3\xFFFF\x1\x2\xA\xFFFF\x1\x2\xD"+
 				"\xFFFF\x1\x2\x7\xFFFF\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1"+
-				"\x2\x2\xFFFF\x2\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x1\xFFFF\x1\x2\x11"+
-				"\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\x3"+
-				"\x3\xFFFF\x1\x2\x6\xFFFF\x1\x2\x4\xFFFF\x1\x2",
+				"\x2\x2\xFFFF\x2\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x1\xFFFF\x1\x2\xC\xFFFF"+
+				"\x1\x2\xA\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1\x2\x2\xFFFF\x1"+
+				"\x2\x1\x3\x3\xFFFF\x1\x2\x6\xFFFF\x1\x2\x4\xFFFF\x1\x2",
 				"\x1\x2\x6\xFFFF\x1\x2\x6\xFFFF\x1\x2\x3\xFFFF\x1\x2\xA\xFFFF\x1\x2\xD"+
 				"\xFFFF\x1\x2\x7\xFFFF\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1"+
-				"\x2\x2\xFFFF\x2\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x1\xFFFF\x1\x2\x11"+
-				"\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\x3"+
-				"\x3\xFFFF\x1\x2\x6\xFFFF\x1\x2\x4\xFFFF\x1\x2",
+				"\x2\x2\xFFFF\x2\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x1\xFFFF\x1\x2\xC\xFFFF"+
+				"\x1\x2\xA\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1\x2\x2\xFFFF\x1"+
+				"\x2\x1\x3\x3\xFFFF\x1\x2\x6\xFFFF\x1\x2\x4\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -26112,7 +26259,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA152_transition;
 		}
 
-		public override string Description { get { return "347:11: ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )?"; } }
+		public override string Description { get { return "350:11: ( ( SkipSpace )* assignmentExpression ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )* )?"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26129,15 +26276,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA151_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA151_maxS =
-			"\x2\x83\x2\xFFFF";
+			"\x2\x89\x2\xFFFF";
 		private const string DFA151_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA151_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA151_transitionS =
 			{
-				"\x1\x3\x56\xFFFF\x1\x1\x16\xFFFF\x1\x2",
-				"\x1\x3\x56\xFFFF\x1\x1\x16\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x16\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x16\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -26173,7 +26320,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA151_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 347:44: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*"; } }
+		public override string Description { get { return "()* loopback of 350:44: ( ( SkipSpace )* ',' ( SkipSpace )* assignmentExpression )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26188,9 +26335,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA158_eofS =
 			"\x5\xFFFF";
 		private const string DFA158_minS =
-			"\x1\x84\x2\x37\x2\xFFFF";
+			"\x1\x8A\x2\x37\x2\xFFFF";
 		private const string DFA158_maxS =
-			"\x1\x84\x2\x6C\x2\xFFFF";
+			"\x1\x8A\x2\x72\x2\xFFFF";
 		private const string DFA158_acceptS =
 			"\x3\xFFFF\x1\x1\x1\x2";
 		private const string DFA158_specialS =
@@ -26198,8 +26345,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA158_transitionS =
 			{
 				"\x1\x1",
-				"\x1\x4\x7\xFFFF\x1\x3\x2C\xFFFF\x1\x2",
-				"\x1\x4\x7\xFFFF\x1\x3\x2C\xFFFF\x1\x2",
+				"\x1\x4\x7\xFFFF\x1\x3\x32\xFFFF\x1\x2",
+				"\x1\x4\x7\xFFFF\x1\x3\x32\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -26235,7 +26382,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA158_transition;
 		}
 
-		public override string Description { get { return "356:1: propertyReferenceSuffix : ( '.' ( SkipSpace )* id= Identifier -> ^( DOT_ACCESSOR_EXPR $id) | '.' ( SkipSpace )* importId= importedNotation -> ^( INSTANCE_JSNI $importId) );"; } }
+		public override string Description { get { return "359:1: propertyReferenceSuffix : ( '.' ( SkipSpace )* id= Identifier -> ^( DOT_ACCESSOR_EXPR $id) | '.' ( SkipSpace )* importId= importedNotation -> ^( INSTANCE_JSNI $importId) );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26252,7 +26399,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA163_minS =
 			"\x1\xC\xA\x0\x2\xFFFF";
 		private const string DFA163_maxS =
-			"\x1\x93\xA\x0\x2\xFFFF";
+			"\x1\x99\xA\x0\x2\xFFFF";
 		private const string DFA163_acceptS =
 			"\xB\xFFFF\x1\x1\x1\x2";
 		private const string DFA163_specialS =
@@ -26263,8 +26410,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\xA\x6\xFFFF\x1\x4\x6\xFFFF\x1\xA\x3\xFFFF\x1\xA\xA\xFFFF\x1\x4\xD"+
 				"\xFFFF\x1\x3\x7\xFFFF\x1\x2\x7\xFFFF\x1\xA\x1\xFFFF\x1\xA\x5\xFFFF\x1"+
 				"\x9\x2\xFFFF\x1\xA\x1\x4\x2\xFFFF\x1\x4\x1\xFFFF\x1\xA\x1\xFFFF\x1\xA"+
-				"\x12\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2\xFFFF\x1\x7"+
-				"\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
+				"\xC\xFFFF\x1\x4\xB\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2"+
+				"\xFFFF\x1\x7\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
@@ -26311,7 +26458,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA163_transition;
 		}
 
-		public override string Description { get { return "363:1: conditionalExpression : (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpression );"; } }
+		public override string Description { get { return "366:1: conditionalExpression : (cond= logicalORExpression ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpression ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpression -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpression );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26490,7 +26637,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA168_minS =
 			"\x1\xC\xA\x0\x2\xFFFF";
 		private const string DFA168_maxS =
-			"\x1\x93\xA\x0\x2\xFFFF";
+			"\x1\x99\xA\x0\x2\xFFFF";
 		private const string DFA168_acceptS =
 			"\xB\xFFFF\x1\x1\x1\x2";
 		private const string DFA168_specialS =
@@ -26501,8 +26648,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\xA\x6\xFFFF\x1\x4\x6\xFFFF\x1\xA\x3\xFFFF\x1\xA\xA\xFFFF\x1\x4\xD"+
 				"\xFFFF\x1\x3\x7\xFFFF\x1\x2\x7\xFFFF\x1\xA\x1\xFFFF\x1\xA\x5\xFFFF\x1"+
 				"\x9\x2\xFFFF\x1\xA\x1\x4\x2\xFFFF\x1\x4\x1\xFFFF\x1\xA\x1\xFFFF\x1\xA"+
-				"\x12\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2\xFFFF\x1\x7"+
-				"\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
+				"\xC\xFFFF\x1\x4\xB\xFFFF\x1\x4\x1\x1\x5\xFFFF\x1\xA\xA\xFFFF\x1\xA\x2"+
+				"\xFFFF\x1\x7\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
@@ -26549,7 +26696,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA168_transition;
 		}
 
-		public override string Description { get { return "369:1: conditionalExpressionNoIn : (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpressionNoIn );"; } }
+		public override string Description { get { return "372:1: conditionalExpressionNoIn : (cond= logicalORExpressionNoIn ( SkipSpace )* '?' ( SkipSpace )* tV= assignmentExpressionNoIn ( SkipSpace )* ':' ( SkipSpace )* fV= assignmentExpressionNoIn -> ^( CONDITIONAL_EXPR $cond $tV $fV) | logicalORExpressionNoIn );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26728,16 +26875,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA171_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA171_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA171_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA171_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA171_transitionS =
 			{
-				"\x1\x2\x41\xFFFF\x1\x3\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2"+
+				"\x1\x2\x41\xFFFF\x1\x3\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2"+
 				"\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
-				"\x1\x2\x41\xFFFF\x1\x3\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2"+
+				"\x1\x2\x41\xFFFF\x1\x3\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2"+
 				"\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
@@ -26774,7 +26921,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA171_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 377:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 380:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpression -> ^( BINARY_EXPR $op $logicalORExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26791,16 +26938,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA174_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA174_maxS =
-			"\x2\x86\x2\xFFFF";
+			"\x2\x8C\x2\xFFFF";
 		private const string DFA174_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA174_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA174_transitionS =
 			{
-				"\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x3\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
+				"\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x3\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
 				"\x18\xFFFF\x2\x2",
-				"\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x3\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
+				"\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x3\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
 				"\x18\xFFFF\x2\x2",
 				"",
 				""
@@ -26837,7 +26984,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA174_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 382:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 385:9: ( ( SkipSpace )* op= OR ( SkipSpace )* rhs= logicalANDExpressionNoIn -> ^( BINARY_EXPR $op $logicalORExpressionNoIn $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26854,16 +27001,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA177_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA177_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA177_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA177_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA177_transitionS =
 			{
-				"\x1\x3\xF\xFFFF\x1\x2\x41\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
+				"\x1\x3\xF\xFFFF\x1\x2\x41\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
 				"\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
-				"\x1\x3\xF\xFFFF\x1\x2\x41\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
+				"\x1\x3\xF\xFFFF\x1\x2\x41\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1"+
 				"\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
@@ -26900,7 +27047,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA177_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 387:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 390:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpression -> ^( BINARY_EXPR $op $logicalANDExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26917,16 +27064,16 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA180_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA180_maxS =
-			"\x2\x86\x2\xFFFF";
+			"\x2\x8C\x2\xFFFF";
 		private const string DFA180_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA180_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA180_transitionS =
 			{
-				"\x1\x3\xF\xFFFF\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x2\xA\xFFFF\x1\x2"+
+				"\x1\x3\xF\xFFFF\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x2\x10\xFFFF\x1\x2"+
 				"\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
-				"\x1\x3\xF\xFFFF\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x2\xA\xFFFF\x1\x2"+
+				"\x1\x3\xF\xFFFF\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x2\x10\xFFFF\x1\x2"+
 				"\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"",
 				""
@@ -26963,7 +27110,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA180_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 392:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 395:9: ( ( SkipSpace )* op= AND ( SkipSpace )* rhs= bitwiseORExpressionNoIn -> ^( BINARY_EXPR $op $logicalANDExpressionNoIn $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -26980,17 +27127,17 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA183_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA183_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA183_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA183_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA183_transitionS =
 			{
-				"\x1\x2\x7\xFFFF\x1\x3\x7\xFFFF\x1\x2\x41\xFFFF\x1\x2\xA\xFFFF\x1\x2"+
+				"\x1\x2\x7\xFFFF\x1\x3\x7\xFFFF\x1\x2\x41\xFFFF\x1\x2\x10\xFFFF\x1\x2"+
 				"\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF"+
 				"\x1\x2",
-				"\x1\x2\x7\xFFFF\x1\x3\x7\xFFFF\x1\x2\x41\xFFFF\x1\x2\xA\xFFFF\x1\x2"+
+				"\x1\x2\x7\xFFFF\x1\x3\x7\xFFFF\x1\x2\x41\xFFFF\x1\x2\x10\xFFFF\x1\x2"+
 				"\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF"+
 				"\x1\x2",
 				"",
@@ -27028,7 +27175,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA183_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 397:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 400:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpression -> ^( BINARY_EXPR $op $bitwiseORExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27045,7 +27192,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA186_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA186_maxS =
-			"\x2\x86\x2\xFFFF";
+			"\x2\x8C\x2\xFFFF";
 		private const string DFA186_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA186_specialS =
@@ -27053,9 +27200,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA186_transitionS =
 			{
 				"\x1\x2\x7\xFFFF\x1\x3\x7\xFFFF\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x2"+
-				"\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
+				"\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"\x1\x2\x7\xFFFF\x1\x3\x7\xFFFF\x1\x2\x22\xFFFF\x1\x2\x1E\xFFFF\x1\x2"+
-				"\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
+				"\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"",
 				""
 			};
@@ -27091,7 +27238,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA186_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 402:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 405:9: ( ( SkipSpace )* op= BIT_OR ( SkipSpace )* rhs= bitwiseXORExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseORExpressionNoIn $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27108,7 +27255,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA189_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA189_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA189_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA189_specialS =
@@ -27116,10 +27263,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA189_transitionS =
 			{
 				"\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1\x3\x5\xFFFF\x1\x2\x41\xFFFF\x1\x2"+
-				"\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF"+
+				"\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF"+
 				"\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1\x3\x5\xFFFF\x1\x2\x41\xFFFF\x1\x2"+
-				"\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF"+
+				"\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF"+
 				"\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
@@ -27156,7 +27303,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA189_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 407:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 410:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpression -> ^( BINARY_EXPR $op $bitwiseXORExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27173,7 +27320,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA192_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA192_maxS =
-			"\x2\x86\x2\xFFFF";
+			"\x2\x8C\x2\xFFFF";
 		private const string DFA192_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA192_specialS =
@@ -27181,9 +27328,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA192_transitionS =
 			{
 				"\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1\x3\x5\xFFFF\x1\x2\x22\xFFFF\x1\x2"+
-				"\x1E\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
+				"\x1E\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1\x3\x5\xFFFF\x1\x2\x22\xFFFF\x1\x2"+
-				"\x1E\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
+				"\x1E\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"",
 				""
 			};
@@ -27219,7 +27366,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA192_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 412:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 415:9: ( ( SkipSpace )* op= BIT_XOR ( SkipSpace )* rhs= bitwiseANDExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseXORExpressionNoIn $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27236,7 +27383,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA195_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA195_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA195_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA195_specialS =
@@ -27244,10 +27391,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA195_transitionS =
 			{
 				"\x1\x2\x4\xFFFF\x1\x3\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\x41"+
-				"\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF"+
+				"\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF"+
 				"\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x4\xFFFF\x1\x3\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\x41"+
-				"\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF"+
+				"\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF"+
 				"\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
@@ -27284,7 +27431,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA195_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 417:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 420:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpression -> ^( BINARY_EXPR $op $bitwiseANDExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27301,7 +27448,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA198_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA198_maxS =
-			"\x2\x86\x2\xFFFF";
+			"\x2\x8C\x2\xFFFF";
 		private const string DFA198_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA198_specialS =
@@ -27309,10 +27456,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA198_transitionS =
 			{
 				"\x1\x2\x4\xFFFF\x1\x3\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\x22"+
-				"\xFFFF\x1\x2\x1E\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF"+
+				"\xFFFF\x1\x2\x1E\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF"+
 				"\x2\x2",
 				"\x1\x2\x4\xFFFF\x1\x3\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\x22"+
-				"\xFFFF\x1\x2\x1E\xFFFF\x1\x2\xA\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF"+
+				"\xFFFF\x1\x2\x1E\xFFFF\x1\x2\x10\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF"+
 				"\x2\x2",
 				"",
 				""
@@ -27349,7 +27496,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA198_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 422:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 425:9: ( ( SkipSpace )* op= BIT_AND ( SkipSpace )* rhs= equalityExpressionNoIn -> ^( BINARY_EXPR $op $bitwiseANDExpressionNoIn $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27366,7 +27513,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA201_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA201_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA201_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA201_specialS =
@@ -27375,12 +27522,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x3\x29\xFFFF\x1\x3\x8\xFFFF\x1\x2\x6\xFFFF\x1\x3\x2\xFFFF"+
-				"\x1\x3\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF"+
-				"\x1\x2\xB\xFFFF\x1\x2",
+				"\x1\x3\x6\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2"+
+				"\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x3\x29\xFFFF\x1\x3\x8\xFFFF\x1\x2\x6\xFFFF\x1\x3\x2\xFFFF"+
-				"\x1\x3\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF"+
-				"\x1\x2\xB\xFFFF\x1\x2",
+				"\x1\x3\x6\xFFFF\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2"+
+				"\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -27416,7 +27563,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA201_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 427:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 430:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpression -> ^( BINARY_EXPR $op $equalityExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27433,7 +27580,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA204_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA204_maxS =
-			"\x2\x86\x2\xFFFF";
+			"\x2\x8C\x2\xFFFF";
 		private const string DFA204_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA204_specialS =
@@ -27442,10 +27589,10 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x3\x13\xFFFF\x1\x2\x15\xFFFF\x1\x3\x8\xFFFF\x1\x2\x6\xFFFF"+
-				"\x1\x3\x2\xFFFF\x1\x3\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
+				"\x1\x3\x2\xFFFF\x1\x3\x6\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x3\x13\xFFFF\x1\x2\x15\xFFFF\x1\x3\x8\xFFFF\x1\x2\x6\xFFFF"+
-				"\x1\x3\x2\xFFFF\x1\x3\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
+				"\x1\x3\x2\xFFFF\x1\x3\x6\xFFFF\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"",
 				""
 			};
@@ -27481,7 +27628,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA204_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 432:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 435:9: ( ( SkipSpace )* op= equalityOperator ( SkipSpace )* rhs= relationalExpressionNoIn -> ^( BINARY_EXPR $op $equalityExpressionNoIn $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27498,7 +27645,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA207_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA207_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA207_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA207_specialS =
@@ -27507,12 +27654,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x3\x7\xFFFF\x1\x3\x5\xFFFF\x1\x3\x3\xFFFF\x2"+
-				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x2\x2\x9\xFFFF"+
-				"\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
+				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF"+
+				"\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2"+
+				"\xB\xFFFF\x1\x2",
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x3\x7\xFFFF\x1\x3\x5\xFFFF\x1\x3\x3\xFFFF\x2"+
-				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x2\x2\x9\xFFFF"+
-				"\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
+				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF"+
+				"\x1\x2\x9\xFFFF\x1\x1\x16\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2"+
+				"\xB\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -27548,7 +27697,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA207_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 441:9: ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 444:9: ( ( SkipSpace )* op= relationalOperator ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27565,7 +27714,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA210_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA210_maxS =
-			"\x2\x86\x2\xFFFF";
+			"\x2\x8C\x2\xFFFF";
 		private const string DFA210_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA210_specialS =
@@ -27574,12 +27723,12 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x3\x7\xFFFF\x1\x2\x5\xFFFF\x1\x3\x3\xFFFF\x2"+
-				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x2\x2\x9\xFFFF"+
-				"\x1\x1\x18\xFFFF\x2\x2",
+				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF"+
+				"\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x3\x7\xFFFF\x1\x2\x5\xFFFF\x1\x3\x3\xFFFF\x2"+
-				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x2\x2\x9\xFFFF"+
-				"\x1\x1\x18\xFFFF\x2\x2",
+				"\x3\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF"+
+				"\x1\x2\x9\xFFFF\x1\x1\x18\xFFFF\x2\x2",
 				"",
 				""
 			};
@@ -27615,7 +27764,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA210_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 446:9: ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 449:9: ( ( SkipSpace )* op= relationalOperatorNoIn ( SkipSpace )* rhs= shiftExpression -> ^( BINARY_EXPR $op $relationalExpressionNoIn $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27632,7 +27781,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA213_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA213_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA213_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA213_specialS =
@@ -27641,14 +27790,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			{
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1\x2\x3\xFFFF\x2"+
-				"\x2\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x2\x2\x1\x3"+
-				"\x1\xFFFF\x1\x3\x6\xFFFF\x1\x1\xA\xFFFF\x1\x3\xB\xFFFF\x1\x2\x1\xFFFF"+
-				"\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
+				"\x2\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF"+
+				"\x1\x2\x1\x3\x1\xFFFF\x1\x3\x6\xFFFF\x1\x1\xA\xFFFF\x1\x3\xB\xFFFF\x1"+
+				"\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1\x2\x3\xFFFF\x2"+
-				"\x2\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x2\x2\x1\x3"+
-				"\x1\xFFFF\x1\x3\x6\xFFFF\x1\x1\xA\xFFFF\x1\x3\xB\xFFFF\x1\x2\x1\xFFFF"+
-				"\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
+				"\x2\xA\xFFFF\x1\x2\x8\xFFFF\x1\x2\x6\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF"+
+				"\x1\x2\x1\x3\x1\xFFFF\x1\x3\x6\xFFFF\x1\x1\xA\xFFFF\x1\x3\xB\xFFFF\x1"+
+				"\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -27684,7 +27833,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA213_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 459:9: ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 462:9: ( ( SkipSpace )* op= shiftOperator ( SkipSpace )* rhs= additiveExpression -> ^( BINARY_EXPR $op $shiftExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27701,7 +27850,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA216_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA216_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA216_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA216_specialS =
@@ -27711,13 +27860,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1\x2\x3\xFFFF\x2"+
 				"\x2\x3\xFFFF\x1\x3\x6\xFFFF\x1\x2\x8\xFFFF\x1\x2\x1\x3\x5\xFFFF\x1\x2"+
-				"\x2\xFFFF\x3\x2\x1\xFFFF\x1\x2\x6\xFFFF\x1\x1\xA\xFFFF\x1\x2\xB\xFFFF"+
-				"\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
+				"\x2\xFFFF\x1\x2\x6\xFFFF\x2\x2\x1\xFFFF\x1\x2\x6\xFFFF\x1\x1\xA\xFFFF"+
+				"\x1\x2\xB\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\xE"+
 				"\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1\x2\x3\xFFFF\x2"+
 				"\x2\x3\xFFFF\x1\x3\x6\xFFFF\x1\x2\x8\xFFFF\x1\x2\x1\x3\x5\xFFFF\x1\x2"+
-				"\x2\xFFFF\x3\x2\x1\xFFFF\x1\x2\x6\xFFFF\x1\x1\xA\xFFFF\x1\x2\xB\xFFFF"+
-				"\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
+				"\x2\xFFFF\x1\x2\x6\xFFFF\x2\x2\x1\xFFFF\x1\x2\x6\xFFFF\x1\x1\xA\xFFFF"+
+				"\x1\x2\xB\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -27753,7 +27902,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA216_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 468:9: ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 471:9: ( ( SkipSpace )* op= additiveOperator ( SkipSpace )* rhs= multiplicativeExpression -> ^( BINARY_EXPR $op $additiveExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27770,7 +27919,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA219_minS =
 			"\x2\x5\x2\xFFFF";
 		private const string DFA219_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA219_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA219_specialS =
@@ -27780,15 +27929,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\x5"+
 				"\xFFFF\x1\x3\x8\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1"+
 				"\x2\x3\xFFFF\x2\x2\x3\xFFFF\x1\x2\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF"+
-				"\x1\x2\x8\xFFFF\x2\x2\x5\xFFFF\x1\x2\x2\xFFFF\x3\x2\x1\xFFFF\x1\x2\x6"+
-				"\xFFFF\x1\x1\xA\xFFFF\x1\x2\xB\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1"+
-				"\x2\xB\xFFFF\x1\x2",
+				"\x1\x2\x8\xFFFF\x2\x2\x5\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF\x2\x2\x1"+
+				"\xFFFF\x1\x2\x6\xFFFF\x1\x1\xA\xFFFF\x1\x2\xB\xFFFF\x1\x2\x1\xFFFF\x2"+
+				"\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"\x1\x2\x4\xFFFF\x1\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x5\xFFFF\x1\x2\x5"+
 				"\xFFFF\x1\x3\x8\xFFFF\x1\x2\xA\xFFFF\x2\x2\x7\xFFFF\x1\x2\x5\xFFFF\x1"+
 				"\x2\x3\xFFFF\x2\x2\x3\xFFFF\x1\x2\x2\xFFFF\x1\x3\x1\xFFFF\x1\x3\x1\xFFFF"+
-				"\x1\x2\x8\xFFFF\x2\x2\x5\xFFFF\x1\x2\x2\xFFFF\x3\x2\x1\xFFFF\x1\x2\x6"+
-				"\xFFFF\x1\x1\xA\xFFFF\x1\x2\xB\xFFFF\x1\x2\x1\xFFFF\x2\x2\x1\xFFFF\x1"+
-				"\x2\xB\xFFFF\x1\x2",
+				"\x1\x2\x8\xFFFF\x2\x2\x5\xFFFF\x1\x2\x2\xFFFF\x1\x2\x6\xFFFF\x2\x2\x1"+
+				"\xFFFF\x1\x2\x6\xFFFF\x1\x1\xA\xFFFF\x1\x2\xB\xFFFF\x1\x2\x1\xFFFF\x2"+
+				"\x2\x1\xFFFF\x1\x2\xB\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -27824,7 +27973,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA219_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 477:9: ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )*"; } }
+		public override string Description { get { return "()* loopback of 480:9: ( ( SkipSpace )* op= multiplicativeOperator ( SkipSpace )* rhs= unaryExpression -> ^( BINARY_EXPR $op $multiplicativeExpression $rhs) )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -27841,7 +27990,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA223_minS =
 			"\x1\x13\x9\x0\x2\xFFFF";
 		private const string DFA223_maxS =
-			"\x1\x93\x9\x0\x2\xFFFF";
+			"\x1\x99\x9\x0\x2\xFFFF";
 		private const string DFA223_acceptS =
 			"\xA\xFFFF\x1\x1\x1\x2";
 		private const string DFA223_specialS =
@@ -27849,8 +27998,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA223_transitionS =
 			{
 				"\x1\x4\x15\xFFFF\x1\x4\xD\xFFFF\x1\x3\x7\xFFFF\x1\x2\xF\xFFFF\x1\x9"+
-				"\x3\xFFFF\x1\x4\x2\xFFFF\x1\x4\x16\xFFFF\x1\x4\x1\x1\x13\xFFFF\x1\x7"+
-				"\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
+				"\x3\xFFFF\x1\x4\x2\xFFFF\x1\x4\x10\xFFFF\x1\x4\xB\xFFFF\x1\x4\x1\x1"+
+				"\x13\xFFFF\x1\x7\x4\xFFFF\x1\x5\x6\xFFFF\x1\x8\x4\xFFFF\x1\x6",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
 				"\x1\xFFFF",
@@ -27896,7 +28045,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA223_transition;
 		}
 
-		public override string Description { get { return "494:1: postfixExpression : ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression ) | leftHandSideExpression );"; } }
+		public override string Description { get { return "497:1: postfixExpression : ( leftHandSideExpression (op1= PLUS_INC |op2= MINUS_INC ) -> ^( POSTFIX ( $op1)? ( $op2)? leftHandSideExpression ) | leftHandSideExpression );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28060,15 +28209,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA232_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA232_maxS =
-			"\x2\x88\x2\xFFFF";
+			"\x2\x8E\x2\xFFFF";
 		private const string DFA232_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA232_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA232_transitionS =
 			{
-				"\x1\x3\x56\xFFFF\x1\x1\x1B\xFFFF\x1\x2",
-				"\x1\x3\x56\xFFFF\x1\x1\x1B\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x1B\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x1B\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -28104,7 +28253,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA232_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 513:44: ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )*"; } }
+		public override string Description { get { return "()* loopback of 516:44: ( ( SkipSpace )* ',' ( ( SkipSpace )* assignmentExpression )? )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28121,7 +28270,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA231_minS =
 			"\x2\xC\x2\xFFFF";
 		private const string DFA231_maxS =
-			"\x2\x93\x2\xFFFF";
+			"\x2\x99\x2\xFFFF";
 		private const string DFA231_acceptS =
 			"\x2\xFFFF\x1\x1\x1\x2";
 		private const string DFA231_specialS =
@@ -28131,13 +28280,13 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x2\x6\xFFFF\x1\x2\x1\xFFFF\x1\x3\x4\xFFFF\x1\x2\x3\xFFFF\x1\x2\xA"+
 				"\xFFFF\x1\x2\xD\xFFFF\x1\x2\x7\xFFFF\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1"+
 				"\x2\x5\xFFFF\x1\x2\x2\xFFFF\x2\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x1\xFFFF"+
-				"\x1\x2\x11\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1\x2\x2\xFFFF"+
-				"\x1\x2\x4\xFFFF\x1\x2\x1\x3\x5\xFFFF\x1\x2\x4\xFFFF\x1\x2",
+				"\x1\x2\xC\xFFFF\x1\x2\xA\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1"+
+				"\x2\x2\xFFFF\x1\x2\x4\xFFFF\x1\x2\x1\x3\x5\xFFFF\x1\x2\x4\xFFFF\x1\x2",
 				"\x1\x2\x6\xFFFF\x1\x2\x1\xFFFF\x1\x3\x4\xFFFF\x1\x2\x3\xFFFF\x1\x2\xA"+
 				"\xFFFF\x1\x2\xD\xFFFF\x1\x2\x7\xFFFF\x1\x2\x7\xFFFF\x1\x2\x1\xFFFF\x1"+
 				"\x2\x5\xFFFF\x1\x2\x2\xFFFF\x2\x2\x2\xFFFF\x1\x2\x1\xFFFF\x1\x2\x1\xFFFF"+
-				"\x1\x2\x11\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1\x2\x2\xFFFF"+
-				"\x1\x2\x4\xFFFF\x1\x2\x1\x3\x5\xFFFF\x1\x2\x4\xFFFF\x1\x2",
+				"\x1\x2\xC\xFFFF\x1\x2\xA\xFFFF\x1\x1\x2\x2\x5\xFFFF\x1\x2\xA\xFFFF\x1"+
+				"\x2\x2\xFFFF\x1\x2\x4\xFFFF\x1\x2\x1\x3\x5\xFFFF\x1\x2\x4\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -28173,7 +28322,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA231_transition;
 		}
 
-		public override string Description { get { return "513:60: ( ( SkipSpace )* assignmentExpression )?"; } }
+		public override string Description { get { return "516:60: ( ( SkipSpace )* assignmentExpression )?"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28188,9 +28337,9 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA240_eofS =
 			"\x5\xFFFF";
 		private const string DFA240_minS =
-			"\x1\x93\x2\x3F\x2\xFFFF";
+			"\x1\x99\x2\x3F\x2\xFFFF";
 		private const string DFA240_maxS =
-			"\x1\x93\x2\x94\x2\xFFFF";
+			"\x1\x99\x2\x9A\x2\xFFFF";
 		private const string DFA240_acceptS =
 			"\x3\xFFFF\x1\x1\x1\x2";
 		private const string DFA240_specialS =
@@ -28198,8 +28347,8 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA240_transitionS =
 			{
 				"\x1\x1",
-				"\x1\x3\x16\xFFFF\x1\x3\x15\xFFFF\x1\x2\x1\x3\x26\xFFFF\x1\x4",
-				"\x1\x3\x16\xFFFF\x1\x3\x15\xFFFF\x1\x2\x1\x3\x26\xFFFF\x1\x4",
+				"\x1\x3\x16\xFFFF\x1\x3\x1B\xFFFF\x1\x2\x1\x3\x26\xFFFF\x1\x4",
+				"\x1\x3\x16\xFFFF\x1\x3\x1B\xFFFF\x1\x2\x1\x3\x26\xFFFF\x1\x4",
 				"",
 				""
 			};
@@ -28235,7 +28384,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA240_transition;
 		}
 
-		public override string Description { get { return "518:1: objectLiteral : ( '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* pn2= propertyNameAndValue )* ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT propertyNameAndValue ( $pn2)* ) | '{' ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ) );"; } }
+		public override string Description { get { return "521:1: objectLiteral : ( '{' ( SkipSpace )* propertyNameAndValue ( ( SkipSpace )* ',' ( SkipSpace )* propertyNameAndValue )* ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ( propertyNameAndValue )+ ) | '{' ( SkipSpace )* '}' -> ^( INLINE_OBJ_INIT ) );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28252,15 +28401,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA237_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA237_maxS =
-			"\x2\x94\x2\xFFFF";
+			"\x2\x9A\x2\xFFFF";
 		private const string DFA237_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA237_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA237_transitionS =
 			{
-				"\x1\x3\x56\xFFFF\x1\x1\x27\xFFFF\x1\x2",
-				"\x1\x3\x56\xFFFF\x1\x1\x27\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x27\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x27\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -28296,7 +28445,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA237_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 519:43: ( ( SkipSpace )* ',' ( SkipSpace )* pn2= propertyNameAndValue )*"; } }
+		public override string Description { get { return "()* loopback of 522:43: ( ( SkipSpace )* ',' ( SkipSpace )* propertyNameAndValue )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28311,11 +28460,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA244_eofS =
 			"\x15\xFFFF";
 		private const string DFA244_minS =
-			"\x1\x37\x1\x31\x1\x3F\x2\x75\x1\x84\x1\xFFFF\x3\x3F\x1\x82\x1\x84\x1"+
-			"\x88\x1\x75\x2\xFFFF\x2\x3F\x2\x75\x1\x3F";
+			"\x1\x37\x1\x31\x1\x3F\x2\x7B\x1\x8A\x1\xFFFF\x3\x3F\x1\x88\x1\x8A\x1"+
+			"\x8E\x1\x7B\x2\xFFFF\x2\x3F\x2\x7B\x1\x3F";
 		private const string DFA244_maxS =
-			"\x1\x37\x1\x87\x1\x3F\x2\x94\x1\x88\x1\xFFFF\x1\x3F\x1\x76\x1\x3F\x1"+
-			"\x94\x2\x88\x1\x94\x2\xFFFF\x2\x76\x2\x94\x1\x76";
+			"\x1\x37\x1\x8D\x1\x3F\x2\x9A\x1\x8E\x1\xFFFF\x1\x3F\x1\x7C\x1\x3F\x1"+
+			"\x9A\x2\x8E\x1\x9A\x2\xFFFF\x2\x7C\x2\x9A\x1\x7C";
 		private const string DFA244_acceptS =
 			"\x6\xFFFF\x1\x1\x7\xFFFF\x1\x2\x1\x3\x5\xFFFF";
 		private const string DFA244_specialS =
@@ -28323,14 +28472,14 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private static readonly string[] DFA244_transitionS =
 			{
 				"\x1\x1",
-				"\x1\x4\xD\xFFFF\x1\x3\x47\xFFFF\x1\x2",
+				"\x1\x4\xD\xFFFF\x1\x3\x4D\xFFFF\x1\x2",
 				"\x1\x5",
 				"\x1\x7\x1E\xFFFF\x1\x6",
 				"\x1\x7\x1E\xFFFF\x1\x6",
 				"\x1\x8\x3\xFFFF\x1\x9",
 				"",
 				"\x1\xA",
-				"\x1\xB\x36\xFFFF\x1\xC",
+				"\x1\xB\x3C\xFFFF\x1\xC",
 				"\x1\xD",
 				"\x1\xF\x11\xFFFF\x1\xE",
 				"\x1\x10\x3\xFFFF\x1\x9",
@@ -28338,11 +28487,11 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 				"\x1\x7\xE\xFFFF\x1\x11\xF\xFFFF\x1\x6",
 				"",
 				"",
-				"\x1\xB\x36\xFFFF\x1\xC",
-				"\x1\x12\x36\xFFFF\x1\x13",
+				"\x1\xB\x3C\xFFFF\x1\xC",
+				"\x1\x12\x3C\xFFFF\x1\x13",
 				"\x1\x7\xE\xFFFF\x1\x14\xF\xFFFF\x1\x6",
 				"\x1\x7\x1E\xFFFF\x1\x6",
-				"\x1\x12\x36\xFFFF\x1\x13"
+				"\x1\x12\x3C\xFFFF\x1\x13"
 			};
 
 		private static readonly short[] DFA244_eot = DFA.UnpackEncodedString(DFA244_eotS);
@@ -28376,7 +28525,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA244_transition;
 		}
 
-		public override string Description { get { return "547:1: importedNotation : ( IMPORT_START importedTypeName '}' | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}' -> ^( TYPE_SEPERATOR $type $ident) | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}' -> ^( TYPE_SEPERATOR $type $ident $args) );"; } }
+		public override string Description { get { return "551:1: importedNotation : ( IMPORT_START importedTypeName '}' | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier '}' -> ^( TYPE_SEPERATOR $type $ident) | IMPORT_START type= importedTypeName TYPE_SEPERATOR ident= Identifier args= importedMethodArguments '}' -> ^( TYPE_SEPERATOR $type $ident $args) );"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28393,15 +28542,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA249_minS =
 			"\x2\x31\x2\xFFFF";
 		private const string DFA249_maxS =
-			"\x2\x87\x2\xFFFF";
+			"\x2\x8D\x2\xFFFF";
 		private const string DFA249_acceptS =
 			"\x2\xFFFF\x1\x1\x1\x2";
 		private const string DFA249_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA249_transitionS =
 			{
-				"\x1\x2\xD\xFFFF\x1\x2\x2C\xFFFF\x1\x1\x16\xFFFF\x1\x3\x3\xFFFF\x1\x2",
-				"\x1\x2\xD\xFFFF\x1\x2\x2C\xFFFF\x1\x1\x16\xFFFF\x1\x3\x3\xFFFF\x1\x2",
+				"\x1\x2\xD\xFFFF\x1\x2\x32\xFFFF\x1\x1\x16\xFFFF\x1\x3\x3\xFFFF\x1\x2",
+				"\x1\x2\xD\xFFFF\x1\x2\x32\xFFFF\x1\x1\x16\xFFFF\x1\x3\x3\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -28437,7 +28586,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA249_transition;
 		}
 
-		public override string Description { get { return "556:11: ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )?"; } }
+		public override string Description { get { return "560:11: ( ( SkipSpace )* importedTypeName ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )* )?"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28454,15 +28603,15 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		private const string DFA248_minS =
 			"\x2\x15\x2\xFFFF";
 		private const string DFA248_maxS =
-			"\x2\x83\x2\xFFFF";
+			"\x2\x89\x2\xFFFF";
 		private const string DFA248_acceptS =
 			"\x2\xFFFF\x1\x2\x1\x1";
 		private const string DFA248_specialS =
 			"\x4\xFFFF}>";
 		private static readonly string[] DFA248_transitionS =
 			{
-				"\x1\x3\x56\xFFFF\x1\x1\x16\xFFFF\x1\x2",
-				"\x1\x3\x56\xFFFF\x1\x1\x16\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x16\xFFFF\x1\x2",
+				"\x1\x3\x5C\xFFFF\x1\x1\x16\xFFFF\x1\x2",
 				"",
 				""
 			};
@@ -28498,7 +28647,7 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 			this.transition = DFA248_transition;
 		}
 
-		public override string Description { get { return "()* loopback of 556:40: ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )*"; } }
+		public override string Description { get { return "()* loopback of 560:40: ( ( SkipSpace )* ',' ( SkipSpace )* importedTypeName )*"; } }
 
 		public override void Error(NoViableAltException nvae)
 		{
@@ -28512,43 +28661,43 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 	#region Follow sets
 	private static class Follow
 	{
-		public static readonly BitSet _SkipSpace_in_program351 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _sourceElements_in_program355 = new BitSet(new ulong[]{0x0UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_program357 = new BitSet(new ulong[]{0x0UL,0x100000000000UL});
+		public static readonly BitSet _SkipSpace_in_program351 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _sourceElements_in_program355 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_program357 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL});
 		public static readonly BitSet _EOF_in_program361 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _sourceElement_in_sourceElements379 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_sourceElements382 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _sourceElement_in_sourceElements385 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
+		public static readonly BitSet _sourceElement_in_sourceElements379 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_sourceElements382 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _sourceElement_in_sourceElements385 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
 		public static readonly BitSet _functionDeclaration_in_sourceElement421 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _statement_in_sourceElement429 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _142_in_functionDeclaration447 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_functionDeclaration449 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _Identifier_in_functionDeclaration454 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_functionDeclaration456 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _formalParameterList_in_functionDeclaration461 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _SkipSpace_in_functionDeclaration463 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
+		public static readonly BitSet _148_in_functionDeclaration447 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_functionDeclaration449 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _Identifier_in_functionDeclaration454 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_functionDeclaration456 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _formalParameterList_in_functionDeclaration461 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _SkipSpace_in_functionDeclaration463 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
 		public static readonly BitSet _functionBody_in_functionDeclaration468 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _142_in_functionExpression508 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_functionExpression510 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _Identifier_in_functionExpression515 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_functionExpression518 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _formalParameterList_in_functionExpression523 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _SkipSpace_in_functionExpression525 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
+		public static readonly BitSet _148_in_functionExpression508 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_functionExpression510 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _Identifier_in_functionExpression515 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_functionExpression518 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _formalParameterList_in_functionExpression523 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _SkipSpace_in_functionExpression525 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
 		public static readonly BitSet _functionBody_in_functionExpression530 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _130_in_formalParameterList571 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_formalParameterList574 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _Identifier_in_formalParameterList577 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_formalParameterList580 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_formalParameterList583 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_formalParameterList585 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _Identifier_in_formalParameterList588 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_formalParameterList594 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_formalParameterList597 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _147_in_functionBody631 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_functionBody633 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _sourceElements_in_functionBody638 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _SkipSpace_in_functionBody640 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _148_in_functionBody643 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _136_in_formalParameterList571 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_formalParameterList574 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _Identifier_in_formalParameterList577 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_formalParameterList580 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_formalParameterList583 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_formalParameterList585 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _Identifier_in_formalParameterList588 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_formalParameterList594 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_formalParameterList597 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _153_in_functionBody631 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_functionBody633 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _sourceElements_in_functionBody638 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _SkipSpace_in_functionBody640 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _154_in_functionBody643 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _statementBlock_in_statement678 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _variableStatement_in_statement686 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _emptyStatement_in_statement694 = new BitSet(new ulong[]{0x2UL});
@@ -28563,519 +28712,519 @@ public partial class JavaScriptParser : Antlr.Runtime.Parser
 		public static readonly BitSet _switchStatement_in_statement766 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _throwStatement_in_statement774 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _tryStatement_in_statement782 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _147_in_statementBlock799 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0x1FE884UL});
-		public static readonly BitSet _SkipSpace_in_statementBlock801 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0x1FE884UL});
-		public static readonly BitSet _statementList_in_statementBlock804 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _SkipSpace_in_statementBlock807 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _148_in_statementBlock810 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _statement_in_statementList844 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_statementList847 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statement_in_statementList851 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _VAR_in_variableStatement870 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_variableStatement873 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _variableDeclarationList_in_variableStatement877 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_variableStatement879 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
+		public static readonly BitSet _153_in_statementBlock799 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x7FA2130UL});
+		public static readonly BitSet _SkipSpace_in_statementBlock801 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x7FA2130UL});
+		public static readonly BitSet _statementList_in_statementBlock804 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _SkipSpace_in_statementBlock807 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _154_in_statementBlock810 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _statement_in_statementList844 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_statementList847 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statement_in_statementList851 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _VAR_in_variableStatement870 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableStatement873 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _variableDeclarationList_in_variableStatement877 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableStatement879 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
 		public static readonly BitSet _SEMI_in_variableStatement883 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _variableDeclaration_in_variableDeclarationList901 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclarationList904 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_variableDeclarationList907 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclarationList909 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _variableDeclaration_in_variableDeclarationList912 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
-		public static readonly BitSet _variableDeclarationNoIn_in_variableDeclarationListNoIn936 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclarationListNoIn939 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_variableDeclarationListNoIn942 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclarationListNoIn944 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _variableDeclarationNoIn_in_variableDeclarationListNoIn947 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
+		public static readonly BitSet _variableDeclaration_in_variableDeclarationList901 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclarationList904 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_variableDeclarationList907 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclarationList909 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _variableDeclaration_in_variableDeclarationList912 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
+		public static readonly BitSet _variableDeclarationNoIn_in_variableDeclarationListNoIn936 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclarationListNoIn939 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_variableDeclarationListNoIn942 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclarationListNoIn944 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _variableDeclarationNoIn_in_variableDeclarationListNoIn947 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
 		public static readonly BitSet _Identifier_in_variableDeclaration971 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _Identifier_in_variableDeclaration981 = new BitSet(new ulong[]{0x100UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclaration983 = new BitSet(new ulong[]{0x100UL,0x100000000000UL});
-		public static readonly BitSet _assignmentOnlyOperator_in_variableDeclaration988 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclaration990 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
+		public static readonly BitSet _Identifier_in_variableDeclaration981 = new BitSet(new ulong[]{0x100UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclaration983 = new BitSet(new ulong[]{0x100UL,0x4000000000000UL});
+		public static readonly BitSet _assignmentOnlyOperator_in_variableDeclaration988 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclaration990 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
 		public static readonly BitSet _assignmentExpression_in_variableDeclaration995 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _Identifier_in_variableDeclarationNoIn1035 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _Identifier_in_variableDeclarationNoIn1045 = new BitSet(new ulong[]{0x100UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclarationNoIn1047 = new BitSet(new ulong[]{0x100UL,0x100000000000UL});
-		public static readonly BitSet _assignmentOnlyOperator_in_variableDeclarationNoIn1052 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_variableDeclarationNoIn1054 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
+		public static readonly BitSet _Identifier_in_variableDeclarationNoIn1045 = new BitSet(new ulong[]{0x100UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclarationNoIn1047 = new BitSet(new ulong[]{0x100UL,0x4000000000000UL});
+		public static readonly BitSet _assignmentOnlyOperator_in_variableDeclarationNoIn1052 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_variableDeclarationNoIn1054 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
 		public static readonly BitSet _assignmentExpressionNoIn_in_variableDeclarationNoIn1059 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _ASN_in_assignmentOnlyOperator1099 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _SEMI_in_emptyStatement1116 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _expression_in_expressionStatement1149 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_expressionStatement1151 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
+		public static readonly BitSet _expression_in_expressionStatement1149 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_expressionStatement1151 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
 		public static readonly BitSet _SEMI_in_expressionStatement1155 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _143_in_ifStatement1173 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_ifStatement1175 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_ifStatement1178 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_ifStatement1180 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_ifStatement1185 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_ifStatement1187 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_ifStatement1190 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_ifStatement1192 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statement_in_ifStatement1197 = new BitSet(new ulong[]{0x2UL,0x100000000000UL,0x1000UL});
-		public static readonly BitSet _SkipSpace_in_ifStatement1200 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x1000UL});
-		public static readonly BitSet _140_in_ifStatement1203 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_ifStatement1205 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
+		public static readonly BitSet _149_in_ifStatement1173 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_ifStatement1175 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_ifStatement1178 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_ifStatement1180 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_ifStatement1185 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_ifStatement1187 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_ifStatement1190 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_ifStatement1192 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statement_in_ifStatement1197 = new BitSet(new ulong[]{0x2UL,0x4000000000000UL,0x40000UL});
+		public static readonly BitSet _SkipSpace_in_ifStatement1200 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x40000UL});
+		public static readonly BitSet _146_in_ifStatement1203 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_ifStatement1205 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
 		public static readonly BitSet _statement_in_ifStatement1210 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _doWhileStatement_in_iterationStatement1253 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _whileStatement_in_iterationStatement1261 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _forStatement_in_iterationStatement1269 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _forInStatement_in_iterationStatement1277 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _139_in_doWhileStatement1294 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_doWhileStatement1296 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statement_in_doWhileStatement1301 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20000UL});
-		public static readonly BitSet _SkipSpace_in_doWhileStatement1303 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20000UL});
-		public static readonly BitSet _145_in_doWhileStatement1306 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_doWhileStatement1308 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_doWhileStatement1311 = new BitSet(new ulong[]{0x8080020044081000UL,0x80106000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_doWhileStatement1315 = new BitSet(new ulong[]{0x0UL,0x0UL,0x8UL});
-		public static readonly BitSet _131_in_doWhileStatement1317 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_doWhileStatement1319 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
+		public static readonly BitSet _145_in_doWhileStatement1294 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_doWhileStatement1296 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statement_in_doWhileStatement1301 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800000UL});
+		public static readonly BitSet _SkipSpace_in_doWhileStatement1303 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800000UL});
+		public static readonly BitSet _151_in_doWhileStatement1306 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_doWhileStatement1308 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_doWhileStatement1311 = new BitSet(new ulong[]{0x8080020044081000UL,0x4180080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_doWhileStatement1315 = new BitSet(new ulong[]{0x0UL,0x0UL,0x200UL});
+		public static readonly BitSet _137_in_doWhileStatement1317 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_doWhileStatement1319 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
 		public static readonly BitSet _SEMI_in_doWhileStatement1322 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _145_in_whileStatement1359 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_whileStatement1361 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_whileStatement1364 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_whileStatement1366 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_whileStatement1371 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_whileStatement1373 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_whileStatement1376 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_whileStatement1378 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
+		public static readonly BitSet _151_in_whileStatement1359 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_whileStatement1361 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_whileStatement1364 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_whileStatement1366 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_whileStatement1371 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_whileStatement1373 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_whileStatement1376 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_whileStatement1378 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
 		public static readonly BitSet _statement_in_whileStatement1383 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _141_in_forStatement1420 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_forStatement1422 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_forStatement1425 = new BitSet(new ulong[]{0x8080020044081000UL,0xC0107004054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_forStatement1427 = new BitSet(new ulong[]{0x8080020044081000UL,0xC0107004054C8280UL,0x84084UL});
-		public static readonly BitSet _forStatementInitialiserPart_in_forStatement1433 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_forStatement1437 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SEMI_in_forStatement1442 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107004054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_forStatement1444 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107004054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_forStatement1450 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_forStatement1454 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SEMI_in_forStatement1459 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x8408CUL});
-		public static readonly BitSet _SkipSpace_in_forStatement1461 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x8408CUL});
-		public static readonly BitSet _expression_in_forStatement1467 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_forStatement1471 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_forStatement1474 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_forStatement1476 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
+		public static readonly BitSet _147_in_forStatement1420 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1422 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_forStatement1425 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0180054C8280UL,0x2102130UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1427 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0180054C8280UL,0x2102130UL});
+		public static readonly BitSet _forStatementInitialiserPart_in_forStatement1433 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1437 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SEMI_in_forStatement1442 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0180054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1444 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0180054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_forStatement1450 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1454 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SEMI_in_forStatement1459 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102320UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1461 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102320UL});
+		public static readonly BitSet _expression_in_forStatement1467 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1471 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_forStatement1474 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_forStatement1476 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
 		public static readonly BitSet _statement_in_forStatement1481 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _expressionNoIn_in_forStatementInitialiserPart1534 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _VAR_in_forStatementInitialiserPart1542 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_forStatementInitialiserPart1544 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _variableDeclarationListNoIn_in_forStatementInitialiserPart1548 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _141_in_forInStatement1565 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_forInStatement1567 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_forInStatement1570 = new BitSet(new ulong[]{0x8080020000080000UL,0x4000700000488000UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_forInStatement1572 = new BitSet(new ulong[]{0x8080020000080000UL,0x4000700000488000UL,0x84084UL});
-		public static readonly BitSet _forInStatementInitialiserPart_in_forInStatement1575 = new BitSet(new ulong[]{0x100000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_forInStatement1577 = new BitSet(new ulong[]{0x100000000000000UL,0x100000000000UL});
-		public static readonly BitSet _IN_in_forInStatement1580 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_forInStatement1582 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_forInStatement1585 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_forInStatement1587 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_forInStatement1590 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_forInStatement1592 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statement_in_forInStatement1595 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _leftHandSideExpression_in_forInStatementInitialiserPart1632 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _VAR_in_forInStatementInitialiserPart1640 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_forInStatementInitialiserPart1642 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _variableDeclarationNoIn_in_forInStatementInitialiserPart1646 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _CONTINUE_in_continueStatement1663 = new BitSet(new ulong[]{0x8000000000000000UL,0x100400000000UL});
-		public static readonly BitSet _Identifier_in_continueStatement1666 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_continueStatement1669 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SEMI_in_continueStatement1673 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _BREAK_in_breakStatement1691 = new BitSet(new ulong[]{0x8000000000000000UL,0x100400000000UL});
-		public static readonly BitSet _Identifier_in_breakStatement1694 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_breakStatement1697 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SEMI_in_breakStatement1701 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _RETURN_in_returnStatement1719 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_returnStatement1721 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_returnStatement1726 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_returnStatement1728 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SEMI_in_returnStatement1731 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _RETURN_in_returnStatement1756 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_returnStatement1758 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SEMI_in_returnStatement1761 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _146_in_withStatement1792 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_withStatement1794 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_withStatement1798 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_withStatement1800 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_withStatement1804 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_withStatement1806 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_withStatement1810 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_withStatement1812 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statement_in_withStatement1816 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _Identifier_in_labelledStatement1833 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_labelledStatement1835 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_labelledStatement1839 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_labelledStatement1841 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statement_in_labelledStatement1845 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _144_in_switchStatement1862 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_switchStatement1864 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_switchStatement1868 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_switchStatement1870 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_switchStatement1874 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_switchStatement1876 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_switchStatement1880 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _SkipSpace_in_switchStatement1882 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _caseBlock_in_switchStatement1886 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _147_in_caseBlock1903 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100600UL});
-		public static readonly BitSet _SkipSpace_in_caseBlock1906 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x200UL});
-		public static readonly BitSet _caseClause_in_caseBlock1910 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100600UL});
-		public static readonly BitSet _SkipSpace_in_caseBlock1915 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x400UL});
-		public static readonly BitSet _defaultClause_in_caseBlock1919 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100200UL});
-		public static readonly BitSet _SkipSpace_in_caseBlock1922 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x200UL});
-		public static readonly BitSet _caseClause_in_caseBlock1926 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100200UL});
-		public static readonly BitSet _SkipSpace_in_caseBlock1932 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _148_in_caseBlock1936 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _137_in_caseClause1953 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_caseClause1955 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_caseClause1959 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_caseClause1961 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_caseClause1965 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_caseClause1967 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statementList_in_caseClause1971 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _138_in_defaultClause1989 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_defaultClause1991 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_defaultClause1995 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_defaultClause1997 = new BitSet(new ulong[]{0x80800200448C1002UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _statementList_in_defaultClause2001 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _THROW_in_throwStatement2019 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_throwStatement2021 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_throwStatement2024 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SkipSpace_in_throwStatement2026 = new BitSet(new ulong[]{0x0UL,0x100400000000UL});
-		public static readonly BitSet _SEMI_in_throwStatement2029 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _TRY_in_tryStatement2062 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _SkipSpace_in_tryStatement2064 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _statementBlock_in_tryStatement2068 = new BitSet(new ulong[]{0x40000100000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_tryStatement2070 = new BitSet(new ulong[]{0x40000100000UL,0x100000000000UL});
-		public static readonly BitSet _finallyClause_in_tryStatement2075 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _catchClause_in_tryStatement2079 = new BitSet(new ulong[]{0x40000000002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_tryStatement2082 = new BitSet(new ulong[]{0x40000000000UL,0x100000000000UL});
-		public static readonly BitSet _finallyClause_in_tryStatement2086 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _CATCH_in_catchClause2106 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_catchClause2108 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _130_in_catchClause2112 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_catchClause2114 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _Identifier_in_catchClause2118 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_catchClause2120 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_catchClause2124 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _SkipSpace_in_catchClause2126 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _statementBlock_in_catchClause2130 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _FINALLY_in_finallyClause2147 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _SkipSpace_in_finallyClause2149 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x80000UL});
-		public static readonly BitSet _statementBlock_in_finallyClause2153 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _assignmentExpression_in_expression2171 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_expression2174 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_expression2177 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_expression2179 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_expression2182 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
-		public static readonly BitSet _assignmentExpressionNoIn_in_expressionNoIn2214 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_expressionNoIn2217 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_expressionNoIn2220 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_expressionNoIn2222 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpressionNoIn_in_expressionNoIn2225 = new BitSet(new ulong[]{0x200002UL,0x100000000000UL});
-		public static readonly BitSet _conditionalExpression_in_assignmentExpression2257 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _leftHandSideExpression_in_assignmentExpression2267 = new BitSet(new ulong[]{0x10014900UL,0x100105002002900UL});
-		public static readonly BitSet _SkipSpace_in_assignmentExpression2269 = new BitSet(new ulong[]{0x10014900UL,0x100105002002900UL});
-		public static readonly BitSet _assignmentOperator_in_assignmentExpression2274 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_assignmentExpression2276 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_assignmentExpression2281 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _conditionalExpressionNoIn_in_assignmentExpressionNoIn2321 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _leftHandSideExpression_in_assignmentExpressionNoIn2331 = new BitSet(new ulong[]{0x10014900UL,0x100105002002900UL});
-		public static readonly BitSet _SkipSpace_in_assignmentExpressionNoIn2333 = new BitSet(new ulong[]{0x10014900UL,0x100105002002900UL});
-		public static readonly BitSet _assignmentOperator_in_assignmentExpressionNoIn2338 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_assignmentExpressionNoIn2340 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpressionNoIn_in_assignmentExpressionNoIn2345 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _set_in_assignmentOperator2383 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _callExpression_in_leftHandSideExpression2490 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _newExpression_in_leftHandSideExpression2498 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _memberExpression_in_newExpression2515 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _NEW_in_newExpression2523 = new BitSet(new ulong[]{0x8080020000080000UL,0x700000488000UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_newExpression2525 = new BitSet(new ulong[]{0x8080020000080000UL,0x700000488000UL,0x84084UL});
-		public static readonly BitSet _newExpression_in_newExpression2529 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _memberExpressionLHS_in_memberExpression2549 = new BitSet(new ulong[]{0x2UL,0x100000000000UL,0x90UL});
-		public static readonly BitSet _SkipSpace_in_memberExpression2566 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x90UL});
-		public static readonly BitSet _memberExpressionSuffix_in_memberExpression2571 = new BitSet(new ulong[]{0x2UL,0x100000000000UL,0x90UL});
-		public static readonly BitSet _primaryExpression_in_memberExpressionLHS2603 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _functionExpression_in_memberExpressionLHS2611 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _newObjectExpression_in_memberExpressionLHS2619 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _NEW_in_newObjectExpression2636 = new BitSet(new ulong[]{0x8080020000080000UL,0x700000488000UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_newObjectExpression2638 = new BitSet(new ulong[]{0x8080020000080000UL,0x700000488000UL,0x84084UL});
-		public static readonly BitSet _memberExpression_in_newObjectExpression2643 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_newObjectExpression2645 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _arguments_in_newObjectExpression2650 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _indexSuffix_in_memberExpressionSuffix2687 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _propertyReferenceSuffix_in_memberExpressionSuffix2695 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _methodCallExpression_in_callExpression2715 = new BitSet(new ulong[]{0x2UL,0x100000000000UL,0x94UL});
-		public static readonly BitSet _SkipSpace_in_callExpression2732 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x94UL});
-		public static readonly BitSet _callExpressionSuffix_in_callExpression2737 = new BitSet(new ulong[]{0x2UL,0x100000000000UL,0x94UL});
-		public static readonly BitSet _memberExpression_in_methodCallExpression2773 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _SkipSpace_in_methodCallExpression2775 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x4UL});
-		public static readonly BitSet _arguments_in_methodCallExpression2780 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _arguments_in_callExpressionSuffix2817 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _indexSuffix_in_callExpressionSuffix2825 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _propertyReferenceSuffix_in_callExpressionSuffix2833 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _130_in_arguments2850 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x8408CUL});
-		public static readonly BitSet _SkipSpace_in_arguments2853 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_arguments2856 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_arguments2859 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_arguments2862 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_arguments2864 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_arguments2867 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_arguments2873 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_arguments2876 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _135_in_indexSuffix2910 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_indexSuffix2912 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_indexSuffix2917 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100UL});
-		public static readonly BitSet _SkipSpace_in_indexSuffix2919 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100UL});
-		public static readonly BitSet _136_in_indexSuffix2922 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _132_in_propertyReferenceSuffix2960 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_propertyReferenceSuffix2962 = new BitSet(new ulong[]{0x8000000000000000UL,0x100000000000UL});
-		public static readonly BitSet _Identifier_in_propertyReferenceSuffix2967 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _132_in_propertyReferenceSuffix2992 = new BitSet(new ulong[]{0x80000000000000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_propertyReferenceSuffix2994 = new BitSet(new ulong[]{0x80000000000000UL,0x100000000000UL});
-		public static readonly BitSet _importedNotation_in_propertyReferenceSuffix2999 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _logicalORExpression_in_conditionalExpression3035 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpression3037 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _134_in_conditionalExpression3040 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpression3042 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_conditionalExpression3047 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpression3049 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_conditionalExpression3052 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpression3054 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_conditionalExpression3059 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _logicalORExpression_in_conditionalExpression3090 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _logicalORExpressionNoIn_in_conditionalExpressionNoIn3109 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3111 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _134_in_conditionalExpressionNoIn3114 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3116 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpressionNoIn_in_conditionalExpressionNoIn3121 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3123 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_conditionalExpressionNoIn3126 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3128 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpressionNoIn_in_conditionalExpressionNoIn3133 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _logicalORExpressionNoIn_in_conditionalExpressionNoIn3164 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _logicalANDExpression_in_logicalORExpression3184 = new BitSet(new ulong[]{0x2UL,0x100000800000UL});
-		public static readonly BitSet _SkipSpace_in_logicalORExpression3201 = new BitSet(new ulong[]{0x0UL,0x100000800000UL});
-		public static readonly BitSet _OR_in_logicalORExpression3206 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_logicalORExpression3208 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _logicalANDExpression_in_logicalORExpression3213 = new BitSet(new ulong[]{0x2UL,0x100000800000UL});
-		public static readonly BitSet _logicalANDExpressionNoIn_in_logicalORExpressionNoIn3251 = new BitSet(new ulong[]{0x2UL,0x100000800000UL});
-		public static readonly BitSet _SkipSpace_in_logicalORExpressionNoIn3268 = new BitSet(new ulong[]{0x0UL,0x100000800000UL});
-		public static readonly BitSet _OR_in_logicalORExpressionNoIn3273 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_logicalORExpressionNoIn3275 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _logicalANDExpressionNoIn_in_logicalORExpressionNoIn3280 = new BitSet(new ulong[]{0x2UL,0x100000800000UL});
-		public static readonly BitSet _bitwiseORExpression_in_logicalANDExpression3318 = new BitSet(new ulong[]{0x22UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_logicalANDExpression3335 = new BitSet(new ulong[]{0x20UL,0x100000000000UL});
-		public static readonly BitSet _AND_in_logicalANDExpression3340 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_logicalANDExpression3342 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _bitwiseORExpression_in_logicalANDExpression3347 = new BitSet(new ulong[]{0x22UL,0x100000000000UL});
-		public static readonly BitSet _bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3385 = new BitSet(new ulong[]{0x22UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_logicalANDExpressionNoIn3402 = new BitSet(new ulong[]{0x20UL,0x100000000000UL});
-		public static readonly BitSet _AND_in_logicalANDExpressionNoIn3407 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_logicalANDExpressionNoIn3409 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3414 = new BitSet(new ulong[]{0x22UL,0x100000000000UL});
-		public static readonly BitSet _bitwiseXORExpression_in_bitwiseORExpression3452 = new BitSet(new ulong[]{0x2002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseORExpression3469 = new BitSet(new ulong[]{0x2000UL,0x100000000000UL});
-		public static readonly BitSet _BIT_OR_in_bitwiseORExpression3474 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseORExpression3476 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _bitwiseXORExpression_in_bitwiseORExpression3481 = new BitSet(new ulong[]{0x2002UL,0x100000000000UL});
-		public static readonly BitSet _bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3519 = new BitSet(new ulong[]{0x2002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseORExpressionNoIn3536 = new BitSet(new ulong[]{0x2000UL,0x100000000000UL});
-		public static readonly BitSet _BIT_OR_in_bitwiseORExpressionNoIn3541 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseORExpressionNoIn3543 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3548 = new BitSet(new ulong[]{0x2002UL,0x100000000000UL});
-		public static readonly BitSet _bitwiseANDExpression_in_bitwiseXORExpression3586 = new BitSet(new ulong[]{0x8002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseXORExpression3603 = new BitSet(new ulong[]{0x8000UL,0x100000000000UL});
-		public static readonly BitSet _BIT_XOR_in_bitwiseXORExpression3608 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseXORExpression3610 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _bitwiseANDExpression_in_bitwiseXORExpression3615 = new BitSet(new ulong[]{0x8002UL,0x100000000000UL});
-		public static readonly BitSet _bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3653 = new BitSet(new ulong[]{0x8002UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseXORExpressionNoIn3670 = new BitSet(new ulong[]{0x8000UL,0x100000000000UL});
-		public static readonly BitSet _BIT_XOR_in_bitwiseXORExpressionNoIn3675 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseXORExpressionNoIn3677 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3682 = new BitSet(new ulong[]{0x8002UL,0x100000000000UL});
-		public static readonly BitSet _equalityExpression_in_bitwiseANDExpression3720 = new BitSet(new ulong[]{0x402UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseANDExpression3737 = new BitSet(new ulong[]{0x400UL,0x100000000000UL});
-		public static readonly BitSet _BIT_AND_in_bitwiseANDExpression3742 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseANDExpression3744 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _equalityExpression_in_bitwiseANDExpression3749 = new BitSet(new ulong[]{0x402UL,0x100000000000UL});
-		public static readonly BitSet _equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3787 = new BitSet(new ulong[]{0x402UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseANDExpressionNoIn3804 = new BitSet(new ulong[]{0x400UL,0x100000000000UL});
-		public static readonly BitSet _BIT_AND_in_bitwiseANDExpressionNoIn3809 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_bitwiseANDExpressionNoIn3811 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3816 = new BitSet(new ulong[]{0x402UL,0x100000000000UL});
-		public static readonly BitSet _relationalExpression_in_equalityExpression3854 = new BitSet(new ulong[]{0x1000000002UL,0x100240004000UL});
-		public static readonly BitSet _SkipSpace_in_equalityExpression3871 = new BitSet(new ulong[]{0x1000000000UL,0x100240004000UL});
-		public static readonly BitSet _equalityOperator_in_equalityExpression3876 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_equalityExpression3878 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _relationalExpression_in_equalityExpression3883 = new BitSet(new ulong[]{0x1000000002UL,0x100240004000UL});
-		public static readonly BitSet _relationalExpressionNoIn_in_equalityExpressionNoIn3921 = new BitSet(new ulong[]{0x1000000002UL,0x100240004000UL});
-		public static readonly BitSet _SkipSpace_in_equalityExpressionNoIn3938 = new BitSet(new ulong[]{0x1000000000UL,0x100240004000UL});
-		public static readonly BitSet _equalityOperator_in_equalityExpressionNoIn3943 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_equalityExpressionNoIn3945 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _relationalExpressionNoIn_in_equalityExpressionNoIn3950 = new BitSet(new ulong[]{0x1000000002UL,0x100240004000UL});
-		public static readonly BitSet _set_in_equalityOperator3983 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _shiftExpression_in_relationalExpression4017 = new BitSet(new ulong[]{0x4101800000000002UL,0x10000000000CUL});
-		public static readonly BitSet _SkipSpace_in_relationalExpression4034 = new BitSet(new ulong[]{0x4101800000000000UL,0x10000000000CUL});
-		public static readonly BitSet _relationalOperator_in_relationalExpression4039 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_relationalExpression4041 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _shiftExpression_in_relationalExpression4046 = new BitSet(new ulong[]{0x4101800000000002UL,0x10000000000CUL});
-		public static readonly BitSet _shiftExpression_in_relationalExpressionNoIn4084 = new BitSet(new ulong[]{0x4001800000000002UL,0x10000000000CUL});
-		public static readonly BitSet _SkipSpace_in_relationalExpressionNoIn4101 = new BitSet(new ulong[]{0x4001800000000000UL,0x10000000000CUL});
-		public static readonly BitSet _relationalOperatorNoIn_in_relationalExpressionNoIn4106 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_relationalExpressionNoIn4108 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _shiftExpression_in_relationalExpressionNoIn4113 = new BitSet(new ulong[]{0x4001800000000002UL,0x10000000000CUL});
-		public static readonly BitSet _set_in_relationalOperator4146 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _set_in_relationalOperatorNoIn4183 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _additiveExpression_in_shiftExpression4221 = new BitSet(new ulong[]{0x2UL,0x80102800000000UL});
-		public static readonly BitSet _SkipSpace_in_shiftExpression4238 = new BitSet(new ulong[]{0x0UL,0x80102800000000UL});
-		public static readonly BitSet _shiftOperator_in_shiftExpression4243 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_shiftExpression4245 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _additiveExpression_in_shiftExpression4250 = new BitSet(new ulong[]{0x2UL,0x80102800000000UL});
-		public static readonly BitSet _set_in_shiftOperator4283 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _multiplicativeExpression_in_additiveExpression4313 = new BitSet(new ulong[]{0x2UL,0x100001000080UL});
-		public static readonly BitSet _SkipSpace_in_additiveExpression4330 = new BitSet(new ulong[]{0x0UL,0x100001000080UL});
-		public static readonly BitSet _additiveOperator_in_additiveExpression4335 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_additiveExpression4337 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _multiplicativeExpression_in_additiveExpression4342 = new BitSet(new ulong[]{0x2UL,0x100001000080UL});
-		public static readonly BitSet _set_in_additiveOperator4375 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _unaryExpression_in_multiplicativeExpression4401 = new BitSet(new ulong[]{0x8000002UL,0x100000001400UL});
-		public static readonly BitSet _SkipSpace_in_multiplicativeExpression4418 = new BitSet(new ulong[]{0x8000000UL,0x100000001400UL});
-		public static readonly BitSet _multiplicativeOperator_in_multiplicativeExpression4423 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_multiplicativeExpression4425 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _unaryExpression_in_multiplicativeExpression4430 = new BitSet(new ulong[]{0x8000002UL,0x100000001400UL});
-		public static readonly BitSet _set_in_multiplicativeOperator4463 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _postfixExpression_in_unaryExpression4490 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _prefixOperator_in_unaryExpression4500 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_unaryExpression4502 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _unaryExpression_in_unaryExpression4505 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _set_in_prefixOperator4539 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _leftHandSideExpression_in_postfixExpression4594 = new BitSet(new ulong[]{0x0UL,0x4000200UL});
-		public static readonly BitSet _PLUS_INC_in_postfixExpression4599 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _MINUS_INC_in_postfixExpression4605 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _leftHandSideExpression_in_postfixExpression4638 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _THIS_in_primaryExpression4655 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _Identifier_in_primaryExpression4663 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _importedNotation_in_primaryExpression4671 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _literal_in_primaryExpression4679 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _arrayLiteral_in_primaryExpression4687 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _objectLiteral_in_primaryExpression4695 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _130_in_primaryExpression4703 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_primaryExpression4705 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _expression_in_primaryExpression4708 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_primaryExpression4710 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_primaryExpression4713 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _135_in_arrayLiteral4743 = new BitSet(new ulong[]{0x8080020044281000UL,0x80107000054C8280UL,0x84184UL});
-		public static readonly BitSet _SkipSpace_in_arrayLiteral4745 = new BitSet(new ulong[]{0x8080020044281000UL,0x80107000054C8280UL,0x84184UL});
-		public static readonly BitSet _assignmentExpression_in_arrayLiteral4748 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x100UL});
-		public static readonly BitSet _SkipSpace_in_arrayLiteral4752 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_arrayLiteral4755 = new BitSet(new ulong[]{0x8080020044281000UL,0x80107000054C8280UL,0x84184UL});
-		public static readonly BitSet _SkipSpace_in_arrayLiteral4758 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_arrayLiteral4761 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x100UL});
-		public static readonly BitSet _SkipSpace_in_arrayLiteral4767 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100UL});
-		public static readonly BitSet _136_in_arrayLiteral4770 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _147_in_objectLiteral4805 = new BitSet(new ulong[]{0x8000000000000000UL,0x300000400000UL});
-		public static readonly BitSet _SkipSpace_in_objectLiteral4807 = new BitSet(new ulong[]{0x8000000000000000UL,0x300000400000UL});
-		public static readonly BitSet _propertyNameAndValue_in_objectLiteral4810 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _SkipSpace_in_objectLiteral4813 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_objectLiteral4816 = new BitSet(new ulong[]{0x8000000000000000UL,0x300000400000UL});
-		public static readonly BitSet _SkipSpace_in_objectLiteral4818 = new BitSet(new ulong[]{0x8000000000000000UL,0x300000400000UL});
-		public static readonly BitSet _propertyNameAndValue_in_objectLiteral4823 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _SkipSpace_in_objectLiteral4827 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _148_in_objectLiteral4830 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _147_in_objectLiteral4858 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _SkipSpace_in_objectLiteral4860 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x100000UL});
-		public static readonly BitSet _148_in_objectLiteral4863 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _propertyNameAndValue_in_propertyInitializers4886 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _SkipSpace_in_propertyInitializers4889 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_propertyInitializers4892 = new BitSet(new ulong[]{0x8000000000000000UL,0x300000400000UL});
-		public static readonly BitSet _propertyInitializers_in_propertyInitializers4894 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _propertyName_in_propertyNameAndValue4914 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_propertyNameAndValue4916 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_propertyNameAndValue4919 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_propertyNameAndValue4921 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_propertyNameAndValue4926 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _set_in_propertyName4953 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _set_in_literal4987 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _IMPORT_START_in_importedNotation5038 = new BitSet(new ulong[]{0x8002000000000000UL,0x0UL,0x80UL});
-		public static readonly BitSet _importedTypeName_in_importedNotation5041 = new BitSet(new ulong[]{0x0UL,0x0UL,0x100000UL});
-		public static readonly BitSet _148_in_importedNotation5043 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _IMPORT_START_in_importedNotation5052 = new BitSet(new ulong[]{0x8002000000000000UL,0x0UL,0x80UL});
-		public static readonly BitSet _importedTypeName_in_importedNotation5056 = new BitSet(new ulong[]{0x0UL,0x20000000000000UL});
-		public static readonly BitSet _TYPE_SEPERATOR_in_importedNotation5058 = new BitSet(new ulong[]{0x8000000000000000UL});
-		public static readonly BitSet _Identifier_in_importedNotation5062 = new BitSet(new ulong[]{0x0UL,0x0UL,0x100000UL});
-		public static readonly BitSet _148_in_importedNotation5064 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _IMPORT_START_in_importedNotation5092 = new BitSet(new ulong[]{0x8002000000000000UL,0x0UL,0x80UL});
-		public static readonly BitSet _importedTypeName_in_importedNotation5096 = new BitSet(new ulong[]{0x0UL,0x20000000000000UL});
-		public static readonly BitSet _TYPE_SEPERATOR_in_importedNotation5098 = new BitSet(new ulong[]{0x8000000000000000UL});
-		public static readonly BitSet _Identifier_in_importedNotation5102 = new BitSet(new ulong[]{0x0UL,0x0UL,0x4UL});
-		public static readonly BitSet _importedMethodArguments_in_importedNotation5106 = new BitSet(new ulong[]{0x0UL,0x0UL,0x100000UL});
-		public static readonly BitSet _148_in_importedNotation5108 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _130_in_importedMethodArguments5148 = new BitSet(new ulong[]{0x8002000000000000UL,0x100000000000UL,0x88UL});
-		public static readonly BitSet _SkipSpace_in_importedMethodArguments5151 = new BitSet(new ulong[]{0x8002000000000000UL,0x100000000000UL,0x80UL});
-		public static readonly BitSet _importedTypeName_in_importedMethodArguments5154 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_importedMethodArguments5157 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL});
-		public static readonly BitSet _COMMA_in_importedMethodArguments5160 = new BitSet(new ulong[]{0x8002000000000000UL,0x100000000000UL,0x80UL});
-		public static readonly BitSet _SkipSpace_in_importedMethodArguments5162 = new BitSet(new ulong[]{0x8002000000000000UL,0x100000000000UL,0x80UL});
-		public static readonly BitSet _importedTypeName_in_importedMethodArguments5165 = new BitSet(new ulong[]{0x200000UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _SkipSpace_in_importedMethodArguments5171 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x8UL});
-		public static readonly BitSet _131_in_importedMethodArguments5174 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _135_in_importedTypeName5208 = new BitSet(new ulong[]{0x8000000000000000UL});
-		public static readonly BitSet _importedTypeNamePart_in_importedTypeName5212 = new BitSet(new ulong[]{0x0UL,0x0UL,0x100UL});
-		public static readonly BitSet _136_in_importedTypeName5214 = new BitSet(new ulong[]{0x8000000000000000UL});
-		public static readonly BitSet _importedTypeNamePart_in_importedTypeName5218 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _Identifier_in_importedTypeName5238 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _GenericSignature_in_importedTypeName5254 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _Identifier_in_importedAssemblyNamePart5279 = new BitSet(new ulong[]{0x2UL,0x0UL,0x10UL});
-		public static readonly BitSet _132_in_importedAssemblyNamePart5282 = new BitSet(new ulong[]{0x8000000000000000UL});
-		public static readonly BitSet _Identifier_in_importedAssemblyNamePart5284 = new BitSet(new ulong[]{0x2UL,0x0UL,0x10UL});
-		public static readonly BitSet _Identifier_in_importedTypeNamePart5320 = new BitSet(new ulong[]{0x2UL,0x0UL,0x10UL});
-		public static readonly BitSet _132_in_importedTypeNamePart5323 = new BitSet(new ulong[]{0x8000000000000000UL});
-		public static readonly BitSet _Identifier_in_importedTypeNamePart5325 = new BitSet(new ulong[]{0x2UL,0x0UL,0x10UL});
-		public static readonly BitSet _132_in_importedTypeNamePart5330 = new BitSet(new ulong[]{0x0UL,0x40000000000000UL});
-		public static readonly BitSet _TypeNameIdentifier_in_importedTypeNamePart5332 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _VAR_in_forStatementInitialiserPart1542 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_forStatementInitialiserPart1545 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _variableDeclarationListNoIn_in_forStatementInitialiserPart1549 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _147_in_forInStatement1566 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_forInStatement1568 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_forInStatement1571 = new BitSet(new ulong[]{0x8080020000080000UL,0x1C008000488000UL,0x2102110UL});
+		public static readonly BitSet _SkipSpace_in_forInStatement1573 = new BitSet(new ulong[]{0x8080020000080000UL,0x1C008000488000UL,0x2102110UL});
+		public static readonly BitSet _forInStatementInitialiserPart_in_forInStatement1576 = new BitSet(new ulong[]{0x100000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_forInStatement1578 = new BitSet(new ulong[]{0x100000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _IN_in_forInStatement1581 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_forInStatement1583 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_forInStatement1586 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_forInStatement1588 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_forInStatement1591 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_forInStatement1593 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statement_in_forInStatement1596 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _leftHandSideExpression_in_forInStatementInitialiserPart1633 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _VAR_in_forInStatementInitialiserPart1641 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_forInStatementInitialiserPart1643 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _variableDeclarationNoIn_in_forInStatementInitialiserPart1647 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _CONTINUE_in_continueStatement1664 = new BitSet(new ulong[]{0x8000000000000000UL,0x4010000000000UL});
+		public static readonly BitSet _Identifier_in_continueStatement1667 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_continueStatement1670 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SEMI_in_continueStatement1674 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _BREAK_in_breakStatement1692 = new BitSet(new ulong[]{0x8000000000000000UL,0x4010000000000UL});
+		public static readonly BitSet _Identifier_in_breakStatement1695 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_breakStatement1698 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SEMI_in_breakStatement1702 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _RETURN_in_returnStatement1720 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_returnStatement1722 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_returnStatement1727 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_returnStatement1729 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SEMI_in_returnStatement1732 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _RETURN_in_returnStatement1757 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_returnStatement1759 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SEMI_in_returnStatement1762 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _152_in_withStatement1793 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_withStatement1795 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_withStatement1799 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_withStatement1801 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_withStatement1805 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_withStatement1807 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_withStatement1811 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_withStatement1813 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statement_in_withStatement1817 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _Identifier_in_labelledStatement1834 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_labelledStatement1836 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_labelledStatement1840 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_labelledStatement1842 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statement_in_labelledStatement1846 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _150_in_switchStatement1863 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_switchStatement1865 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_switchStatement1869 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_switchStatement1871 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_switchStatement1875 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_switchStatement1877 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_switchStatement1881 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _SkipSpace_in_switchStatement1883 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _caseBlock_in_switchStatement1887 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _153_in_caseBlock1904 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4018000UL});
+		public static readonly BitSet _SkipSpace_in_caseBlock1907 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x8000UL});
+		public static readonly BitSet _caseClause_in_caseBlock1911 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4018000UL});
+		public static readonly BitSet _SkipSpace_in_caseBlock1916 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x10000UL});
+		public static readonly BitSet _defaultClause_in_caseBlock1920 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4008000UL});
+		public static readonly BitSet _SkipSpace_in_caseBlock1923 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x8000UL});
+		public static readonly BitSet _caseClause_in_caseBlock1927 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4008000UL});
+		public static readonly BitSet _SkipSpace_in_caseBlock1933 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _154_in_caseBlock1937 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _143_in_caseClause1954 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_caseClause1956 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_caseClause1960 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_caseClause1962 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_caseClause1966 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_caseClause1968 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statementList_in_caseClause1972 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _144_in_defaultClause1990 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_defaultClause1992 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_defaultClause1996 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_defaultClause1998 = new BitSet(new ulong[]{0x80800200448C1002UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _statementList_in_defaultClause2002 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _THROW_in_throwStatement2020 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_throwStatement2022 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_throwStatement2025 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SkipSpace_in_throwStatement2027 = new BitSet(new ulong[]{0x0UL,0x4010000000000UL});
+		public static readonly BitSet _SEMI_in_throwStatement2030 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _TRY_in_tryStatement2063 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _SkipSpace_in_tryStatement2065 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _statementBlock_in_tryStatement2070 = new BitSet(new ulong[]{0x40000100000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_tryStatement2072 = new BitSet(new ulong[]{0x40000100000UL,0x4000000000000UL});
+		public static readonly BitSet _finallyClause_in_tryStatement2078 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _catchClause_in_tryStatement2084 = new BitSet(new ulong[]{0x40000000002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_tryStatement2087 = new BitSet(new ulong[]{0x40000000000UL,0x4000000000000UL});
+		public static readonly BitSet _finallyClause_in_tryStatement2092 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _CATCH_in_catchClause2137 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_catchClause2139 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _136_in_catchClause2142 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_catchClause2144 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _Identifier_in_catchClause2149 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_catchClause2151 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_catchClause2154 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _SkipSpace_in_catchClause2156 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _statementBlock_in_catchClause2161 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _FINALLY_in_finallyClause2198 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _SkipSpace_in_finallyClause2200 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2000000UL});
+		public static readonly BitSet _statementBlock_in_finallyClause2205 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _assignmentExpression_in_expression2240 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_expression2243 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_expression2246 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_expression2248 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_expression2251 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
+		public static readonly BitSet _assignmentExpressionNoIn_in_expressionNoIn2283 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_expressionNoIn2286 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_expressionNoIn2289 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_expressionNoIn2291 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpressionNoIn_in_expressionNoIn2294 = new BitSet(new ulong[]{0x200002UL,0x4000000000000UL});
+		public static readonly BitSet _conditionalExpression_in_assignmentExpression2326 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _leftHandSideExpression_in_assignmentExpression2336 = new BitSet(new ulong[]{0x10014900UL,0x4004140002002900UL});
+		public static readonly BitSet _SkipSpace_in_assignmentExpression2338 = new BitSet(new ulong[]{0x10014900UL,0x4004140002002900UL});
+		public static readonly BitSet _assignmentOperator_in_assignmentExpression2343 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_assignmentExpression2345 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_assignmentExpression2350 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _conditionalExpressionNoIn_in_assignmentExpressionNoIn2390 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _leftHandSideExpression_in_assignmentExpressionNoIn2400 = new BitSet(new ulong[]{0x10014900UL,0x4004140002002900UL});
+		public static readonly BitSet _SkipSpace_in_assignmentExpressionNoIn2402 = new BitSet(new ulong[]{0x10014900UL,0x4004140002002900UL});
+		public static readonly BitSet _assignmentOperator_in_assignmentExpressionNoIn2407 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_assignmentExpressionNoIn2409 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpressionNoIn_in_assignmentExpressionNoIn2414 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _set_in_assignmentOperator2452 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _callExpression_in_leftHandSideExpression2559 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _newExpression_in_leftHandSideExpression2567 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _memberExpression_in_newExpression2584 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _NEW_in_newExpression2592 = new BitSet(new ulong[]{0x8080020000080000UL,0x1C008000488000UL,0x2102100UL});
+		public static readonly BitSet _SkipSpace_in_newExpression2594 = new BitSet(new ulong[]{0x8080020000080000UL,0x1C008000488000UL,0x2102100UL});
+		public static readonly BitSet _newExpression_in_newExpression2598 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _memberExpressionLHS_in_memberExpression2618 = new BitSet(new ulong[]{0x2UL,0x4000000000000UL,0x2400UL});
+		public static readonly BitSet _SkipSpace_in_memberExpression2635 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2400UL});
+		public static readonly BitSet _memberExpressionSuffix_in_memberExpression2640 = new BitSet(new ulong[]{0x2UL,0x4000000000000UL,0x2400UL});
+		public static readonly BitSet _primaryExpression_in_memberExpressionLHS2672 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _functionExpression_in_memberExpressionLHS2680 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _newObjectExpression_in_memberExpressionLHS2688 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _NEW_in_newObjectExpression2705 = new BitSet(new ulong[]{0x8080020000080000UL,0x1C008000488000UL,0x2102100UL});
+		public static readonly BitSet _SkipSpace_in_newObjectExpression2707 = new BitSet(new ulong[]{0x8080020000080000UL,0x1C008000488000UL,0x2102100UL});
+		public static readonly BitSet _memberExpression_in_newObjectExpression2712 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_newObjectExpression2714 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _arguments_in_newObjectExpression2719 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _indexSuffix_in_memberExpressionSuffix2756 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _propertyReferenceSuffix_in_memberExpressionSuffix2764 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _methodCallExpression_in_callExpression2784 = new BitSet(new ulong[]{0x2UL,0x4000000000000UL,0x2500UL});
+		public static readonly BitSet _SkipSpace_in_callExpression2801 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x2500UL});
+		public static readonly BitSet _callExpressionSuffix_in_callExpression2806 = new BitSet(new ulong[]{0x2UL,0x4000000000000UL,0x2500UL});
+		public static readonly BitSet _memberExpression_in_methodCallExpression2842 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _SkipSpace_in_methodCallExpression2844 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x100UL});
+		public static readonly BitSet _arguments_in_methodCallExpression2849 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _arguments_in_callExpressionSuffix2886 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _indexSuffix_in_callExpressionSuffix2894 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _propertyReferenceSuffix_in_callExpressionSuffix2902 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _136_in_arguments2919 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102320UL});
+		public static readonly BitSet _SkipSpace_in_arguments2922 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_arguments2925 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_arguments2928 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_arguments2931 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_arguments2933 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_arguments2936 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_arguments2942 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_arguments2945 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _141_in_indexSuffix2979 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_indexSuffix2981 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_indexSuffix2986 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000UL});
+		public static readonly BitSet _SkipSpace_in_indexSuffix2988 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000UL});
+		public static readonly BitSet _142_in_indexSuffix2991 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _138_in_propertyReferenceSuffix3029 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_propertyReferenceSuffix3031 = new BitSet(new ulong[]{0x8000000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _Identifier_in_propertyReferenceSuffix3036 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _138_in_propertyReferenceSuffix3061 = new BitSet(new ulong[]{0x80000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_propertyReferenceSuffix3063 = new BitSet(new ulong[]{0x80000000000000UL,0x4000000000000UL});
+		public static readonly BitSet _importedNotation_in_propertyReferenceSuffix3068 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _logicalORExpression_in_conditionalExpression3104 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpression3106 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _140_in_conditionalExpression3109 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpression3111 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_conditionalExpression3116 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpression3118 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_conditionalExpression3121 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpression3123 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_conditionalExpression3128 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _logicalORExpression_in_conditionalExpression3159 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _logicalORExpressionNoIn_in_conditionalExpressionNoIn3178 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3180 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _140_in_conditionalExpressionNoIn3183 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3185 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpressionNoIn_in_conditionalExpressionNoIn3190 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3192 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_conditionalExpressionNoIn3195 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_conditionalExpressionNoIn3197 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpressionNoIn_in_conditionalExpressionNoIn3202 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _logicalORExpressionNoIn_in_conditionalExpressionNoIn3233 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _logicalANDExpression_in_logicalORExpression3253 = new BitSet(new ulong[]{0x2UL,0x4000000800000UL});
+		public static readonly BitSet _SkipSpace_in_logicalORExpression3270 = new BitSet(new ulong[]{0x0UL,0x4000000800000UL});
+		public static readonly BitSet _OR_in_logicalORExpression3275 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_logicalORExpression3277 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _logicalANDExpression_in_logicalORExpression3282 = new BitSet(new ulong[]{0x2UL,0x4000000800000UL});
+		public static readonly BitSet _logicalANDExpressionNoIn_in_logicalORExpressionNoIn3320 = new BitSet(new ulong[]{0x2UL,0x4000000800000UL});
+		public static readonly BitSet _SkipSpace_in_logicalORExpressionNoIn3337 = new BitSet(new ulong[]{0x0UL,0x4000000800000UL});
+		public static readonly BitSet _OR_in_logicalORExpressionNoIn3342 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_logicalORExpressionNoIn3344 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _logicalANDExpressionNoIn_in_logicalORExpressionNoIn3349 = new BitSet(new ulong[]{0x2UL,0x4000000800000UL});
+		public static readonly BitSet _bitwiseORExpression_in_logicalANDExpression3387 = new BitSet(new ulong[]{0x22UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_logicalANDExpression3404 = new BitSet(new ulong[]{0x20UL,0x4000000000000UL});
+		public static readonly BitSet _AND_in_logicalANDExpression3409 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_logicalANDExpression3411 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _bitwiseORExpression_in_logicalANDExpression3416 = new BitSet(new ulong[]{0x22UL,0x4000000000000UL});
+		public static readonly BitSet _bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3454 = new BitSet(new ulong[]{0x22UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_logicalANDExpressionNoIn3471 = new BitSet(new ulong[]{0x20UL,0x4000000000000UL});
+		public static readonly BitSet _AND_in_logicalANDExpressionNoIn3476 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_logicalANDExpressionNoIn3478 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _bitwiseORExpressionNoIn_in_logicalANDExpressionNoIn3483 = new BitSet(new ulong[]{0x22UL,0x4000000000000UL});
+		public static readonly BitSet _bitwiseXORExpression_in_bitwiseORExpression3521 = new BitSet(new ulong[]{0x2002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseORExpression3538 = new BitSet(new ulong[]{0x2000UL,0x4000000000000UL});
+		public static readonly BitSet _BIT_OR_in_bitwiseORExpression3543 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseORExpression3545 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _bitwiseXORExpression_in_bitwiseORExpression3550 = new BitSet(new ulong[]{0x2002UL,0x4000000000000UL});
+		public static readonly BitSet _bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3588 = new BitSet(new ulong[]{0x2002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseORExpressionNoIn3605 = new BitSet(new ulong[]{0x2000UL,0x4000000000000UL});
+		public static readonly BitSet _BIT_OR_in_bitwiseORExpressionNoIn3610 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseORExpressionNoIn3612 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _bitwiseXORExpressionNoIn_in_bitwiseORExpressionNoIn3617 = new BitSet(new ulong[]{0x2002UL,0x4000000000000UL});
+		public static readonly BitSet _bitwiseANDExpression_in_bitwiseXORExpression3655 = new BitSet(new ulong[]{0x8002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseXORExpression3672 = new BitSet(new ulong[]{0x8000UL,0x4000000000000UL});
+		public static readonly BitSet _BIT_XOR_in_bitwiseXORExpression3677 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseXORExpression3679 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _bitwiseANDExpression_in_bitwiseXORExpression3684 = new BitSet(new ulong[]{0x8002UL,0x4000000000000UL});
+		public static readonly BitSet _bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3722 = new BitSet(new ulong[]{0x8002UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseXORExpressionNoIn3739 = new BitSet(new ulong[]{0x8000UL,0x4000000000000UL});
+		public static readonly BitSet _BIT_XOR_in_bitwiseXORExpressionNoIn3744 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseXORExpressionNoIn3746 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _bitwiseANDExpressionNoIn_in_bitwiseXORExpressionNoIn3751 = new BitSet(new ulong[]{0x8002UL,0x4000000000000UL});
+		public static readonly BitSet _equalityExpression_in_bitwiseANDExpression3789 = new BitSet(new ulong[]{0x402UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseANDExpression3806 = new BitSet(new ulong[]{0x400UL,0x4000000000000UL});
+		public static readonly BitSet _BIT_AND_in_bitwiseANDExpression3811 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseANDExpression3813 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _equalityExpression_in_bitwiseANDExpression3818 = new BitSet(new ulong[]{0x402UL,0x4000000000000UL});
+		public static readonly BitSet _equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3856 = new BitSet(new ulong[]{0x402UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseANDExpressionNoIn3873 = new BitSet(new ulong[]{0x400UL,0x4000000000000UL});
+		public static readonly BitSet _BIT_AND_in_bitwiseANDExpressionNoIn3878 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_bitwiseANDExpressionNoIn3880 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _equalityExpressionNoIn_in_bitwiseANDExpressionNoIn3885 = new BitSet(new ulong[]{0x402UL,0x4000000000000UL});
+		public static readonly BitSet _relationalExpression_in_equalityExpression3923 = new BitSet(new ulong[]{0x1000000002UL,0x4000240004000UL});
+		public static readonly BitSet _SkipSpace_in_equalityExpression3940 = new BitSet(new ulong[]{0x1000000000UL,0x4000240004000UL});
+		public static readonly BitSet _equalityOperator_in_equalityExpression3945 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_equalityExpression3947 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _relationalExpression_in_equalityExpression3952 = new BitSet(new ulong[]{0x1000000002UL,0x4000240004000UL});
+		public static readonly BitSet _relationalExpressionNoIn_in_equalityExpressionNoIn3990 = new BitSet(new ulong[]{0x1000000002UL,0x4000240004000UL});
+		public static readonly BitSet _SkipSpace_in_equalityExpressionNoIn4007 = new BitSet(new ulong[]{0x1000000000UL,0x4000240004000UL});
+		public static readonly BitSet _equalityOperator_in_equalityExpressionNoIn4012 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_equalityExpressionNoIn4014 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _relationalExpressionNoIn_in_equalityExpressionNoIn4019 = new BitSet(new ulong[]{0x1000000002UL,0x4000240004000UL});
+		public static readonly BitSet _set_in_equalityOperator4052 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _shiftExpression_in_relationalExpression4086 = new BitSet(new ulong[]{0x4101800000000002UL,0x400000000000CUL});
+		public static readonly BitSet _SkipSpace_in_relationalExpression4103 = new BitSet(new ulong[]{0x4101800000000000UL,0x400000000000CUL});
+		public static readonly BitSet _relationalOperator_in_relationalExpression4108 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_relationalExpression4110 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _shiftExpression_in_relationalExpression4115 = new BitSet(new ulong[]{0x4101800000000002UL,0x400000000000CUL});
+		public static readonly BitSet _shiftExpression_in_relationalExpressionNoIn4153 = new BitSet(new ulong[]{0x4001800000000002UL,0x400000000000CUL});
+		public static readonly BitSet _SkipSpace_in_relationalExpressionNoIn4170 = new BitSet(new ulong[]{0x4001800000000000UL,0x400000000000CUL});
+		public static readonly BitSet _relationalOperatorNoIn_in_relationalExpressionNoIn4175 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_relationalExpressionNoIn4177 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _shiftExpression_in_relationalExpressionNoIn4182 = new BitSet(new ulong[]{0x4001800000000002UL,0x400000000000CUL});
+		public static readonly BitSet _set_in_relationalOperator4215 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _set_in_relationalOperatorNoIn4252 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _additiveExpression_in_shiftExpression4290 = new BitSet(new ulong[]{0x2UL,0x20040A0000000000UL});
+		public static readonly BitSet _SkipSpace_in_shiftExpression4307 = new BitSet(new ulong[]{0x0UL,0x20040A0000000000UL});
+		public static readonly BitSet _shiftOperator_in_shiftExpression4312 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_shiftExpression4314 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _additiveExpression_in_shiftExpression4319 = new BitSet(new ulong[]{0x2UL,0x20040A0000000000UL});
+		public static readonly BitSet _set_in_shiftOperator4352 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _multiplicativeExpression_in_additiveExpression4382 = new BitSet(new ulong[]{0x2UL,0x4000001000080UL});
+		public static readonly BitSet _SkipSpace_in_additiveExpression4399 = new BitSet(new ulong[]{0x0UL,0x4000001000080UL});
+		public static readonly BitSet _additiveOperator_in_additiveExpression4404 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_additiveExpression4406 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _multiplicativeExpression_in_additiveExpression4411 = new BitSet(new ulong[]{0x2UL,0x4000001000080UL});
+		public static readonly BitSet _set_in_additiveOperator4444 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _unaryExpression_in_multiplicativeExpression4470 = new BitSet(new ulong[]{0x8000002UL,0x4000000001400UL});
+		public static readonly BitSet _SkipSpace_in_multiplicativeExpression4487 = new BitSet(new ulong[]{0x8000000UL,0x4000000001400UL});
+		public static readonly BitSet _multiplicativeOperator_in_multiplicativeExpression4492 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_multiplicativeExpression4494 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _unaryExpression_in_multiplicativeExpression4499 = new BitSet(new ulong[]{0x8000002UL,0x4000000001400UL});
+		public static readonly BitSet _set_in_multiplicativeOperator4532 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _postfixExpression_in_unaryExpression4559 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _prefixOperator_in_unaryExpression4569 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_unaryExpression4571 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _unaryExpression_in_unaryExpression4574 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _set_in_prefixOperator4608 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _leftHandSideExpression_in_postfixExpression4663 = new BitSet(new ulong[]{0x0UL,0x4000200UL});
+		public static readonly BitSet _PLUS_INC_in_postfixExpression4668 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _MINUS_INC_in_postfixExpression4674 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _leftHandSideExpression_in_postfixExpression4707 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _THIS_in_primaryExpression4724 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _Identifier_in_primaryExpression4732 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _importedNotation_in_primaryExpression4740 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _literal_in_primaryExpression4748 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _arrayLiteral_in_primaryExpression4756 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _objectLiteral_in_primaryExpression4764 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _136_in_primaryExpression4772 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_primaryExpression4774 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _expression_in_primaryExpression4777 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_primaryExpression4779 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_primaryExpression4782 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _141_in_arrayLiteral4812 = new BitSet(new ulong[]{0x8080020044281000UL,0x41C0080054C8280UL,0x2106120UL});
+		public static readonly BitSet _SkipSpace_in_arrayLiteral4814 = new BitSet(new ulong[]{0x8080020044281000UL,0x41C0080054C8280UL,0x2106120UL});
+		public static readonly BitSet _assignmentExpression_in_arrayLiteral4817 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x4000UL});
+		public static readonly BitSet _SkipSpace_in_arrayLiteral4821 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_arrayLiteral4824 = new BitSet(new ulong[]{0x8080020044281000UL,0x41C0080054C8280UL,0x2106120UL});
+		public static readonly BitSet _SkipSpace_in_arrayLiteral4827 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_arrayLiteral4830 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x4000UL});
+		public static readonly BitSet _SkipSpace_in_arrayLiteral4836 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000UL});
+		public static readonly BitSet _142_in_arrayLiteral4839 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _153_in_objectLiteral4874 = new BitSet(new ulong[]{0x8000000000000000UL,0xC000000400000UL});
+		public static readonly BitSet _SkipSpace_in_objectLiteral4876 = new BitSet(new ulong[]{0x8000000000000000UL,0xC000000400000UL});
+		public static readonly BitSet _propertyNameAndValue_in_objectLiteral4879 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _SkipSpace_in_objectLiteral4882 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_objectLiteral4885 = new BitSet(new ulong[]{0x8000000000000000UL,0xC000000400000UL});
+		public static readonly BitSet _SkipSpace_in_objectLiteral4887 = new BitSet(new ulong[]{0x8000000000000000UL,0xC000000400000UL});
+		public static readonly BitSet _propertyNameAndValue_in_objectLiteral4890 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _SkipSpace_in_objectLiteral4894 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _154_in_objectLiteral4897 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _153_in_objectLiteral4922 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _SkipSpace_in_objectLiteral4924 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x4000000UL});
+		public static readonly BitSet _154_in_objectLiteral4927 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _propertyNameAndValue_in_propertyInitializers4950 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _SkipSpace_in_propertyInitializers4953 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_propertyInitializers4956 = new BitSet(new ulong[]{0x8000000000000000UL,0xC000000400000UL});
+		public static readonly BitSet _propertyInitializers_in_propertyInitializers4958 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _propertyName_in_propertyNameAndValue4978 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_propertyNameAndValue4980 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_propertyNameAndValue4983 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_propertyNameAndValue4985 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_propertyNameAndValue4990 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _set_in_propertyName5017 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _set_in_literal5051 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _IMPORT_START_in_importedNotation5110 = new BitSet(new ulong[]{0x8002000000000000UL,0x0UL,0x2000UL});
+		public static readonly BitSet _importedTypeName_in_importedNotation5113 = new BitSet(new ulong[]{0x0UL,0x0UL,0x4000000UL});
+		public static readonly BitSet _154_in_importedNotation5115 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _IMPORT_START_in_importedNotation5124 = new BitSet(new ulong[]{0x8002000000000000UL,0x0UL,0x2000UL});
+		public static readonly BitSet _importedTypeName_in_importedNotation5128 = new BitSet(new ulong[]{0x0UL,0x800000000000000UL});
+		public static readonly BitSet _TYPE_SEPERATOR_in_importedNotation5130 = new BitSet(new ulong[]{0x8000000000000000UL});
+		public static readonly BitSet _Identifier_in_importedNotation5134 = new BitSet(new ulong[]{0x0UL,0x0UL,0x4000000UL});
+		public static readonly BitSet _154_in_importedNotation5136 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _IMPORT_START_in_importedNotation5164 = new BitSet(new ulong[]{0x8002000000000000UL,0x0UL,0x2000UL});
+		public static readonly BitSet _importedTypeName_in_importedNotation5168 = new BitSet(new ulong[]{0x0UL,0x800000000000000UL});
+		public static readonly BitSet _TYPE_SEPERATOR_in_importedNotation5170 = new BitSet(new ulong[]{0x8000000000000000UL});
+		public static readonly BitSet _Identifier_in_importedNotation5174 = new BitSet(new ulong[]{0x0UL,0x0UL,0x100UL});
+		public static readonly BitSet _importedMethodArguments_in_importedNotation5178 = new BitSet(new ulong[]{0x0UL,0x0UL,0x4000000UL});
+		public static readonly BitSet _154_in_importedNotation5180 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _136_in_importedMethodArguments5220 = new BitSet(new ulong[]{0x8002000000000000UL,0x4000000000000UL,0x2200UL});
+		public static readonly BitSet _SkipSpace_in_importedMethodArguments5223 = new BitSet(new ulong[]{0x8002000000000000UL,0x4000000000000UL,0x2000UL});
+		public static readonly BitSet _importedTypeName_in_importedMethodArguments5226 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_importedMethodArguments5229 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL});
+		public static readonly BitSet _COMMA_in_importedMethodArguments5232 = new BitSet(new ulong[]{0x8002000000000000UL,0x4000000000000UL,0x2000UL});
+		public static readonly BitSet _SkipSpace_in_importedMethodArguments5234 = new BitSet(new ulong[]{0x8002000000000000UL,0x4000000000000UL,0x2000UL});
+		public static readonly BitSet _importedTypeName_in_importedMethodArguments5237 = new BitSet(new ulong[]{0x200000UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _SkipSpace_in_importedMethodArguments5243 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x200UL});
+		public static readonly BitSet _137_in_importedMethodArguments5246 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _141_in_importedTypeName5280 = new BitSet(new ulong[]{0x8000000000000000UL});
+		public static readonly BitSet _importedTypeNamePart_in_importedTypeName5284 = new BitSet(new ulong[]{0x0UL,0x0UL,0x4000UL});
+		public static readonly BitSet _142_in_importedTypeName5286 = new BitSet(new ulong[]{0x8000000000000000UL});
+		public static readonly BitSet _importedTypeNamePart_in_importedTypeName5290 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _Identifier_in_importedTypeName5310 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _GenericSignature_in_importedTypeName5326 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _Identifier_in_importedAssemblyNamePart5351 = new BitSet(new ulong[]{0x2UL,0x0UL,0x400UL});
+		public static readonly BitSet _138_in_importedAssemblyNamePart5354 = new BitSet(new ulong[]{0x8000000000000000UL});
+		public static readonly BitSet _Identifier_in_importedAssemblyNamePart5356 = new BitSet(new ulong[]{0x2UL,0x0UL,0x400UL});
+		public static readonly BitSet _Identifier_in_importedTypeNamePart5392 = new BitSet(new ulong[]{0x2UL,0x0UL,0x400UL});
+		public static readonly BitSet _138_in_importedTypeNamePart5395 = new BitSet(new ulong[]{0x8000000000000000UL});
+		public static readonly BitSet _Identifier_in_importedTypeNamePart5397 = new BitSet(new ulong[]{0x2UL,0x0UL,0x400UL});
+		public static readonly BitSet _138_in_importedTypeNamePart5402 = new BitSet(new ulong[]{0x0UL,0x1000000000000000UL});
+		public static readonly BitSet _TypeNameIdentifier_in_importedTypeNamePart5404 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _functionDeclaration_in_synpred5_JavaScript421 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _SkipSpace_in_synpred9_JavaScript510 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _statementBlock_in_synpred21_JavaScript678 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _expressionStatement_in_synpred24_JavaScript702 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _labelledStatement_in_synpred31_JavaScript758 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _SkipSpace_in_synpred34_JavaScript801 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _SkipSpace_in_synpred60_JavaScript1200 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x1000UL});
-		public static readonly BitSet _140_in_synpred60_JavaScript1203 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
-		public static readonly BitSet _SkipSpace_in_synpred60_JavaScript1205 = new BitSet(new ulong[]{0x80800200448C1000UL,0xC012F004854C8280UL,0xFE884UL});
+		public static readonly BitSet _SkipSpace_in_synpred60_JavaScript1200 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x40000UL});
+		public static readonly BitSet _146_in_synpred60_JavaScript1203 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
+		public static readonly BitSet _SkipSpace_in_synpred60_JavaScript1205 = new BitSet(new ulong[]{0x80800200448C1000UL,0x4BC0180854C8280UL,0x3FA2130UL});
 		public static readonly BitSet _statement_in_synpred60_JavaScript1210 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _forStatement_in_synpred63_JavaScript1269 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _SkipSpace_in_synpred73_JavaScript1427 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _SkipSpace_in_synpred76_JavaScript1444 = new BitSet(new ulong[]{0x2UL});
 		public static readonly BitSet _SkipSpace_in_synpred79_JavaScript1461 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _SkipSpace_in_synpred120_JavaScript1967 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _SkipSpace_in_synpred123_JavaScript1997 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _conditionalExpression_in_synpred143_JavaScript2257 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _conditionalExpressionNoIn_in_synpred146_JavaScript2321 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _callExpression_in_synpred160_JavaScript2490 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _memberExpression_in_synpred161_JavaScript2515 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _logicalORExpression_in_synpred190_JavaScript3035 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3037 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _134_in_synpred190_JavaScript3040 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3042 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_synpred190_JavaScript3047 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3049 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_synpred190_JavaScript3052 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3054 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpression_in_synpred190_JavaScript3059 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _logicalORExpressionNoIn_in_synpred195_JavaScript3109 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3111 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x40UL});
-		public static readonly BitSet _134_in_synpred195_JavaScript3114 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3116 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpressionNoIn_in_synpred195_JavaScript3121 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3123 = new BitSet(new ulong[]{0x0UL,0x100000000000UL,0x20UL});
-		public static readonly BitSet _133_in_synpred195_JavaScript3126 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3128 = new BitSet(new ulong[]{0x8080020044081000UL,0x80107000054C8280UL,0x84084UL});
-		public static readonly BitSet _assignmentExpressionNoIn_in_synpred195_JavaScript3133 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _leftHandSideExpression_in_synpred276_JavaScript4594 = new BitSet(new ulong[]{0x0UL,0x4000200UL});
-		public static readonly BitSet _PLUS_INC_in_synpred276_JavaScript4599 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _MINUS_INC_in_synpred276_JavaScript4605 = new BitSet(new ulong[]{0x2UL});
-		public static readonly BitSet _SkipSpace_in_synpred285_JavaScript4745 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _SkipSpace_in_synpred120_JavaScript1968 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _SkipSpace_in_synpred123_JavaScript1998 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _conditionalExpression_in_synpred143_JavaScript2326 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _conditionalExpressionNoIn_in_synpred146_JavaScript2390 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _callExpression_in_synpred160_JavaScript2559 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _memberExpression_in_synpred161_JavaScript2584 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _logicalORExpression_in_synpred190_JavaScript3104 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3106 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _140_in_synpred190_JavaScript3109 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3111 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_synpred190_JavaScript3116 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3118 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_synpred190_JavaScript3121 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_synpred190_JavaScript3123 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpression_in_synpred190_JavaScript3128 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _logicalORExpressionNoIn_in_synpred195_JavaScript3178 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3180 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x1000UL});
+		public static readonly BitSet _140_in_synpred195_JavaScript3183 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3185 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpressionNoIn_in_synpred195_JavaScript3190 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3192 = new BitSet(new ulong[]{0x0UL,0x4000000000000UL,0x800UL});
+		public static readonly BitSet _139_in_synpred195_JavaScript3195 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _SkipSpace_in_synpred195_JavaScript3197 = new BitSet(new ulong[]{0x8080020044081000UL,0x41C0080054C8280UL,0x2102120UL});
+		public static readonly BitSet _assignmentExpressionNoIn_in_synpred195_JavaScript3202 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _leftHandSideExpression_in_synpred276_JavaScript4663 = new BitSet(new ulong[]{0x0UL,0x4000200UL});
+		public static readonly BitSet _PLUS_INC_in_synpred276_JavaScript4668 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _MINUS_INC_in_synpred276_JavaScript4674 = new BitSet(new ulong[]{0x2UL});
+		public static readonly BitSet _SkipSpace_in_synpred285_JavaScript4814 = new BitSet(new ulong[]{0x2UL});
 
 	}
 	#endregion Follow sets

@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<div data-test="b7-root">@foreach (var i in Model.Items) { <div data-test="b7-row" class="@i.Cls"><textarea data-test="b7-ta" placeholder="@i.Hint" class="@(i.Flag ? "x" : "awb-hidden")"></textarea><input data-test="b7-in" placeholder="@i.Hint" class="@(i.Flag ? "awb-hidden" : "x")" /></div> }</div>

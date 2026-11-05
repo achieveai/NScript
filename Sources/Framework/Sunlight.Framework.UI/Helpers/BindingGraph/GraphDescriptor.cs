@@ -93,6 +93,11 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
     {
         public int ElemIdx;
         public Action<object, object> Setter;
+        /// <summary>
+        /// Two-way <c>value=</c> only: (dataContext, value) => writes the element's value back
+        /// to the source property on <c>input</c> and <c>change</c>. Null for one-way targets.
+        /// </summary>
+        public Action<object, object> SourceSetter;
     }
 
     /// <summary>

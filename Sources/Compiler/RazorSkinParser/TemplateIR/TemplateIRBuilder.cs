@@ -160,6 +160,7 @@ namespace NScript.RazorSkin.TemplateIR
 
             // Walk the flat sequence of children in the method body
             WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName, locationFileName);
+            BindRawTextContentToOwners(root.Children, locationFileName);
 
             // Count IR nodes by type
             var htmlCount = CountNodes<HtmlNode>(root.Children);
@@ -174,6 +175,86 @@ namespace NScript.RazorSkin.TemplateIR
                 htmlCount, bindingCount, eventCount, conditionalCount, loopCount, subControlCount, functionCount);
 
             return root;
+        }
+
+        private static readonly Regex RawTextTagRegex = new Regex(
+            @"<(/?)(textarea|option|title)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// A text binding inside &lt;textarea&gt;, &lt;option&gt; or &lt;title&gt; cannot use a
+        /// &lt;span&gt; placeholder: the parser turns it into text (or drops it), which shifts every
+        /// later binding. When the binding is the element's only content it targets the element
+        /// itself (<see cref="ExpressionBindingNode.TargetsOwnerElement"/>); any other text
+        /// binding there fails the build.
+        /// </summary>
+        private static void BindRawTextContentToOwners(List<IRNode> nodes, string templateName)
+        {
+            string openTag = null;
+            for (int k = 0; k < nodes.Count; k++)
+            {
+                var node = nodes[k];
+                if (node is HtmlNode html)
+                {
+                    foreach (Match m in RawTextTagRegex.Matches(html.HtmlContent ?? string.Empty))
+                        openTag = m.Groups[1].Value.Length == 0 ? m.Groups[2].Value.ToLowerInvariant() : null;
+                    continue;
+                }
+
+                if (node is ExpressionBindingNode binding && binding.Target == ExpressionTarget.TextContent
+                    && openTag != null)
+                {
+                    if (!IsOnlyContentOf(nodes, k, openTag))
+                    {
+                        var expr = binding.Classification?.CSharpExpression;
+                        throw new NScript.Converter.ConverterLocationException(
+                            binding.Location ?? new Location(templateName ?? "(razor)", 0, 0),
+                            $"Text binding '@{expr}' is inside <{openTag}>, whose content is plain text and "
+                            + "cannot hold a binding placeholder. Make the binding the element's only content "
+                            + $"(<{openTag}>@{expr}</{openTag}>), or bind an attribute instead "
+                            + $"(for example value=\"@{expr}\").");
+                    }
+
+                    binding.TargetsOwnerElement = true;
+                    continue;
+                }
+
+                BindRawTextContentToOwners(node.Children, templateName);
+                if (node is ConditionalNode cond)
+                {
+                    BindRawTextContentToOwners(cond.TrueBranch, templateName);
+                    BindRawTextContentToOwners(cond.FalseBranch, templateName);
+                }
+                else if (node is LoopNode loop)
+                {
+                    BindRawTextContentToOwners(loop.ItemTemplate, templateName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// True when the markup right before <paramref name="index"/> ends with the open
+        /// <paramref name="tag"/> and the markup right after starts with its close tag
+        /// (whitespace aside).
+        /// </summary>
+        private static bool IsOnlyContentOf(List<IRNode> nodes, int index, string tag)
+        {
+            // Attribute bindings and events of the open tag sit between its HTML pieces.
+            var before = new System.Text.StringBuilder();
+            for (int i = index - 1; i >= 0; i--)
+            {
+                if (nodes[i] is HtmlNode h)
+                    before.Insert(0, h.HtmlContent);
+                else if (!(nodes[i] is EventNode)
+                    && !(nodes[i] is ExpressionBindingNode b && b.Target != ExpressionTarget.TextContent))
+                    break;
+            }
+
+            var after = new System.Text.StringBuilder();
+            for (int i = index + 1; i < nodes.Count && nodes[i] is HtmlNode h; i++)
+                after.Append(h.HtmlContent);
+
+            return Regex.IsMatch(before.ToString(), @"<" + tag + @"\b[^<>]*>\s*$", RegexOptions.IgnoreCase)
+                && Regex.IsMatch(after.ToString(), @"^\s*</" + tag + @"\s*>", RegexOptions.IgnoreCase);
         }
 
         private static int CountNodes<T>(List<IRNode> nodes) where T : IRNode

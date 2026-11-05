@@ -1321,7 +1321,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 throw new ApplicationException(
                     string.Format(
-                        "Error hit when parsing function{0}\r\nExceptionInfo: ex.Message: {1}",
+                        "[Script] in {0}: {1}",
                         MethodDefinition,
                         ex.Message),
                     ex);

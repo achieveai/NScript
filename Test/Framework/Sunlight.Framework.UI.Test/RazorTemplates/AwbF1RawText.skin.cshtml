@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<div>@if (Model.Flag) { <textarea data-test="f1-ta">@Model.Text</textarea> }<span data-test="f1-after">@Model.Other</span><div>@foreach (var i in Model.Items) { <div data-test="f1-row"><textarea data-test="f1-rta">@i.Name</textarea><b data-test="f1-rb" class="@i.Cls">x</b></div> }</div></div>

@@ -97,6 +97,22 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
+        /// Gets the async clipboard. Null in insecure (non-https, non-localhost) contexts;
+        /// check <see cref="HasClipboard"/> first.
+        /// </summary>
+        public extern Clipboard Clipboard
+        { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the async clipboard API is available.
+        /// </summary>
+        public extern bool HasClipboard
+        {
+            [Script("return !!this.clipboard;")]
+            get;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the on line.
         /// </summary>
         /// <value>

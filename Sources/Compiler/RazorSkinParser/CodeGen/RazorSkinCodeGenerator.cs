@@ -62,87 +62,162 @@ namespace NScript.RazorSkin.CodeGen
             => CollectHtml(nodes);
 
         /// <summary>
-        /// Collects HTML for item templates, inserting <span data-ns-evt></span> marker spans
-        /// for event target elements. These marker spans are found by CollectSpanElements at
-        /// runtime and occupy the correct ElemIdx positions. The runtime uses parentElement
-        /// on marker spans to find the actual event target element.
+        /// Gate (@if) and collection (@foreach) anchor. A &lt;template&gt; is legal in every
+        /// parent, including table, tbody, tr and select, so the HTML parser never moves it,
+        /// and it never renders. Text placeholders stay &lt;span data-ns-ph&gt;.
+        /// </summary>
+        internal const string AnchorMarkerHtml = "<template data-ns-ph></template>";
+
+        /// <summary>
+        /// Collects HTML for item and gate-branch templates. The runtime (GraphEngine.
+        /// CollectSpanElements) addresses elements positionally, in document order:
+        /// &lt;span data-ns-ph&gt; text placeholders, &lt;template data-ns-ph&gt; anchors,
+        /// data-ns-subctl hosts, and every element that owns attribute bindings or events,
+        /// marked data-ns-m="k" (k = how many it owns) and listed k times. An owner precedes
+        /// its descendants, so document order matches the element-index order.
         /// </summary>
         public static string CollectItemTemplateHtmlPublic(List<IRNode> nodes)
         {
             var sb = new StringBuilder();
-            int pendingEvtMarkers = 0;
-            int pendingBindMarkers = 0;
-            CollectItemTemplateHtmlRecursive(nodes, sb, ref pendingEvtMarkers, ref pendingBindMarkers);
-
-            var html = sb.ToString();
+            var owner = new OwnerMarker();
+            CollectItemTemplateHtmlRecursive(nodes, sb, owner);
+            owner.Flush(sb);
 
             // Strip outer-template marker attributes (data-bind-idx, data-evt-idx)
-            html = System.Text.RegularExpressions.Regex.Replace(html, @" data-(bind|evt)-idx=""\d+""", "");
+            return System.Text.RegularExpressions.Regex.Replace(sb.ToString(), @" data-(bind|evt)-idx=""\d+""", "");
+        }
 
-            // Post-process: for void elements (input, br, img, hr) that have
-            // <span data-ns-bind></span> nearby (possibly with event markers in between),
-            // move the bind marker to a data-ns-bind attribute on the void element.
-            html = System.Text.RegularExpressions.Regex.Replace(
-                html,
-                @"(<(?:input|br|img|hr|area|base|col|embed|link|meta|param|source|track|wbr)\b[^>]*?)(\s*/?>)((?:<span data-ns-evt></span>)*)<span data-ns-bind></span>",
-                "$1 data-ns-bind$2$3",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        /// <summary>
+        /// The open tag whose attribute bindings and events are being counted: where its
+        /// open tag starts (just after the tag name) and how many it has so far. The count
+        /// attribute is written at the end of the open tag once the tag is closed.
+        /// </summary>
+        private sealed class OwnerMarker
+        {
+            public int Position = -1;
+            public int Count;
 
-            return html;
+            /// <summary>Counts one binding or event of the tag that is open at the end of sb.</summary>
+            public void Add(StringBuilder sb)
+            {
+                if (Count > 0 && UnquotedTagBoundary(sb, Position) < 0)
+                {
+                    Count++;
+                    return;
+                }
+
+                Flush(sb);
+                Position = OpenTagNameEnd(sb);
+                Count = 1;
+            }
+
+            /// <summary>
+            /// Counts a text binding that targets the element whose open tag was just closed
+            /// (<see cref="ExpressionBindingNode.TargetsOwnerElement"/>).
+            /// </summary>
+            public void AddToLastTag(StringBuilder sb)
+            {
+                if (Count > 0 && OpenTagNameEnd(sb) == Position)
+                {
+                    Count++;
+                    return;
+                }
+
+                Flush(sb);
+                Position = OpenTagNameEnd(sb);
+                Count = 1;
+            }
+
+            public void Flush(StringBuilder sb)
+            {
+                if (Count == 0) return;
+                InsertIntoOpenTag(sb, Position, $"data-ns-m=\"{Count}\"");
+                Position = -1;
+                Count = 0;
+            }
+
+            /// <summary>
+            /// Writes <paramref name="attribute"/> just before the '&gt;' (or '/&gt;') that closes
+            /// the open tag whose name ends at <paramref name="tagNameEnd"/>.
+            /// </summary>
+            internal static void InsertIntoOpenTag(StringBuilder sb, int tagNameEnd, string attribute)
+            {
+                int close = UnquotedTagBoundary(sb, tagNameEnd);
+                if (close < 0 || sb[close] != '>')
+                    throw new InvalidOperationException(
+                        "An element with bindings or events has no closing '>' on its open tag.");
+                int insertAt = sb[close - 1] == '/' ? close - 1 : close;
+                string separator = char.IsWhiteSpace(sb[insertAt - 1]) ? "" : " ";
+                sb.Insert(insertAt, separator + attribute);
+            }
+
+            internal static int OpenTagNameEnd(StringBuilder sb)
+            {
+                int start = sb.Length - 1;
+                while (start >= 0 && sb[start] != '<') start--;
+                if (start < 0)
+                    throw new InvalidOperationException(
+                        "An attribute binding or event is not inside an element's open tag.");
+
+                int end = start + 1;
+                while (end < sb.Length && !char.IsWhiteSpace(sb[end]) && sb[end] != '/' && sb[end] != '>')
+                    end++;
+                return end;
+            }
+
+            /// <summary>
+            /// Index of the first unquoted '&gt;' or '&lt;' at or after <paramref name="from"/>,
+            /// or -1 while the HTML since then is still attributes of the same open tag.
+            /// </summary>
+            private static int UnquotedTagBoundary(StringBuilder sb, int from)
+            {
+                char quote = '\0';
+                for (int i = from; i < sb.Length; i++)
+                {
+                    char c = sb[i];
+                    if (quote != '\0')
+                    {
+                        if (c == quote) quote = '\0';
+                    }
+                    else if (c == '"' || c == '\'')
+                    {
+                        quote = c;
+                    }
+                    else if (c == '>' || c == '<')
+                    {
+                        return i;
+                    }
+                }
+
+                return -1;
+            }
         }
 
         private static void CollectItemTemplateHtmlRecursive(
-            List<IRNode> nodes, StringBuilder sb, ref int pendingEvtMarkers, ref int pendingBindMarkers)
+            List<IRNode> nodes, StringBuilder sb, OwnerMarker owner)
         {
             foreach (var node in nodes)
             {
                 if (node is HtmlNode html)
                 {
-                    var content = html.HtmlContent;
-                    // If there are pending event or bind markers, insert them after the first >
-                    int totalPending = pendingEvtMarkers + pendingBindMarkers;
-                    if (totalPending > 0)
-                    {
-                        int gtIdx = content.IndexOf('>');
-                        if (gtIdx >= 0)
-                        {
-                            sb.Append(content.Substring(0, gtIdx + 1));
-                            for (int m = 0; m < pendingEvtMarkers; m++)
-                                sb.Append("<span data-ns-evt></span>");
-                            for (int m = 0; m < pendingBindMarkers; m++)
-                                sb.Append("<span data-ns-bind></span>");
-                            sb.Append(content.Substring(gtIdx + 1));
-                            pendingEvtMarkers = 0;
-                            pendingBindMarkers = 0;
-                            continue;
-                        }
-                    }
-                    sb.Append(content);
+                    sb.Append(html.HtmlContent);
                 }
                 else if (node is ExpressionBindingNode exprBinding)
                 {
-                    if (exprBinding.Target == ExpressionTarget.TextContent)
+                    if (exprBinding.TargetsOwnerElement)
+                        owner.AddToLastTag(sb); // only content of <textarea>/<option>/<title>
+                    else if (exprBinding.Target == ExpressionTarget.TextContent)
                         sb.Append("<span data-ns-ph></span>");
                     else
-                    {
-                        // Class/style/attribute bindings: insert a marker span inside the
-                        // target element. The runtime resolves it to parentNode, like events.
-                        pendingBindMarkers++;
-                    }
+                        owner.Add(sb); // class/style/attribute binding on the open tag
                 }
                 else if (node is EventNode)
                 {
-                    // Mark that we need to insert a marker span inside the event target element.
-                    // The span will be inserted after the next closing > of the current tag.
-                    pendingEvtMarkers++;
+                    owner.Add(sb);
                 }
-                else if (node is ConditionalNode)
+                else if (node is ConditionalNode || node is LoopNode)
                 {
-                    sb.Append("<span data-ns-ph></span>");
-                }
-                else if (node is LoopNode)
-                {
-                    sb.Append("<span data-ns-ph></span>");
+                    sb.Append(AnchorMarkerHtml);
                 }
                 else if (node is SubControlNode sub1)
                 {
@@ -165,7 +240,7 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else
                 {
-                    CollectItemTemplateHtmlRecursive(node.Children, sb, ref pendingEvtMarkers, ref pendingBindMarkers);
+                    CollectItemTemplateHtmlRecursive(node.Children, sb, owner);
                 }
             }
         }
@@ -203,7 +278,13 @@ namespace NScript.RazorSkin.CodeGen
                     sb.Append(html.HtmlContent);
                 else if (node is ExpressionBindingNode exprBinding)
                 {
-                    if (exprBinding.Target == ExpressionTarget.TextContent)
+                    if (exprBinding.TargetsOwnerElement)
+                    {
+                        // Only content of <textarea>/<option>/<title>: no span can live there,
+                        // so mark the element itself, like an attribute binding.
+                        OwnerMarker.InsertIntoOpenTag(sb, OwnerMarker.OpenTagNameEnd(sb), $"data-bind-idx=\"{bindingIdx}\"");
+                    }
+                    else if (exprBinding.Target == ExpressionTarget.TextContent)
                     {
                         // Text bindings get a span placeholder in the HTML.
                         // data-ns-ph marks this as a compiler-generated placeholder span
@@ -230,19 +311,19 @@ namespace NScript.RazorSkin.CodeGen
                 }
                 else if (node is ConditionalNode cond)
                 {
-                    // Gate: emit only an empty marker span. Branch content is stored
+                    // Gate: emit only an anchor. Branch content is stored
                     // as HTML strings in the GateTargetInfo (trueTemplate/falseTemplate)
                     // and dynamically cloned by GraphEngine at runtime.
-                    sb.Append("<span data-ns-ph></span>");
+                    sb.Append(AnchorMarkerHtml);
                     // Still need to recurse into branches so any nested bindings get
                     // their bindingIdx allocated (though they won't have HTML markers)
                 }
                 else if (node is LoopNode loop)
                 {
-                    // Collection: emit only an empty marker span. Item template content
+                    // Collection: emit only an anchor. Item template content
                     // is stored as an HTML string in the CollectionTargetInfo and rendered
                     // by GraphEngine for each collection item.
-                    sb.Append("<span data-ns-ph></span>");
+                    sb.Append(AnchorMarkerHtml);
                 }
                 else if (node is SubControlNode sub2)
                 {
@@ -271,6 +352,23 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
             return sb.ToString();
+        }
+
+        private static readonly HashSet<string> VoidTags = new HashSet<string>(
+            new[] { "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr" },
+            StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// True for an HTML void element (&lt;hr&gt;, &lt;input ...&gt;): it never has
+        /// children, with or without a trailing '/'. <paramref name="tagContent"/> is the text
+        /// between '&lt;' and '&gt;'.
+        /// </summary>
+        internal static bool IsVoidTag(string tagContent)
+        {
+            int end = 0;
+            while (end < tagContent.Length && !char.IsWhiteSpace(tagContent[end]) && tagContent[end] != '/')
+                end++;
+            return VoidTags.Contains(tagContent.Substring(0, end));
         }
 
         private static void ValidateSubControlMarker(SubControlNode sub)
@@ -346,7 +444,7 @@ namespace NScript.RazorSkin.CodeGen
                     if (tagEnd < 0) break;
 
                     var tagContent = html.Substring(i + 1, tagEnd - i - 1);
-                    bool selfClosing = tagContent.EndsWith("/");
+                    bool selfClosing = tagContent.EndsWith("/") || IsVoidTag(tagContent);
 
                     // This element's index within its parent = current child count at this level
                     int myIndex = childCountStack[childCountStack.Count - 1];

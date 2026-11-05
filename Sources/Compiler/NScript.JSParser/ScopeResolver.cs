@@ -29,6 +29,13 @@ namespace NScript.JSParser
         List<IdentifierScope> scopes = new List<IdentifierScope>();
 
         /// <summary>
+        /// Dictionary layers that hold only a catch variable. A 'var' declared inside a catch
+        /// block is function-scoped in JS, so declarations skip these layers.
+        /// </summary>
+        private readonly HashSet<Dictionary<string, IIdentifier>> catchLayers =
+            new HashSet<Dictionary<string, IIdentifier>>();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScopeResolver"/> class.
         /// </summary>
         /// <param name="parentScope">The parent scope.</param>
@@ -86,12 +93,13 @@ namespace NScript.JSParser
                 identifier,
                 false);
 
-            if (this.scopeDictionaries[0].ContainsKey(identifier))
+            var declarations = this.scopeDictionaries.Find(d => !this.catchLayers.Contains(d));
+            if (declarations.ContainsKey(identifier))
             {
                 throw new InvalidProgramException(
                     string.Format("{0} declared twice", identifier));
             }
-            this.scopeDictionaries[0].Add(identifier, rv);
+            declarations.Add(identifier, rv);
 
             return rv;
         }
@@ -183,7 +191,29 @@ namespace NScript.JSParser
         internal void PopScope()
         {
             this.scopes.RemoveAt(0);
+            this.catchLayers.Remove(this.scopeDictionaries[0]);
             this.scopeDictionaries.RemoveAt(0);
+        }
+
+        /// <summary>
+        /// Makes a catch variable visible until <see cref="PopScope"/>. It lives in the
+        /// current function scope (like the C# try/catch conversion), so two catches may
+        /// both use the same name.
+        /// </summary>
+        /// <param name="name">The catch variable name.</param>
+        /// <returns>The catch variable's identifier.</returns>
+        internal IIdentifier PushCatchScope(string name)
+        {
+            IIdentifier rv = SimpleIdentifier.CreateScopeIdentifier(
+                this.Scope,
+                name,
+                false);
+
+            var layer = new Dictionary<string, IIdentifier> { { name, rv } };
+            this.scopeDictionaries.Insert(0, layer);
+            this.catchLayers.Add(layer);
+            this.scopes.Insert(0, this.Scope);
+            return rv;
         }
     }
 }

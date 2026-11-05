@@ -101,6 +101,14 @@ namespace System.Web
         public extern WebSocket(string url);
         public extern WebSocket(string url, string protocol);
 
+        /// <summary>
+        /// Opens a socket offering several sub-protocols. Pass a C# array as
+        /// <c>NativeArray&lt;string&gt;.GetNativeArray(protocols)</c>.
+        /// </summary>
+        /// <param name="url">       The URL. </param>
+        /// <param name="protocols"> The sub-protocols, in preference order. </param>
+        public extern WebSocket(string url, NativeArray<string> protocols);
+
         public extern WebSocketReadyState ReadyState
         { get; }
 
@@ -145,7 +153,7 @@ namespace System.Web
         /// <returns>
         /// true if available, false if not.
         /// </returns>
-        [Script("return typeof WebSocket == \"undefined\";")]
+        [Script("return typeof @:WebSocket != \"undefined\";")]
         public extern static bool IsAvailable();
 
         /// <summary>

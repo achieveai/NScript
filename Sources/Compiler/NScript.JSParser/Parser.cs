@@ -142,9 +142,13 @@ namespace NScript.JSParser
             if (tree is CommonErrorNode)
             {
                 CommonErrorNode error = (CommonErrorNode)tree;
+                var near = error.trappedException?.Token ?? error.start;
                 throw new ApplicationException(
                     string.Format(
-                        "Error hit parsing start:{0}#{1} stop:{2}#{3}",
+                        "syntax error near '{0}' at line {1}:{2} (body span {3}:{4}-{5}:{6})",
+                        near.Text,
+                        near.Line,
+                        near.CharPositionInLine,
                         error.start.Line,
                         error.start.CharPositionInLine,
                         error.stop.Line,
@@ -209,6 +213,10 @@ namespace NScript.JSParser
                         writeOnNewLine: true);
                 case JavaScriptLexer.BREAK:
                     return new JST.BreakStatement(null, resolver.Scope);
+                case JavaScriptParser.TRY:
+                    return Parser.ParseTryBlock(
+                        tree,
+                        resolver);
                 default:
                     {
                         JST.Expression expr =
@@ -227,6 +235,49 @@ namespace NScript.JSParser
                         return null;
                     }
             }
+        }
+
+        /// <summary>
+        /// Parses try { } catch (e) { } finally { }. The tree is ^(TRY block ^(CATCH id block)? ^(FINALLY block)?).
+        /// </summary>
+        private static Statement ParseTryBlock(CommonTree tree, ScopeResolver resolver)
+        {
+            ScopeBlock tryBlock = Parser.WrapInBlock(
+                resolver.Scope,
+                Parser.ParseStatementNode((CommonTree)tree.Children[0], resolver));
+            CatchHandler catchHandler = null;
+            ScopeBlock finallyBlock = null;
+
+            for (int iChild = 1; iChild < tree.ChildCount; iChild++)
+            {
+                CommonTree child = (CommonTree)tree.Children[iChild];
+                if (child.Token.Type == JavaScriptParser.CATCH)
+                {
+                    IIdentifier catchVariable = resolver.PushCatchScope(
+                        ((CommonTree)child.Children[0]).Token.Text);
+                    ScopeBlock catchBlock = Parser.WrapInBlock(
+                        resolver.Scope,
+                        Parser.ParseStatementNode((CommonTree)child.Children[1], resolver));
+                    resolver.PopScope();
+
+                    catchHandler = new CatchHandler(
+                        resolver.Scope,
+                        new IdentifierExpression(catchVariable, resolver.Scope),
+                        catchBlock);
+                }
+                else
+                {
+                    finallyBlock = Parser.WrapInBlock(
+                        resolver.Scope,
+                        Parser.ParseStatementNode((CommonTree)child.Children[0], resolver));
+                }
+            }
+
+            return new TryCatchFinalyBlock(
+                resolver.Scope,
+                tryBlock,
+                catchHandler,
+                finallyBlock);
         }
 
         private static Statement ParseWhileBlock(CommonTree tree, ScopeResolver resolver)
@@ -363,6 +414,11 @@ namespace NScript.JSParser
                 case JavaScriptParser.NULL:
                     return new NullLiteralExpression(
                         resolver.Scope);
+                case JavaScriptParser.RegularExpressionLiteral:
+                    return new ScriptLiteralExpression(
+                        null,
+                        resolver.Scope,
+                        tree.token.Text);
                 case JavaScriptParser.BINARY_EXPR:
                     return Parser.ParseBinaryExpression(
                         tree,
@@ -410,11 +466,34 @@ namespace NScript.JSParser
                 case JavaScriptParser.INLINE_ARRAY_INIT:
                     return Parser.ParseInlineArray(tree, resolver);
                 default:
-                    throw new NotSupportedException(
-                        string.Format(
-                        "Expression for \"{0}\" is not supported",
-                        tree.Token.Text));
+                    throw Parser.NotSupported(tree);
             }
+        }
+
+        /// <summary>
+        /// Names an unsupported construct and its line. A rewritten node (DO_BLOCK) has no
+        /// position of its own, so the position comes from its first real token.
+        /// </summary>
+        private static NotSupportedException NotSupported(CommonTree tree)
+        {
+            string name = tree.Token.Text ?? string.Empty;
+            if (name.EndsWith("_BLOCK"))
+            {
+                name = name.Substring(0, name.Length - "_BLOCK".Length).ToLowerInvariant();
+            }
+
+            CommonTree positioned = tree;
+            while (positioned.Token.Line == 0 && positioned.ChildCount > 0)
+            {
+                positioned = (CommonTree)positioned.Children[0];
+            }
+
+            return new NotSupportedException(
+                string.Format(
+                    "'{0}' is not supported in [Script] bodies (line {1}:{2})",
+                    name,
+                    positioned.Token.Line,
+                    positioned.Token.CharPositionInLine));
         }
 
         /// <summary>
@@ -1041,8 +1120,10 @@ namespace NScript.JSParser
                 default:
                     throw new NotSupportedException(
                         string.Format(
-                        "BinaryExpression for {0} is not supported",
-                        ((CommonTree)tree.Children[0]).Token.Text));
+                        "operator '{0}' is not supported in [Script] bodies (line {1}:{2})",
+                        ((CommonTree)tree.Children[0]).Token.Text,
+                        ((CommonTree)tree.Children[0]).Token.Line,
+                        ((CommonTree)tree.Children[0]).Token.CharPositionInLine));
             }
 
             return new BinaryExpression(

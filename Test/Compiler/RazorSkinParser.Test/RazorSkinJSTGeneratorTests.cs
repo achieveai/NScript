@@ -16,17 +16,12 @@ namespace RazorSkinParser.Test
     /// Tests for RazorSkinJSTGenerator.
     ///
     /// The core Generate() method requires ClrContext, RuntimeScopeManager, and resolved
-    /// identifiers which are too heavy for unit tests. The static helper methods
-    /// FindNthEmptySpanPath and FindNthInteractiveElementPath are private.
+    /// identifiers which are too heavy for unit tests.
     ///
     /// Most tests validate the graph topology that feeds Generate(). Sub-control
     /// diagnostic tests exercise the generator's type and property validation directly.
-    ///
-    /// TODO: If FindNthEmptySpanPath and FindNthInteractiveElementPath are made internal
-    /// (with InternalsVisibleTo for the test assembly), add direct tests for:
-    /// - Empty span path computation in nested HTML
-    /// - Interactive element (button, a, input) path computation
-    /// - Edge cases: no empty spans, deeply nested elements
+    /// The placeholder path scanner (internal FindNthEmptySpanPath) is tested directly in
+    /// RazorMarkerHtmlTests.
     /// </summary>
     [TestClass]
     public class RazorSkinJSTGeneratorTests

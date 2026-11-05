@@ -1012,9 +1012,10 @@ namespace NScript.Converter
             catch(System.Exception ex)
             {
                 emitFailed = true;
+                // MSBuild keeps only the first line of an error, so keep the reason on it.
                 System.Console.Out.WriteLine(
                     "NScript.Exe(0,0): error UNK0001: {0}",
-                    ex.Message);
+                    ex.Message.Replace("\r\n", " ").Replace('\n', ' '));
                 System.Console.Out.WriteLine(ex.StackTrace);
 
                 while(ex.InnerException != null)

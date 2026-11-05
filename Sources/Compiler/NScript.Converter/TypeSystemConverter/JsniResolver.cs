@@ -69,9 +69,9 @@ namespace NScript.Converter.TypeSystemConverter
                     else
                     {
                         throw new ApplicationException(
-                            string.Format("Can't resolve local variable {0} in script for {1}",
-                                identifierName,
-                                this.converter.MethodDefinition));
+                            string.Format(
+                                "unknown name '{0}'; for a browser global write @:{0} (names must be arguments, locals, @{{...}} imports or @: globals, ADR 0012)",
+                                identifierName));
                     }
                 }
             }

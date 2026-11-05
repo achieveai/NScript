@@ -82,6 +82,7 @@ namespace NScript.RazorSkin.CodeGen
         // Resolved field identifiers for DomTargetInfo
         private readonly IIdentifier _domTargetElemIdxField;
         private readonly IIdentifier _domTargetSetterField;
+        private readonly IIdentifier _domTargetSourceSetterField;
 
         // Resolved field identifiers for SubscriptionEntry
         private readonly IIdentifier _subscriptionPropertyNameField;
@@ -165,6 +166,9 @@ namespace NScript.RazorSkin.CodeGen
             _getterSourceSlotsField = ResolveFieldId(
                 FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.GraphDescriptor"),
                 "GetterSourceSlots");
+            _domTargetSourceSetterField = ResolveFieldId(
+                FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.DomTargetInfo"),
+                "SourceSetter");
             _subscriptionChainParentGettersField = ResolveFieldId(
                 FindTypeDefinition("Sunlight.Framework.UI.Helpers.BindingGraph.SubscriptionEntry"),
                 "ChainParentGetters");
@@ -1196,7 +1200,23 @@ namespace NScript.RazorSkin.CodeGen
                     // input value after user interaction. Browsers render .value, not the attribute.
                     if (string.Equals(dt.AttributeName, "value", System.StringComparison.OrdinalIgnoreCase))
                     {
-                        setterExpr = CreateRawSetterFunction("e.value = v || \"\"");
+                        // Skip an unchanged write: re-assigning .value while the user types
+                        // (two-way echo) would move the caret to the end. Only null/undefined
+                        // become ""; 0 and false render as text.
+                        setterExpr = CreateRawSetterFunction(
+                            "if (e.value != (v == null ? \"\" : \"\" + v)) e.value = v == null ? \"\" : \"\" + v");
+                    }
+                    else if (IsBooleanAttribute(dt.AttributeName))
+                    {
+                        // HTML boolean attribute: any value (even "false") means on, so a falsy
+                        // binding must remove it. checked/selected also need the live DOM
+                        // property; the attribute alone stops tracking after user input.
+                        var name = dt.AttributeName.ToLowerInvariant();
+                        var liveProperty = name == "checked" || name == "selected"
+                            ? $"e.{name} = !!v; "
+                            : "";
+                        setterExpr = CreateRawSetterFunction(
+                            $"{liveProperty}if (v) e.setAttribute(\"{attrName}\", \"\"); else e.removeAttribute(\"{attrName}\")");
                     }
                     else
                     {
@@ -1229,6 +1249,8 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
 
+            var sourceSetter = BuildDomTargetSourceSetter(dt);
+
             if (_domTargetInfoFactory != null)
             {
                 var fields = new List<(IIdentifier, string, Expression)>
@@ -1236,6 +1258,8 @@ namespace NScript.RazorSkin.CodeGen
                     (_domTargetElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, dt.ElemIdx)),
                     (_domTargetSetterField, "Setter", setterExpr)
                 };
+                if (sourceSetter != null)
+                    fields.Add((_domTargetSourceSetterField, "SourceSetter", sourceSetter));
                 return EmitTypedObject(_domTargetInfoFactory, fields);
             }
 
@@ -1243,7 +1267,35 @@ namespace NScript.RazorSkin.CodeGen
             var info = new InlineObjectInitializer(null, _scope);
             AddField(info, _domTargetElemIdxField, "ElemIdx", new NumberLiteralExpression(_scope, dt.ElemIdx));
             AddField(info, _domTargetSetterField, "Setter", setterExpr);
+            if (sourceSetter != null)
+                AddField(info, _domTargetSourceSetterField, "SourceSetter", sourceSetter);
             return info;
+        }
+
+        /// <summary>
+        /// Two-way <c>value=</c>: a <c>function(dc, val)</c> that writes the element's value
+        /// back to the source property, or null to stay one-way. Only a public, writable
+        /// string property qualifies: the element's value is always a string, and a
+        /// read-only source downgrades to one-way instead of failing the build.
+        /// </summary>
+        private Expression BuildDomTargetSourceSetter(DomTargetTopology dt)
+        {
+            if (string.IsNullOrEmpty(dt.TwoWaySourceProperty) || _clrContext == null)
+                return null;
+
+            var sourceTypeName = IsItemGraph && dt.TwoWaySourceSlot == 0
+                ? _parentModelTypeName : _modelTypeName;
+            var sourceType = FindTypeDefinition(sourceTypeName);
+            var property = sourceType != null ? FindProperty(sourceType, dt.TwoWaySourceProperty) : null;
+            if (property?.SetMethod == null || !property.SetMethod.IsPublic
+                || property.PropertyType.FullName != "System.String")
+            {
+                Log.Debug("GraphDescriptorJSTEmitter: value binding to {TypeName}.{PropName} stays one-way (no public string setter)",
+                    sourceTypeName, dt.TwoWaySourceProperty);
+                return null;
+            }
+
+            return BuildSubControlSourceSetter(dt.TwoWaySourceProperty, dt.TwoWaySourceSlot);
         }
 
         /// <summary>
@@ -1597,6 +1649,23 @@ namespace NScript.RazorSkin.CodeGen
             outerFn.AddStatement(new ReturnStatement(_fallbackLocation, outerScope, innerFn));
             return outerFn;
         }
+
+        /// <summary>
+        /// HTML boolean attributes: presence means on, whatever the value. Not aria-*,
+        /// draggable, contenteditable or spellcheck, which need the literal "false".
+        /// </summary>
+        private static readonly HashSet<string> BooleanAttributes = new HashSet<string>(
+            new[]
+            {
+                "allowfullscreen", "async", "autofocus", "autoplay", "checked", "controls",
+                "default", "defer", "disabled", "formnovalidate", "hidden", "inert", "ismap",
+                "loop", "multiple", "muted", "nomodule", "novalidate", "open", "playsinline",
+                "readonly", "required", "reversed", "selected",
+            },
+            StringComparer.OrdinalIgnoreCase);
+
+        internal static bool IsBooleanAttribute(string attributeName)
+            => attributeName != null && BooleanAttributes.Contains(attributeName);
 
         /// <summary>
         /// Creates a raw setter function: function(e, v) { body }

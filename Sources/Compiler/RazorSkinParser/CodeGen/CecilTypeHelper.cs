@@ -72,11 +72,15 @@ namespace NScript.RazorSkin.CodeGen
         }
 
         /// <summary>
-        /// Element type name of a generic collection property (ObservableCollection&lt;T&gt; → T's
-        /// full name), or null when the property is missing or not a generic instance.
+        /// Element type name of a collection property (ObservableCollection&lt;T&gt;, List&lt;T&gt;
+        /// or T[] → T's full name), or null when the property is missing or neither a generic
+        /// instance nor an array.
         /// </summary>
         public static string CollectionItemTypeName(PropertyDefinition collection)
         {
+            if (collection?.PropertyType is ArrayType array)
+                return array.ElementType.FullName;
+
             var type = collection?.PropertyType as GenericInstanceType;
             return type != null && type.GenericArguments.Count > 0
                 ? type.GenericArguments[0].FullName

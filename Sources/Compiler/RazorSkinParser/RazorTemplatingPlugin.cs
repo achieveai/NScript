@@ -1501,6 +1501,15 @@ namespace Sunlight.Framework.Observables
                 AddBindingExpressionReferences(binding.Classification?.CSharpExpression,
                     modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
 
+            // A sub-control property value (e.g. DataContext="@i.Kid", issue #141) reads its path
+            // through the same hand-built getter JST, so its computed getters need retaining too.
+            // Delegate values are method groups, which CollectEventMethodReferences retains.
+            if (node is TemplateIR.SubControlNode subControl)
+                foreach (var property in subControl.PropertyBindings)
+                    if (!property.IsLiteral && !property.IsDelegate)
+                        AddBindingExpressionReferences(property.Classification?.CSharpExpression,
+                            modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+
             if (node is TemplateIR.ConditionalNode conditional)
             {
                 AddBindingExpressionReferences(conditional.Condition?.CSharpExpression,

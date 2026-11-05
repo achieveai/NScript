@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<table><tbody data-test="b5b-body">@foreach (var i in Model.Items) { <tr data-test="b5b-row" class="@i.Cls" onclick="@i.Select"><td>@i.Name</td></tr> }</tbody></table>

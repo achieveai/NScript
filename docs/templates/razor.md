@@ -70,6 +70,44 @@ The compiler emits a single graph that:
 - **OneWay** — `X` is on an `INotifyPropertyChanged` source and reads from properties marked `[AutoFire]` or that emit `FirePropertyChanged`.
 - **TwoWay** — the `@Model.X` appears as the value of a writable form field (`<input value="@Model.X">`) AND `X` has an accessible setter on an observable type.
 
+### Two-way `value=` (DOM → model)
+
+`value="@Model.X"` or `value="@item.X"` on `<input>`, `<textarea>` or `<select>` writes back to `X`:
+
+- **Events:** the element's DOM `input` and `change` events. Each reads `element.value` and calls the setter.
+- **No echo:** the setter is skipped when the value already equals the bound value. The model → DOM side skips `element.value = v` when the element already shows `v`, so the caret does not jump while typing.
+- **Only when all of these hold** (otherwise it stays one-way, with no diagnostic):
+  - the path is one hop: `Model.X` or `item.X` (not a method call, not `Model.A.B`);
+  - `X` is a public `string` property with a public setter;
+  - `X` is observable: `[AutoFire]`, or its setter calls `FirePropertyChanged`. A plain settable property is one-way;
+  - the element has **no `oninput=` or `onchange=` handler of its own**. With one, your handler owns the write-back and `value=` is one-way.
+- **`<select>`:** options from an `@foreach` inside the select may render after the value is set. The select's value is applied again each time its options render or change, so it shows `X` once a matching `<option>` exists.
+- **Not covered:** `checked=` on a checkbox is one-way. Read the box in an `onchange` handler.
+- **Shown value:** `null` shows as empty. `0` shows as `0`.
+
+### Text inside `<textarea>`, `<option>`, `<title>`
+
+These elements hold plain text, so a `<span>` placeholder cannot live inside them.
+
+- `<textarea>@Model.Draft</textarea>` and `<option>@item.Name</option>` work when the binding is the element's **only** content. The binding sets the element's text.
+- Mixed content such as `<textarea>Draft: @Model.Draft</textarea>` fails the build. Bind an attribute instead (`value="@Model.Draft"`) or compute the whole text in one expression.
+
+### Attributes bound to `null`
+
+`data-x="@Model.Maybe"`, `title="@..."` and other attributes:
+
+- `null` (or `undefined`) removes the attribute, on mount and whenever the value goes back to `null`;
+- `""` keeps it, as `data-x=""`;
+- any other value is set as text.
+
+### Boolean attributes
+
+`disabled`, `readonly`, `checked`, `selected`, `hidden`, `required`, `multiple` and the other HTML boolean attributes follow presence, not text:
+
+- a truthy value sets the attribute to `""` (`disabled=""`);
+- `false` or `null` removes it;
+- `checked=` and `selected=` also set the DOM `checked` / `selected` property, so the box or option updates after the user has touched it.
+
 If you need to override (rare), wrap the value in a method on the viewmodel that exposes the desired observability surface — the auto-detector picks up the method's reachable observables.
 
 ## Reference — emitter pipeline
@@ -126,10 +164,16 @@ else
 ### Two-way input binding
 
 ```cshtml
-<input type="text" value="@Model.SearchText" onchange="@Model.OnSearchTextChanged" />
+<input type="text" value="@Model.SearchText" />
 ```
 
-`SearchText` is on an `ObservableObject` and has a setter → auto-classified TwoWay. `OnSearchTextChanged` is a viewmodel method invoked from the DOM `change` event.
+`SearchText` is an `[AutoFire]` public `string` with a setter on an `ObservableObject` → TwoWay. Typing writes it back on every `input` event and again on `change`.
+
+```cshtml
+<input type="text" value="@sub.Title" onchange="@sub.OnTitleChange" />
+```
+
+This element has its own `onchange`, so `value=` is one-way. `OnTitleChange` reads the element and decides whether to set `Title` (for example, to reject an empty title).
 
 ### Embedded child control
 
@@ -158,7 +202,17 @@ The current iteration variable `todo` becomes the `Model` of the child `TodoItem
 
 ### `@foreach` over a non-observable list is OneTime
 
-If `Model.Items` is plain `List<T>` (not `IObservableCollection`), the loop is rendered once at materialisation and never updates. To get reactive list updates, use `ObservableCollection<T>`.
+If `Model.Items` is a `T[]`, a `List<T>` or another `IList` (not `IObservableCollection`):
+
+- the rows render once, when the graph is built;
+- adding to or removing from that list later does not update the rows;
+- assigning a **new** list or array to the property renders the rows again, when the property is observable (`[AutoFire]`).
+
+For row-by-row updates, use `ObservableCollection<T>`. A source that is none of these (for example an `IEnumerable` that is not an `IList`) renders no rows and logs an error.
+
+### The `@foreach` anchor
+
+Rows are inserted before a hidden `<template data-ns-ph>` anchor that stays after the last row. A `<template>` never renders, so it takes no grid cell or flex slot, and it is legal inside `<table>`, `<tbody>`, `<tr>` and `<select>`. Selectors that count element children (`:empty`, `:last-child`, `> *`) still see it.
 
 ### Razor and XWML coexist
 
