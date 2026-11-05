@@ -51,5 +51,25 @@ namespace NScript.Converter.Test.MethodConverterTests
         {
             Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
         }
+
+        // of, yield and await are Identifiers to the lexer, and a name may be non-ASCII: '/' after
+        // either divides. Keywords such as return still start a regex. A body may start with a
+        // regex, and a comment may sit between a header keyword and its '('.
+        [DataTestMethod]
+        [DataRow("var of = 4; return of / this.n / 2;", "var of = 4; return of / this_.n / 2;")]
+        [DataRow("x = yield / this.n / 2;", "x = yield / this_.n / 2;")]
+        [DataRow("x = await / this.n / 2;", "x = await / this_.n / 2;")]
+        [DataRow("x = a.é / this.n / 2;", "x = a.é / this_.n / 2;")]
+        [DataRow("x = éthis / this.n;", "x = éthis / this_.n;")]
+        [DataRow("return /this/.test(this);", "return /this/.test(this_);")]
+        [DataRow("/this/.test(this);", "/this/.test(this_);")]
+        [DataRow("  /this/.test(this);", "  /this/.test(this_);")]
+        [DataRow("if /* c */ (a) /this/.test(this);", "if /* c */ (a) /this/.test(this_);")]
+        [DataRow("if // c\n(a) /this/.test(this);", "if // c\n(a) /this/.test(this_);")]
+        [DataRow("x = a /* c */ / this.n / 2;", "x = a /* c */ / this_.n / 2;")]
+        public void FixThisVariable_ClassifiesTokensLikeTheLexer(string script, string expected)
+        {
+            Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
+        }
     }
 }
