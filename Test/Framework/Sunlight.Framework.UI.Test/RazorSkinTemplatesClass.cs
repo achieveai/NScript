@@ -438,5 +438,23 @@ namespace Sunlight.Framework.UI.Test
         {
             get { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3GateLoop.skin.cshtml")]
+        public static Skin AwbR3GateLoop
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3AddThrows.skin.cshtml")]
+        public static Skin AwbR3AddThrows
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3SourceWalk.skin.cshtml")]
+        public static Skin AwbR3SourceWalk
+        {
+            get { return null; }
+        }
     }
 }

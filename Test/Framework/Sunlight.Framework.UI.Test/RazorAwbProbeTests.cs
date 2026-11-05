@@ -35,6 +35,95 @@ namespace Sunlight.Framework.UI.Test
             return e == null ? null : e.ClassName;
         }
 
+        private static int Rows(Element root, string test)
+        {
+            return root.QuerySelectorAll("[data-test=" + test + "]").Length;
+        }
+
+        // Review advisory 1: closing an @if must detach the @foreach's collection listener,
+        // or a reopen attaches a second one and every Add renders twice.
+        [Test]
+        public static void TestR3GateCloseDetachesCollectionListener(Assert assert)
+        {
+            var vm = VmWithItems(2);
+            vm.Flag = true;
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbR3GateLoop);
+            assert.Equal(Rows(root, "gl-row"), 2, "open: 2 rows");
+
+            vm.Flag = false;
+            assert.Equal(Rows(root, "gl-row"), 0, "closed: no rows");
+            vm.Flag = true;
+            assert.Equal(Rows(root, "gl-row"), 2, "reopened: 2 rows");
+
+            vm.Items.Add(new ProbeItem("n2"));
+            assert.Equal(Rows(root, "gl-row"), 3, "one Add after reopen renders one row");
+            vm.Items.RemoveAt(0);
+            assert.Equal(Rows(root, "gl-row"), 2, "one RemoveAt removes one row");
+        }
+
+        // Review advisory 2: an Add whose row build throws must leave the rendered rows in step
+        // with the collection, so the next Remove does not hit "Invalid array length".
+        [Test]
+        public static void TestR3RemoveAfterThrowingAdd(Assert assert)
+        {
+            var vm = new ProbeVm();
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbR3AddThrows);
+            var boom = new ProbeItem("boom");
+
+            string addError = null;
+            try { vm.Items.Add(boom); }
+            catch (Exception ex) { addError = ex.Message; }
+            assert.NotEqual(addError, null, "the failing row build is not swallowed");
+
+            string removeError = null;
+            try { vm.Items.Remove(boom); }
+            catch (Exception ex) { removeError = ex.Message; }
+            assert.Equal(removeError, null, "Remove after a failed Add does not throw");
+            assert.Equal(Rows(root, "at-row"), 0, "the failed row is removed with its item");
+
+            vm.Items.Add(new ProbeItem("ok"));
+            assert.Equal(Rows(root, "at-row"), 1, "later Adds still render");
+            assert.Equal(Text(root, "at-row"), "ok", "later row is bound");
+        }
+
+        // #145 follow-up: one @foreach source walks array -> null -> observable -> array
+        // inside an @if that closes and reopens midway.
+        [Test]
+        public static void TestR3SourceWalksArrayNullObservableArray(Assert assert)
+        {
+            var vm = new ProbeVm();
+            vm.Flag = true;
+            vm.Src = new ProbeItem[] { new ProbeItem("a0"), new ProbeItem("a1") };
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbR3SourceWalk);
+            assert.Equal(Rows(root, "sw-row"), 2, "array: 2 rows");
+
+            vm.Src = null;
+            assert.Equal(Rows(root, "sw-row"), 0, "null: 0 rows");
+
+            var obs = new Sunlight.Framework.Observables.ObservableCollection<ProbeItem>();
+            obs.Add(new ProbeItem("o0"));
+            obs.Add(new ProbeItem("o1"));
+            vm.Src = obs;
+            assert.Equal(Rows(root, "sw-row"), 2, "observable: 2 rows");
+            obs.Add(new ProbeItem("o2"));
+            assert.Equal(Rows(root, "sw-row"), 3, "observable Add: 3 rows");
+
+            vm.Flag = false;
+            assert.Equal(Rows(root, "sw-row"), 0, "@if closed: 0 rows");
+            vm.Flag = true;
+            assert.Equal(Rows(root, "sw-row"), 3, "@if reopened: 3 rows");
+
+            obs.Add(new ProbeItem("o3"));
+            assert.Equal(Rows(root, "sw-row"), 4, "Add after reopen: 4 rows");
+            obs.RemoveAt(0);
+            assert.Equal(Rows(root, "sw-row"), 3, "RemoveAt after reopen: 3 rows");
+
+            vm.Src = new ProbeItem[] { new ProbeItem("b0") };
+            assert.Equal(Rows(root, "sw-row"), 1, "back to an array: 1 row");
+            obs.Add(new ProbeItem("o4"));
+            assert.Equal(Rows(root, "sw-row"), 1, "the old collection no longer renders");
+        }
+
         private static ProbeVm VmWithItems(int count)
         {
             var vm = new ProbeVm();

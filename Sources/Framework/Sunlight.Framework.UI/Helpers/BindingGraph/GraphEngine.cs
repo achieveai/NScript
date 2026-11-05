@@ -579,6 +579,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     continue;
                 }
 
+                object closedValue = state.Values[i];
                 state.Values[i] = desc.DefaultValues[i];
                 state.Dirty[i] = false;
 
@@ -619,10 +620,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 // CollectionManager: detach listener and clear items when gate closes.
                 else if (nodeType == GraphNodeType.CollectionManager)
                 {
-                    object collection = state.Values[i];
-                    if (!object.IsNullOrUndefined(collection))
+                    // Values[i] was reset above; the listener hangs off the collection it held.
+                    if (!object.IsNullOrUndefined(closedValue))
                     {
-                        GraphEngine.DetachCollectionListener(state, i, collection);
+                        GraphEngine.DetachCollectionListener(state, i, closedValue);
                     }
 
                     CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
@@ -1411,16 +1412,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // Insert new items.
             for (int j = 0; j < addCount; j++)
             {
-                object item = newItems[j];
                 Element clone = (Element)templateElement.CloneNode(true);
                 parent.InsertBefore(clone, refNode);
                 newItemElems[insertIdx + j] = clone;
-
-                if (!object.IsNullOrUndefined(colInfo.ItemGraph))
-                {
-                    newChildStates[insertIdx + j] = GraphEngine.CreateCollectionItemGraph(
-                        state, colInfo, clone, item);
-                }
             }
 
             // Copy items after insertion point.
@@ -1430,8 +1424,18 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 newItemElems[j + addCount] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
             }
 
+            // Commit before building row graphs. A row graph that throws still leaves one
+            // tracked row per item, so the next Remove finds its row instead of computing a
+            // negative array length. The exception still reaches the caller.
             state.ChildGraphStates[nodeIdx] = newChildStates;
             state.ItemElements[nodeIdx] = newItemElems;
+
+            if (object.IsNullOrUndefined(colInfo.ItemGraph)) return;
+            for (int j = 0; j < addCount; j++)
+            {
+                newChildStates[insertIdx + j] = GraphEngine.CreateCollectionItemGraph(
+                    state, colInfo, (Element)newItemElems[insertIdx + j], newItems[j]);
+            }
         }
 
         /// <summary>

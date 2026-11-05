@@ -125,6 +125,16 @@ namespace Sunlight.Framework.UI.Test
         [AutoFire] public bool Flag { get; set; }
         public int Clicks;
 
+        /// <summary>Throws for an item named "boom": an item whose row build fails.</summary>
+        public string Boom
+        {
+            get
+            {
+                if (this.Name == "boom") throw new System.Exception("boom item");
+                return this.Name;
+            }
+        }
+
         public ProbeItem(string name)
         {
             this.Name = name;
@@ -154,6 +164,7 @@ namespace Sunlight.Framework.UI.Test
         [AutoFire] public string[] Names { get; set; }
         [AutoFire] public ProbeItem[] Arr { get; set; }
         [AutoFire] public System.Collections.Generic.List<ProbeItem> List { get; set; }
+        [AutoFire] public object Src { get; set; }
         public ObservableCollection<ProbeItem> Items { get; private set; }
         public int OwnChanges;
         public int GateClicks;

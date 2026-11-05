@@ -125,6 +125,9 @@
     <EmbeddedResource Include="RazorTemplates\AwbR143Grid.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR144NullAttr.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR145Lists.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbR3GateLoop.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbR3AddThrows.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbR3SourceWalk.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
