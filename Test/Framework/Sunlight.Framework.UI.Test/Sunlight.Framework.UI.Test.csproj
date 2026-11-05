@@ -114,6 +114,8 @@
     <EmbeddedResource Include="RazorTemplates\AwbB7TwinControls.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB8Disabled.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB9TwoWay.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\PrValueSetterOnly.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\PrSubControlSetterOnly.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB4bHrBeforeLoop.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbB5bRowEvents.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbF1RawText.skin.cshtml" />
@@ -128,6 +130,7 @@
     <EmbeddedResource Include="RazorTemplates\AwbR3GateLoop.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3AddThrows.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3SourceWalk.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbF2NestedGate.skin.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

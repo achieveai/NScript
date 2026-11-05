@@ -81,6 +81,17 @@ namespace NScript.JSParser.Test
             JSParserAndGeneratorHelper.ParseAndGenerateTest(body, expected, "b", "a");
         }
 
+        // A ')' that closes an if/while/for header ends the header, so a '/' after it starts a regex.
+        [DataTestMethod]
+        [DataRow("if (a) /a/.test(a);", "if (a)\r\n  /a/.test(a);")]
+        [DataRow("while (a) /a/.test(a);", "while (a)\r\n  /a/.test(a);")]
+        [DataRow("if (a.b(a)) /a/.test(a);", "if (a.b(a))\r\n  /a/.test(a);")]
+        [DataRow("if ((a) / 2) b = (a) / 2;", "if (a / 2)\r\n  b = a / 2;")]
+        public void Parse_RegexLiteralAfterControlHeader(string body, string expected)
+        {
+            JSParserAndGeneratorHelper.ParseAndGenerateTest(body, expected, "b", "a");
+        }
+
         [TestMethod]
         public void Parse_ObjectLiteral_KeepsEveryProperty()
         {

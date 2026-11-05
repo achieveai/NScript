@@ -349,6 +349,59 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(vm.Other, "again", "re-opened @if input writes back");
         }
 
+        // PR 146 review R1: a closed @if branch's input, still held by someone, must not write
+        // the model; reopening wires the new input.
+        [Test]
+        public static void TestF2ClosedGateInputDoesNotWriteBack(Assert assert)
+        {
+            var vm = VmWithItems(0);
+            vm.Flag = true;
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbF2RowAndGate);
+            var old = (InputElement)root.QuerySelector("[data-test=f2-gate]");
+            assert.NotEqual(old, null, "open: input rendered");
+            if (old == null) return;
+            old.Value = "open-edit";
+            Dispatch(old, "input");
+            assert.Equal(vm.Other, "open-edit", "open: the input writes back");
+
+            vm.Flag = false;
+            assert.Equal(root.QuerySelector("[data-test=f2-gate]"), null, "closed: the input left the DOM");
+            old.Value = "stale";
+            Dispatch(old, "input");
+            Dispatch(old, "change");
+            assert.Equal(vm.Other, "open-edit", "closed: the retained input does not write the model");
+
+            vm.Flag = true;
+            var fresh = (InputElement)root.QuerySelector("[data-test=f2-gate]");
+            assert.NotEqual(fresh, null, "reopened: input rendered");
+            if (fresh == null) return;
+            fresh.Value = "reopened";
+            Dispatch(fresh, "input");
+            assert.Equal(vm.Other, "reopened", "reopened: the new input writes back");
+            old.Value = "stale-2";
+            Dispatch(old, "input");
+            assert.Equal(vm.Other, "reopened", "reopened: the old input still does not write the model");
+
+            // Review P-2: a nested @if stays true while the outer @if closes; its input leaves too.
+            var nvm = VmWithItems(0);
+            nvm.Flag = true;
+            nvm.Busy = true;
+            var nroot = Mount(nvm, RazorSkinTemplatesClass.AwbF2NestedGate);
+            var inner = (InputElement)nroot.QuerySelector("[data-test=f2-nested]");
+            assert.NotEqual(inner, null, "nested: inner input rendered");
+            if (inner == null) return;
+            inner.Value = "n-edit";
+            Dispatch(inner, "input");
+            assert.Equal(nvm.Text, "n-edit", "nested: the inner input writes back");
+
+            nvm.Flag = false;
+            assert.Equal(nroot.QuerySelector("[data-test=f2-nested]"), null, "nested: outer closed, the inner input left the DOM");
+            inner.Value = "n-stale";
+            Dispatch(inner, "input");
+            Dispatch(inner, "change");
+            assert.Equal(nvm.Text, "n-edit", "nested: the retained inner input does not write the model");
+        }
+
         // Review F-003: <select value=> with @foreach options.
         [Test]
         public static void TestF3SelectValueWithForeachOptions(Assert assert)
