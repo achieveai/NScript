@@ -2080,6 +2080,106 @@ namespace Sunlight.Framework.UI.Test
                 "Nested @if should show inner content when both conditions true");
         }
 
+        private static int CountIn(Element root, string selector)
+        {
+            return root.QuerySelectorAll(selector).Length;
+        }
+
+        // Closing an outer @if must reset the inner @if, so the inner branch (or its @else)
+        // comes back on reopen and does not linger when it sits at the top of the outer branch.
+        [Test]
+        public static void TestRazorNestedIfReopensInnerBranch(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            vm.IsActive = true;
+            vm.ShowDetails = true;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorNestedIf;
+            control.Activate();
+            assert.Equal(1, CountIn(element, ".active-with-details"), "open: inner shown");
+
+            vm.IsActive = false;
+            assert.Equal(0, CountIn(element, ".active-with-details"), "outer closed: inner gone");
+            assert.Equal(0, CountIn(element, ".active-no-details"), "outer closed: no else");
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".active-with-details"), "outer reopened: inner back");
+            assert.Equal(0, CountIn(element, ".active-no-details"), "outer reopened: no else");
+
+            vm.ShowDetails = false;
+            assert.Equal(0, CountIn(element, ".active-with-details"), "inner false: true branch gone");
+            assert.Equal(1, CountIn(element, ".active-no-details"), "inner false: else shown");
+
+            vm.IsActive = false;
+            assert.Equal(0, CountIn(element, ".active-no-details"), "outer closed again: else gone");
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".active-no-details"), "outer reopened: else back");
+            assert.Equal(0, CountIn(element, ".active-with-details"), "outer reopened: one branch only");
+        }
+
+        // Same reset when the inner @if sits inside an element of the outer branch, the outer
+        // starts closed, and the inner branches carry live bindings.
+        [Test]
+        public static void TestRazorNestedIfInElementKeepsBindingsAcrossReopen(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            vm.Name = "a";
+            vm.Title = "t";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorNestedIfInElement;
+            control.Activate();
+            assert.Equal(0, CountIn(element, ".outer"), "starts closed");
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner-else"), "first open: else shown");
+            assert.Equal("t", element.QuerySelector(".inner-else").TextContent, "else binding");
+            vm.Title = "t2";
+            assert.Equal("t2", element.QuerySelector(".inner-else").TextContent, "else binding live");
+
+            vm.ShowDetails = true;
+            assert.Equal("a", element.QuerySelector(".inner").TextContent, "inner binding");
+
+            vm.IsActive = false;
+            vm.Name = "b";
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner"), "reopen: inner back");
+            assert.Equal("b", element.QuerySelector(".inner").TextContent, "reopen: current value");
+            vm.Name = "c";
+            assert.Equal("c", element.QuerySelector(".inner").TextContent, "reopen: binding live");
+
+            vm.ShowDetails = false;
+            vm.IsActive = false;
+            vm.Title = "t3";
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner-else"), "reopen: else back");
+            assert.Equal(0, CountIn(element, ".inner"), "reopen: one branch only");
+            assert.Equal("t3", element.QuerySelector(".inner-else").TextContent, "reopen: else current");
+        }
+
+        [Test]
+        public static void TestRazorNestedIfOuterStartsClosedInnerTrue(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            vm.Name = "a";
+            vm.ShowDetails = true;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorNestedIfInElement;
+            control.Activate();
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner"), "first open: inner shown");
+            assert.Equal("a", element.QuerySelector(".inner").TextContent, "first open: inner binding");
+            vm.Name = "b";
+            assert.Equal("b", element.QuerySelector(".inner").TextContent, "first open: binding live");
+        }
+
         [Test]
         public static void TestRazorStaticIf(Assert assert)
         {

@@ -1,0 +1,17 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+
+<div data-test="nested-in-elem">
+@if (Model.IsActive)
+{
+    <div class="outer">
+    @if (Model.ShowDetails)
+    {
+        <span class="inner">@Model.Name</span>
+    }
+    else
+    {
+        <em class="inner-else">@Model.Title</em>
+    }
+    </div>
+}
+</div>

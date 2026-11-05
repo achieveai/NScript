@@ -1,0 +1,15 @@
+@model Sunlight.Framework.UI.Test.SlotFrameVM
+
+<header class="frame-title">@Model.Title</header>
+<RazorProbeControl Text="@Model.Title" />
+@if (Model.IsOpen)
+{
+    <div class="frame-gate">
+        <section class="frame-body">@RenderBody()</section>
+        @* One extra marker: the gated probe below then shares the caller content probe's
+           data-ns-subctl index, so content placed too early would capture it (design 13f). *@
+        <b class="frame-mark">@Model.Title</b>
+        <footer class="frame-foot">@Model.Title</footer>
+        <RazorProbeControl Text="@Model.Title" />
+    </div>
+}

@@ -196,6 +196,7 @@ namespace NScript.RazorSkin.CodeGen
         private static void CollectItemTemplateHtmlRecursive(
             List<IRNode> nodes, StringBuilder sb, OwnerMarker owner)
         {
+            var openContentHosts = new Stack<string>();
             foreach (var node in nodes)
             {
                 if (node is HtmlNode html)
@@ -236,13 +237,19 @@ namespace NScript.RazorSkin.CodeGen
                             sb.Append("\"");
                         }
                     }
-                    sb.Append($" data-ns-subctl=\"{sub1.RuntimeMarkerIdx}\"></{tag}>");
+                    sb.Append(SubControlHostEnd(sub1, tag, openContentHosts));
+                }
+                else if (node is SubControlEndNode)
+                {
+                    sb.Append(CloseContentHost(openContentHosts));
                 }
                 else
                 {
                     CollectItemTemplateHtmlRecursive(node.Children, sb, owner);
                 }
             }
+
+            EnsureContentHostsClosed(openContentHosts);
         }
 
         /// <summary>
@@ -272,6 +279,7 @@ namespace NScript.RazorSkin.CodeGen
             List<IRNode> nodes, List<EventNode> eventTracker, ref int bindingIdx, ref int eventIdx)
         {
             var sb = new StringBuilder();
+            var openContentHosts = new Stack<string>();
             foreach (var node in nodes)
             {
                 if (node is HtmlNode html)
@@ -342,16 +350,51 @@ namespace NScript.RazorSkin.CodeGen
                             sb.Append("\"");
                         }
                     }
-                    sb.Append($" data-ns-subctl=\"{sub2.RuntimeMarkerIdx}\"></");
-                    sb.Append(tag);
-                    sb.Append(">");
+                    sb.Append(SubControlHostEnd(sub2, tag, openContentHosts));
+                }
+                else if (node is SubControlEndNode)
+                {
+                    sb.Append(CloseContentHost(openContentHosts));
                 }
                 else
                 {
                     sb.Append(CollectHtmlWithMarkers(node.Children, eventTracker, ref bindingIdx, ref eventIdx));
                 }
             }
+
+            EnsureContentHostsClosed(openContentHosts);
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Ends a sub-control host's open tag. A host without caller content closes at once.
+        /// A host with content stays open, marked data-ns-content, so the caller's content
+        /// (the following sibling IR nodes) lands inside it until its SubControlEndNode.
+        /// </summary>
+        private static string SubControlHostEnd(SubControlNode sub, string tag, Stack<string> openContentHosts)
+        {
+            if (!sub.HasContent)
+                return $" data-ns-subctl=\"{sub.RuntimeMarkerIdx}\"></{tag}>";
+
+            openContentHosts.Push(tag);
+            return $" data-ns-content data-ns-subctl=\"{sub.RuntimeMarkerIdx}\">";
+        }
+
+        private static string CloseContentHost(Stack<string> openContentHosts)
+        {
+            if (openContentHosts.Count == 0)
+                throw new InvalidOperationException(
+                    "A sub-control closing tag has no open tag at the same level; a sub-control's "
+                    + "content cannot start or end inside an @if or @foreach that does not hold both tags.");
+            return "</" + openContentHosts.Pop() + ">";
+        }
+
+        private static void EnsureContentHostsClosed(Stack<string> openContentHosts)
+        {
+            if (openContentHosts.Count > 0)
+                throw new InvalidOperationException(
+                    "A sub-control with content is not closed at the same level; a sub-control's "
+                    + "content cannot start or end inside an @if or @foreach that does not hold both tags.");
         }
 
         private static readonly HashSet<string> VoidTags = new HashSet<string>(

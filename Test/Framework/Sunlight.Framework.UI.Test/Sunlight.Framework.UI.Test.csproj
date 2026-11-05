@@ -60,6 +60,7 @@
     <EmbeddedResource Include="RazorTemplates\RazorIfElseIf.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorIfBindings.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorNestedIf.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\RazorNestedIfInElement.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorStaticIf.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorForeach.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorForeachBindings.skin.cshtml" />
@@ -125,6 +126,18 @@
     <EmbeddedResource Include="RazorTemplates\AwbR143Grid.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR144NullAttr.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR145Lists.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotFrame.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotGatedFrame.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotElseFrame.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotNoOutletFrame.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotForwardFrame.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHost.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHostRows.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotPanel.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHostNamed.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotHostMissingSlot.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotNestedFrame.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\SlotGatedForwardFrame.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3GateLoop.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3AddThrows.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3SourceWalk.skin.cshtml" />

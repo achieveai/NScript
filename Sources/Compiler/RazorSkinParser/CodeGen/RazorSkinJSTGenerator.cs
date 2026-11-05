@@ -83,6 +83,9 @@ namespace NScript.RazorSkin.CodeGen
         /// <summary>A patch's names: the factory, storage variable and tmplStore the bundle has. Null: new names.</summary>
         private readonly TemplateNames _keptNames;
 
+        /// <summary>True when a control's [Skin] getter names a Razor .skin.cshtml template.</summary>
+        private readonly Func<PropertyDefinition, bool> _isRazorSkinGetter;
+
         /// <summary>A template's names in the bundle, kept so a patch writes the same ones.</summary>
         public sealed class TemplateNames
         {
@@ -113,8 +116,10 @@ namespace NScript.RazorSkin.CodeGen
             RazorCssManager cssManager = null,
             List<(TypeDefinition Type, PropertyDefinition Property, FieldDefinition Field, bool Setter)> inlinedGetters = null,
             bool liveHook = false,
-            TemplateNames keptNames = null)
+            TemplateNames keptNames = null,
+            Func<PropertyDefinition, bool> isRazorSkinGetter = null)
         {
+            _isRazorSkinGetter = isRazorSkinGetter;
             _liveHook = liveHook;
             _keptNames = keptNames;
             _inlinedGetters = inlinedGetters;
@@ -1072,7 +1077,7 @@ namespace NScript.RazorSkin.CodeGen
                         targetEnum, _clrContext.GetTypes(), _ir.UsingNamespaces, sub.Location);
             }
             ValidateSubControlTagInfo(sub, typeDef, FindProperty,
-                modelType, itemType, itemVariablePrefix);
+                modelType, itemType, itemVariablePrefix, _isRazorSkinGetter);
 
             // Read [TagName("xxx")] attribute
             if (_knownTypes.TagNameAttribute != null)
@@ -1113,7 +1118,7 @@ namespace NScript.RazorSkin.CodeGen
             SubControlNode sub, TypeDefinition typeDef,
             Func<TypeDefinition, string, PropertyDefinition> findProperty,
             TypeDefinition modelType = null, TypeDefinition itemType = null,
-            string itemVariablePrefix = null)
+            string itemVariablePrefix = null, Func<PropertyDefinition, bool> isRazorSkinGetter = null)
         {
             if (typeDef == null)
                 throw new RazorSubControlDiagnosticException(
@@ -1125,6 +1130,9 @@ namespace NScript.RazorSkin.CodeGen
             if (baseType == null)
                 throw new RazorSubControlDiagnosticException(
                     sub.Location, $"Sub-control {typeDef.FullName} must inherit from UIElement.");
+
+            if (sub.HasContent)
+                ValidateContentHost(sub, typeDef, isRazorSkinGetter);
 
             sub.ResolvedTypeName = typeDef.FullName;
             foreach (var binding in sub.PropertyBindings)
@@ -1176,6 +1184,40 @@ namespace NScript.RazorSkin.CodeGen
             if (FindElementConstructor(typeDef) == null)
                 throw new RazorSubControlDiagnosticException(sub.Location,
                     $"Sub-control {typeDef.FullName} requires a public (System.Web.Html.Element) constructor.");
+        }
+
+        /// <summary>
+        /// Caller content is projected by the child's skin, so the child must be skinable and
+        /// get its skin from a static [Skin] property (the same lookup the descriptor's
+        /// SkinFactory uses). Otherwise the content would stay raw in the host, unbound.
+        /// </summary>
+        private static void ValidateContentHost(SubControlNode sub, TypeDefinition typeDef,
+            Func<PropertyDefinition, bool> isRazorSkinGetter)
+        {
+            var skinable = typeDef;
+            while (skinable != null && skinable.FullName != "Sunlight.Framework.UI.UISkinableElement")
+                skinable = skinable.BaseType?.Resolve();
+            if (skinable == null)
+                throw new RazorSubControlDiagnosticException(sub.Location,
+                    $"<{sub.TypeName}> has content, but {typeDef.FullName} is not a UISkinableElement; "
+                    + "only a skinned control can project content with @RenderBody().");
+
+            // The getter the sub-control's SkinFactory calls (GraphDescriptorJSTEmitter.BuildSubControlSkinFactory).
+            var skinGetter = typeDef.Properties.FirstOrDefault(prop => prop.GetMethod != null
+                && prop.GetMethod.IsStatic
+                && prop.CustomAttributes.Any(attr => attr.AttributeType.Name == "SkinAttribute"));
+            if (skinGetter == null)
+                throw new RazorSubControlDiagnosticException(sub.Location,
+                    $"<{sub.TypeName}> has content, but {typeDef.FullName} has no static [Skin] property, "
+                    + "so it never gets a skin to project the content.");
+
+            // An XWML skin has no outlet: the content would render raw and unbound. A Skin="..."
+            // attribute replaces the default skin, so only SkinInstance.Bind can check that case.
+            bool skinOverridden = sub.PropertyBindings.Any(binding => binding.PropertyName == "Skin");
+            if (!skinOverridden && isRazorSkinGetter != null && !isRazorSkinGetter(skinGetter))
+                throw new RazorSubControlDiagnosticException(sub.Location,
+                    $"<{sub.TypeName}> has content, but the skin of {typeDef.FullName} ({skinGetter.Name}) "
+                    + "is not a Razor .skin.cshtml template; only a Razor skin can place it with @RenderBody().");
         }
 
         internal static MethodDefinition FindElementConstructor(TypeDefinition typeDef)

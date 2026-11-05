@@ -110,6 +110,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public NativeArray<bool> CollectionChangesInProgress;
 
         /// <summary>
+        /// The caller content this skin projects, one entry per slot name (null when the
+        /// control has no caller content). See GraphEngine.PlaceProjections.
+        /// </summary>
+        public NativeArray<SlotProjection> Projections;
+
+        /// <summary>
         /// Creates a new GraphState for the given descriptor.
         /// </summary>
         public GraphState(GraphDescriptor descriptor, NativeArray elemRefs, int depth)
@@ -171,6 +177,28 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 this.CollectionChangesInProgress = new NativeArray<bool>(n);
             }
         }
+    }
+
+    /// <summary>
+    /// Caller content for one slot of a skin. The nodes stay bound by the caller's graph; they
+    /// only move. Placed: between <see cref="Start"/> and <see cref="End"/>, the skin's outlet
+    /// anchors. Parked (no outlet in the DOM, e.g. its @if is closed): in <see cref="Holder"/>,
+    /// a detached element, with Start and End null.
+    /// </summary>
+    public class SlotProjection
+    {
+        /// <summary>"" for @RenderBody(); otherwise the @RenderSlot name.</summary>
+        public string Name;
+        public Element Holder;
+        public Element Start;
+        public Element End;
+
+        /// <summary>
+        /// A named slot's caller boundary markers (from &lt;Slot Name="x"&gt;), kept out of the
+        /// outlet and put back around the content when the host gets its content back.
+        /// </summary>
+        public Element ContentStart;
+        public Element ContentEnd;
     }
 
     /// <summary>

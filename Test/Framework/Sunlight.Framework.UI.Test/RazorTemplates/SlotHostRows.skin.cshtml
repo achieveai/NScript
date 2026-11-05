@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.SlotHostVM
+
+<div data-test="slot-rows">
+    @foreach (var r in Model.Rows)
+    {
+        <SlotFrame DataContext="@r"><p class="row-msg">@r.Title</p></SlotFrame>
+    }
+</div>

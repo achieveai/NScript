@@ -32,14 +32,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 //             gateIdx <= -2 means "only when gate at index -(gateIdx+2) is CLOSED" (inverted gate).
                 int gateIdx = desc.GateIndices[i];
                 // A gate node must never skip itself — it is the controller, not a gated child.
-                if (gateIdx >= 0 && gateIdx != i && !state.GateOpen[gateIdx])
+                // A skipped nested gate gets no value (not its default), so Flush renders
+                // whichever branch it selects once its own branch opens (see ResetNestedGate).
+                if ((gateIdx >= 0 && gateIdx != i && !state.GateOpen[gateIdx])
+                    || (gateIdx <= -2 && state.GateOpen[-(gateIdx + 2)]))
                 {
-                    state.Values[i] = desc.DefaultValues[i];
-                    continue;
-                }
-                if (gateIdx <= -2 && state.GateOpen[-(gateIdx + 2)])
-                {
-                    state.Values[i] = desc.DefaultValues[i];
+                    state.Values[i] = nodeType == GraphNodeType.Gate ? null : desc.DefaultValues[i];
                     continue;
                 }
 
@@ -83,6 +81,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                     GraphEngine.ResolveGateChildElems(desc, state, gateInfo, i, gateIsOpen);
                                     GraphEngine.CreateSubControls(desc, state, clone,
                                         GraphEngine.GetSubControlDataContext(state));
+                                    // Only after both scans above: they read the branch by marker
+                                    // position and data-ns-subctl index and must not see caller content.
+                                    GraphEngine.PlaceGateBranchProjections(state, i);
                                 }
                             }
                         }
@@ -91,6 +92,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     if (!gateIsOpen && wasOpen)
                     {
                         GraphEngine.ApplyGateClosure(desc, state, i);
+                    }
+                    else if (gateIsOpen && !wasOpen)
+                    {
+                        // Re-activation found the gate opened while inactive: reset the
+                        // @else side (its nested gates included), as Flush does.
+                        GraphEngine.ApplyGateClosure(desc, state, -(i + 2));
                     }
                 }
                 else if (nodeType == GraphNodeType.DomTarget)
@@ -219,8 +226,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         bool wasOpen = state.GateOpen[i];
                         state.GateOpen[i] = gateIsOpen;
 
+                        // A nested gate reset by ResetNestedGate has no value and no branch:
+                        // render its current side even though GateOpen did not change.
+                        bool firstRender = gateIsOpen == wasOpen
+                            && object.IsNullOrUndefined(oldVal)
+                            && object.IsNullOrUndefined(state.GateElements[i]);
+
                         // DOM swap: remove old branch, insert new branch.
-                        if (gateIsOpen != wasOpen)
+                        if (gateIsOpen != wasOpen || firstRender)
                         {
                             GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[i];
                             if (!object.IsNullOrUndefined(gateInfo))
@@ -249,6 +262,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                         GraphEngine.ResolveGateChildElems(desc, state, gateInfo, i, gateIsOpen);
                                         GraphEngine.CreateSubControls(desc, state, clone,
                                             GraphEngine.GetSubControlDataContext(state));
+                                        // Only after both scans above: they read the branch by marker
+                                        // position and data-ns-subctl index and must not see caller content.
+                                        GraphEngine.PlaceGateBranchProjections(state, i);
                                     }
                                 }
                             }
@@ -267,6 +283,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             // Gate opened: activate true-branch, reset false-branch
                             GraphEngine.MarkGatedConsumersDirty(desc, state, i);
                             GraphEngine.ApplyGateClosure(desc, state, invertedRef);
+                        }
+                        else if (firstRender && !gateIsOpen)
+                        {
+                            // The false side was evaluated while its branch was absent, so its
+                            // cached values would skip the writes to the new branch: reset them.
+                            GraphEngine.ApplyGateClosure(desc, state, invertedRef);
+                            GraphEngine.MarkGatedConsumersDirty(desc, state, invertedRef);
                         }
                     }
 
@@ -632,7 +655,35 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
                     }
                 }
+                else if (nodeType == GraphNodeType.Gate)
+                {
+                    GraphEngine.ResetNestedGate(desc, state, i);
+                }
             }
+        }
+
+        /// <summary>
+        /// Returns a nested @if to its never-rendered state when the branch holding it
+        /// closes: removes its branch (which can sit outside the closing branch's own
+        /// nodes), resets both of its sides recursively, and clears its value so the
+        /// next evaluation renders a branch again, the @else side included.
+        /// </summary>
+        private static void ResetNestedGate(GraphDescriptor desc, GraphState state, int gateIdx)
+        {
+            bool wasOpen = state.GateOpen[gateIdx];
+            GateTargetInfo gateInfo = (GateTargetInfo)desc.TargetInfos[gateIdx];
+            if (!object.IsNullOrUndefined(gateInfo))
+            {
+                GraphEngine.DisposeGateSubControls(desc, state, gateInfo, wasOpen);
+                GraphEngine.UnbindGatedEvents(desc, state, wasOpen ? gateIdx : -(gateIdx + 2));
+                GraphEngine.ClearGateChildElems(state, gateInfo, wasOpen);
+                GraphEngine.RemoveGateBranch(state, gateIdx);
+            }
+
+            state.GateOpen[gateIdx] = false;
+            GraphEngine.ApplyGateClosure(desc, state, gateIdx);
+            GraphEngine.ApplyGateClosure(desc, state, -(gateIdx + 2));
+            state.Values[gateIdx] = null;
         }
 
         /// <summary>
@@ -2022,6 +2073,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Removes a gate branch's root and any extra top-level nodes.</summary>
         public static void RemoveGateBranch(GraphState state, int gateNodeIdx)
         {
+            // The branch may hold this skin's outlet: take the caller content out first.
+            GraphEngine.ParkGateBranchProjections(state, gateNodeIdx);
+
             Element root = (Element)state.GateElements[gateNodeIdx];
             if (!object.IsNullOrUndefined(root)) root.Remove();
             state.GateElements[gateNodeIdx] = null;
@@ -2036,6 +2090,111 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
             }
             state.GateExtraElements[gateNodeIdx] = null;
+        }
+
+        /// <summary>
+        /// Moves each parked slot's caller content into its outlet when the outlet is
+        /// <paramref name="scope"/> or inside it: between the two anchors. A slot already placed
+        /// is left alone (one outlet per slot on any render path).
+        /// </summary>
+        public static void PlaceProjections(GraphState state, Element scope)
+        {
+            NativeArray<SlotProjection> slots = state.Projections;
+            if (object.IsNullOrUndefined(slots) || object.IsNullOrUndefined(scope)
+                || object.IsNullOrUndefined(scope.TagName)) return;
+
+            for (int k = 0; k < slots.Length; k++)
+            {
+                SlotProjection slot = slots[k];
+                if (!object.IsNullOrUndefined(slot.Start)) continue;
+
+                string selector = GraphEngine.SlotAnchorSelector(slot.Name);
+                Element start = scope.Matches(selector) ? scope : scope.QuerySelector(selector);
+                if (object.IsNullOrUndefined(start)) continue;
+
+                Element end = start.NextElementSibling;
+                if (object.IsNullOrUndefined(end) || !end.Matches(selector))
+                    throw new Exception("The outlet for slot '" + slot.Name
+                        + "' lost its closing anchor; the skin HTML and its outlet are out of step.");
+
+                Node parent = start.ParentNode;
+                while (!object.IsNullOrUndefined(slot.Holder.FirstChild))
+                    parent.InsertBefore(slot.Holder.FirstChild, end);
+                slot.Start = start;
+                slot.End = end;
+            }
+        }
+
+        /// <summary>Moves each placed slot's caller content back into its holder.</summary>
+        public static void ParkProjections(GraphState state)
+        {
+            NativeArray<SlotProjection> slots = state.Projections;
+            if (object.IsNullOrUndefined(slots)) return;
+            for (int k = 0; k < slots.Length; k++)
+                GraphEngine.ParkProjection(slots[k]);
+        }
+
+        private static void ParkProjection(SlotProjection slot)
+        {
+            if (object.IsNullOrUndefined(slot.Start)) return;
+            Node node = slot.Start.NextSibling;
+            while (!object.IsNullOrUndefined(node) && node != (Node)slot.End)
+            {
+                Node next = node.NextSibling;
+                slot.Holder.AppendChild(node);
+                node = next;
+            }
+
+            slot.Start = null;
+            slot.End = null;
+        }
+
+        /// <summary>Selects the anchors of the outlet for one slot ("" is @RenderBody).</summary>
+        public static string SlotAnchorSelector(string name)
+        {
+            return "template[data-ns-slot=\"" + name + "\"]";
+        }
+
+        private static void PlaceGateBranchProjections(GraphState state, int gateNodeIdx)
+        {
+            if (object.IsNullOrUndefined(state.Projections)) return;
+            NativeArray<Element> extras = (NativeArray<Element>)state.GateExtraElements[gateNodeIdx];
+            if (object.IsNullOrUndefined(extras))
+            {
+                GraphEngine.PlaceProjections(state, (Element)state.GateElements[gateNodeIdx]);
+                return;
+            }
+
+            for (int k = 0; k < extras.Length; k++)
+                GraphEngine.PlaceProjections(state, extras[k]);
+        }
+
+        private static void ParkGateBranchProjections(GraphState state, int gateNodeIdx)
+        {
+            NativeArray<SlotProjection> slots = state.Projections;
+            if (object.IsNullOrUndefined(slots)) return;
+
+            Element root = (Element)state.GateElements[gateNodeIdx];
+            NativeArray<Element> extras = object.IsNullOrUndefined(state.GateExtraElements)
+                ? null
+                : (NativeArray<Element>)state.GateExtraElements[gateNodeIdx];
+            for (int k = 0; k < slots.Length; k++)
+            {
+                SlotProjection slot = slots[k];
+                if (object.IsNullOrUndefined(slot.Start)) continue;
+                bool inBranch = GraphEngine.HoldsNode(root, slot.Start);
+                if (!object.IsNullOrUndefined(extras))
+                    for (int e = 0; e < extras.Length && !inBranch; e++)
+                        inBranch = GraphEngine.HoldsNode(extras[e], slot.Start);
+                if (inBranch) GraphEngine.ParkProjection(slot);
+            }
+        }
+
+        private static bool HoldsNode(Element container, Element node)
+        {
+            return !object.IsNullOrUndefined(container)
+                && !object.IsNullOrUndefined(container.TagName)
+                && (container == node || container.Contains(node));
         }
 
         /// <summary>

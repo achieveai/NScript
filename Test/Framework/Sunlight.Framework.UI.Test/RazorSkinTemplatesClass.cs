@@ -265,6 +265,12 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorNestedIfInElement.skin.cshtml")]
+        public static Skin RazorNestedIfInElement
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.RazorStaticIf.skin.cshtml")]
         public static Skin RazorStaticIf
         {
@@ -453,6 +459,66 @@ namespace Sunlight.Framework.UI.Test
 
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3SourceWalk.skin.cshtml")]
         public static Skin AwbR3SourceWalk
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotGatedFrame.skin.cshtml")]
+        public static Skin SlotGatedFrame
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotElseFrame.skin.cshtml")]
+        public static Skin SlotElseFrame
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotNoOutletFrame.skin.cshtml")]
+        public static Skin SlotNoOutletFrame
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotForwardFrame.skin.cshtml")]
+        public static Skin SlotForwardFrame
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHost.skin.cshtml")]
+        public static Skin SlotHost
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostRows.skin.cshtml")]
+        public static Skin SlotHostRows
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostNamed.skin.cshtml")]
+        public static Skin SlotHostNamed
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostMissingSlot.skin.cshtml")]
+        public static Skin SlotHostMissingSlot
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotNestedFrame.skin.cshtml")]
+        public static Skin SlotNestedFrame
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotGatedForwardFrame.skin.cshtml")]
+        public static Skin SlotGatedForwardFrame
         {
             get { return null; }
         }

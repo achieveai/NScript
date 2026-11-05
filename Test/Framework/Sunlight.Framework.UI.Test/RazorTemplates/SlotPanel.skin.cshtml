@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.SlotFrameVM
+
+<header class="panel-head">@RenderSlot("head")</header>
+<section class="panel-body">@RenderBody()</section>
+@if (Model.IsOpen)
+{
+    <footer class="panel-actions">@RenderSlot("actions")</footer>
+}

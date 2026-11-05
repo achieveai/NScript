@@ -109,12 +109,12 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
-        public void SubControlChildContentIsRejected()
+        public void SubControlChildContentIsAccepted()
         {
-            Action process = () => RazorSkinPreprocessor.Process("@model MyVM\n<div><SearchBox><span>Unexpected</span></SearchBox></div>");
+            // #137: content inside a control tag is projected into the control's @RenderBody().
+            var result = RazorSkinPreprocessor.Process("@model MyVM\n<div><SearchBox><span>Projected</span></SearchBox></div>");
 
-            process.Should().Throw<InvalidOperationException>()
-                .WithMessage("*SearchBox*child content*");
+            result.CleanedTemplate.Should().Contain("<span>Projected</span>");
         }
 
         [TestMethod]
@@ -126,10 +126,10 @@ namespace RazorSkinParser.Test
         }
 
         [TestMethod]
-        public void SubControlChildContentReportsSourceLocation()
+        public void UnclosedSubControlWithContentReportsSourceLocation()
         {
             Action process = () => RazorSkinPreprocessor.Process(
-                "@model MyVM\n<SearchBox>\n  <span>Unexpected</span>\n</SearchBox>",
+                "@model MyVM\n<SearchBox>\n  <span>Unclosed</span>\n",
                 "Search.skin.cshtml");
 
             process.Should().Throw<RazorSkinPreprocessorException>()

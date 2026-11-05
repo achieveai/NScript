@@ -1,0 +1,20 @@
+@model Sunlight.Framework.UI.Test.SlotFrameVM
+
+<header class="frame-title">@Model.Title</header>
+@if (Model.IsOpen)
+{
+    <b class="frame-open">open</b>
+}
+else
+{
+    <div class="frame-else">
+        @if (Model.ShowInner)
+        {
+            <div class="frame-inner">
+                <section class="frame-body">@RenderBody()</section>
+                <RazorProbeControl Text="@Model.Title" />
+                <i class="inner-evt" onclick="@Model.OnInnerClick">inner</i>
+            </div>
+        }
+    </div>
+}

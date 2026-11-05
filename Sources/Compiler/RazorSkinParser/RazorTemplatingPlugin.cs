@@ -1292,6 +1292,23 @@ namespace Sunlight.Framework.Observables
             return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
         }
 
+        /// <summary>
+        /// True when a [Skin("...")] getter names a Razor template, matched as
+        /// <see cref="GetInterestLevel"/> matches it.
+        /// </summary>
+        private bool IsRazorSkinGetter(PropertyDefinition property)
+        {
+            var skinAttr = property.CustomAttributes.FirstOrDefault(
+                a => a.AttributeType.Name == "SkinAttribute" ||
+                     a.AttributeType.FullName.EndsWith(".SkinAttribute"));
+            var templateName = skinAttr != null && skinAttr.HasConstructorArguments
+                ? skinAttr.ConstructorArguments[0].Value as string
+                : null;
+            return templateName != null
+                && (FindTemplateKey(property.Module, templateName, property.DeclaringType, out var ambiguity) != null
+                    || ambiguity != null);
+        }
+
         // Not used: RazorTemplatingPlugin only returns IntrestLevel.Overwrite or None.
         public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter) => null;
 
@@ -2197,7 +2214,8 @@ namespace Sunlight.Framework.Observables
                     cssManager,
                     _inlinedGetters,
                     LiveHook,
-                    _templateNames.GetValueOrDefault(key));
+                    _templateNames.GetValueOrDefault(key),
+                    IsRazorSkinGetter);
 
                 var jstStatements = jstGenerator.Generate();
                 _templateNames[key] = jstGenerator.Names;
