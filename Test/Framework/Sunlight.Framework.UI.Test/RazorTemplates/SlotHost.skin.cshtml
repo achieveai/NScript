@@ -1,0 +1,14 @@
+@model Sunlight.Framework.UI.Test.SlotHostVM
+
+<div data-test="slot-host">
+    <SlotFrame DataContext="@Model.Frame" ondblclick="@Model.OnFrameDblClick">
+        @if (Model.ShowExtra)
+        {
+            <em class="extra" onclick="@Model.OnExtraClick">extra</em>
+        }
+        <p class="msg">@Model.Message</p>
+        <button class="confirm" onclick="@Model.Confirm">ok</button>
+        <RazorProbeControl Text="@Model.Message" />
+    </SlotFrame>
+    <span class="after">@Model.Message</span>
+</div>

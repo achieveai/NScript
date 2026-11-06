@@ -1,0 +1,9 @@
+@model Sunlight.Framework.UI.Test.SlotFrameVM
+
+<header class="frame-title">@Model.Title</header>
+@if (Model.IsOpen)
+{
+    <div class="fwd">
+        <SlotFrame>@RenderBody()</SlotFrame>
+    </div>
+}

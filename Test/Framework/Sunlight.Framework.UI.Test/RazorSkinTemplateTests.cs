@@ -639,6 +639,241 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        // PR 148 review iteration 3: a row whose build threw is retired and stays retired.
+        // Reactivating with a new context that shares the collection must not rewire it, so
+        // a later Remove or Dispose leaves its detached DOM dead.
+        [Test]
+        public static void TestForeachFailedRowStaysRetiredAcrossReactivation(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var good = new RazorItemVM { Name = "good", Status = "g0" };
+            var bad = new RazorItemVM { Name = "bad", Status = "b0" };
+            var bad2 = new RazorItemVM { Name = "bad2", Status = "c0" };
+            items.Add(good);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            int failures = 2;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if ((child.Text == "bad" || child.Text == "bad2") && failures > 0)
+                {
+                    failures--;
+                    throw new Exception("transient " + child.Text);
+                }
+            };
+            try
+            {
+                string addError = null;
+                try { items.Add(bad); }
+                catch (Exception ex) { addError = ex.Message; }
+                assert.NotEqual(addError, null, "the failing row build is not swallowed");
+                addError = null;
+                try { items.Add(bad2); }
+                catch (Exception ex) { addError = ex.Message; }
+                assert.NotEqual(addError, null, "the second failing row build is not swallowed");
+
+                var statuses = element.QuerySelectorAll(".item-status");
+                var badStatus = statuses[1];
+                var bad2Status = statuses[2];
+                string badBefore = badStatus.TextContent;
+                string bad2Before = bad2Status.TextContent;
+
+                control.Deactivate();
+                var vm2 = new RazorTestVM();
+                vm2.Items = items;
+                control.DataContext = vm2;
+                control.Activate();
+
+                bad.Status = "b1";
+                assert.Equal(badStatus.TextContent, badBefore, "reactivation does not rewire the failed row");
+                good.Status = "g1";
+                assert.Equal(element.QuerySelectorAll(".item-status")[0].TextContent, "g1",
+                    "the good row is live after reactivation");
+
+                items.Remove(bad);
+                bad.Status = "b2";
+                assert.Equal(badStatus.TextContent, badBefore, "a removed failed row stays dead");
+
+                control.Dispose();
+                bad2.Status = "c2";
+                assert.Equal(bad2Status.TextContent, bad2Before, "a failed row stays dead after Dispose");
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+        }
+
+        // PR 148 review iteration 3: a control whose Dispose throws does not stop the row's
+        // later controls from being disposed; the error still reaches the caller.
+        [Test]
+        public static void TestForeachRowRetireDisposesEveryControlWhenOneThrows(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var row = new RazorItemVM { Name = "first", Status = "second" };
+            items.Add(row);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.AwbR3TwoProbes;
+            control.Activate();
+            assert.Equal(element.QuerySelectorAll("[data-ns-subctl]").Length, 2, "the row has two controls");
+
+            int disposed = RazorProbeControl.DisposedCount;
+            RazorProbeControl.DisposingForTest = delegate(RazorProbeControl probe)
+            {
+                if (probe.Text == "first") throw new Exception("dispose boom");
+            };
+            try
+            {
+                string removeError = null;
+                try { items.Remove(row); }
+                catch (Exception ex) { removeError = ex.Message; }
+                assert.IsTrue(removeError != null && removeError.IndexOf("dispose boom") >= 0,
+                    "the Dispose error reaches the caller: " + removeError);
+                assert.Equal(RazorProbeControl.DisposedCount, disposed + 1,
+                    "the row's second control is disposed although the first one threw");
+            }
+            finally
+            {
+                RazorProbeControl.DisposingForTest = null;
+            }
+        }
+
+        // PR 148 review iteration 4: a row that disposes the host and then throws ends the
+        // build, in a bulk render and in a multi-row Add, so no later row wires listeners
+        // after the host's cleanup.
+        [Test]
+        public static void TestForeachRowThatDisposesHostStopsLaterRows(Assert assert)
+        {
+            CheckRowThatDisposesHostStopsLaterRows(assert, false);
+            CheckRowThatDisposesHostStopsLaterRows(assert, true);
+        }
+
+        private static void CheckRowThatDisposesHostStopsLaterRows(Assert assert, bool viaAddRange)
+        {
+            string path = viaAddRange ? "AddRange: " : "bulk render: ";
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var bad = new RazorItemVM { Name = "bad", Status = "b0" };
+            var tail = new RazorItemVM { Name = "tail", Status = "t0" };
+            var vm = new RazorTestVM();
+            if (viaAddRange) vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "bad")
+                {
+                    control.Dispose();
+                    throw new Exception("bad disposed the host");
+                }
+            };
+            int created = RazorProbeControl.CreatedCount;
+            string error = null;
+            try
+            {
+                if (viaAddRange)
+                {
+                    items.AddRange(new RazorItemVM[] { bad, tail });
+                }
+                else
+                {
+                    items.Add(bad);
+                    items.Add(tail);
+                    vm.Items = items;
+                }
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            assert.Equal(error, "bad disposed the host", path + "the row's error reaches the caller");
+            assert.Equal(RazorProbeControl.CreatedCount, created + 1,
+                path + "the row after the one that disposed the host is never built");
+        }
+
+        // PR 148 review iteration 4: Items=[bad, tail]; bad throws and tail removes itself while
+        // the rows build. The queued Remove still applies before the error goes on, so a later
+        // Add lands after it and the DOM matches the model.
+        [Test]
+        public static void TestForeachFailedRenderReplaysQueuedRemoveBeforeLaterAdd(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var bad = new RazorItemVM { Name = "bad", Status = "b0" };
+            var tail = new RazorItemVM { Name = "tail", Status = "t0" };
+            items.Add(bad);
+            items.Add(tail);
+            var vm = new RazorTestVM();
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            bool badThrown = false;
+            bool tailRemoved = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "bad" && !badThrown)
+                {
+                    badThrown = true;
+                    throw new Exception("bad row");
+                }
+                if (child.Text == "tail" && !tailRemoved)
+                {
+                    tailRemoved = true;
+                    items.Remove(tail);
+                }
+            };
+            string error = null;
+            try
+            {
+                vm.Items = items;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.Equal(error, "bad row", "the render error reaches the caller");
+                assert.IsTrue(tailRemoved, "tail removed itself while the rows built");
+
+                items.Add(new RazorItemVM { Name = "late", Status = "l0" });
+                var hosts = element.QuerySelectorAll("[data-ns-subctl]");
+                assert.Equal(hosts.Length, 2, "one row per model item");
+                assert.Equal(hosts[0].GetAttribute("data-bound-text"), "bad", "row 0 is bad");
+                assert.Equal(hosts[1].GetAttribute("data-bound-text"), "late",
+                    "row 1 is late: the queued Remove ran before the Add");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
         [Test]
         public static void TestForeachResetAndAddWhileInactiveRendersFinalCollectionOnce(Assert assert)
         {
@@ -2078,6 +2313,106 @@ namespace Sunlight.Framework.UI.Test
             var withDetails = element.QuerySelector("[data-test] .active-with-details");
             assert.NotEqual(null, withDetails,
                 "Nested @if should show inner content when both conditions true");
+        }
+
+        private static int CountIn(Element root, string selector)
+        {
+            return root.QuerySelectorAll(selector).Length;
+        }
+
+        // Closing an outer @if must reset the inner @if, so the inner branch (or its @else)
+        // comes back on reopen and does not linger when it sits at the top of the outer branch.
+        [Test]
+        public static void TestRazorNestedIfReopensInnerBranch(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            vm.IsActive = true;
+            vm.ShowDetails = true;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorNestedIf;
+            control.Activate();
+            assert.Equal(1, CountIn(element, ".active-with-details"), "open: inner shown");
+
+            vm.IsActive = false;
+            assert.Equal(0, CountIn(element, ".active-with-details"), "outer closed: inner gone");
+            assert.Equal(0, CountIn(element, ".active-no-details"), "outer closed: no else");
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".active-with-details"), "outer reopened: inner back");
+            assert.Equal(0, CountIn(element, ".active-no-details"), "outer reopened: no else");
+
+            vm.ShowDetails = false;
+            assert.Equal(0, CountIn(element, ".active-with-details"), "inner false: true branch gone");
+            assert.Equal(1, CountIn(element, ".active-no-details"), "inner false: else shown");
+
+            vm.IsActive = false;
+            assert.Equal(0, CountIn(element, ".active-no-details"), "outer closed again: else gone");
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".active-no-details"), "outer reopened: else back");
+            assert.Equal(0, CountIn(element, ".active-with-details"), "outer reopened: one branch only");
+        }
+
+        // Same reset when the inner @if sits inside an element of the outer branch, the outer
+        // starts closed, and the inner branches carry live bindings.
+        [Test]
+        public static void TestRazorNestedIfInElementKeepsBindingsAcrossReopen(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            vm.Name = "a";
+            vm.Title = "t";
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorNestedIfInElement;
+            control.Activate();
+            assert.Equal(0, CountIn(element, ".outer"), "starts closed");
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner-else"), "first open: else shown");
+            assert.Equal("t", element.QuerySelector(".inner-else").TextContent, "else binding");
+            vm.Title = "t2";
+            assert.Equal("t2", element.QuerySelector(".inner-else").TextContent, "else binding live");
+
+            vm.ShowDetails = true;
+            assert.Equal("a", element.QuerySelector(".inner").TextContent, "inner binding");
+
+            vm.IsActive = false;
+            vm.Name = "b";
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner"), "reopen: inner back");
+            assert.Equal("b", element.QuerySelector(".inner").TextContent, "reopen: current value");
+            vm.Name = "c";
+            assert.Equal("c", element.QuerySelector(".inner").TextContent, "reopen: binding live");
+
+            vm.ShowDetails = false;
+            vm.IsActive = false;
+            vm.Title = "t3";
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner-else"), "reopen: else back");
+            assert.Equal(0, CountIn(element, ".inner"), "reopen: one branch only");
+            assert.Equal("t3", element.QuerySelector(".inner-else").TextContent, "reopen: else current");
+        }
+
+        [Test]
+        public static void TestRazorNestedIfOuterStartsClosedInnerTrue(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var vm = new RazorTestVM();
+            vm.Name = "a";
+            vm.ShowDetails = true;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorNestedIfInElement;
+            control.Activate();
+
+            vm.IsActive = true;
+            assert.Equal(1, CountIn(element, ".inner"), "first open: inner shown");
+            assert.Equal("a", element.QuerySelector(".inner").TextContent, "first open: inner binding");
+            vm.Name = "b";
+            assert.Equal("b", element.QuerySelector(".inner").TextContent, "first open: binding live");
         }
 
         [Test]

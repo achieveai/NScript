@@ -1258,15 +1258,8 @@ namespace Sunlight.Framework.Observables
                 return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
             }
 
-            if (propertyDefinition.SetMethod != null)
-            {
-                // Property with setter — check if CSS literal replacement is active
-                return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
-            }
-
-            var skinAttr = propertyDefinition.CustomAttributes?.FirstOrDefault(
-                a => a.AttributeType.Name == "SkinAttribute" ||
-                     a.AttributeType.FullName.EndsWith(".SkinAttribute"));
+            // A property with a setter, or a foreign SkinAttribute, is not a skin getter.
+            var skinAttr = RazorSkinJSTGenerator.SkinAttributeOf(propertyDefinition);
 
             if (skinAttr == null)
             {
@@ -1292,6 +1285,21 @@ namespace Sunlight.Framework.Observables
             return _cssLiteralReplacer != null ? IntrestLevel.Encapsulate : IntrestLevel.None;
         }
 
+        /// <summary>
+        /// True when a [Skin("...")] getter names a Razor template, matched as
+        /// <see cref="GetInterestLevel"/> matches it.
+        /// </summary>
+        private bool IsRazorSkinGetter(PropertyDefinition property)
+        {
+            var skinAttr = RazorSkinJSTGenerator.SkinAttributeOf(property);
+            var templateName = skinAttr != null && skinAttr.HasConstructorArguments
+                ? skinAttr.ConstructorArguments[0].Value as string
+                : null;
+            return templateName != null
+                && (FindTemplateKey(property.Module, templateName, property.DeclaringType, out var ambiguity) != null
+                    || ambiguity != null);
+        }
+
         // Not used: RazorTemplatingPlugin only returns IntrestLevel.Overwrite or None.
         public List<Statement> GetPreInsertionStatements(MethodConverter methodConverter) => null;
 
@@ -1308,9 +1316,7 @@ namespace Sunlight.Framework.Observables
         public List<Statement> GetOverwrite(MethodConverter methodConverter)
         {
             var propertyDefinition = methodConverter.MethodDefinition.GetPropertyDefinition();
-            var skinAttr = propertyDefinition.CustomAttributes?.FirstOrDefault(
-                a => a.AttributeType.Name == "SkinAttribute" ||
-                     a.AttributeType.FullName.EndsWith(".SkinAttribute"));
+            var skinAttr = RazorSkinJSTGenerator.SkinAttributeOf(propertyDefinition);
 
             var templateName = (skinAttr?.HasConstructorArguments == true && skinAttr.ConstructorArguments.Count > 0)
                 ? skinAttr.ConstructorArguments[0].Value as string : null;
@@ -1770,9 +1776,8 @@ namespace Sunlight.Framework.Observables
                     if (ctor != null && seen.Add(ctor.FullName))
                         methods.Add(ctor);
 
-                    // DefaultSkin getter
-                    var skinProp = controlType.Properties.FirstOrDefault(p =>
-                        p.Name == "DefaultSkin" && p.GetMethod != null && p.GetMethod.IsStatic);
+                    // The skin getter the SkinFactory calls (GraphDescriptorJSTEmitter.BuildSubControlSkinFactory).
+                    var skinProp = RazorSkinJSTGenerator.FindSkinGetter(controlType);
                     if (skinProp?.GetMethod != null && seen.Add(skinProp.GetMethod.FullName))
                         methods.Add(skinProp.GetMethod);
 
@@ -2238,7 +2243,8 @@ namespace Sunlight.Framework.Observables
                     cssManager,
                     _inlinedGetters,
                     LiveHook,
-                    _templateNames.GetValueOrDefault(key));
+                    _templateNames.GetValueOrDefault(key),
+                    IsRazorSkinGetter);
 
                 var jstStatements = jstGenerator.Generate();
                 _templateNames[key] = jstGenerator.Names;

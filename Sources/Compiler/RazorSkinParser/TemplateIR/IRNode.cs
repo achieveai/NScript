@@ -124,6 +124,22 @@ namespace NScript.RazorSkin.TemplateIR
         public List<KeyValuePair<string, string>> DomAttributes { get; set; } // From [DomAttribute] attributes
         public List<SubControlPropertyBinding> PropertyBindings { get; set; } = new List<SubControlPropertyBinding>();
         public List<EventNode> EventBindings { get; set; } = new List<EventNode>();
+
+        /// <summary>
+        /// The tag has caller content (<c>&lt;X&gt;...&lt;/X&gt;</c>). The content follows as
+        /// ordinary sibling IR nodes up to the matching <see cref="SubControlEndNode"/>; the host
+        /// emits only its open tag (marked <c>data-ns-content</c>) and the child skin projects
+        /// the content into its <c>@RenderBody()</c> / <c>@RenderSlot("name")</c> outlet.
+        /// </summary>
+        public bool HasContent { get; set; }
+    }
+
+    /// <summary>
+    /// Closes the host of the nearest open <see cref="SubControlNode"/> with content at the same
+    /// IR level. Field-less on purpose: the HTML emitters pair it with its open tag by a stack.
+    /// </summary>
+    public class SubControlEndNode : IRNode
+    {
     }
 
     public class SubControlPropertyBinding

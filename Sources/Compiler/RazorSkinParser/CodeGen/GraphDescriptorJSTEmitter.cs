@@ -1849,23 +1849,8 @@ namespace NScript.RazorSkin.CodeGen
         /// </summary>
         private Expression BuildSubControlSkinFactory(TypeDefinition typeDef)
         {
-            // Find the static DefaultSkin property (has [Skin] attribute)
-            PropertyDefinition skinProp = null;
-            foreach (var prop in typeDef.Properties)
-            {
-                if (!prop.GetMethod?.IsStatic == true) continue;
-                if (prop.GetMethod == null || !prop.GetMethod.IsStatic) continue;
-
-                foreach (var attr in prop.CustomAttributes)
-                {
-                    if (attr.AttributeType.Name == "SkinAttribute")
-                    {
-                        skinProp = prop;
-                        break;
-                    }
-                }
-                if (skinProp != null) break;
-            }
+            // The same skin getter the generator validates and the plugin retains and overwrites.
+            var skinProp = RazorSkinJSTGenerator.FindSkinGetter(typeDef);
 
             if (skinProp?.GetMethod == null)
             {

@@ -108,7 +108,7 @@ namespace NScript.RazorSkin
         private static string ProtectSubControlAttributes(string template, string sourceFile)
         {
             var csharpPositions = FindCSharpBlockPositions(template);
-            var openTags = new Stack<(string Name, int TagStart, int ContentStart)>();
+            var openTags = new Stack<(string Name, int TagStart)>();
             foreach (Match tag in SubControlTagRegex.Matches(template))
             {
                 if (csharpPositions[tag.Index]) continue;
@@ -122,17 +122,12 @@ namespace NScript.RazorSkin
                         throw Diagnostic(template, sourceFile, tag.Index,
                             $"Mismatched sub-control closing tag </{name}>; expected </{openTags.Peek().Name}>.");
 
-                    var open = openTags.Pop();
-                    if (!string.IsNullOrWhiteSpace(template.Substring(open.ContentStart,
-                            tag.Index - open.ContentStart)))
-                    {
-                        throw Diagnostic(template, sourceFile, open.TagStart,
-                            $"Sub-control <{name}> cannot contain child content.");
-                    }
+                    // Child content is allowed: the child skin projects it (@RenderBody).
+                    openTags.Pop();
                 }
                 else if (!tag.Groups["selfClosing"].Success)
                 {
-                    openTags.Push((name, tag.Index, tag.Index + tag.Length));
+                    openTags.Push((name, tag.Index));
                 }
             }
 

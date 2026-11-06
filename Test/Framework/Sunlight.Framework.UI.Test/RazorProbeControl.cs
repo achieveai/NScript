@@ -16,6 +16,9 @@ namespace Sunlight.Framework.UI.Test
         public static RazorProbeControl LastCreated;
         public static Action<RazorProbeControl> TextChangedForTest;
 
+        /// <summary>Runs first in InternalDispose; a test throws from it to fail one Dispose.</summary>
+        public static Action<RazorProbeControl> DisposingForTest;
+
         public RazorProbeControl(Element element)
             : base(element)
         {
@@ -25,6 +28,8 @@ namespace Sunlight.Framework.UI.Test
 
         protected override void InternalDispose()
         {
+            if (DisposingForTest != null)
+                DisposingForTest(this);
             DisposedCount++;
             base.InternalDispose();
         }

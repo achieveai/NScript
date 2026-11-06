@@ -27,6 +27,99 @@ namespace RazorSkinParser.Test
                 .WithMessage("*Element*constructor*");
         }
 
+        // #137: caller content needs a control that gets a skin to hold @RenderBody().
+        [TestMethod]
+        public void ContentOnNonSkinableControlReportsCompileError()
+        {
+            var type = CreateControl(out var module);
+            AddElementConstructor(type, module);
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => Validate(sub, type);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*has content*not a UISkinableElement*");
+        }
+
+        [TestMethod]
+        public void ContentOnSkinableControlWithoutSkinGetterReportsCompileError()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: false);
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => Validate(sub, type);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*has content*no static*Skin*property*");
+        }
+
+        // PR 148 S5: the skin getter is a static, getter-only property carrying the framework's
+        // [Skin] (as XWML requires). The plugin never overwrites a getter with a setter, and a
+        // foreign SkinAttribute is not a skin, so neither may pass as the content host's skin.
+        [TestMethod]
+        public void ContentOnControlWhoseSkinPropertyHasASetterReportsCompileError()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: true, skinGetterHasSetter: true);
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => Validate(sub, type);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*has content*no static*Skin*property*");
+        }
+
+        [TestMethod]
+        public void ContentOnControlWithForeignSkinAttributeReportsCompileError()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: true,
+                skinAttributeNamespace: "Other.Attributes");
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => Validate(sub, type);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*has content*no static*Skin*property*");
+        }
+
+        [TestMethod]
+        public void ContentOnSkinnedControlIsAccepted()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: true);
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => Validate(sub, type);
+
+            validate.Should().NotThrow();
+        }
+
+        // Review M2: an XWML skin has no outlet, so the content would render raw and unbound.
+        [TestMethod]
+        public void ContentOnControlWithXwmlSkinReportsCompileError()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: true);
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => RazorSkinJSTGenerator.ValidateSubControlTagInfo(sub, type,
+                (current, name) => current.Properties.FirstOrDefault(p => p.Name == name),
+                isRazorSkinGetter: property => false);
+
+            validate.Should().Throw<RazorSubControlDiagnosticException>()
+                .WithMessage("*has content*DefaultSkin*not a Razor .skin.cshtml template*");
+        }
+
+        [TestMethod]
+        public void ContentOnControlWithRazorSkinIsAccepted()
+        {
+            var type = CreateSkinableControl(out var module, withSkinGetter: true);
+            var sub = new SubControlNode { TypeName = type.Name, HasContent = true };
+
+            Action validate = () => RazorSkinJSTGenerator.ValidateSubControlTagInfo(sub, type,
+                (current, name) => current.Properties.FirstOrDefault(p => p.Name == name),
+                isRazorSkinGetter: property => property.Name == "DefaultSkin");
+
+            validate.Should().NotThrow();
+        }
+
         [TestMethod]
         public void StaticAttributesUseTheirTargetPropertyTypes()
         {
@@ -396,6 +489,43 @@ namespace RazorSkinParser.Test
             module.Types.Add(ui);
             var control = new TypeDefinition("Tests", "Probe", TypeAttributes.Public, ui);
             module.Types.Add(control);
+            return control;
+        }
+
+        private static TypeDefinition CreateSkinableControl(out ModuleDefinition module, bool withSkinGetter,
+            bool skinGetterHasSetter = false, string skinAttributeNamespace = "Sunlight.Framework.UI.Attributes")
+        {
+            module = ModuleDefinition.CreateModule("SubControlContent", ModuleKind.Dll);
+            var ui = new TypeDefinition("Sunlight.Framework.UI", "UIElement", TypeAttributes.Public);
+            module.Types.Add(ui);
+            var skinable = new TypeDefinition("Sunlight.Framework.UI", "UISkinableElement", TypeAttributes.Public, ui);
+            module.Types.Add(skinable);
+            var control = new TypeDefinition("Tests", "Frame", TypeAttributes.Public, skinable);
+            module.Types.Add(control);
+            AddElementConstructor(control, module);
+            if (withSkinGetter)
+            {
+                var skinType = new TypeReference("Sunlight.Framework.UI", "Skin", module, module);
+                var getter = new MethodDefinition("get_DefaultSkin",
+                    MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.SpecialName, skinType);
+                control.Methods.Add(getter);
+                var property = new PropertyDefinition("DefaultSkin", PropertyAttributes.None, skinType)
+                { GetMethod = getter };
+                if (skinGetterHasSetter)
+                {
+                    var setter = new MethodDefinition("set_DefaultSkin",
+                        MethodAttributes.Public | MethodAttributes.Static | MethodAttributes.SpecialName,
+                        module.TypeSystem.Void);
+                    setter.Parameters.Add(new ParameterDefinition(skinType));
+                    control.Methods.Add(setter);
+                    property.SetMethod = setter;
+                }
+                var attributeType = new TypeReference(skinAttributeNamespace, "SkinAttribute", module, module);
+                property.CustomAttributes.Add(new CustomAttribute(
+                    new MethodReference(".ctor", module.TypeSystem.Void, attributeType) { HasThis = true }));
+                control.Properties.Add(property);
+            }
+
             return control;
         }
 

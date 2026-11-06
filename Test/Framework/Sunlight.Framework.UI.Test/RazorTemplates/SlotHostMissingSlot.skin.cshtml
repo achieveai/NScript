@@ -1,0 +1,7 @@
+@model Sunlight.Framework.UI.Test.SlotHostVM
+
+<div data-test="slot-missing">
+    <SlotFrame DataContext="@Model.Frame">
+        <Slot Name="nope"><i>no outlet for this</i></Slot>
+    </SlotFrame>
+</div>

@@ -186,6 +186,44 @@ This element has its own `onchange`, so `value=` is one-way. `OnTitleChange` rea
 
 The current iteration variable `todo` becomes the `Model` of the child `TodoItemControl`.
 
+### Content projection (slots)
+
+A control can wrap markup its caller writes. The caller puts content inside the control's tag; the control's skin says where it goes.
+
+Frame skin (`DialogFrame.skin.cshtml`):
+
+```cshtml
+@model DialogVM
+<header>@Model.Title</header>
+@if (Model.IsOpen)
+{
+    <section>@RenderBody()</section>
+    <footer>@RenderSlot("actions")</footer>
+}
+```
+
+Caller skin:
+
+```cshtml
+<DialogFrame DataContext="@Model.Dialog">
+    <p>@Model.Message</p>
+    <Slot Name="actions"><button onclick="@Model.Confirm">OK</button></Slot>
+</DialogFrame>
+```
+
+- **The content belongs to the caller.** `@Model` inside it is the caller's model. Its bindings, events and child controls stay live while it is shown.
+- **`@RenderBody()`** takes everything outside a `<Slot>`. **`@RenderSlot("name")`** takes the content of `<Slot Name="name">`.
+- **`<Slot>` is reserved.** It is not a control. It needs a literal `Name` and must sit directly inside the control's tag.
+- **An outlet may sit inside `@if` / `@else`**, nested ones too. While the branch is closed the content is kept off the page, still bound; it comes back when the branch opens.
+- **Rules checked at compile time:**
+  - each outlet at most once on any render path (an `@if` and its `@else` may each hold one);
+  - never inside `@foreach`;
+  - never in an attribute or inside an expression;
+  - a control with content must be a `UISkinableElement` with a static `[Skin]` property that names a Razor `.skin.cshtml` template (an XWML skin has no outlet; with a `Skin="..."` attribute this is checked when the skin is applied);
+  - the control's opening and closing tags must be in the same block.
+- **Rules checked when the skin is applied:** content (or a `<Slot>`) the skin has no outlet for throws, naming the skin and the slot. An outlet with no caller content renders nothing.
+- **In the DOM:** the host carries `data-ns-content`; each outlet is a pair of `<template data-ns-slot="name">` anchors (`""` for `@RenderBody()`), with the content between them.
+
 ### Compound CSS class via ternary
 
 ```cshtml
@@ -235,6 +273,7 @@ The browser still needs to load the CSS file (via a `<link>` tag in the host pag
 | Bound value never updates | Source property missing `[AutoFire]` / `FirePropertyChanged`; auto-detector classified as OneTime |
 | Two-way binding writes back blank | Source property has no setter — falls back to OneWay; check `IsStrict` to surface the mismatch |
 | Child control renders nothing | Type name not found in `Skin` registry; check `[Skin]` and assembly references |
+| `Skin '…' for … has no @RenderBody()` / `@RenderSlot("x")` | Caller content or `<Slot Name="x">` for a skin with no matching outlet |
 
 ## Cross-links
 

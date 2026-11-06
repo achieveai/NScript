@@ -61,15 +61,280 @@ namespace NScript.RazorSkin.TemplateIR
             @"\b([\w-]+)\s*=\s*""([^""]*)$",
             RegexOptions.Compiled);
 
-        // Regex to match opening PascalCase tags: <ListView ...> or <ListView ... />
-        private static readonly Regex PascalCaseTagRegex = new Regex(
-            @"<([A-Z][A-Za-z0-9]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)(?=[\s/>])((?:[^>""']|""[^""]*""|'[^']*')*?)\s*/?>",
+        // PascalCase tags in document order: <ListView ...>, <ListView ... /> or </ListView>.
+        private static readonly Regex PascalCaseAnyTagRegex = new Regex(
+            @"<(?<closing>/)?(?<name>[A-Z][A-Za-z0-9]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)(?=[\s/>])(?<attrs>(?:[^>""']|""[^""]*""|'[^']*')*?)\s*(?<self>/)?>",
             RegexOptions.Compiled);
 
-        // Regex to match closing PascalCase tags: </ListView>
-        private static readonly Regex PascalCaseClosingTagRegex = new Regex(
-            @"</([A-Z][A-Za-z0-9]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*>",
+        /// <summary>The default outlet's name: <c>@RenderBody()</c>.</summary>
+        internal const string DefaultSlotName = "";
+
+        /// <summary>
+        /// The outlet <c>@RenderBody()</c> / <c>@RenderSlot("name")</c> compiles to: two adjacent
+        /// anchors. The runtime moves the caller's content between them. Runtime element refs
+        /// ignore them (GraphEngine's marker selector does not match <c>data-ns-slot</c>).
+        /// </summary>
+        internal static string SlotOutletHtml(string name)
+        {
+            var anchor = "<template data-ns-slot=\"" + name + "\"></template>";
+            return anchor + anchor;
+        }
+
+        private static readonly Regex SlotOutletCallRegex = new Regex(
+            @"^\s*(?:RenderBody\(\s*\)|RenderSlot\(\s*""(?<name>[^""]*)""\s*\))\s*$",
             RegexOptions.Compiled);
+
+        private static readonly Regex SlotOutletMentionRegex = new Regex(
+            @"(?<![\w.])Render(Body|Slot)\s*\(", RegexOptions.Compiled);
+
+        /// <summary>
+        /// True when <paramref name="expression"/> is an outlet call; <paramref name="name"/> is
+        /// the slot name (<see cref="DefaultSlotName"/> for RenderBody).
+        /// </summary>
+        internal static bool TryParseSlotOutlet(string expression, out string name)
+        {
+            var match = SlotOutletCallRegex.Match(expression ?? string.Empty);
+            name = match.Success ? match.Groups["name"].Value : null;
+            return match.Success;
+        }
+
+        private static readonly Regex SlotNameRegex = new Regex(
+            @"^[A-Za-z_][A-Za-z0-9_-]*$", RegexOptions.Compiled);
+
+        private static readonly Regex SlotOutletHtmlRegex = new Regex(
+            @"^<template data-ns-slot=""(?<name>[^""]*)""></template><template data-ns-slot=""\k<name>""></template>$",
+            RegexOptions.Compiled);
+
+        /// <summary>
+        /// <c>&lt;Slot Name="x"&gt;...&lt;/Slot&gt;</c> in caller content is reserved, not a control: it
+        /// compiles to two boundary markers the runtime splits the host's children on.
+        /// </summary>
+        internal const string SlotTagName = "Slot";
+
+        private const string SlotContentEndHtml = "<template data-ns-slot-end></template>";
+
+        private static readonly Regex SlotNameAttributeRegex = new Regex(
+            @"(?:^|\s)Name\s*=\s*""(?<name>[^""]*)""", RegexOptions.Compiled);
+
+        private static string SlotContentMarkerHtml(Match tag, Location location, string templateName)
+        {
+            if (tag.Groups["closing"].Success)
+                return SlotContentEndHtml;
+
+            var nameMatch = SlotNameAttributeRegex.Match(tag.Groups["attrs"].Value);
+            var name = nameMatch.Success ? nameMatch.Groups["name"].Value : null;
+            if (name == null || !SlotNameRegex.IsMatch(name))
+                throw new NScript.Converter.ConverterLocationException(
+                    location ?? new Location(templateName ?? "(razor)", 0, 0),
+                    $"<Slot> needs a literal Name=\"...\" (letters, digits, '_' or '-'); got '{name}'. "
+                    + "Slot is reserved for named caller content and cannot be a control.");
+
+            var start = "<template data-ns-slot-for=\"" + name + "\"></template>";
+            return tag.Groups["self"].Success ? start + SlotContentEndHtml : start;
+        }
+
+        internal static bool IsSlotOutlet(IRNode node, out string name)
+        {
+            var match = node is HtmlNode html ? SlotOutletHtmlRegex.Match(html.HtmlContent ?? "") : Match.Empty;
+            name = match.Success ? match.Groups["name"].Value : null;
+            return match.Success;
+        }
+
+        /// <summary>
+        /// <c>&lt;X&gt; &lt;/X&gt;</c> (only whitespace or Razor comments inside) is an empty
+        /// control, exactly like <c>&lt;X /&gt;</c>.
+        /// </summary>
+        private static void DropEmptySubControlContent(List<IRNode> nodes)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i] is SubControlNode sub && sub.HasContent
+                    && i + 1 < nodes.Count && nodes[i + 1] is SubControlEndNode)
+                {
+                    sub.HasContent = false;
+                    nodes.RemoveAt(i + 1);
+                }
+
+                DropEmptySubControlContent(nodes[i].Children);
+                if (nodes[i] is ConditionalNode cond)
+                {
+                    DropEmptySubControlContent(cond.TrueBranch);
+                    DropEmptySubControlContent(cond.FalseBranch);
+                }
+                else if (nodes[i] is LoopNode loop)
+                {
+                    DropEmptySubControlContent(loop.ItemTemplate);
+                }
+            }
+        }
+
+        /// <summary>
+        /// A control tag with content must open and close in the same block: the open tag
+        /// outside an @if and its close tag inside it (or the reverse) cannot be emitted.
+        /// A <c>&lt;Slot&gt;</c> marker likewise belongs inside a control's content, same block.
+        /// </summary>
+        private static void ValidateContentHostNesting(List<IRNode> nodes, string templateName)
+        {
+            var open = new Stack<OpenContentHost>();
+            foreach (var node in nodes)
+            {
+                if (node is SubControlNode sub && sub.HasContent)
+                    open.Push(new OpenContentHost(sub));
+                else if (node is SubControlEndNode && open.Count == 0)
+                    throw new NScript.Converter.ConverterLocationException(
+                        node.Location ?? new Location(templateName ?? "(razor)", 0, 0),
+                        "A control's closing tag is inside an @if, @else or @foreach block its opening tag is outside; "
+                        + "open and close the control in the same block.");
+                else if (node is SubControlEndNode)
+                    open.Pop();
+                else if (open.Count == 0 && node is HtmlNode html
+                    && ((html.HtmlContent ?? "").Contains("<template data-ns-slot-for=")
+                        || (html.HtmlContent ?? "").Contains(SlotContentEndHtml)))
+                    throw new NScript.Converter.ConverterLocationException(
+                        node.Location ?? new Location(templateName ?? "(razor)", 0, 0),
+                        "<Slot> names caller content for a control: put it directly inside the control's tag, "
+                        + "in the same block.");
+                else if (open.Count > 0 && node is HtmlNode slotHtml)
+                    open.Peek().TrackSlotMarkers(slotHtml, templateName);
+
+                ValidateContentHostNesting(node.Children, templateName);
+                if (node is ConditionalNode cond)
+                {
+                    ValidateContentHostNesting(cond.TrueBranch, templateName);
+                    ValidateContentHostNesting(cond.FalseBranch, templateName);
+                }
+                else if (node is LoopNode loop)
+                {
+                    ValidateContentHostNesting(loop.ItemTemplate, templateName);
+                }
+            }
+
+            if (open.Count > 0)
+                throw new NScript.Converter.ConverterLocationException(
+                    open.Peek().Control.Location ?? new Location(templateName ?? "(razor)", 0, 0),
+                    $"<{open.Peek().Control.TypeName}> is not closed in the block it opens in; "
+                    + "open and close the control in the same @if, @else or @foreach block.");
+        }
+
+        private static readonly Regex SlotContentMarkerRegex = new Regex(
+            @"<template data-ns-slot-for=""(?<name>[^""]*)""></template>|<template data-ns-slot-end></template>",
+            RegexOptions.Compiled);
+
+        /// <summary>
+        /// A control tag with content whose close tag is not reached yet, and the
+        /// <c>&lt;Slot&gt;</c> names in its content. Duplicate and nested slots fail here, at the
+        /// Slot tag's line, rather than when the control mounts (GraphBindingStrategy.TakeContent).
+        /// </summary>
+        private sealed class OpenContentHost
+        {
+            private readonly HashSet<string> slotNames = new HashSet<string>();
+            private string openSlot;
+
+            public OpenContentHost(SubControlNode control)
+            {
+                this.Control = control;
+            }
+
+            public SubControlNode Control { get; }
+
+            public void TrackSlotMarkers(HtmlNode html, string templateName)
+            {
+                foreach (Match marker in SlotContentMarkerRegex.Matches(html.HtmlContent ?? ""))
+                {
+                    if (!marker.Groups["name"].Success)
+                    {
+                        this.openSlot = null;
+                        continue;
+                    }
+
+                    var name = marker.Groups["name"].Value;
+                    var location = html.Location ?? new Location(templateName ?? "(razor)", 0, 0);
+                    if (this.openSlot != null)
+                        throw new NScript.Converter.ConverterLocationException(location,
+                            $"<Slot Name=\"{name}\"> is inside <Slot Name=\"{this.openSlot}\"> in <{this.Control.TypeName}>; "
+                            + "slots do not nest. Close the first <Slot> before the next one.");
+                    if (!this.slotNames.Add(name))
+                        throw new NScript.Converter.ConverterLocationException(location,
+                            $"<{this.Control.TypeName}> has two <Slot Name=\"{name}\">; "
+                            + "put all of that slot's content in one <Slot>.");
+                    this.openSlot = name;
+                }
+            }
+        }
+
+        /// <summary>
+        /// An outlet may sit at the top level or inside @if/@else branches (nested ones too),
+        /// at most once per slot name on any render path: an @if and its @else may each hold
+        /// one, because they never render together. Never inside @foreach: one caller content
+        /// cannot sit in N rows.
+        /// </summary>
+        private static void ValidateSlotOutlets(List<IRNode> nodes, string templateName)
+        {
+            foreach (var pair in CountSlotOutlets(nodes, templateName))
+            {
+                if (pair.Value.Count > 1)
+                    throw new NScript.Converter.ConverterLocationException(
+                        pair.Value.Location ?? new Location(templateName ?? "(razor)", 0, 0),
+                        $"{SlotOutletDisplay(pair.Key)} appears {pair.Value.Count} times on one render path; "
+                        + "a skin can project each slot once (an @if and its @else may each hold one).");
+            }
+        }
+
+        private static string SlotOutletDisplay(string name)
+            => name == DefaultSlotName ? "@RenderBody()" : $"@RenderSlot(\"{name}\")";
+
+        private static Dictionary<string, (int Count, Location Location)> CountSlotOutlets(
+            List<IRNode> nodes, string templateName)
+        {
+            var counts = new Dictionary<string, (int Count, Location Location)>();
+            void Add(Dictionary<string, (int Count, Location Location)> from)
+            {
+                foreach (var pair in from)
+                    counts[pair.Key] = counts.TryGetValue(pair.Key, out var c)
+                        ? (c.Count + pair.Value.Count, pair.Value.Location)
+                        : pair.Value;
+            }
+
+            foreach (var node in nodes)
+            {
+                if (IsSlotOutlet(node, out var name))
+                {
+                    Add(new Dictionary<string, (int, Location)> { [name] = (1, node.Location) });
+                }
+                else if (node is ConditionalNode cond)
+                {
+                    var whenTrue = CountSlotOutlets(cond.TrueBranch, templateName);
+                    var whenFalse = CountSlotOutlets(cond.FalseBranch, templateName);
+                    foreach (var key in whenFalse.Keys)
+                        if (!whenTrue.TryGetValue(key, out var t) || t.Count < whenFalse[key].Count)
+                            whenTrue[key] = whenFalse[key];
+                    Add(whenTrue);
+                }
+                else if (node is LoopNode loop)
+                {
+                    var inLoop = CountSlotOutlets(loop.ItemTemplate, templateName);
+                    foreach (var pair in inLoop)
+                        throw new NScript.Converter.ConverterLocationException(
+                            pair.Value.Location ?? loop.Location ?? new Location(templateName ?? "(razor)", 0, 0),
+                            $"{SlotOutletDisplay(pair.Key)} cannot be inside @foreach: one caller content "
+                            + "cannot sit in every row. Move the outlet out of the loop.");
+                }
+
+                Add(CountSlotOutlets(node.Children, templateName));
+            }
+
+            return counts;
+        }
+
+        private static HtmlNode CreateSlotOutlet(string name, IntermediateNode sourceNode, string templateName)
+        {
+            var location = TryGetLocation(sourceNode, templateName);
+            if (name != DefaultSlotName && !SlotNameRegex.IsMatch(name))
+                throw new NScript.Converter.ConverterLocationException(
+                    location ?? new Location(templateName ?? "(razor)", 0, 0),
+                    $"@RenderSlot(\"{name}\"): a slot name starts with a letter or '_' and has only letters, digits, '_' or '-'.");
+            return new HtmlNode { HtmlContent = SlotOutletHtml(name), Location = location };
+        }
 
         // Regex to extract id attribute from an attribute string
         private static readonly Regex IdAttributeRegex = new Regex(
@@ -161,6 +426,9 @@ namespace NScript.RazorSkin.TemplateIR
             // Walk the flat sequence of children in the method body
             WalkMethodBody(methodNode.Children, root, preprocessed.ModelTypeName, locationFileName);
             BindRawTextContentToOwners(root.Children, locationFileName);
+            DropEmptySubControlContent(root.Children);
+            ValidateContentHostNesting(root.Children, locationFileName);
+            ValidateSlotOutlets(root.Children, locationFileName);
 
             // Count IR nodes by type
             var htmlCount = CountNodes<HtmlNode>(root.Children);
@@ -337,7 +605,8 @@ namespace NScript.RazorSkin.TemplateIR
                         var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
                         // Also detect sub-controls in the HTML
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, htmlLocation);
+                        processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, htmlLocation,
+                            ContentStartLocation(htmlLocation, GetTokenContent(htmlNode), content));
                         if (!string.IsNullOrWhiteSpace(processed))
                         {
                             currentParent.Children.Add(new HtmlNode
@@ -446,6 +715,11 @@ namespace NScript.RazorSkin.TemplateIR
                                 {
                                     i++;
                                 }
+                            }
+                            else if (TryParseSlotOutlet(expression, out var slotName))
+                            {
+                                currentParent.Children.Add(CreateSlotOutlet(slotName, exprNode, templateName));
+                                i++;
                             }
                             else
                             {
@@ -625,7 +899,7 @@ namespace NScript.RazorSkin.TemplateIR
                         var branchParent = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
                         var processed = ExtractSubControlsFromHtml(content.Trim(), branchParent,
-                            templateName, htmlLocation);
+                            templateName, htmlLocation, ContentStartLocation(htmlLocation, content, content));
                         if (!string.IsNullOrWhiteSpace(processed))
                             targetBranch.Add(new HtmlNode
                             {
@@ -653,11 +927,8 @@ namespace NScript.RazorSkin.TemplateIR
                                 closingHtml = closingHtml.TrimStart('"', ' ');
                                 if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
-                                    targetBranch.Add(new HtmlNode
-                                    {
-                                        HtmlContent = closingHtml.Trim(),
-                                        Location = TryGetLocation(closingNode, templateName)
-                                    });
+                                    AppendHtmlWithSubControls(closingHtml.Trim(), targetBranch,
+                                        TryGetLocation(closingNode, templateName), templateName);
                                     lastHtmlContent = closingHtml;
                                 }
                                 i += 2;
@@ -690,16 +961,17 @@ namespace NScript.RazorSkin.TemplateIR
                                     closingHtml = closingHtml.TrimStart('"', ' ');
                                     if (!string.IsNullOrWhiteSpace(closingHtml))
                                     {
-                                        targetBranch.Add(new HtmlNode
-                                        {
-                                            HtmlContent = closingHtml.Trim(),
-                                            Location = TryGetLocation(closingNode, templateName)
-                                        });
+                                        AppendHtmlWithSubControls(closingHtml.Trim(), targetBranch,
+                                            TryGetLocation(closingNode, templateName), templateName);
                                         lastHtmlContent = closingHtml;
                                     }
                                     i += 2;
                                     continue;
                                 }
+                            }
+                            else if (TryParseSlotOutlet(expr, out var slotName))
+                            {
+                                targetBranch.Add(CreateSlotOutlet(slotName, exprNode, templateName));
                             }
                             else
                             {
@@ -821,7 +1093,8 @@ namespace NScript.RazorSkin.TemplateIR
                         // rather than collapsing to the dummy container's null Location.
                         var dummy = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, htmlLocation);
+                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, htmlLocation,
+                            ContentStartLocation(htmlLocation, content, content));
                         if (!string.IsNullOrWhiteSpace(processed))
                             loop.ItemTemplate.Add(new HtmlNode
                             {
@@ -851,11 +1124,8 @@ namespace NScript.RazorSkin.TemplateIR
                                 closingHtml = closingHtml.TrimStart('"', ' ');
                                 if (!string.IsNullOrWhiteSpace(closingHtml))
                                 {
-                                    loop.ItemTemplate.Add(new HtmlNode
-                                    {
-                                        HtmlContent = closingHtml.Trim(),
-                                        Location = TryGetLocation(closingNode, templateName)
-                                    });
+                                    AppendHtmlWithSubControls(closingHtml.Trim(), loop.ItemTemplate,
+                                        TryGetLocation(closingNode, templateName), templateName);
                                     lastHtmlContent = closingHtml;
                                 }
                                 i += 2;
@@ -891,16 +1161,18 @@ namespace NScript.RazorSkin.TemplateIR
                                     closingHtml = closingHtml.TrimStart('"', ' ');
                                     if (!string.IsNullOrWhiteSpace(closingHtml))
                                     {
-                                        loop.ItemTemplate.Add(new HtmlNode
-                                        {
-                                            HtmlContent = closingHtml.Trim(),
-                                            Location = TryGetLocation(closingNode, templateName)
-                                        });
+                                        AppendHtmlWithSubControls(closingHtml.Trim(), loop.ItemTemplate,
+                                            TryGetLocation(closingNode, templateName), templateName);
                                         lastHtmlContent = closingHtml;
                                     }
                                     i += 2;
                                     continue;
                                 }
+                            }
+                            else if (TryParseSlotOutlet(expr, out var slotName))
+                            {
+                                // Rejected by ValidateSlotOutlets with the @foreach rule.
+                                loop.ItemTemplate.Add(CreateSlotOutlet(slotName, exprNode, templateName));
                             }
                             else
                             {
@@ -1039,6 +1311,12 @@ namespace NScript.RazorSkin.TemplateIR
             IntermediateNode sourceNode = null,
             string templateName = null)
         {
+            if (SlotOutletMentionRegex.IsMatch(expression ?? string.Empty))
+                throw new NScript.Converter.ConverterLocationException(
+                    TryGetLocation(sourceNode, templateName) ?? new Location(templateName ?? "(razor)", 0, 0),
+                    $"'{expression.Trim()}': @RenderBody() and @RenderSlot(\"name\") are outlets; "
+                    + "use them alone as element content, not in an attribute or an expression.");
+
             var classification = new BindingClassification
             {
                 CSharpExpression = expression.Trim(),
@@ -1322,6 +1600,39 @@ namespace NScript.RazorSkin.TemplateIR
         }
 
         /// <summary>
+        /// The location of <paramref name="index"/> in <paramref name="html"/>, which starts at
+        /// <paramref name="start"/>: its line moves down by the newlines before the index.
+        /// Columns are 0-based, as in <see cref="TryGetLocation"/>.
+        /// </summary>
+        private static Location LocationAt(Location start, string html, int index)
+        {
+            if (start == null) return null;
+            int newlines = 0, lineStart = -1;
+            for (int i = 0; i < index; i++)
+            {
+                if (html[i] == '\n')
+                {
+                    newlines++;
+                    lineStart = i;
+                }
+            }
+
+            return newlines == 0
+                ? new Location(start.FileName, start.StartLine, start.StartColumn + index)
+                : new Location(start.FileName, start.StartLine + newlines, index - lineStart - 1);
+        }
+
+        /// <summary>
+        /// Where <paramref name="kept"/> starts: <paramref name="raw"/> starts at
+        /// <paramref name="rawLocation"/>, and <paramref name="kept"/> is a suffix of it whose
+        /// leading model echo and whitespace were stripped.
+        /// </summary>
+        private static Location ContentStartLocation(Location rawLocation, string raw, string kept)
+        {
+            return LocationAt(rawLocation, raw, raw.Length - kept.TrimStart().Length);
+        }
+
+        /// <summary>
         /// Scans HTML content for PascalCase tags that represent sub-controls.
         /// Extracts them into SubControlNode instances. <paramref name="hostLocation"/>
         /// is the preferred source anchor (e.g., the surrounding
@@ -1331,13 +1642,12 @@ namespace NScript.RazorSkin.TemplateIR
         /// Without the host-level anchor, all sub-controls would collapse to the
         /// parent's line (often line 1 for the <see cref="SkinTemplateNode"/> root).
         /// </summary>
-        private static string ExtractSubControlsFromHtml(string html, IRNode parent, string templateName = null, Location hostLocation = null)
+        /// <param name="contentLocation">Where <paramref name="html"/> itself starts, for the
+        /// Slot tags' own lines. <paramref name="hostLocation"/> stays the sub-controls' anchor.</param>
+        private static string ExtractSubControlsFromHtml(string html, IRNode parent, string templateName = null,
+            Location hostLocation = null, Location contentLocation = null)
         {
             if (string.IsNullOrEmpty(html)) return html;
-
-            html = PascalCaseClosingTagRegex.Replace(html, match =>
-                IsPascalCaseTag(match.Groups[1].Value) ? "" : match.Value);
-            var matches = PascalCaseTagRegex.Matches(html);
 
             // Sub-controls have no Razor intermediate node available, but they live inside
             // the host html content. Prefer the host htmlNode's Location; fall back to the
@@ -1345,19 +1655,40 @@ namespace NScript.RazorSkin.TemplateIR
             var parentLocation = hostLocation ?? parent?.Location;
             var offset = 0;
 
-            foreach (Match match in matches)
+            // Open and close tags in document order: caller content between them stays as
+            // sibling IR nodes, closed by a SubControlEndNode.
+            foreach (Match match in PascalCaseAnyTagRegex.Matches(html))
             {
-                var tagName = match.Groups[1].Value;
+                var tagName = match.Groups["name"].Value;
                 if (!IsPascalCaseTag(tagName)) continue;
 
                 AppendSubControlHtml(html.Substring(offset, match.Index - offset), parent, parentLocation);
+                offset = match.Index + match.Length;
 
-                var attrsStr = match.Groups[2].Success ? match.Groups[2].Value : "";
+                if (tagName == SlotTagName)
+                {
+                    var slotLocation = LocationAt(contentLocation ?? parentLocation, html, match.Index);
+                    parent.Children.Add(new HtmlNode
+                    {
+                        HtmlContent = SlotContentMarkerHtml(match, slotLocation, templateName),
+                        Location = slotLocation
+                    });
+                    continue;
+                }
+
+                if (match.Groups["closing"].Success)
+                {
+                    parent.Children.Add(new SubControlEndNode { Location = parentLocation });
+                    continue;
+                }
+
+                var attrsStr = match.Groups["attrs"].Success ? match.Groups["attrs"].Value : "";
                 var subControl = new SubControlNode
                 {
                     TypeName = tagName,
                     ResolvedTypeName = tagName, // Will be resolved later with namespace resolution
-                    Location = parentLocation
+                    Location = parentLocation,
+                    HasContent = !match.Groups["self"].Success
                 };
 
                 // Extract id attribute
@@ -1410,11 +1741,22 @@ namespace NScript.RazorSkin.TemplateIR
                 }
 
                 parent.Children.Add(subControl);
-                offset = match.Index + match.Length;
             }
 
             AppendSubControlHtml(html.Substring(offset), parent, parentLocation);
             return "";
+        }
+
+        /// <summary>
+        /// Appends markup to an @if branch or @foreach body, turning its PascalCase tags into
+        /// sub-control IR nodes (a closing-quote fragment can hold a content host's end tag).
+        /// </summary>
+        private static void AppendHtmlWithSubControls(
+            string html, List<IRNode> target, Location location, string templateName)
+        {
+            var holder = new SkinTemplateNode();
+            ExtractSubControlsFromHtml(html, holder, templateName, location);
+            target.AddRange(holder.Children);
         }
 
         private static void AppendSubControlHtml(string html, IRNode parent, Location location)

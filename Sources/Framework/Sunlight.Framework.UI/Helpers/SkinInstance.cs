@@ -204,6 +204,22 @@ namespace Sunlight.Framework.UI.Helpers
                 }
             }
 
+            // Razor caller content (<X>...</X>): set aside before the skin's nodes go in.
+            // Throws, moving nothing, when the skin has no outlet for it.
+            GraphBindingStrategy graph = this.isGraphMode ? (GraphBindingStrategy)this.bindingStrategy : null;
+            if (graph != null && skinable != null)
+            {
+                graph.TakeContent(skinable.Element, this.rootElement, this.parentFactory.Id,
+                    skinable.GetType().FullName);
+            }
+            else if (skinable != null && skinable.Element.HasAttribute("data-ns-content")
+                && skinable.Element.HasChildNodes())
+            {
+                // An XWML skin has no outlet: the content would show raw and unbound.
+                throw new Exception("Skin '" + this.parentFactory.Id + "' for " + skinable.GetType().FullName
+                    + " is not a Razor skin; it cannot take caller content.");
+            }
+
             this.skinableParent = skinable;
             this.bindingStrategy.SetDepth(skinable != null ? skinable.BindingDepth : 0);
 
@@ -214,6 +230,11 @@ namespace Sunlight.Framework.UI.Helpers
                 while(childNodes.Length > 0)
                 {
                     skinableElement.AppendChild(childNodes[0]);
+                }
+
+                if (graph != null)
+                {
+                    graph.PlaceContent(skinableElement);
                 }
             }
 
@@ -321,6 +342,7 @@ namespace Sunlight.Framework.UI.Helpers
         {
             if (!this.isDiposed)
             {
+                GraphBindingStrategy graph = this.isGraphMode ? (GraphBindingStrategy)this.bindingStrategy : null;
                 if (this.skinableParent != null)
                 {
                     var childNodes = this.skinableParent.Element.ChildNodes;
@@ -331,6 +353,13 @@ namespace Sunlight.Framework.UI.Helpers
                 }
 
                 this.bindingStrategy.Dispose();
+
+                if (graph != null && this.skinableParent != null)
+                {
+                    // Parks the caller content wherever the skin's nodes took it, then puts it back
+                    // on the host as it was before Bind; a re-skin takes the content again.
+                    graph.ReturnContent(this.skinableParent.Element);
+                }
 
                 this.isDiposed = true;
                 for (int i = 0, j = this.childElements.Length; i < j; i++)
