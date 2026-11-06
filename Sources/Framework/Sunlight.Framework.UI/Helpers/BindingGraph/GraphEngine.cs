@@ -829,22 +829,26 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             for (int idx = 0; idx < count; idx++)
             {
-                object item = items[idx];
-
                 Element clone = (Element)templateElement.CloneNode(true);
-
                 parent.InsertBefore(clone, marker);
                 itemElems[idx] = clone;
+            }
 
-                // Create child graph if item graph descriptor exists.
-                if (!object.IsNullOrUndefined(colInfo.ItemGraph))
+            // Commit before building row graphs, as HandleCollectionAdd does: when a later row
+            // throws, the rows built before it are tracked, so a clear, a Remove or Dispose
+            // retires them. The exception reaches the caller.
+            state.ChildGraphStates[nodeIdx] = childStates;
+            state.ItemElements[nodeIdx] = itemElems;
+
+            if (!object.IsNullOrUndefined(colInfo.ItemGraph))
+            {
+                for (int idx = 0; idx < count; idx++)
                 {
-                    childStates[idx] = GraphEngine.CreateCollectionItemGraph(state, colInfo, clone, item);
+                    GraphEngine.CreateCollectionItemGraph(
+                        state, colInfo, (Element)itemElems[idx], items[idx], childStates, idx);
                 }
             }
 
-            state.ChildGraphStates[nodeIdx] = childStates;
-            state.ItemElements[nodeIdx] = itemElems;
             GraphEngine.ReapplySelectTargets(desc, state, parent);
         }
 
@@ -873,13 +877,20 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         [System.Runtime.CompilerServices.Script(@"return n.nodeName == 'SELECT';")]
         private static extern bool IsSelectElement(Node n);
 
-        private static GraphState CreateCollectionItemGraph(
-            GraphState parentState, CollectionTargetInfo colInfo, Element clone, object item)
+        /// <summary>
+        /// Builds one row's graph into <paramref name="rows"/>[<paramref name="rowIdx"/>]. The row
+        /// is stored before it builds, so a row that throws stays tracked: removing it later
+        /// also removes any @if branch it rendered (RemoveChildGateElements).
+        /// </summary>
+        private static void CreateCollectionItemGraph(
+            GraphState parentState, CollectionTargetInfo colInfo, Element clone, object item,
+            NativeArray<GraphState> rows, int rowIdx)
         {
             NativeArray childElemRefs = GraphEngine.AssignMarkersToSlots(
                 colInfo.ItemGraph, GraphEngine.CollectSpanElements(clone));
 
             GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, parentState.Depth + 1);
+            rows[rowIdx] = childState;
             NativeArray itemContext = new NativeArray(3);
             itemContext[0] = parentState.Sources[GraphSourceSlot.DataContext];
             itemContext[1] = parentState.Sources[GraphSourceSlot.TemplateParent];
@@ -917,8 +928,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 catch (Exception) { }
                 throw first;
             }
-
-            return childState;
         }
 
         private static void RefreshCollectionItems(GraphState state, int nodeIdx)
@@ -1271,6 +1280,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// </summary>
         public static void RetireChildState(GraphDescriptor itemDesc, GraphState child)
         {
+            if (child.Disposed) return;
             child.Disposed = true;
             GraphEngine.UnwireChildSubscriptions(itemDesc, child);
             GraphEngine.CleanupEventListeners(itemDesc, child);
@@ -1529,8 +1539,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             if (object.IsNullOrUndefined(colInfo.ItemGraph)) return;
             for (int j = 0; j < addCount; j++)
             {
-                newChildStates[insertIdx + j] = GraphEngine.CreateCollectionItemGraph(
-                    state, colInfo, (Element)newItemElems[insertIdx + j], newItems[j]);
+                GraphEngine.CreateCollectionItemGraph(
+                    state, colInfo, (Element)newItemElems[insertIdx + j], newItems[j],
+                    newChildStates, insertIdx + j);
             }
         }
 
