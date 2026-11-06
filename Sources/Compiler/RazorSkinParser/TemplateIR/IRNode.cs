@@ -122,6 +122,13 @@ namespace NScript.RazorSkin.TemplateIR
         public string ElementId { get; set; }              // Part ID from id= attribute
         public string TagName { get; set; } = "div";       // Custom HTML tag from [TagName] attribute
         public List<KeyValuePair<string, string>> DomAttributes { get; set; } // From [DomAttribute] attributes
+
+        /// <summary>
+        /// Static <c>id</c>, <c>data-*</c> and <c>aria-*</c> attributes written on the control tag,
+        /// in source order, with their markup values. They go on the host element as written.
+        /// Bound ones are <see cref="SubControlPropertyBinding.IsHostAttribute"/> bindings.
+        /// </summary>
+        public List<KeyValuePair<string, string>> HostAttributes { get; set; } = new List<KeyValuePair<string, string>>();
         public List<SubControlPropertyBinding> PropertyBindings { get; set; } = new List<SubControlPropertyBinding>();
         public List<EventNode> EventBindings { get; set; } = new List<EventNode>();
 
@@ -148,5 +155,11 @@ namespace NScript.RazorSkin.TemplateIR
         public BindingClassification Classification { get; set; }
         public bool IsLiteral { get; set; }                 // Value has no Razor @ expression
         public bool IsDelegate { get; set; }                // Resolved target property is a delegate
+
+        /// <summary>
+        /// A bound <c>id</c>, <c>data-*</c> or <c>aria-*</c> on the control tag: an attribute of the
+        /// host element (<see cref="PropertyName"/> is the attribute name), never a C# property.
+        /// </summary>
+        public bool IsHostAttribute { get; set; }
     }
 }

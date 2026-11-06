@@ -76,8 +76,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                 if (!object.IsNullOrUndefined(clone))
                                 {
                                     GraphEngine.ResolveGateChildElems(desc, state, gateInfo, i, gateIsOpen);
-                                    GraphEngine.CreateSubControls(desc, state, clone,
-                                        GraphEngine.GetSubControlDataContext(state));
+                                    GraphEngine.CreateGateBranchSubControls(desc, state, i);
                                     // Only after both scans above: they read the branch by marker
                                     // position and data-ns-subctl index and must not see caller content.
                                     GraphEngine.PlaceGateBranchProjections(state, i);
@@ -142,9 +141,30 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             state.PendingCollectionChanges[i] = null;
                             if (!object.IsNullOrUndefined(previousValue))
                                 GraphEngine.DetachCollectionListener(state, i, previousValue);
-                            GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
-                            if (!object.IsNullOrUndefined(nodeVal))
-                                GraphEngine.RenderCollectionSource(desc, state, i, colInfo, nodeVal);
+
+                            // A row whose Dispose throws still lets the new collection render;
+                            // the first error then propagates.
+                            Exception first = null;
+                            try
+                            {
+                                GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
+                            }
+                            catch (Exception ex)
+                            {
+                                first = ex;
+                            }
+
+                            try
+                            {
+                                if (!object.IsNullOrUndefined(nodeVal))
+                                    GraphEngine.RenderCollectionSource(desc, state, i, colInfo, nodeVal);
+                            }
+                            catch (Exception ex)
+                            {
+                                if (first == null) first = ex;
+                            }
+
+                            if (first != null) throw first;
                         }
                     }
                 }
@@ -250,8 +270,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                     {
                                         // Resolve child elem refs from the new branch.
                                         GraphEngine.ResolveGateChildElems(desc, state, gateInfo, i, gateIsOpen);
-                                        GraphEngine.CreateSubControls(desc, state, clone,
-                                            GraphEngine.GetSubControlDataContext(state));
+                                        GraphEngine.CreateGateBranchSubControls(desc, state, i);
                                         // Only after both scans above: they read the branch by marker
                                         // position and data-ns-subctl index and must not see caller content.
                                         GraphEngine.PlaceGateBranchProjections(state, i);
@@ -264,9 +283,18 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                         if (!gateIsOpen && wasOpen)
                         {
-                            // Gate closed: reset true-branch, activate false-branch
-                            GraphEngine.ApplyGateClosure(desc, state, i);
-                            GraphEngine.MarkGatedConsumersDirty(desc, state, invertedRef);
+                            // Gate closed: reset true-branch, mark the false-branch dirty.
+                            // If resetting throws, the @else nodes are still marked dirty,
+                            // but the throw leaves this Flush pass: their text writes, events
+                            // and sub-control activation wait for the next Flush.
+                            try
+                            {
+                                GraphEngine.ApplyGateClosure(desc, state, i);
+                            }
+                            finally
+                            {
+                                GraphEngine.MarkGatedConsumersDirty(desc, state, invertedRef);
+                            }
                         }
                         else if (gateIsOpen && !wasOpen)
                         {
@@ -278,8 +306,16 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         {
                             // The false side was evaluated while its branch was absent, so its
                             // cached values would skip the writes to the new branch: reset them.
-                            GraphEngine.ApplyGateClosure(desc, state, invertedRef);
-                            GraphEngine.MarkGatedConsumersDirty(desc, state, invertedRef);
+                            // If resetting throws, they are still marked dirty, but the throw
+                            // leaves this Flush pass, so their writes wait for the next Flush.
+                            try
+                            {
+                                GraphEngine.ApplyGateClosure(desc, state, invertedRef);
+                            }
+                            finally
+                            {
+                                GraphEngine.MarkGatedConsumersDirty(desc, state, invertedRef);
+                            }
                         }
                     }
 
@@ -339,18 +375,37 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
                         if (!object.IsNullOrUndefined(colInfo))
                         {
-                            // Clear old collection items.
-                            GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
-
-                            // Detach old collection listener.
-                            if (!object.IsNullOrUndefined(oldVal))
+                            // Clear old collection items. A row whose Dispose throws still
+                            // lets the swap finish, so the old collection stops driving rows;
+                            // the first error then propagates.
+                            Exception first = null;
+                            try
                             {
-                                GraphEngine.DetachCollectionListener(state, i, oldVal);
+                                GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
+                            }
+                            catch (Exception ex)
+                            {
+                                first = ex;
                             }
 
-                            // Render new collection.
-                            if (!object.IsNullOrUndefined(newVal))
-                                GraphEngine.RenderCollectionSource(desc, state, i, colInfo, newVal);
+                            try
+                            {
+                                // Detach old collection listener.
+                                if (!object.IsNullOrUndefined(oldVal))
+                                {
+                                    GraphEngine.DetachCollectionListener(state, i, oldVal);
+                                }
+
+                                // Render new collection.
+                                if (!object.IsNullOrUndefined(newVal))
+                                    GraphEngine.RenderCollectionSource(desc, state, i, colInfo, newVal);
+                            }
+                            catch (Exception ex)
+                            {
+                                if (first == null) first = ex;
+                            }
+
+                            if (first != null) throw first;
                         }
                     }
 
@@ -589,6 +644,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // whoever still holds one must not write the model. Reopening wires the new ones.
             GraphEngine.UnwireGatedTwoWayValues(desc, state, gateIdx);
 
+            // A node that throws (a row whose Dispose throws) still lets every other gated
+            // node reset; the first error then propagates.
+            Exception first = null;
             for (int i = start; i < n; i++)
             {
                 if (desc.GateIndices[i] != gateIdx)
@@ -600,59 +658,78 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 state.Values[i] = desc.DefaultValues[i];
                 state.Dirty[i] = false;
 
-                int nodeType = desc.NodeTypes[i];
-
-                // DomTarget: apply default to DOM.
-                if (nodeType == GraphNodeType.DomTarget)
+                try
                 {
-                    DomTargetInfo targetInfo = (DomTargetInfo)desc.TargetInfos[i];
-                    if (!object.IsNullOrUndefined(targetInfo))
+                    GraphEngine.CloseGatedNode(desc, state, i, closedValue);
+                }
+                catch (Exception ex)
+                {
+                    if (first == null) first = ex;
+                }
+            }
+
+            if (first != null) throw first;
+        }
+
+        /// <summary>
+        /// Undoes one gated node's side effects after its value was reset: writes the default
+        /// to a DOM target, unbinds an event, detaches and clears a collection, or resets a
+        /// nested gate.
+        /// </summary>
+        private static void CloseGatedNode(GraphDescriptor desc, GraphState state, int i, object closedValue)
+        {
+            int nodeType = desc.NodeTypes[i];
+
+            // DomTarget: apply default to DOM.
+            if (nodeType == GraphNodeType.DomTarget)
+            {
+                DomTargetInfo targetInfo = (DomTargetInfo)desc.TargetInfos[i];
+                if (!object.IsNullOrUndefined(targetInfo))
+                {
+                    object elem = state.ElemRefs[targetInfo.ElemIdx];
+                    if (!object.IsNullOrUndefined(targetInfo.Setter) && !object.IsNullOrUndefined(elem))
                     {
-                        object elem = state.ElemRefs[targetInfo.ElemIdx];
-                        if (!object.IsNullOrUndefined(targetInfo.Setter) && !object.IsNullOrUndefined(elem))
+                        targetInfo.Setter(elem, desc.DefaultValues[i]);
+                    }
+                }
+            }
+            // EventBinding: unbind listener when gate closes.
+            else if (nodeType == GraphNodeType.EventBinding)
+            {
+                Action<Element, ElementEvent> handler =
+                    (Action<Element, ElementEvent>)state.EventListeners[i];
+                if (!object.IsNullOrUndefined(handler))
+                {
+                    EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
+                    if (!object.IsNullOrUndefined(evtInfo))
+                    {
+                        Element elem = GraphEngine.GetEventElement(state, evtInfo.ElemIdx);
+                        if (!object.IsNullOrUndefined(elem))
                         {
-                            targetInfo.Setter(elem, desc.DefaultValues[i]);
+                            elem.UnBind(evtInfo.EventName, handler);
                         }
                     }
+                    state.EventListeners[i] = null;
                 }
-                // EventBinding: unbind listener when gate closes.
-                else if (nodeType == GraphNodeType.EventBinding)
+            }
+            // CollectionManager: detach listener and clear items when gate closes.
+            else if (nodeType == GraphNodeType.CollectionManager)
+            {
+                // Values[i] was reset by the caller; the listener hangs off the collection it held.
+                if (!object.IsNullOrUndefined(closedValue))
                 {
-                    Action<Element, ElementEvent> handler =
-                        (Action<Element, ElementEvent>)state.EventListeners[i];
-                    if (!object.IsNullOrUndefined(handler))
-                    {
-                        EventTargetInfo evtInfo = (EventTargetInfo)desc.TargetInfos[i];
-                        if (!object.IsNullOrUndefined(evtInfo))
-                        {
-                            Element elem = GraphEngine.GetEventElement(state, evtInfo.ElemIdx);
-                            if (!object.IsNullOrUndefined(elem))
-                            {
-                                elem.UnBind(evtInfo.EventName, handler);
-                            }
-                        }
-                        state.EventListeners[i] = null;
-                    }
+                    GraphEngine.DetachCollectionListener(state, i, closedValue);
                 }
-                // CollectionManager: detach listener and clear items when gate closes.
-                else if (nodeType == GraphNodeType.CollectionManager)
-                {
-                    // Values[i] was reset above; the listener hangs off the collection it held.
-                    if (!object.IsNullOrUndefined(closedValue))
-                    {
-                        GraphEngine.DetachCollectionListener(state, i, closedValue);
-                    }
 
-                    CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
-                    if (!object.IsNullOrUndefined(colInfo))
-                    {
-                        GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
-                    }
-                }
-                else if (nodeType == GraphNodeType.Gate)
+                CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
+                if (!object.IsNullOrUndefined(colInfo))
                 {
-                    GraphEngine.ResetNestedGate(desc, state, i);
+                    GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
                 }
+            }
+            else if (nodeType == GraphNodeType.Gate)
+            {
+                GraphEngine.ResetNestedGate(desc, state, i);
             }
         }
 
@@ -672,9 +749,28 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             state.GateOpen[gateIdx] = false;
-            GraphEngine.ApplyGateClosure(desc, state, gateIdx);
-            GraphEngine.ApplyGateClosure(desc, state, -(gateIdx + 2));
+            // Both sides reset even when one throws; the first error then propagates.
+            Exception first = null;
+            try
+            {
+                GraphEngine.ApplyGateClosure(desc, state, gateIdx);
+            }
+            catch (Exception ex)
+            {
+                first = ex;
+            }
+
+            try
+            {
+                GraphEngine.ApplyGateClosure(desc, state, -(gateIdx + 2));
+            }
+            catch (Exception ex)
+            {
+                if (first == null) first = ex;
+            }
+
             state.Values[gateIdx] = null;
+            if (first != null) throw first;
         }
 
         /// <summary>
@@ -838,18 +934,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             // Parse the template HTML once, then clone per item to avoid
             // repeated innerHTML parsing.
-            Element templateElement = null;
-            if (!object.IsNullOrUndefined(colInfo.ItemTemplate))
-            {
-                templateElement = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
-            }
-            if (object.IsNullOrUndefined(templateElement)) return;
+            NativeArray<Element> template = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
+            if (object.IsNullOrUndefined(template)) return;
 
             for (int idx = 0; idx < count; idx++)
             {
-                Element clone = (Element)templateElement.CloneNode(true);
-                parent.InsertBefore(clone, marker);
-                itemElems[idx] = clone;
+                itemElems[idx] = GraphEngine.InsertRow(template, parent, marker);
             }
 
             // Commit before building row graphs, as HandleCollectionAdd does: when a later row
@@ -871,7 +961,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     try
                     {
                         GraphEngine.CreateCollectionItemGraph(
-                            state, colInfo, (Element)itemElems[idx], items[idx], childStates, idx);
+                            state, colInfo, (NativeArray<Element>)itemElems[idx], items[idx], childStates, idx);
                     }
                     catch (Exception ex)
                     {
@@ -911,16 +1001,17 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         private static extern bool IsSelectElement(Node n);
 
         /// <summary>
-        /// Builds one row's graph into <paramref name="rows"/>[<paramref name="rowIdx"/>]. The row
-        /// is stored before it builds, so a row that throws stays tracked: removing it later
-        /// also removes any @if branch it rendered (RemoveChildGateElements).
+        /// Builds a row's graph and stores it in <paramref name="rows"/>[<paramref name="rowIdx"/>]
+        /// before wiring anything, so a build that throws partway still leaves the row's state
+        /// tracked: removing or clearing the row retires the subscriptions, listeners and
+        /// controls it attached, and removes any @if branch it rendered (RemoveChildGateElements).
         /// </summary>
         private static void CreateCollectionItemGraph(
-            GraphState parentState, CollectionTargetInfo colInfo, Element clone, object item,
+            GraphState parentState, CollectionTargetInfo colInfo, NativeArray<Element> rowNodes, object item,
             NativeArray<GraphState> rows, int rowIdx)
         {
             NativeArray childElemRefs = GraphEngine.AssignMarkersToSlots(
-                colInfo.ItemGraph, GraphEngine.CollectSpanElements(clone));
+                colInfo.ItemGraph, GraphEngine.CollectGateSpanElements(rowNodes));
 
             GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, parentState.Depth + 1);
             rows[rowIdx] = childState;
@@ -935,7 +1026,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // The build error wins over one from the retire.
             try
             {
-                GraphEngine.CreateSubControls(colInfo.ItemGraph, childState, clone, item);
+                for (int k = 0; k < rowNodes.Length; k++)
+                    GraphEngine.CreateSubControls(colInfo.ItemGraph, childState, rowNodes[k], item);
 
                 // An item setter or Activate() can write to the item. Subscribe
                 // before invoking either and drain those notifications afterward.
@@ -1048,7 +1140,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphDescriptor desc, GraphState state, Element root, object defaultDataContext)
         {
             NativeArray<SubControlInfo> infos = desc.SubControls;
-            if (object.IsNullOrUndefined(infos) || object.IsNullOrUndefined(root)) return;
+            // A branch's top-level whitespace is a text node: it holds no host.
+            if (object.IsNullOrUndefined(infos) || object.IsNullOrUndefined(root)
+                || object.IsNullOrUndefined(root.TagName)) return;
 
             for (int i = 0; i < infos.Length; i++)
             {
@@ -1076,6 +1170,24 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 state.SubControlAppliedValues[i] = null;
                 state.SubControlBindingsInitialized[i] = false;
             }
+        }
+
+        /// <summary>
+        /// Creates the controls of a rendered gate branch. A branch can have several
+        /// top-level nodes, and a host can sit in any of them, not only the first.
+        /// </summary>
+        private static void CreateGateBranchSubControls(GraphDescriptor desc, GraphState state, int gateNodeIdx)
+        {
+            object dataContext = GraphEngine.GetSubControlDataContext(state);
+            NativeArray<Element> nodes = (NativeArray<Element>)state.GateExtraElements[gateNodeIdx];
+            if (object.IsNullOrUndefined(nodes))
+            {
+                GraphEngine.CreateSubControls(desc, state, (Element)state.GateElements[gateNodeIdx], dataContext);
+                return;
+            }
+
+            for (int k = 0; k < nodes.Length; k++)
+                GraphEngine.CreateSubControls(desc, state, nodes[k], dataContext);
         }
 
         public static void SetDefaultSubControlDataContext(
@@ -1342,7 +1454,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// rejected by FlushOne instead of writing to detached DOM, re-creating
         /// gated sub-controls, or re-attaching nested collection listeners. Then
         /// unwires its subscriptions, events, nested collections (recursively
-        /// retiring their items) and sub-controls.
+        /// retiring their items) and sub-controls. A second call does nothing: a row that
+        /// threw while it built is retired at once and again when it is removed.
         /// </summary>
         public static void RetireChildState(GraphDescriptor itemDesc, GraphState child)
         {
@@ -1369,56 +1482,36 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         public static void ClearCollectionItems(GraphDescriptor desc, GraphState state, int nodeIdx, CollectionTargetInfo colInfo)
         {
             NativeArray itemElems = state.ItemElements[nodeIdx];
-            NativeArray<GraphState> childStatesForCleanup = state.ChildGraphStates[nodeIdx];
-            if (!object.IsNullOrUndefined(itemElems))
-            {
-                for (int idx = 0; idx < itemElems.Length; idx++)
-                {
-                    // Remove gate elements from child graph before removing item element.
-                    if (!object.IsNullOrUndefined(childStatesForCleanup))
-                    {
-                        GraphState childState = childStatesForCleanup[idx];
-                        if (!object.IsNullOrUndefined(childState))
-                            GraphEngine.RemoveChildGateElements(childState);
-                    }
-
-                    Element elem = (Element)itemElems[idx];
-                    if (!object.IsNullOrUndefined(elem))
-                    {
-                        elem.Remove();
-                    }
-                }
-            }
-
-            // Dispose child graph states — clean up listeners recursively.
             NativeArray<GraphState> childStates = state.ChildGraphStates[nodeIdx];
-            if (!object.IsNullOrUndefined(childStates))
-            {
-                GraphDescriptor itemDesc = colInfo.ItemGraph;
 
-                for (int idx = 0; idx < childStates.Length; idx++)
-                {
-                    GraphState child = childStates[idx];
-                    if (object.IsNullOrUndefined(child))
-                    {
-                        continue;
-                    }
-
-                    // Clean up ALL listeners on child states: property, event, and collection.
-                    if (!object.IsNullOrUndefined(itemDesc))
-                    {
-                        GraphEngine.RetireChildState(itemDesc, child);
-                    }
-
-                    for (int v = 0; v < child.Values.Length; v++)
-                    {
-                        child.Values[v] = null;
-                    }
-                }
-            }
-
+            // Commit first, as HandleCollectionRemove does: a row whose sub-control Dispose
+            // throws must not leave stale rows behind for the next render.
             state.ChildGraphStates[nodeIdx] = null;
             state.ItemElements[nodeIdx] = null;
+
+            int count = !object.IsNullOrUndefined(itemElems) ? itemElems.Length
+                : !object.IsNullOrUndefined(childStates) ? childStates.Length : 0;
+            try
+            {
+                // Retires every row (listeners, events, nested collections, controls) and
+                // removes its nodes and gate content, even when one row throws.
+                GraphEngine.TearDownRemovedRows(colInfo.ItemGraph, childStates, itemElems, 0, count - 1);
+            }
+            finally
+            {
+                if (!object.IsNullOrUndefined(childStates))
+                {
+                    for (int idx = 0; idx < childStates.Length; idx++)
+                    {
+                        GraphState child = childStates[idx];
+                        if (object.IsNullOrUndefined(child)) continue;
+                        for (int v = 0; v < child.Values.Length; v++)
+                        {
+                            child.Values[v] = null;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1563,15 +1656,34 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             else if (args.Action == CollectionChangedAction.Reset)
             {
                 // Full reset: clear and re-render items without re-attaching the collection listener
-                // (we're already inside the listener callback).
-                GraphEngine.ClearCollectionItems(desc, state, nodeIdx, colInfo);
-                object collection = state.Values[nodeIdx];
-                if (!object.IsNullOrUndefined(collection))
+                // (we're already inside the listener callback). A row whose Dispose throws
+                // still lets the new contents render; the first error then propagates.
+                Exception first = null;
+                try
                 {
-                    IObservableCollection obsCol = GraphEngine.AsObservableCollection(collection);
-                    if (!object.IsNullOrUndefined(obsCol))
-                        GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, obsCol);
+                    GraphEngine.ClearCollectionItems(desc, state, nodeIdx, colInfo);
                 }
+                catch (Exception ex)
+                {
+                    first = ex;
+                }
+
+                try
+                {
+                    object collection = state.Values[nodeIdx];
+                    if (!object.IsNullOrUndefined(collection))
+                    {
+                        IObservableCollection obsCol = GraphEngine.AsObservableCollection(collection);
+                        if (!object.IsNullOrUndefined(obsCol))
+                            GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, obsCol);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (first == null) first = ex;
+                }
+
+                if (first != null) throw first;
             }
 
             GraphEngine.ReapplySelectTargets(desc, state, parent);
@@ -1605,26 +1717,24 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             // Find the reference node for InsertBefore.
+            // Where the next row starts; rows are inserted before it.
             Node refNode = marker;
             if (insertIdx < oldCount && !object.IsNullOrUndefined(itemElems))
             {
-                refNode = (Node)itemElems[insertIdx];
+                refNode = GraphEngine.RowStart(
+                    colInfo.ItemGraph,
+                    !object.IsNullOrUndefined(childStates) ? childStates[insertIdx] : null,
+                    (NativeArray<Element>)itemElems[insertIdx]);
             }
 
             // Parse template once, then clone per item.
-            Element templateElement = null;
-            if (!object.IsNullOrUndefined(colInfo.ItemTemplate))
-            {
-                templateElement = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
-            }
-            if (object.IsNullOrUndefined(templateElement)) return;
+            NativeArray<Element> template = GraphEngine.ParseTemplateHtml((string)colInfo.ItemTemplate, marker);
+            if (object.IsNullOrUndefined(template)) return;
 
             // Insert new items.
             for (int j = 0; j < addCount; j++)
             {
-                Element clone = (Element)templateElement.CloneNode(true);
-                parent.InsertBefore(clone, refNode);
-                newItemElems[insertIdx + j] = clone;
+                newItemElems[insertIdx + j] = GraphEngine.InsertRow(template, parent, refNode);
             }
 
             // Copy items after insertion point.
@@ -1650,7 +1760,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 try
                 {
                     GraphEngine.CreateCollectionItemGraph(
-                        state, colInfo, (Element)newItemElems[insertIdx + j], newItems[j],
+                        state, colInfo, (NativeArray<Element>)newItemElems[insertIdx + j], newItems[j],
                         newChildStates, insertIdx + j);
                 }
                 catch (Exception ex)
@@ -1679,32 +1789,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             int oldCount = itemElems.Length;
             int newCount = oldCount - removeCount;
 
-            // Remove DOM elements (backwards to avoid index shifting).
-            // Also remove any gate elements from child graph states —
-            // gates render their content as siblings of the item element,
-            // so removing just the item element leaves gate content behind.
-            for (int j = removeIdx + removeCount - 1; j >= removeIdx; j--)
-            {
-                if (!object.IsNullOrUndefined(childStates))
-                {
-                    GraphState childState = childStates[j];
-                    if (!object.IsNullOrUndefined(childState) && !object.IsNullOrUndefined(colInfo.ItemGraph))
-                    {
-                        // Dispose child graph state: unwire subscriptions, events,
-                        // nested collections, and remove gate DOM elements.
-                        GraphEngine.RetireChildState(colInfo.ItemGraph, childState);
-                        GraphEngine.RemoveChildGateElements(childState);
-                    }
-                }
-
-                Element elem = (Element)itemElems[j];
-                if (!object.IsNullOrUndefined(elem))
-                {
-                    elem.Remove();
-                }
-            }
-
-            // Rebuild arrays without removed items.
+            // Commit the bookkeeping before tearing rows down: a row whose
+            // sub-control Dispose throws must not leave rows out of step.
             NativeArray<GraphState> newChildStates = new NativeArray<GraphState>(newCount);
             NativeArray newItemElems = new NativeArray(newCount);
 
@@ -1721,6 +1807,74 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             state.ChildGraphStates[nodeIdx] = newChildStates;
             state.ItemElements[nodeIdx] = newItemElems;
+
+            GraphEngine.TearDownRemovedRows(
+                colInfo.ItemGraph, childStates, itemElems, removeIdx, removeIdx + removeCount - 1);
+        }
+
+        /// <summary>
+        /// Tears down rows [from, to] in order. A row that throws still lets the
+        /// remaining rows leave the DOM; the first error then propagates.
+        /// </summary>
+        private static void TearDownRemovedRows(
+            GraphDescriptor itemDesc, NativeArray<GraphState> childStates, NativeArray itemElems, int from, int to)
+        {
+            Exception first = null;
+            for (int j = from; j <= to; j++)
+            {
+                try
+                {
+                    GraphState childState = !object.IsNullOrUndefined(childStates) ? childStates[j] : null;
+                    NativeArray<Element> rowNodes = !object.IsNullOrUndefined(itemElems)
+                        ? (NativeArray<Element>)itemElems[j]
+                        : null;
+                    GraphEngine.TearDownRow(itemDesc, childState, rowNodes);
+                }
+                catch (Exception ex)
+                {
+                    if (first == null) first = ex;
+                }
+            }
+
+            if (first != null) throw first;
+        }
+
+        /// <summary>
+        /// Retires one row's graph, then removes its gate content and every top-level
+        /// node of the row even when retiring throws (the first error then propagates).
+        /// Gates render as siblings of the row's nodes, so removing just those nodes
+        /// would leave gate content behind.
+        /// </summary>
+        private static void TearDownRow(GraphDescriptor itemDesc, GraphState childState, NativeArray<Element> rowNodes)
+        {
+            Exception first = null;
+            try
+            {
+                if (!object.IsNullOrUndefined(childState) && !object.IsNullOrUndefined(itemDesc))
+                    GraphEngine.RetireChildState(itemDesc, childState);
+            }
+            catch (Exception ex)
+            {
+                first = ex;
+            }
+
+            try
+            {
+                if (!object.IsNullOrUndefined(childState))
+                    GraphEngine.RemoveChildGateElements(childState);
+            }
+            catch (Exception ex)
+            {
+                if (first == null) first = ex;
+            }
+
+            if (!object.IsNullOrUndefined(rowNodes))
+            {
+                for (int k = 0; k < rowNodes.Length; k++)
+                    rowNodes[k].Remove();
+            }
+
+            if (first != null) throw first;
         }
 
         /// <summary>
@@ -1732,8 +1886,28 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             // Reuse the remove/add paths so a replacement gets a new graph and
             // control while unaffected items retain their existing instances.
-            GraphEngine.HandleCollectionRemove(state, nodeIdx, colInfo, args);
-            GraphEngine.HandleCollectionAdd(state, nodeIdx, colInfo, args, marker, parent);
+            // The new row is added even when retiring the old one throws; the first
+            // error then propagates.
+            Exception first = null;
+            try
+            {
+                GraphEngine.HandleCollectionRemove(state, nodeIdx, colInfo, args);
+            }
+            catch (Exception ex)
+            {
+                first = ex;
+            }
+
+            try
+            {
+                GraphEngine.HandleCollectionAdd(state, nodeIdx, colInfo, args, marker, parent);
+            }
+            catch (Exception ex)
+            {
+                if (first == null) first = ex;
+            }
+
+            if (first != null) throw first;
         }
 
         /// <summary>
@@ -1885,6 +2059,12 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             int subCount = subscriptions.Length;
             NativeArray listeners = new NativeArray(subCount);
 
+            // Record before attaching: a getter that throws partway (a chained path's owner)
+            // leaves the listeners attached so far where UnwireChildSubscriptions finds them.
+            childState.Listeners = listeners;
+            childState.ListenerCount = subCount;
+            childState.SubscriptionsActive = true;
+
             for (int i = 0; i < subCount; i++)
             {
                 SubscriptionEntry entry = (SubscriptionEntry)subscriptions[i];
@@ -1910,10 +2090,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 observable.AddPropertyChangedListener(entry.PropertyName, callback);
                 listeners[i] = callback;
             }
-
-            childState.Listeners = listeners;
-            childState.ListenerCount = subCount;
-            childState.SubscriptionsActive = true;
         }
 
         /// <summary>
@@ -1959,11 +2135,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         /// <summary>
         /// True when a subscription entry describes a chained property path (e.g. Model.Child.Leaf)
-        /// that must listen on every object along the path, not just the root.
+        /// that must listen on every object along the path, not just the root. A one-segment
+        /// entry that carries owner getters is chained too: the compiler emits it for Model.X in
+        /// a loop inside a loop, whose source slot cannot reach the model.
         /// </summary>
         public static bool IsChainedEntry(SubscriptionEntry entry)
         {
-            return !object.IsNullOrUndefined(entry.PathSegments) && entry.PathSegments.Length > 1;
+            return !object.IsNullOrUndefined(entry.PathSegments)
+                && (entry.PathSegments.Length > 1 || !object.IsNullOrUndefined(entry.ChainParentGetters));
         }
 
         /// <summary>
@@ -1980,7 +2159,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             NativeArray<string> segments = entry.PathSegments;
             if (object.IsNullOrUndefined(segments)) return;
 
+            // Stored first: an owner getter that throws partway still leaves the hops attached
+            // so far where UnwireChainedSubscription finds them.
             NativeArray<ChainListenerHandle> handles = new NativeArray<ChainListenerHandle>(0);
+            state.ChainListeners[entryIndex] = handles;
             Action<INotifyPropertyChanged, string> callback =
                 GraphEngine.CreateChainCallback(state, entry, entryIndex);
 
@@ -2007,8 +2189,6 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
                 GraphEngine.AttachChainListener(handles, owner, segments[k], callback);
             }
-
-            state.ChainListeners[entryIndex] = handles;
         }
 
         /// <summary>
@@ -2064,10 +2244,38 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             return delegate(INotifyPropertyChanged sender, string propName)
             {
                 if (state.Suspended) return;
-                GraphEngine.UnwireChainedSubscription(state, entryIndex);
-                GraphEngine.WireChainedSubscription(state, entry, entryIndex);
+
+                // A leaf change moves no owner (owners are the path before the leaf), so the
+                // hops stay wired: re-wiring here would unhook and re-hook every row's
+                // listeners on each change of a shared model property.
+                if (!GraphEngine.IsChainLeafChange(state, entry, entryIndex, sender, propName))
+                {
+                    GraphEngine.UnwireChainedSubscription(state, entryIndex);
+                    GraphEngine.WireChainedSubscription(state, entry, entryIndex);
+                }
+
                 GraphEngine.NotifyDirty(state, entry.NodeIdx);
             };
+        }
+
+        /// <summary>
+        /// True when a chained subscription fired for its leaf hop only: the chain is fully
+        /// wired, the sender and property are the last hop's, and no earlier hop listens to
+        /// the same object and property (then the change could also move an owner).
+        /// </summary>
+        private static bool IsChainLeafChange(
+            GraphState state, SubscriptionEntry entry, int entryIndex,
+            INotifyPropertyChanged sender, string propName)
+        {
+            if (string.IsNullOrEmpty(propName) || object.IsNullOrUndefined(state.ChainListeners)) return false;
+            NativeArray<ChainListenerHandle> handles = state.ChainListeners[entryIndex];
+            if (object.IsNullOrUndefined(handles) || handles.Length != entry.PathSegments.Length) return false;
+
+            int last = handles.Length - 1;
+            if (handles[last].Observable != sender || handles[last].PropertyName != propName) return false;
+            for (int k = 0; k < last; k++)
+                if (handles[k].Observable == sender && handles[k].PropertyName == propName) return false;
+            return true;
         }
 
         private static object GetCollectionItemSource(GraphState childState, int sourceSlot)
@@ -2195,7 +2403,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         /// <summary>
         /// Collects compiler-generated markers across every top-level node of a
-        /// gate branch, each node first and then its descendants, in document order.
+        /// gate branch or a @foreach row, each node first and then its descendants,
+        /// in document order.
         /// </summary>
         public static NativeArray CollectGateSpanElements(NativeArray<Element> nodes)
         {
@@ -2408,20 +2617,68 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
-        /// Parses an HTML template string into a DOM Element by creating a temporary
-        /// container, setting its innerHTML, and returning the first child element.
-        /// Uses the marker element's ownerDocument to create the container.
+        /// Parses a row template into every top-level node (elements and text, in order),
+        /// copied out of the live list. A row is all of them, not just the first: a
+        /// <c>&lt;td/&gt;&lt;td/&gt;</c> row or a void root's trailing event marker has
+        /// several. Null for an empty template.
         /// </summary>
-        public static Element ParseTemplateHtml(string html, Element referenceElement)
+        public static NativeArray<Element> ParseTemplateHtml(string html, Element referenceElement)
         {
             if (object.IsNullOrUndefined(html) || html == "")
                 return null;
 
             NativeArray<Node> children = GraphEngine.ParseFragmentNodes(referenceElement.OwnerDocument, html);
-            if (children.Length > 0)
-                return (Element)children[0];
+            NativeArray<Element> nodes = new NativeArray<Element>(0);
+            for (int k = 0; k < children.Length; k++) nodes.Push((Element)children[k]);
+            return nodes.Length > 0 ? nodes : null;
+        }
 
-            return null;
+        /// <summary>
+        /// The node a row starts at. A gate renders its branch just before its marker, so
+        /// when the row's first node is an open gate's marker the row starts at that
+        /// branch's first node (and again if that node is itself an open gate's marker).
+        /// </summary>
+        private static Node RowStart(GraphDescriptor itemDesc, GraphState row, NativeArray<Element> rowNodes)
+        {
+            Node start = rowNodes[0];
+            if (object.IsNullOrUndefined(itemDesc) || object.IsNullOrUndefined(row)
+                || object.IsNullOrUndefined(row.GateElements))
+                return start;
+
+            bool moved = true;
+            while (moved)
+            {
+                moved = false;
+                for (int g = 0; g < itemDesc.NodeCount; g++)
+                {
+                    if (itemDesc.NodeTypes[g] != GraphNodeType.Gate) continue;
+                    GateTargetInfo gate = (GateTargetInfo)itemDesc.TargetInfos[g];
+                    Node branch = (Node)row.GateElements[g];
+                    if (object.IsNullOrUndefined(gate) || object.IsNullOrUndefined(branch)) continue;
+                    if ((object)row.ElemRefs[gate.MarkerIdx] != (object)start) continue;
+                    start = branch;
+                    moved = true;
+                    break;
+                }
+            }
+
+            return start;
+        }
+
+        /// <summary>
+        /// Deep-clones every template node and inserts the copies, in order, before
+        /// <paramref name="refNode"/>. Returns the new row's top-level nodes.
+        /// </summary>
+        private static NativeArray<Element> InsertRow(NativeArray<Element> template, Node parent, Node refNode)
+        {
+            NativeArray<Element> row = new NativeArray<Element>(template.Length);
+            for (int k = 0; k < template.Length; k++)
+            {
+                row[k] = template[k].CloneNode(true);
+                parent.InsertBefore(row[k], refNode);
+            }
+
+            return row;
         }
 
         /// <summary>

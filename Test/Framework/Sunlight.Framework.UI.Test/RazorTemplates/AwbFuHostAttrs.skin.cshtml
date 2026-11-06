@@ -1,0 +1,9 @@
+@model Sunlight.Framework.UI.Test.HostAttrVm
+<div>
+    <RazorProbeControl data-test="ha-static" id="ha-id" aria-label="static label" Text="t" />
+    <RazorProbeControl data-test="ha-bound" data-x="@Model.Label" aria-label="@Model.Label" id="@Model.HostId" />
+    @foreach (var row in Model.Rows)
+    {
+        <RazorProbeControl data-test="ha-row" data-name="@row.Name" />
+    }
+</div>

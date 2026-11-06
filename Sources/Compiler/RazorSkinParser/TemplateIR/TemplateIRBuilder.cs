@@ -133,6 +133,12 @@ namespace NScript.RazorSkin.TemplateIR
             return tag.Groups["self"].Success ? start + SlotContentEndHtml : start;
         }
 
+        /// <summary>True for the boundary markers a caller's <c>&lt;Slot&gt;</c> tag compiles to.</summary>
+        internal static bool IsSlotContentMarker(IRNode node)
+            => node is HtmlNode html
+                && ((html.HtmlContent ?? "").Contains("<template data-ns-slot-for=")
+                    || (html.HtmlContent ?? "").Contains(SlotContentEndHtml));
+
         internal static bool IsSlotOutlet(IRNode node, out string name)
         {
             var match = node is HtmlNode html ? SlotOutletHtmlRegex.Match(html.HtmlContent ?? "") : Match.Empty;
@@ -187,9 +193,7 @@ namespace NScript.RazorSkin.TemplateIR
                         + "open and close the control in the same block.");
                 else if (node is SubControlEndNode)
                     open.Pop();
-                else if (open.Count == 0 && node is HtmlNode html
-                    && ((html.HtmlContent ?? "").Contains("<template data-ns-slot-for=")
-                        || (html.HtmlContent ?? "").Contains(SlotContentEndHtml)))
+                else if (open.Count == 0 && IsSlotContentMarker(node))
                     throw new NScript.Converter.ConverterLocationException(
                         node.Location ?? new Location(templateName ?? "(razor)", 0, 0),
                         "<Slot> names caller content for a control: put it directly inside the control's tag, "
@@ -338,13 +342,30 @@ namespace NScript.RazorSkin.TemplateIR
 
         // Regex to extract id attribute from an attribute string
         private static readonly Regex IdAttributeRegex = new Regex(
-            @"\bid\s*=\s*(?:""([^""]*)""|'([^']*)')",
+            @"(?<![\w-])id\s*=\s*(?:""([^""]*)""|'([^']*)')",
             RegexOptions.Compiled);
 
-        // Regex to extract attribute name=value pairs
+        // Regex to extract attribute name=value pairs (names may hold '-': data-x, aria-label)
         private static readonly Regex AttributeRegex = new Regex(
-            @"\b(\w+)\s*=\s*(?:""([^""]*)""|'([^']*)')",
+            @"(?<![\w-])(\w[\w-]*)\s*=\s*(?:""([^""]*)""|'([^']*)')",
             RegexOptions.Compiled);
+
+        /// <summary>
+        /// The prefix of the compiler's own marker attributes (data-ns-subctl, data-ns-m,
+        /// data-ns-content, ...). A control tag may not set one: its host element carries them.
+        /// </summary>
+        private const string ReservedAttributePrefix = "data-ns-";
+
+        /// <summary>
+        /// <c>id</c>, <c>data-*</c> and <c>aria-*</c> on a control tag are HTML attributes of the
+        /// control's host element, never C# properties of the control. Only lowercase <c>id</c>
+        /// counts, as in IdAttributeRegex: <c>Id=</c> / <c>ID=</c> bind a C# property.
+        /// <c>data-ns-*</c> never gets here: it is a compile error (ReservedAttributePrefix).
+        /// </summary>
+        internal static bool IsHostAttributeName(string name)
+            => string.Equals(name, "id", StringComparison.Ordinal)
+                || name.StartsWith("data-", StringComparison.OrdinalIgnoreCase)
+                || name.StartsWith("aria-", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// Classify the binding source kind from a C# expression string (M6).
@@ -1691,10 +1712,13 @@ namespace NScript.RazorSkin.TemplateIR
                     HasContent = !match.Groups["self"].Success
                 };
 
-                // Extract id attribute
+                // A static id also names the control as a skin part; a bound one cannot.
                 var idMatch = IdAttributeRegex.Match(attrsStr);
-                if (idMatch.Success)
-                    subControl.ElementId = idMatch.Groups[1].Success ? idMatch.Groups[1].Value : idMatch.Groups[2].Value;
+                var idValue = !idMatch.Success ? null
+                    : idMatch.Groups[1].Success ? idMatch.Groups[1].Value : idMatch.Groups[2].Value;
+                if (idValue != null && !idValue.StartsWith("@", StringComparison.Ordinal)
+                    && !idValue.StartsWith(RazorSkinPreprocessor.EscapedSubControlAt, StringComparison.Ordinal))
+                    subControl.ElementId = idValue;
 
                 // Extract property bindings from attributes (non-event attributes with values)
                 var attrMatches = AttributeRegex.Matches(attrsStr);
@@ -1705,7 +1729,34 @@ namespace NScript.RazorSkin.TemplateIR
                     if (attrValue.StartsWith(RazorSkinPreprocessor.EscapedSubControlAt, StringComparison.Ordinal))
                         attrValue = "@" + attrValue.Substring(RazorSkinPreprocessor.EscapedSubControlAt.Length);
 
-                    if (attrName == "id") continue; // Already handled
+                    if (attrName.StartsWith(ReservedAttributePrefix, StringComparison.OrdinalIgnoreCase))
+                        throw new NScript.Converter.ConverterLocationException(
+                            LocationAt(contentLocation ?? parentLocation, html, match.Index)
+                                ?? new Location(templateName ?? "(razor)", 0, 0),
+                            $"<{tagName}> cannot set {attrName}: {ReservedAttributePrefix}* attributes are reserved "
+                            + "for the compiler's markers. Rename the attribute.");
+
+                    if (IsHostAttributeName(attrName))
+                    {
+                        if (!attrValue.StartsWith("@", StringComparison.Ordinal))
+                        {
+                            subControl.HostAttributes.Add(new KeyValuePair<string, string>(attrName, attrValue));
+                            continue;
+                        }
+
+                        subControl.PropertyBindings.Add(new SubControlPropertyBinding
+                        {
+                            PropertyName = attrName,
+                            Classification = new BindingClassification
+                            {
+                                CSharpExpression = UnwrapSubControlExpression(attrValue),
+                                Mode = BindingMode.OneTime,
+                                SourceKind = ClassifySource(attrValue)
+                            },
+                            IsHostAttribute = true
+                        });
+                        continue;
+                    }
 
                     if (EventAttributes.Contains(attrName.ToLower()) && attrValue.TrimStart().StartsWith("@"))
                     {
