@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.FuVm
+<div>@if (Model.Flag) { <div data-test="m2-box">@foreach (var i in Model.Items) { <b>@i.Name</b><i onclick="@i.Select">@i.Name</i> }</div> }</div>

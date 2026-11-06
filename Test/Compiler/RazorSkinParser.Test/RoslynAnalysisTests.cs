@@ -224,6 +224,78 @@ public class ItemVM : ObservableObject
             topology.GetterExpressions.Should().Contain("Model.Name").And.Contain("item.Name");
         }
 
+        [TestMethod]
+        public void ForeachVariableEndingInModel_IsNotReadAsTheTemplateModel()
+        {
+            // "viewModel.Name" contains "Model.Name"; only the loop item is a source.
+            var vmSource = @"
+using Sunlight.Framework.Observables;
+public class TestVM : ObservableObject
+{
+    public string Name { get; set; }
+    public ObservableCollection<ItemVM> Items { get; set; }
+}
+public class ItemVM : ObservableObject
+{
+    public string Name { get; set; }
+}";
+            var template = @"
+@model TestVM
+@foreach (var viewModel in Model.Items)
+{
+    <span title=""@viewModel.Name"">@viewModel.Name</span>
+    <SearchBox Text=""@viewModel.Name"" />
+}";
+
+            var ir = BuildAndAnalyze(template, vmSource);
+
+            var classifications = FindNodes<ExpressionBindingNode>(ir).Select(binding => binding.Classification)
+                .Concat(FindNodes<SubControlNode>(ir).SelectMany(sub => sub.PropertyBindings)
+                    .Select(binding => binding.Classification))
+                .ToList();
+            classifications.Should().HaveCount(3);
+            classifications.Should().OnlyContain(classification =>
+                classification.Dependencies.Count == 1
+                && classification.Dependencies[0].SourceExpressionPrefix != "Model.");
+
+            var itemTopology = NScript.RazorSkin.CodeGen.GraphTopologyBuilder.Build(ir)
+                .Collections.Single().ItemTopology;
+            itemTopology.GetterExpressions.Should().NotContain("Model.Name", "every read is the loop item's Name");
+            itemTopology.Subscriptions.Should().OnlyContain(entry => entry.SourceSlot == 2);
+        }
+
+        [DataTestMethod]
+        [DataRow("@if (i.Flag) { <span>@i.Name</span> }<SearchBox Value=\"@i.Name\" />", DisplayName = "control after the @if")]
+        [DataRow("<SearchBox Value=\"@i.Name\" />@if (i.Flag) { <span>@i.Name</span> }", DisplayName = "control before the @if")]
+        public void ForeachSubControlOutsideIf_SharingAnObservableRowValue_KeepsItUngated(string row)
+        {
+            // After analysis both reads are one-dependency bindings keyed "i.Name", so they share a
+            // Property node; the control reads it directly and sits outside the gate.
+            var vmSource = @"
+using Sunlight.Framework.Observables;
+public class TestVM : ObservableObject
+{
+    public ObservableCollection<ItemVM> Items { get; set; }
+}
+public class ItemVM : ObservableObject
+{
+    public bool Flag { get; set; }
+    public string Name { get; set; }
+}";
+            var template = "@model TestVM\n@foreach (var i in Model.Items)\n{\n    <div>" + row + "</div>\n}";
+
+            var ir = BuildAndAnalyze(template, vmSource);
+            FindNodes<SubControlNode>(ir).Single().PropertyBindings.Single()
+                .Classification.Dependencies.Should().ContainSingle();
+            var itemTopology = NScript.RazorSkin.CodeGen.GraphTopologyBuilder.Build(ir)
+                .Collections.Single().ItemTopology;
+
+            int controlRead = itemTopology.SubControls.Single().PropertyBindings.Single().NodeIdx;
+            int textRead = itemTopology.ParentIndices[itemTopology.DomTargets.Single().NodeIdx].Single();
+            textRead.Should().Be(controlRead, "both read one i.Name Property node");
+            itemTopology.GateIndices[controlRead].Should().Be(-1, "the control outside the @if needs i.Name while it is closed");
+        }
+
         // --- Chained and computed loop sources (1.1.12) ---
 
         [TestMethod]

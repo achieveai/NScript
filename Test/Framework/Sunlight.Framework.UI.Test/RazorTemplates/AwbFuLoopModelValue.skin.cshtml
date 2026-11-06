@@ -1,0 +1,7 @@
+@model Sunlight.Framework.UI.Test.NestVm
+<div>
+@foreach (var item in Model.Groups)
+{
+    <span data-test="s-row"><input data-test="s-input" value="@Model.Title" /></span>
+}
+</div>

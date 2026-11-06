@@ -103,6 +103,9 @@ namespace NScript.RazorSkin.CodeGen
     {
         public int NodeIdx { get; set; }
         public string TargetPropertyName { get; set; }
+
+        /// <summary>The target is an attribute of the control's host element, named <see cref="TargetPropertyName"/>.</summary>
+        public bool IsHostAttribute { get; set; }
         public string GetterExpression { get; set; }
         public string TwoWaySourceProperty { get; set; }
         public int TwoWaySourceSlot { get; set; }
@@ -448,13 +451,33 @@ namespace NScript.RazorSkin.CodeGen
                 return "Control." + dependency.PropertyName;
             if (!string.IsNullOrEmpty(itemVariablePrefix))
             {
-                if ((expression ?? string.Empty).Contains("Model." + dependency.PropertyName))
+                if (ContainsReference(expression, "Model." + dependency.PropertyName))
                     return "Model." + dependency.PropertyName;
-                if ((expression ?? string.Empty).Contains(itemVariablePrefix + dependency.PropertyName))
+                if (ContainsReference(expression, itemVariablePrefix + dependency.PropertyName))
                     return itemVariablePrefix + dependency.PropertyName;
             }
             return dependency.PropertyName;
         }
+
+        /// <summary>
+        /// True when <paramref name="reference"/> (e.g. <c>Model.Name</c>) appears as a whole member
+        /// path: <c>viewModel.Name</c> and <c>Model.NameX</c> do not contain <c>Model.Name</c>.
+        /// </summary>
+        private static bool ContainsReference(string expression, string reference)
+        {
+            expression = expression ?? string.Empty;
+            for (int idx = expression.IndexOf(reference, System.StringComparison.Ordinal); idx >= 0;
+                idx = expression.IndexOf(reference, idx + 1, System.StringComparison.Ordinal))
+            {
+                int end = idx + reference.Length;
+                bool startsWord = idx == 0 || !IsIdentifierChar(expression[idx - 1]) && expression[idx - 1] != '.';
+                bool endsWord = end == expression.Length || !IsIdentifierChar(expression[end]);
+                if (startsWord && endsWord) return true;
+            }
+            return false;
+        }
+
+        private static bool IsIdentifierChar(char c) => char.IsLetterOrDigit(c) || c == '_';
 
         /// <summary>
         /// Subscribes <paramref name="valueIdx"/> to reads the Roslyn analysis does not report as
@@ -718,6 +741,7 @@ namespace NScript.RazorSkin.CodeGen
                     {
                         NodeIdx = delegateIdx,
                         TargetPropertyName = propBinding.PropertyName,
+                        IsHostAttribute = propBinding.IsHostAttribute,
                         GetterExpression = expression,
                         TwoWaySourceProperty = twoWaySourceProperty,
                         TwoWaySourceSlot = twoWaySourceSlot
@@ -741,11 +765,13 @@ namespace NScript.RazorSkin.CodeGen
                     if (gateIndex != -1) ctx.SetGateIndex(valueIdx, gateIndex);
                     if (!propBinding.IsLiteral)
                         SubscribeUndetectedReads(ctx, expression, deps, valueIdx);
+                    ctx.AddDirectReader(valueIdx, gateIndex);
 
                     subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {
                         NodeIdx = valueIdx,
                         TargetPropertyName = propBinding.PropertyName,
+                        IsHostAttribute = propBinding.IsHostAttribute,
                         GetterExpression = expression,
                         TwoWaySourceProperty = twoWaySourceProperty,
                         TwoWaySourceSlot = twoWaySourceSlot
@@ -773,11 +799,13 @@ namespace NScript.RazorSkin.CodeGen
                         ctx.AddEdge(propIdx, valueIdx);
                     }
                     SubscribeUndetectedReads(ctx, expression, deps, valueIdx);
+                    ctx.AddDirectReader(valueIdx, gateIndex);
 
                     subTopo.PropertyBindings.Add(new SubControlPropertyTopology
                     {
                         NodeIdx = valueIdx,
                         TargetPropertyName = propBinding.PropertyName,
+                        IsHostAttribute = propBinding.IsHostAttribute,
                         GetterExpression = expression,
                         TwoWaySourceProperty = twoWaySourceProperty,
                         TwoWaySourceSlot = twoWaySourceSlot
@@ -814,6 +842,7 @@ namespace NScript.RazorSkin.CodeGen
                     {
                         NodeIdx = computedIdx,
                         TargetPropertyName = propBinding.PropertyName,
+                        IsHostAttribute = propBinding.IsHostAttribute,
                         GetterExpression = expression,
                         TwoWaySourceProperty = twoWaySourceProperty,
                         TwoWaySourceSlot = twoWaySourceSlot
@@ -881,6 +910,10 @@ namespace NScript.RazorSkin.CodeGen
 
             // Property deduplication: key = propertyName, value = node index
             private readonly Dictionary<string, int> _propertyNodeMap = new Dictionary<string, int>();
+
+            // Gates of readers that take a node's value directly, with no consumer edge
+            // (sub-control property bindings, Skin="@..." included). Key = node index.
+            private readonly Dictionary<int, List<int>> _directReaderGates = new Dictionary<int, List<int>>();
 
             // Subscription deduplication: key = propertyName
             private readonly HashSet<string> _subscribedProperties = new HashSet<string>();
@@ -1070,6 +1103,34 @@ namespace NScript.RazorSkin.CodeGen
                 return _elemCounter++;
             }
 
+            /// <summary>Records a reader that uses <paramref name="nodeIdx"/>'s value without a consumer edge.</summary>
+            public void AddDirectReader(int nodeIdx, int gateIdx)
+            {
+                if (!_directReaderGates.TryGetValue(nodeIdx, out var gates))
+                    _directReaderGates[nodeIdx] = gates = new List<int>();
+                gates.Add(gateIdx);
+            }
+
+            /// <summary>
+            /// A deduplicated Property node can feed readers inside and outside an <c>@if</c>.
+            /// It keeps its gate only when every reader (consumer or direct reader) is in that same
+            /// gate; otherwise closing the gate would reset the value the other readers still show.
+            /// This pass only ungates: a node SetGateIndex left ungated stays ungated.
+            /// </summary>
+            private void UngateSharedPropertyNodes()
+            {
+                foreach (int idx in _propertyNodeMap.Values)
+                {
+                    int gate = _gateIndices[idx];
+                    if (gate == -1) continue;
+                    var readerGates = _consumers[idx].Select(consumer => _gateIndices[consumer]);
+                    if (_directReaderGates.TryGetValue(idx, out var direct))
+                        readerGates = readerGates.Concat(direct);
+                    if (readerGates.Any(readerGate => readerGate != gate))
+                        _gateIndices[idx] = -1;
+                }
+            }
+
             public GraphTopology ToTopology(string modelTypeName)
             {
                 int n = _nodeTypes.Count;
@@ -1081,6 +1142,7 @@ namespace NScript.RazorSkin.CodeGen
                     expression != null && expression.StartsWith("!Control.")
                         ? 1 : GetSourceSlot(expression)).ToArray();
                 Topology.Consumers = _consumers.ToArray();
+                UngateSharedPropertyNodes();
                 Topology.GateIndices = _gateIndices.ToArray();
                 Topology.DefaultValues = _defaultValues.ToArray();
                 Topology.ModelTypeName = modelTypeName;

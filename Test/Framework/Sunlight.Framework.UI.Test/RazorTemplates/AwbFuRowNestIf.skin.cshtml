@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.FuVm
+<div data-test="mn-box">@foreach (var i in Model.Items) { @if (i.Flag) { @if (i.Inner) { <s>+</s> } <u>+</u> } else { <i>-</i> } <b>@i.Name</b> }</div>

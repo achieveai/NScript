@@ -457,6 +457,60 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR147NestedHandler.skin.cshtml")]
+        public static Skin AwbR147NestedHandler
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuHostAttrs.skin.cshtml")]
+        public static Skin AwbFuHostAttrs
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuSkinBinding.skin.cshtml")]
+        public static Skin AwbFuSkinBinding
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuNestedModel.skin.cshtml")]
+        public static Skin AwbFuNestedModel
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuOuterItemHandler.skin.cshtml")]
+        public static Skin AwbFuOuterItemHandler
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuLoopModelValue.skin.cshtml")]
+        public static Skin AwbFuLoopModelValue
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuNestedSubValue.skin.cshtml")]
+        public static Skin AwbFuNestedSubValue
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuSharedGate.skin.cshtml")]
+        public static Skin AwbFuSharedGate
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuSubGate.skin.cshtml")]
+        public static Skin AwbFuSubGate
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3GateLoop.skin.cshtml")]
         public static Skin AwbR3GateLoop
         {
@@ -553,8 +607,20 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuMultiRootIf.skin.cshtml")]
+        public static Skin AwbFuMultiRootIf
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF2NestedGate.skin.cshtml")]
         public static Skin AwbF2NestedGate
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuRowsThrow.skin.cshtml")]
+        public static Skin AwbFuRowsThrow
         {
             get { return null; }
         }
@@ -565,9 +631,70 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuChainThrow.skin.cshtml")]
+        public static Skin AwbFuChainThrow
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuDisposeThrow.skin.cshtml")]
+        public static Skin AwbFuDisposeThrow
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuRow2Root.skin.cshtml")]
+        public static Skin AwbFuRow2Root
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuRow3Root.skin.cshtml")]
+        public static Skin AwbFuRow3Root
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuRowLeadIf.skin.cshtml")]
+        public static Skin AwbFuRowLeadIf
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuRowCtl.skin.cshtml")]
+        public static Skin AwbFuRowCtl
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuRowNestIf.skin.cshtml")]
+        public static Skin AwbFuRowNestIf
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuGateClose.skin.cshtml")]
+        public static Skin AwbFuGateClose
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.SlotHostRowsMissing.skin.cshtml")]
         public static Skin SlotHostRowsMissing
         {
             get { return null; }
-        }    }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuDispose2.skin.cshtml")]
+        public static Skin AwbFuDispose2
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuNestChurn.skin.cshtml")]
+        public static Skin AwbFuNestChurn
+        {
+            get { return null; }
+        }
+    }
 }
