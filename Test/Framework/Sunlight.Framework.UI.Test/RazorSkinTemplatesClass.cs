@@ -469,6 +469,12 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3TwoProbes.skin.cshtml")]
+        public static Skin AwbR3TwoProbes
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3RowGateThrow.skin.cshtml")]
         public static Skin AwbR3RowGateThrow
         {

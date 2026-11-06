@@ -144,6 +144,7 @@
     <EmbeddedResource Include="RazorTemplates\AwbR3AddThrows.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3BulkThrow.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3RowGateThrow.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbR3TwoProbes.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3SourceWalk.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbF2NestedGate.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\SlotHostNestedHead.skin.cshtml" />

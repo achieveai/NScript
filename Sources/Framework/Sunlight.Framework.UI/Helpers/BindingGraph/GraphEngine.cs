@@ -840,16 +840,27 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             state.ChildGraphStates[nodeIdx] = childStates;
             state.ItemElements[nodeIdx] = itemElems;
 
+            // Every row builds even when an earlier one throws, so only the failed row is left
+            // unbound; the first error then reaches the caller.
+            Exception first = null;
             if (!object.IsNullOrUndefined(colInfo.ItemGraph))
             {
                 for (int idx = 0; idx < count; idx++)
                 {
-                    GraphEngine.CreateCollectionItemGraph(
-                        state, colInfo, (Element)itemElems[idx], items[idx], childStates, idx);
+                    try
+                    {
+                        GraphEngine.CreateCollectionItemGraph(
+                            state, colInfo, (Element)itemElems[idx], items[idx], childStates, idx);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (first == null) first = ex;
+                    }
                 }
             }
 
             GraphEngine.ReapplySelectTargets(desc, state, parent);
+            if (first != null) throw first;
         }
 
         /// <summary>
@@ -937,8 +948,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             for (int i = 0; i < children.Length; i++)
             {
+                // A retired row (one whose build threw) stays retired: rewiring it would leave
+                // listeners that a later Remove or Dispose no longer reaches.
                 GraphState child = children[i];
-                if (object.IsNullOrUndefined(child)) continue;
+                if (object.IsNullOrUndefined(child) || child.Disposed) continue;
 
                 NativeArray itemContext = (NativeArray)child.Sources[GraphSourceSlot.DataContext];
                 bool sourceChanged = itemContext[0] != state.Sources[GraphSourceSlot.DataContext]
@@ -1090,7 +1103,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 NativeArray<GraphState> children = state.ChildGraphStates[node];
                 if (object.IsNullOrUndefined(children)) continue;
                 for (int i = 0; i < children.Length; i++)
-                    if (!object.IsNullOrUndefined(children[i]))
+                    if (!object.IsNullOrUndefined(children[i]) && !children[i].Disposed)
                         GraphEngine.ActivateSubControls(children[i].Descriptor, children[i]);
             }
         }
@@ -1115,7 +1128,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 NativeArray<GraphState> children = state.ChildGraphStates[node];
                 if (object.IsNullOrUndefined(children)) continue;
                 for (int i = 0; i < children.Length; i++)
-                    if (!object.IsNullOrUndefined(children[i]))
+                    if (!object.IsNullOrUndefined(children[i]) && !children[i].Disposed)
                         GraphEngine.DeactivateSubControls(children[i].Descriptor, children[i]);
             }
         }
@@ -1126,18 +1139,34 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             NativeArray<UIElement> controls = state.SubControlInstances;
             if (object.IsNullOrUndefined(controls)) return;
             NativeArray<SubControlInfo> infos = desc.SubControls;
+
+            // A control that throws while it tears down must not keep the later ones alive:
+            // tear every one down, then rethrow the first error.
+            Exception first = null;
             for (int i = 0; i < controls.Length; i++)
             {
                 UIElement control = controls[i];
                 if (object.IsNullOrUndefined(control)) continue;
-                GraphEngine.UnwireSubControlPropertyListeners(desc, state, i);
-                control.Deactivate();
-                control.Dispose();
-                state.ElemRefs[infos[i].ElemIdx] = null;
-                controls[i] = null;
-                state.SubControlAppliedValues[i] = null;
-                state.SubControlBindingsInitialized[i] = false;
+                try
+                {
+                    GraphEngine.UnwireSubControlPropertyListeners(desc, state, i);
+                    control.Deactivate();
+                    control.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    if (first == null) first = ex;
+                }
+                finally
+                {
+                    state.ElemRefs[infos[i].ElemIdx] = null;
+                    controls[i] = null;
+                    state.SubControlAppliedValues[i] = null;
+                    state.SubControlBindingsInitialized[i] = false;
+                }
             }
+
+            if (first != null) throw first;
         }
 
         private static void WireSubControlPropertyListeners(
@@ -1282,10 +1311,19 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             if (child.Disposed) return;
             child.Disposed = true;
-            GraphEngine.UnwireChildSubscriptions(itemDesc, child);
-            GraphEngine.CleanupEventListeners(itemDesc, child);
-            GraphEngine.CleanupCollectionListeners(itemDesc, child);
-            GraphEngine.DisposeSubControls(itemDesc, child);
+
+            // Disposed blocks a second retire, so finish every step even when one throws
+            // (a sub-control's or a nested row's Dispose), then rethrow the first error.
+            Exception first = null;
+            try { GraphEngine.UnwireChildSubscriptions(itemDesc, child); }
+            catch (Exception ex) { first = ex; }
+            try { GraphEngine.CleanupEventListeners(itemDesc, child); }
+            catch (Exception ex) { if (first == null) first = ex; }
+            try { GraphEngine.CleanupCollectionListeners(itemDesc, child); }
+            catch (Exception ex) { if (first == null) first = ex; }
+            try { GraphEngine.DisposeSubControls(itemDesc, child); }
+            catch (Exception ex) { if (first == null) first = ex; }
+            if (first != null) throw first;
         }
 
         /// <summary>
@@ -1537,12 +1575,24 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             state.ItemElements[nodeIdx] = newItemElems;
 
             if (object.IsNullOrUndefined(colInfo.ItemGraph)) return;
+
+            // As in RenderItemArray: build every added row, then rethrow the first error.
+            Exception first = null;
             for (int j = 0; j < addCount; j++)
             {
-                GraphEngine.CreateCollectionItemGraph(
-                    state, colInfo, (Element)newItemElems[insertIdx + j], newItems[j],
-                    newChildStates, insertIdx + j);
+                try
+                {
+                    GraphEngine.CreateCollectionItemGraph(
+                        state, colInfo, (Element)newItemElems[insertIdx + j], newItems[j],
+                        newChildStates, insertIdx + j);
+                }
+                catch (Exception ex)
+                {
+                    if (first == null) first = ex;
+                }
             }
+
+            if (first != null) throw first;
         }
 
         /// <summary>
