@@ -71,5 +71,22 @@ namespace NScript.Converter.Test.MethodConverterTests
         {
             Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
         }
+
+        // A whole Identifier is read before the keyword lookup ('@:' is part of one), a number
+        // with a trailing '.' and a regex literal are values, and identifier characters are the
+        // grammar's own ranges (U+30FB, U+FF65 and U+1369..U+1371 included).
+        [DataTestMethod]
+        [DataRow("return a@:if / this.n / 2;", "return a@:if / this_.n / 2;")]
+        [DataRow("return @:JSON.stringify(this);", "return @:JSON.stringify(this_);")]
+        [DataRow("x = 1. / this.n / 2;", "x = 1. / this_.n / 2;")]
+        [DataRow("x = /this/ / this.n / 2;", "x = /this/ / this_.n / 2;")]
+        [DataRow("x = a・ / this.n / 2;", "x = a・ / this_.n / 2;")]
+        [DataRow("x = a･ / this.n / 2;", "x = a･ / this_.n / 2;")]
+        [DataRow("x = a፩ / this.n / 2;", "x = a፩ / this_.n / 2;")]
+        [DataRow("x = a‿this;", "x = a‿this;")]
+        public void FixThisVariable_ReadsWholeTokensBeforeSlash(string script, string expected)
+        {
+            Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
+        }
     }
 }
