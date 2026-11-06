@@ -86,6 +86,62 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(Text(root, "at-row"), "ok", "later row is bound");
         }
 
+        // PR 148 review round 2: a bulk render (here an @if opening over three items) that
+        // throws on a later row keeps the rows built before it tracked, so closing the @if
+        // retires them and they stop listening to their items.
+        [Test]
+        public static void TestR3BulkRenderThrowKeepsBuiltRowsReachable(Assert assert)
+        {
+            var vm = new ProbeVm();
+            var a = new ProbeItem("a");
+            vm.Items.Add(a);
+            vm.Items.Add(new ProbeItem("boom"));
+            vm.Items.Add(new ProbeItem("c"));
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbR3BulkThrow);
+
+            string renderError = null;
+            try { vm.Flag = true; }
+            catch (Exception ex) { renderError = ex.Message; }
+            assert.NotEqual(renderError, null, "the failing row build is not swallowed");
+            assert.Equal(Rows(root, "bt-row"), 3, "one row per item after the throw");
+
+            var rowA = root.QuerySelector("[data-test=bt-row] > b");
+            a.Name = "a2";
+            assert.Equal(rowA.TextContent, "a2", "the row built before the failure is live");
+
+            vm.Flag = false;
+            assert.Equal(Rows(root, "bt-row"), 0, "closing the @if removes every row");
+            a.Name = "a3";
+            assert.Equal(rowA.TextContent, "a2", "closing the @if retired the row built before the failure");
+        }
+
+        // PR 148 review round 2: a row whose @if branch opened before the row threw keeps
+        // that branch only until the row is removed.
+        [Test]
+        public static void TestR3FailedRowGateLeavesWithItsRow(Assert assert)
+        {
+            var vm = new ProbeVm();
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbR3RowGateThrow);
+            var ok = new ProbeItem("ok");
+            ok.Flag = true;
+            vm.Items.Add(ok);
+            assert.Equal(Rows(root, "rg-gate"), 1, "a good row renders its @if branch");
+
+            var boom = new ProbeItem("boom");
+            boom.Flag = true;
+            string addError = null;
+            try { vm.Items.Add(boom); }
+            catch (Exception ex) { addError = ex.Message; }
+            assert.NotEqual(addError, null, "the failing row build is not swallowed");
+
+            string removeError = null;
+            try { vm.Items.Remove(boom); }
+            catch (Exception ex) { removeError = ex.Message; }
+            assert.Equal(removeError, null, "Remove of the failed row does not throw");
+            assert.Equal(Rows(root, "rg-gate"), 1, "the failed row's @if branch left with its row");
+            assert.Equal(Text(root, "rg-gate"), "ok", "the good row's branch stays");
+        }
+
         // #145 follow-up: one @foreach source walks array -> null -> observable -> array
         // inside an @if that closes and reopens midway.
         [Test]

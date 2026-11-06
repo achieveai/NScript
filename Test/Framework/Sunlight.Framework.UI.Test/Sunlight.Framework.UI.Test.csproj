@@ -151,6 +151,8 @@
     <EmbeddedResource Include="RazorTemplates\SlotGatedForwardFrame.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3GateLoop.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3AddThrows.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbR3BulkThrow.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbR3RowGateThrow.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbR3SourceWalk.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuMultiRootIf.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuRowsThrow.skin.cshtml" />

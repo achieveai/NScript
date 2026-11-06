@@ -924,8 +924,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 itemElems[idx] = GraphEngine.InsertRow(template, parent, marker);
             }
 
-            // Commit before building row graphs, as HandleCollectionAdd does: a row graph that
-            // throws still leaves one tracked row per item. The exception reaches the caller.
+            // Commit before building row graphs, as HandleCollectionAdd does: when a later row
+            // throws, the rows built before it are tracked, so a clear, a Remove or Dispose
+            // retires them. The exception reaches the caller.
             state.ChildGraphStates[nodeIdx] = childStates;
             state.ItemElements[nodeIdx] = itemElems;
 
@@ -970,7 +971,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Builds a row's graph and stores it in <paramref name="rows"/>[<paramref name="rowIdx"/>]
         /// before wiring anything, so a build that throws partway still leaves the row's state
         /// tracked: removing or clearing the row retires the subscriptions, listeners and
-        /// controls it attached.
+        /// controls it attached, and removes any @if branch it rendered (RemoveChildGateElements).
         /// </summary>
         private static void CreateCollectionItemGraph(
             GraphState parentState, CollectionTargetInfo colInfo, NativeArray<Element> rowNodes, object item,

@@ -190,6 +190,22 @@ namespace RazorSkinParser.Test
             location.StartColumn.Should().Be(4);
         }
 
+        // PR 148 review round 2: a stray </Slot> is already a compile error (the preprocessor's
+        // control tag check), at its own line, also inside an @if.
+        [TestMethod]
+        public void NamedSlot_StrayClosingTag_IsACompileErrorAtTheClosingTag()
+        {
+            Action stray = () => BuildIR("@model TestVM\n@if (Model.Flag) {\n<Frame>\n<i>x</i>\n  </Slot>\n</Frame>\n}");
+            Action extra = () => BuildIR(
+                "@model TestVM\n<Frame><Slot Name=\"head\"><i>a</i></Slot></Slot></Frame>");
+
+            var location = stray.Should().Throw<RazorSkinPreprocessorException>()
+                .WithMessage("*</Slot>*expected </Frame>*").Which.Location;
+            location.StartLine.Should().Be(5);
+            location.StartColumn.Should().Be(2);
+            extra.Should().Throw<RazorSkinPreprocessorException>().WithMessage("*</Slot>*expected </Frame>*");
+        }
+
         [TestMethod]
         public void NamedSlot_SameNameInSiblingOrInnerControls_IsAllowed()
         {
