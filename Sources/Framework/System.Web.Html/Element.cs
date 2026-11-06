@@ -699,6 +699,13 @@ namespace System.Web.Html
         public extern bool Matches(string selector);
 
         /// <summary>
+        /// Returns the nearest ancestor (or this element) that matches the given CSS selector.
+        /// </summary>
+        /// <param name="selector">CSS selector to test.</param>
+        /// <returns>The matching element, or null when none matches.</returns>
+        public extern Element Closest(string selector);
+
+        /// <summary>
         /// Scroll into view.
         /// </summary>
         public extern void ScrollIntoView();
@@ -708,6 +715,12 @@ namespace System.Web.Html
         /// </summary>
         /// <param name="alignTop"> true to align top. </param>
         public extern void ScrollIntoView(bool alignTop);
+
+        /// <summary>
+        /// Scroll into view with alignment and behavior options.
+        /// </summary>
+        /// <param name="options"> The options; see <see cref="ScrollLogicalPosition"/> and <see cref="ScrollIntoViewBehavior"/>. </param>
+        public extern void ScrollIntoView(ScrollIntoViewOptions options);
 
         /// <summary>
         /// Sets the active.

@@ -160,6 +160,22 @@ namespace System.Web.Html
         public extern event Action<Window, ErrorEvent> OnError;
 
         /// <summary>
+        /// Raised when a promise is rejected and nothing handles the rejection.
+        /// Call <see cref="Event.PreventDefault"/> to stop the browser logging it.
+        /// </summary>
+        public extern event Action<Window, PromiseRejectionEvent> OnUnhandledRejection;
+
+        /// <summary>
+        /// Raised on key down anywhere in the window.
+        /// </summary>
+        public extern event Action<Window, ElementEvent> OnKeyDown;
+
+        /// <summary>
+        /// Raised on key up anywhere in the window.
+        /// </summary>
+        public extern event Action<Window, ElementEvent> OnKeyUp;
+
+        /// <summary>
         /// The onresize.
         /// </summary>
         public extern event Action<Window> OnResize;
@@ -358,6 +374,15 @@ namespace System.Web.Html
         public extern Style GetComputedStyle(Element elem);
 
         public extern Style GetComputedStyle(Element elem, string pseudoElem);
+
+        /// <summary>
+        /// Evaluates a media query, such as "(max-width: 600px)".
+        /// </summary>
+        /// <param name="query"> The media query. </param>
+        /// <returns>
+        /// The live query result; subscribe to <see cref="MediaQueryList.OnChange"/> for updates.
+        /// </returns>
+        public extern MediaQueryList MatchMedia(string query);
 
         /// <summary>
         /// Opens the given document.

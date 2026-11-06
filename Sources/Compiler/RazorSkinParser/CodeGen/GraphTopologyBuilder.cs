@@ -38,6 +38,17 @@ namespace NScript.RazorSkin.CodeGen
         public ExpressionTarget Target { get; set; }
         public string AttributeName { get; set; }
         public string AttributePrefix { get; set; }
+        /// <summary>
+        /// For a two-way <c>value=</c> binding: the source property the element's value is
+        /// written back to (relative to <see cref="TwoWaySourceSlot"/>). Null when one-way.
+        /// </summary>
+        public string TwoWaySourceProperty { get; set; }
+        public int TwoWaySourceSlot { get; set; }
+        /// <summary>
+        /// A text binding that targets its owner element (only content of a raw-text
+        /// element); it has no &lt;span data-ns-ph&gt; placeholder.
+        /// </summary>
+        public bool TargetsOwnerElement { get; set; }
     }
 
     public class EventTopology
@@ -172,6 +183,7 @@ namespace NScript.RazorSkin.CodeGen
 
         private static void WalkChildren(List<IRNode> children, BuildContext ctx, int gateIndex)
         {
+            MarkHandlerOwnedValueBindings(children, ctx.HandlerOwnedValueBindings);
             foreach (var child in children)
             {
                 var outerLocation = ctx.CurrentLocation;
@@ -205,6 +217,51 @@ namespace NScript.RazorSkin.CodeGen
 
                 ctx.CurrentLocation = outerLocation;
             }
+        }
+
+        /// <summary>
+        /// Groups the attribute bindings and events that sit on one open tag (siblings with
+        /// only attribute HTML between them) and records the bindings of every tag that has
+        /// its own <c>oninput</c>/<c>onchange</c> handler. Such a tag keeps <c>value=</c>
+        /// one-way: the author's handler owns the write-back.
+        /// </summary>
+        private static void MarkHandlerOwnedValueBindings(
+            List<IRNode> siblings, HashSet<ExpressionBindingNode> handlerOwned)
+        {
+            var group = new List<ExpressionBindingNode>();
+            bool hasValueHandler = false;
+
+            void Close()
+            {
+                if (hasValueHandler)
+                    handlerOwned.UnionWith(group);
+                group.Clear();
+                hasValueHandler = false;
+            }
+
+            foreach (var node in siblings)
+            {
+                if (node is ExpressionBindingNode binding && binding.Target != ExpressionTarget.TextContent)
+                {
+                    group.Add(binding);
+                }
+                else if (node is EventNode evt)
+                {
+                    if (string.Equals(evt.DomEventName, "input", System.StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(evt.DomEventName, "change", System.StringComparison.OrdinalIgnoreCase))
+                        hasValueHandler = true;
+                }
+                else if (node is HtmlNode html && (html.HtmlContent ?? string.Empty).IndexOfAny(new[] { '<', '>' }) < 0)
+                {
+                    // More attributes of the same open tag.
+                }
+                else
+                {
+                    Close();
+                }
+            }
+
+            Close();
         }
 
         private static void ProcessBinding(ExpressionBindingNode binding, BuildContext ctx, int gateIndex)
@@ -957,17 +1014,56 @@ namespace NScript.RazorSkin.CodeGen
 
                 AddEdge(producerIdx, domIdx);
 
+                var twoWaySourceProperty = GetTwoWayValueSourceProperty(binding);
                 Topology.DomTargets.Add(new DomTargetTopology
                 {
                     NodeIdx = domIdx,
                     ElemIdx = NextElemIdx(),
                     Target = binding.Target,
                     AttributeName = binding.AttributeName,
-                    AttributePrefix = binding.AttributePrefix
+                    AttributePrefix = binding.AttributePrefix,
+                    TwoWaySourceProperty = twoWaySourceProperty,
+                    TwoWaySourceSlot = twoWaySourceProperty == null
+                        ? 0 : GetSourceSlot(binding.Classification.CSharpExpression),
+                    TargetsOwnerElement = binding.TargetsOwnerElement
                 });
 
                 return domIdx;
             }
+
+            /// <summary>
+            /// A <c>value="@Model.X"</c> / <c>value="@item.X"</c> binding on an observable
+            /// source is a two-way candidate: returns <c>X</c>. The emitter keeps it two-way
+            /// only when <c>X</c> is a public, writable string property; otherwise it stays
+            /// one-way. The binding stays OneWay-classified so its subscription is kept.
+            /// </summary>
+            private string GetTwoWayValueSourceProperty(ExpressionBindingNode binding)
+            {
+                if (binding.Target != ExpressionTarget.Attribute
+                    || !string.Equals(binding.AttributeName, "value", System.StringComparison.OrdinalIgnoreCase)
+                    || binding.Classification.Mode != BindingMode.OneWay
+                    || HandlerOwnedValueBindings.Contains(binding))
+                    return null;
+
+                var expression = (binding.Classification.CSharpExpression ?? string.Empty).Trim();
+                if (!expression.StartsWith("Model.")
+                    && (string.IsNullOrEmpty(_itemVariablePrefix) || !expression.StartsWith(_itemVariablePrefix)))
+                    return null;
+
+                var property = StripSourcePrefix(expression);
+                if (property.Length == 0 || !char.IsLetter(property[0]) && property[0] != '_')
+                    return null;
+                foreach (var c in property)
+                {
+                    if (!char.IsLetterOrDigit(c) && c != '_')
+                        return null;
+                }
+
+                return property;
+            }
+
+            /// <summary>value= bindings on a tag with its own oninput/onchange handler: one-way.</summary>
+            public HashSet<ExpressionBindingNode> HandlerOwnedValueBindings { get; } = new HashSet<ExpressionBindingNode>();
 
             public int NextElemIdx()
             {
@@ -1012,8 +1108,11 @@ namespace NScript.RazorSkin.CodeGen
             {
                 switch (target)
                 {
-                    case ExpressionTarget.TextContent:
                     case ExpressionTarget.Attribute:
+                        // null reaches the setter, which removes the attribute; "" would
+                        // render attr="" for a null value.
+                        return null;
+                    case ExpressionTarget.TextContent:
                     case ExpressionTarget.CssClass:
                     case ExpressionTarget.Style:
                         return "";

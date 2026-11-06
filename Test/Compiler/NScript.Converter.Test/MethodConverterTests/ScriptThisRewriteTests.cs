@@ -1,0 +1,92 @@
+namespace NScript.Converter.Test.MethodConverterTests
+{
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NScript.Converter.TypeSystemConverter;
+
+    /// <summary>
+    /// When an instance [Script] method becomes static (optimized builds), its body's <c>this</c>
+    /// is rewritten to the <c>this_</c> parameter. Regex literals are text, not code.
+    /// </summary>
+    [TestClass]
+    public class ScriptThisRewriteTests
+    {
+        [DataTestMethod]
+        [DataRow("return /this/.test(a);", "return /this/.test(a);")]
+        [DataRow("return /this/.test(this.a);", "return /this/.test(this_.a);")]
+        [DataRow("b = a.replace(/this|[/]this/g, this);", "b = a.replace(/this|[/]this/g, this_);")]
+        [DataRow("b = (/\\/this/).test(a);", "b = (/\\/this/).test(a);")]
+        [DataRow("b = this.a / this.b / 2;", "b = this_.a / this_.b / 2;")]
+        [DataRow("b = (this) / 2;", "b = (this_) / 2;")]
+        [DataRow("b = 'this';", "b = 'this';")]
+        public void FixThisVariable_KeepsRegexLiteralsAndRewritesReceiver(string script, string expected)
+        {
+            Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
+        }
+
+        [DataTestMethod]
+        [DataRow("a = 1; // this\r\nb = this;", "a = 1; // this\r\nb = this_;")]
+        [DataRow("a = 1; // this\nb = this;", "a = 1; // this\nb = this_;")]
+        [DataRow("b = /* this */ this.a;", "b = /* this */ this_.a;")]
+        [DataRow("b = /* x */this.a;", "b = /* x */this_.a;")]
+        [DataRow("b = this; // last", "b = this_; // last")]
+        [DataRow("if (a) /this/.test(b);", "if (a) /this/.test(b);")]
+        [DataRow("while (this.a) /this/.test(b);", "while (this_.a) /this/.test(b);")]
+        [DataRow("if (f(a)) /this/.test(this);", "if (f(a)) /this/.test(this_);")]
+        [DataRow("b = f(a) / this.c;", "b = f(a) / this_.c;")]
+        public void FixThisVariable_HandlesCommentsAndControlHeaders(string script, string expected)
+        {
+            Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
+        }
+
+        // Same regex-vs-division rule as JavaScriptLexer.RegexAllowed: '++', '--' and the '}'
+        // closing an @{...} import are values, so the '/' after them divides.
+        [DataTestMethod]
+        [DataRow("x = this.i++ / this.n / 2;", "x = this_.i++ / this_.n / 2;")]
+        [DataRow("x = this.i-- / this.n / 2;", "x = this_.i-- / this_.n / 2;")]
+        [DataRow("x = @{[System.Web]System.Int::fooBar} / this.n / 2;", "x = @{[System.Web]System.Int::fooBar} / this_.n / 2;")]
+        [DataRow("x = @{[mscorlib]System.Math::f([mscorlib]System.String)} / this.n / 2;", "x = @{[mscorlib]System.Math::f([mscorlib]System.String)} / this_.n / 2;")]
+        [DataRow("if (a) { b = 1; } /this/.test(c);", "if (a) { b = 1; } /this/.test(c);")]
+        [DataRow("x = a + +/this/.test(b);", "x = a + +/this/.test(b);")]
+        public void FixThisVariable_DivisionAfterIncrementAndImport(string script, string expected)
+        {
+            Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
+        }
+
+        // of, yield and await are Identifiers to the lexer, and a name may be non-ASCII: '/' after
+        // either divides. Keywords such as return still start a regex. A body may start with a
+        // regex, and a comment may sit between a header keyword and its '('.
+        [DataTestMethod]
+        [DataRow("var of = 4; return of / this.n / 2;", "var of = 4; return of / this_.n / 2;")]
+        [DataRow("x = yield / this.n / 2;", "x = yield / this_.n / 2;")]
+        [DataRow("x = await / this.n / 2;", "x = await / this_.n / 2;")]
+        [DataRow("x = a.é / this.n / 2;", "x = a.é / this_.n / 2;")]
+        [DataRow("x = éthis / this.n;", "x = éthis / this_.n;")]
+        [DataRow("return /this/.test(this);", "return /this/.test(this_);")]
+        [DataRow("/this/.test(this);", "/this/.test(this_);")]
+        [DataRow("  /this/.test(this);", "  /this/.test(this_);")]
+        [DataRow("if /* c */ (a) /this/.test(this);", "if /* c */ (a) /this/.test(this_);")]
+        [DataRow("if // c\n(a) /this/.test(this);", "if // c\n(a) /this/.test(this_);")]
+        [DataRow("x = a /* c */ / this.n / 2;", "x = a /* c */ / this_.n / 2;")]
+        public void FixThisVariable_ClassifiesTokensLikeTheLexer(string script, string expected)
+        {
+            Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
+        }
+
+        // A whole Identifier is read before the keyword lookup ('@:' is part of one), a number
+        // with a trailing '.' and a regex literal are values, and identifier characters are the
+        // grammar's own ranges (U+30FB, U+FF65 and U+1369..U+1371 included).
+        [DataTestMethod]
+        [DataRow("return a@:if / this.n / 2;", "return a@:if / this_.n / 2;")]
+        [DataRow("return @:JSON.stringify(this);", "return @:JSON.stringify(this_);")]
+        [DataRow("x = 1. / this.n / 2;", "x = 1. / this_.n / 2;")]
+        [DataRow("x = /this/ / this.n / 2;", "x = /this/ / this_.n / 2;")]
+        [DataRow("x = a・ / this.n / 2;", "x = a・ / this_.n / 2;")]
+        [DataRow("x = a･ / this.n / 2;", "x = a･ / this_.n / 2;")]
+        [DataRow("x = a፩ / this.n / 2;", "x = a፩ / this_.n / 2;")]
+        [DataRow("x = a‿this;", "x = a‿this;")]
+        public void FixThisVariable_ReadsWholeTokensBeforeSlash(string script, string expected)
+        {
+            Assert.AreEqual(expected, MethodConverter.FixThisVariable(script));
+        }
+    }
+}

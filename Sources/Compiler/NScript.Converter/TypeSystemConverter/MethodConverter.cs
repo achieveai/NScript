@@ -1111,12 +1111,27 @@ namespace NScript.Converter.TypeSystemConverter
         /// </summary>
         /// <param name="script">The script.</param>
         /// <returns>fixes this keyword inside of script to this_ and this_ variables to other names.</returns>
-        private static string FixThisVariable(string script)
+        internal static string FixThisVariable(string script)
         {
             var strBuilder = new StringBuilder();
             int lastIndex = 0, nowIndex = 0;
             var inStr = false;
             var strChar = (char)0;
+
+            // One entry per unclosed '(': true when it opens an if/while/for/with header.
+            var openParens = new Stack<bool>();
+            var closedHeaderIndex = -1;
+
+            // Unclosed '@{' imports; the '}' closing one is a value, like a name.
+            var openImports = 0;
+            var closedImportIndex = -1;
+
+            // Index of the last character that is not whitespace or inside a comment, as the
+            // lexer's last significant token; -1 at the start of the body.
+            var lastSignificant = -1;
+
+            // Index of the closing '/' or last flag of the last regex literal: a value.
+            var lastRegexEnd = -1;
             for (; nowIndex < script.Length; nowIndex++)
             {
                 var ch = script[nowIndex];
@@ -1131,16 +1146,22 @@ namespace NScript.Converter.TypeSystemConverter
                         CopyStringPart(script, lastIndex, nowIndex + 1, strBuilder);
                         lastIndex = nowIndex + 1;
                         inStr = false;
+                        lastSignificant = nowIndex;
                     }
                     continue;
                 }
 
-                if ((ch >= '0' && ch <= '9')
-                    || (ch >= 'a' && ch <= 'z')
-                    || (ch >= 'A' && ch <= 'Z')
-                    || ch == '_'
-                    || ch == '$')
+                if (IsScriptIdentifierChar(ch))
                 {
+                    lastSignificant = nowIndex;
+                    continue;
+                }
+
+                // '@:' is part of an Identifier (a browser global such as @:JSON, or a@:if).
+                if (ch == '@' && nowIndex + 1 < script.Length && script[nowIndex + 1] == ':')
+                {
+                    nowIndex++;
+                    lastSignificant = nowIndex;
                     continue;
                 }
 
@@ -1153,39 +1174,63 @@ namespace NScript.Converter.TypeSystemConverter
                     inStr = true;
                     strChar = ch;
                 }
-                else if (ch == '/')
+                else if (ch == '(')
                 {
-                    if (script.Length > nowIndex + 1)
+                    openParens.Push(IsControlHeaderParen(script, lastSignificant));
+                }
+                else if (ch == ')')
+                {
+                    if (openParens.Count > 0 && openParens.Pop())
                     {
-                        if (script[nowIndex + 1] == '/')
-                        {
-                            do
-                            {
-                                nowIndex++;
-                            } while (nowIndex < script.Length
-                                && (script[nowIndex] != '\r' || script[nowIndex] != '\n'));
-
-                            continue;
-                        }
-                        else if (script[nowIndex + 1] == '*')
-                        {
-                            var endComment = script.IndexOf("*/", nowIndex);
-                            if (endComment < 0)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                nowIndex = endComment + 2;
-                            }
-                        }
-                        else
-                        {
-                            continue;
-                        }
-
-                        CopyStringPart(script, lastIndex, nowIndex, strBuilder);
+                        closedHeaderIndex = nowIndex;
                     }
+                }
+                else if (ch == '{' && nowIndex > 0 && script[nowIndex - 1] == '@')
+                {
+                    openImports++;
+                }
+                else if (ch == '}' && openImports > 0)
+                {
+                    openImports--;
+                    closedImportIndex = nowIndex;
+                }
+                else if (ch == '/' && script.Length > nowIndex + 1)
+                {
+                    // Comments and regex literals are copied verbatim: their text is not code.
+                    int verbatimEnd;
+                    if (script[nowIndex + 1] == '/')
+                    {
+                        verbatimEnd = script.IndexOf('\n', nowIndex);
+                        verbatimEnd = verbatimEnd < 0 ? script.Length : verbatimEnd;
+                    }
+                    else if (script[nowIndex + 1] == '*')
+                    {
+                        verbatimEnd = script.IndexOf("*/", nowIndex + 2);
+                        verbatimEnd = verbatimEnd < 0 ? script.Length : verbatimEnd + 2;
+                    }
+                    else
+                    {
+                        verbatimEnd = RegexLiteralEnd(
+                            script, nowIndex, lastSignificant, lastRegexEnd, closedHeaderIndex, closedImportIndex);
+                        if (verbatimEnd > 0)
+                        {
+                            lastSignificant = verbatimEnd - 1;
+                            lastRegexEnd = lastSignificant;
+                        }
+                    }
+
+                    if (verbatimEnd > 0)
+                    {
+                        CopyStringPart(script, nowIndex + 1, verbatimEnd, strBuilder);
+                        lastIndex = verbatimEnd;
+                        nowIndex = verbatimEnd - 1;
+                        continue;
+                    }
+                }
+
+                if (!char.IsWhiteSpace(ch))
+                {
+                    lastSignificant = nowIndex;
                 }
             }
 
@@ -1193,6 +1238,140 @@ namespace NScript.Converter.TypeSystemConverter
 
             return strBuilder.ToString();
         }
+
+        /// <summary>
+        /// The words JavaScript.g3 lexes as keywords rather than as an Identifier, except the
+        /// values this, null, true and false: a '/' after one of these starts a regex literal.
+        /// Any other word (of, yield, await, a name) is an Identifier, so '/' divides.
+        /// </summary>
+        private static readonly HashSet<string> RegexPrecedingKeywords = new HashSet<string>
+        {
+            "break", "case", "catch", "continue", "default", "delete", "do", "else", "finally",
+            "for", "function", "if", "in", "instanceof", "new", "return", "switch", "throw",
+            "try", "typeof", "var", "void", "while", "with",
+        };
+
+        /// <summary>
+        /// When the '/' at <paramref name="slashIndex"/> opens a regex literal, returns the index
+        /// just past its closing '/' and flags; otherwise (a division) returns -1. Same rule as
+        /// <c>JavaScriptLexer.RegexAllowed</c>: after a value (a name other than a keyword such as
+        /// <c>return</c>, a number (<c>1.</c> included), a string, a regex literal ending at
+        /// <paramref name="lastRegexEnd"/>, '++', '--', ')', ']', or the '}' at
+        /// <paramref name="closedImportIndex"/> closing an @{...} import) '/' divides; elsewhere,
+        /// including at the start (<paramref name="prev"/> is -1) and after the ')' at
+        /// <paramref name="closedHeaderIndex"/> closing an if/while/for/with header, it starts a regex.
+        /// <paramref name="prev"/> is the last significant character before the '/'.
+        /// </summary>
+        private static int RegexLiteralEnd(
+            string script, int slashIndex, int prev, int lastRegexEnd, int closedHeaderIndex, int closedImportIndex)
+        {
+            if (prev >= 0 && (prev == closedImportIndex || prev == lastRegexEnd))
+            {
+                return -1;
+            }
+
+            if (prev >= 0 && prev != closedHeaderIndex)
+            {
+                var prevCh = script[prev];
+                if (IsScriptIdentifierChar(prevCh))
+                {
+                    if (!RegexPrecedingKeywords.Contains(WordEndingAt(script, prev)))
+                    {
+                        return -1;
+                    }
+                }
+                else if (prevCh == ')' || prevCh == ']' || prevCh == '\'' || prevCh == '"'
+                    || ((prevCh == '+' || prevCh == '-') && prev > 0 && script[prev - 1] == prevCh)
+                    || (prevCh == '.' && prev > 0 && script[prev - 1] >= '0' && script[prev - 1] <= '9'))
+                {
+                    return -1;
+                }
+            }
+
+            var inClass = false;
+            for (var index = slashIndex + 1; index < script.Length; index++)
+            {
+                var ch = script[index];
+                if (ch == '\r' || ch == '\n')
+                {
+                    return -1;
+                }
+                else if (ch == '\\')
+                {
+                    index++;
+                }
+                else if (ch == '[')
+                {
+                    inClass = true;
+                }
+                else if (ch == ']')
+                {
+                    inClass = false;
+                }
+                else if (ch == '/' && !inClass)
+                {
+                    index++;
+                    while (index < script.Length && IsScriptIdentifierChar(script[index]))
+                    {
+                        index++;
+                    }
+
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Whether a '(' whose last significant character before it is at
+        /// <paramref name="prev"/> opens an if/while/for/with header.
+        /// </summary>
+        private static bool IsControlHeaderParen(string script, int prev)
+        {
+            if (prev < 0 || !IsScriptIdentifierChar(script[prev]))
+            {
+                return false;
+            }
+
+            var word = WordEndingAt(script, prev);
+            return word == "if" || word == "while" || word == "for" || word == "with";
+        }
+
+        /// <summary>
+        /// The whole identifier or keyword whose last character is at <paramref name="end"/>,
+        /// '@:' parts included, so <c>a@:if</c> is a name and not the keyword <c>if</c>.
+        /// </summary>
+        private static string WordEndingAt(string script, int end)
+        {
+            var start = end;
+            while (start > 0)
+            {
+                if (IsScriptIdentifierChar(script[start - 1]))
+                {
+                    start--;
+                }
+                else if (start > 1 && script[start - 1] == ':' && script[start - 2] == '@')
+                {
+                    start -= 2;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return script.Substring(start, end - start + 1);
+        }
+
+        /// <summary>
+        /// Whether one character can be part of an Identifier: the grammar's own letter, digit and
+        /// connector ranges plus '$' and '_' (ScriptIdentifierChars). The grammar's two-character
+        /// parts are handled where tokens are read: '@:' in FixThisVariable and WordEndingAt; a
+        /// '\u' escape is not recognized.
+        /// </summary>
+        private static bool IsScriptIdentifierChar(char ch)
+            => ScriptIdentifierChars.Contains(ch);
 
         /// <summary>
         /// Copies the string part.
@@ -1321,7 +1500,7 @@ namespace NScript.Converter.TypeSystemConverter
             {
                 throw new ApplicationException(
                     string.Format(
-                        "Error hit when parsing function{0}\r\nExceptionInfo: ex.Message: {1}",
+                        "[Script] in {0}: {1}",
                         MethodDefinition,
                         ex.Message),
                     ex);

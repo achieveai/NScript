@@ -78,6 +78,24 @@ namespace System.Web.Html
         { get; }
 
         /// <summary>
+        /// Gets the key value of a keyboard event, such as "a", "Enter" or "ArrowUp".
+        /// </summary>
+        public extern string Key
+        { get; }
+
+        /// <summary>
+        /// Gets the physical key code of a keyboard event, such as "KeyA" or "Enter".
+        /// </summary>
+        public extern string Code
+        { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether a keyboard event is an auto-repeat.
+        /// </summary>
+        public extern bool Repeat
+        { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the meta key.
         /// </summary>
         /// <value>

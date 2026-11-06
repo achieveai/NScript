@@ -330,5 +330,149 @@ namespace Sunlight.Framework.UI.Test
         {
             get { return null; }
         }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB2IfTop.skin.cshtml")]
+        public static Skin AwbB2IfTop
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB2IfLoop.skin.cshtml")]
+        public static Skin AwbB2IfLoop
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB4EmptyBeforeLoop.skin.cshtml")]
+        public static Skin AwbB4EmptyBeforeLoop
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB5Table.skin.cshtml")]
+        public static Skin AwbB5Table
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB7TwinControls.skin.cshtml")]
+        public static Skin AwbB7TwinControls
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB8Disabled.skin.cshtml")]
+        public static Skin AwbB8Disabled
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB9TwoWay.skin.cshtml")]
+        public static Skin AwbB9TwoWay
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.PrValueSetterOnly.skin.cshtml")]
+        public static Skin PrValueSetterOnly
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.PrSubControlSetterOnly.skin.cshtml")]
+        public static Skin PrSubControlSetterOnly
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB4bHrBeforeLoop.skin.cshtml")]
+        public static Skin AwbB4bHrBeforeLoop
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbB5bRowEvents.skin.cshtml")]
+        public static Skin AwbB5bRowEvents
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF1RawText.skin.cshtml")]
+        public static Skin AwbF1RawText
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF2HandlerOwned.skin.cshtml")]
+        public static Skin AwbF2HandlerOwned
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF2RowAndGate.skin.cshtml")]
+        public static Skin AwbF2RowAndGate
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF3Select.skin.cshtml")]
+        public static Skin AwbF3Select
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF9Zero.skin.cshtml")]
+        public static Skin AwbF9Zero
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF10EventAfterIf.skin.cshtml")]
+        public static Skin AwbF10EventAfterIf
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR143Grid.skin.cshtml")]
+        public static Skin AwbR143Grid
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR144NullAttr.skin.cshtml")]
+        public static Skin AwbR144NullAttr
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR145Lists.skin.cshtml")]
+        public static Skin AwbR145Lists
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3GateLoop.skin.cshtml")]
+        public static Skin AwbR3GateLoop
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3AddThrows.skin.cshtml")]
+        public static Skin AwbR3AddThrows
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbR3SourceWalk.skin.cshtml")]
+        public static Skin AwbR3SourceWalk
+        {
+            get { return null; }
+        }
+
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbF2NestedGate.skin.cshtml")]
+        public static Skin AwbF2NestedGate
+        {
+            get { return null; }
+        }
     }
 }

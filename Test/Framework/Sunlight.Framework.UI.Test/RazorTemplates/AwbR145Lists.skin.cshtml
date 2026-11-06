@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<div><div data-test="ar-str">@foreach (var s in Model.Names) { <span data-test="ar-s">@s</span> }</div><div data-test="ar-list">@foreach (var i in Model.List) { <span data-test="ar-l">@i.Name</span> }</div><div data-test="ar-arr">@foreach (var a in Model.Arr) { <span data-test="ar-a">@a.Name</span> }</div></div>

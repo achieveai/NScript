@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<div>@foreach (var i in Model.Items) { <input data-test="f2-row" value="@i.Name" /> }@if (Model.Flag) { <input data-test="f2-gate" value="@Model.Other" /> }</div>

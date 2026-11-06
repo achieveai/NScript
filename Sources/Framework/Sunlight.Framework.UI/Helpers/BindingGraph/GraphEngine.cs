@@ -80,7 +80,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                 Element clone = GraphEngine.InsertGateBranch(state, i, (string)templateObj, marker);
                                 if (!object.IsNullOrUndefined(clone))
                                 {
-                                    GraphEngine.ResolveGateChildElems(state, gateInfo, i, gateIsOpen);
+                                    GraphEngine.ResolveGateChildElems(desc, state, gateInfo, i, gateIsOpen);
                                     GraphEngine.CreateSubControls(desc, state, clone,
                                         GraphEngine.GetSubControlDataContext(state));
                                 }
@@ -140,15 +140,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                 GraphEngine.DetachCollectionListener(state, i, previousValue);
                             GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
                             if (!object.IsNullOrUndefined(nodeVal))
-                            {
-                                IObservableCollection obsCol = GraphEngine.AsObservableCollection(nodeVal);
-                                if (!object.IsNullOrUndefined(obsCol))
-                                    GraphEngine.RenderCollection(desc, state, i, colInfo, obsCol);
-                            }
+                                GraphEngine.RenderCollectionSource(desc, state, i, colInfo, nodeVal);
                         }
                     }
                 }
             }
+
+            GraphEngine.WireTwoWayValues(desc, state);
         }
 
         /// <summary>
@@ -248,7 +246,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                                     if (!object.IsNullOrUndefined(clone))
                                     {
                                         // Resolve child elem refs from the new branch.
-                                        GraphEngine.ResolveGateChildElems(state, gateInfo, i, gateIsOpen);
+                                        GraphEngine.ResolveGateChildElems(desc, state, gateInfo, i, gateIsOpen);
                                         GraphEngine.CreateSubControls(desc, state, clone,
                                             GraphEngine.GetSubControlDataContext(state));
                                     }
@@ -339,11 +337,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                             // Render new collection.
                             if (!object.IsNullOrUndefined(newVal))
-                            {
-                                IObservableCollection newObsCol = GraphEngine.AsObservableCollection(newVal);
-                                if (!object.IsNullOrUndefined(newObsCol))
-                                    GraphEngine.RenderCollection(desc, state, i, colInfo, newObsCol);
-                            }
+                                GraphEngine.RenderCollectionSource(desc, state, i, colInfo, newVal);
                         }
                     }
 
@@ -578,6 +572,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // Start from max(gateIdx+1, 0) to handle inverted gate indices (negative values).
             int start = gateIdx >= 0 ? gateIdx + 1 : 0;
 
+            // Two-way value= elements leave with the branch, nested @if branches included:
+            // whoever still holds one must not write the model. Reopening wires the new ones.
+            GraphEngine.UnwireGatedTwoWayValues(desc, state, gateIdx);
+
             for (int i = start; i < n; i++)
             {
                 if (desc.GateIndices[i] != gateIdx)
@@ -585,6 +583,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     continue;
                 }
 
+                object closedValue = state.Values[i];
                 state.Values[i] = desc.DefaultValues[i];
                 state.Dirty[i] = false;
 
@@ -625,10 +624,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 // CollectionManager: detach listener and clear items when gate closes.
                 else if (nodeType == GraphNodeType.CollectionManager)
                 {
-                    object collection = state.Values[i];
-                    if (!object.IsNullOrUndefined(collection))
+                    // Values[i] was reset above; the listener hangs off the collection it held.
+                    if (!object.IsNullOrUndefined(closedValue))
                     {
-                        GraphEngine.DetachCollectionListener(state, i, collection);
+                        GraphEngine.DetachCollectionListener(state, i, closedValue);
                     }
 
                     CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
@@ -636,6 +635,31 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     {
                         GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unwires the two-way listeners of the DomTarget nodes on one side of a gate
+        /// (<paramref name="gateRef"/>: gate index, or -(gate + 2) for @else), and of both
+        /// sides of every @if nested there: a nested node is gated by its own @if, not by
+        /// the one that closed.
+        /// </summary>
+        private static void UnwireGatedTwoWayValues(GraphDescriptor desc, GraphState state, int gateRef)
+        {
+            if (object.IsNullOrUndefined(state.TwoWayListeners)) return;
+            for (int i = 0; i < desc.NodeCount; i++)
+            {
+                // A gate node can carry its own index: it is the controller, not a nested @if.
+                if (desc.GateIndices[i] != gateRef || i == gateRef) continue;
+                if (desc.NodeTypes[i] == GraphNodeType.DomTarget)
+                {
+                    GraphEngine.UnwireTwoWayValue(state, i);
+                }
+                else if (desc.NodeTypes[i] == GraphNodeType.Gate)
+                {
+                    GraphEngine.UnwireGatedTwoWayValues(desc, state, i);
+                    GraphEngine.UnwireGatedTwoWayValues(desc, state, -(i + 2));
                 }
             }
         }
@@ -658,6 +682,37 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     state.Dirty[i] = true;
                 }
             }
+        }
+
+        /// <summary>
+        /// Renders a @foreach source. An observable collection renders and then tracks its
+        /// changes. An array or other IList renders once (OneTime); a new instance assigned to
+        /// the source property renders again. Anything else is logged, never silently empty.
+        /// </summary>
+        public static void RenderCollectionSource(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, object source)
+        {
+            IObservableCollection obsCol = GraphEngine.AsObservableCollection(source);
+            if (!object.IsNullOrUndefined(obsCol))
+            {
+                GraphEngine.RenderCollection(desc, state, nodeIdx, colInfo, obsCol);
+                return;
+            }
+
+            IList list = source as IList;
+            if (!object.IsNullOrUndefined(list) && !(source is string))
+            {
+                int count = list.Count;
+                NativeArray items = new NativeArray(count);
+                for (int idx = 0; idx < count; idx++)
+                    items[idx] = list[idx];
+                GraphEngine.RenderItemArray(desc, state, nodeIdx, colInfo, items);
+                return;
+            }
+
+            Logger.Error("GraphEngine: @foreach source is neither an observable collection nor an array/IList; "
+                + "no rows rendered. Use ObservableCollection<T>, List<T> or T[].");
         }
 
         /// <summary>
@@ -690,16 +745,24 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             GraphDescriptor desc, GraphState state, int nodeIdx,
             CollectionTargetInfo colInfo, IObservableCollection collection)
         {
+            int count = collection.Count;
+            NativeArray items = new NativeArray(count);
+            for (int idx = 0; idx < count; idx++)
+                items[idx] = collection[idx];
+            GraphEngine.RenderItemArray(desc, state, nodeIdx, colInfo, items);
+        }
+
+        private static void RenderItemArray(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, NativeArray items)
+        {
             Element marker = (Element)state.ElemRefs[colInfo.MarkerIdx];
             if (object.IsNullOrUndefined(marker)) return;
 
             Node parent = marker.ParentNode;
             if (object.IsNullOrUndefined(parent)) return;
 
-            int count = collection.Count;
-            NativeArray items = new NativeArray(count);
-            for (int idx = 0; idx < count; idx++)
-                items[idx] = collection[idx];
+            int count = items.Length;
             NativeArray<GraphState> childStates = new NativeArray<GraphState>(count);
             NativeArray itemElems = new NativeArray(count);
 
@@ -730,14 +793,39 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
             state.ChildGraphStates[nodeIdx] = childStates;
             state.ItemElements[nodeIdx] = itemElems;
+            GraphEngine.ReapplySelectTargets(desc, state, parent);
         }
+
+        /// <summary>
+        /// A &lt;select&gt;'s value only sticks once a matching &lt;option&gt; exists, and the
+        /// options of <c>&lt;select value="@X"&gt;@foreach(...){&lt;option&gt;}</c> render after
+        /// (or change after) the value was set. Re-apply the select's own DOM targets.
+        /// </summary>
+        private static void ReapplySelectTargets(GraphDescriptor desc, GraphState state, Node parent)
+        {
+            if (!GraphEngine.IsSelectElement(parent)) return;
+
+            for (int j = 0; j < desc.NodeCount; j++)
+            {
+                if (desc.NodeTypes[j] != GraphNodeType.DomTarget) continue;
+                DomTargetInfo info = (DomTargetInfo)desc.TargetInfos[j];
+                if (object.IsNullOrUndefined(info) || object.IsNullOrUndefined(info.Setter)) continue;
+                object elem = state.ElemRefs[info.ElemIdx];
+                if (elem != (object)parent) continue;
+
+                object val = state.Values[j];
+                info.Setter(elem, !object.IsNullOrUndefined(val) ? val : desc.DefaultValues[j]);
+            }
+        }
+
+        [System.Runtime.CompilerServices.Script(@"return n.nodeName == 'SELECT';")]
+        private static extern bool IsSelectElement(Node n);
 
         private static GraphState CreateCollectionItemGraph(
             GraphState parentState, CollectionTargetInfo colInfo, Element clone, object item)
         {
-            NativeArray childElemRefs = GraphEngine.CollectSpanElements(clone);
-            GraphEngine.ResolveEventElements(childElemRefs);
-            GraphEngine.ResolveBindElements(childElemRefs);
+            NativeArray childElemRefs = GraphEngine.AssignMarkersToSlots(
+                colInfo.ItemGraph, GraphEngine.CollectSpanElements(clone));
 
             GraphState childState = new GraphState(colInfo.ItemGraph, childElemRefs, parentState.Depth + 1);
             NativeArray itemContext = new NativeArray(3);
@@ -1304,6 +1392,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, obsCol);
                 }
             }
+
+            GraphEngine.ReapplySelectTargets(desc, state, parent);
         }
 
         /// <summary>
@@ -1351,16 +1441,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             // Insert new items.
             for (int j = 0; j < addCount; j++)
             {
-                object item = newItems[j];
                 Element clone = (Element)templateElement.CloneNode(true);
                 parent.InsertBefore(clone, refNode);
                 newItemElems[insertIdx + j] = clone;
-
-                if (!object.IsNullOrUndefined(colInfo.ItemGraph))
-                {
-                    newChildStates[insertIdx + j] = GraphEngine.CreateCollectionItemGraph(
-                        state, colInfo, clone, item);
-                }
             }
 
             // Copy items after insertion point.
@@ -1370,8 +1453,18 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 newItemElems[j + addCount] = !object.IsNullOrUndefined(itemElems) ? itemElems[j] : null;
             }
 
+            // Commit before building row graphs. A row graph that throws still leaves one
+            // tracked row per item, so the next Remove finds its row instead of computing a
+            // negative array length. The exception still reaches the caller.
             state.ChildGraphStates[nodeIdx] = newChildStates;
             state.ItemElements[nodeIdx] = newItemElems;
+
+            if (object.IsNullOrUndefined(colInfo.ItemGraph)) return;
+            for (int j = 0; j < addCount; j++)
+            {
+                newChildStates[insertIdx + j] = GraphEngine.CreateCollectionItemGraph(
+                    state, colInfo, (Element)newItemElems[insertIdx + j], newItems[j]);
+            }
         }
 
         /// <summary>
@@ -1453,6 +1546,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// </summary>
         public static void CleanupEventListeners(GraphDescriptor desc, GraphState state)
         {
+            GraphEngine.UnwireTwoWayValues(state);
             int n = desc.NodeCount;
             for (int i = 0; i < n; i++)
             {
@@ -1474,6 +1568,79 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         state.EventListeners[i] = null;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Binds <c>input</c> and <c>change</c> on every resolved two-way <c>value=</c>
+        /// element that is not bound yet; a replaced element (a gate re-rendered its branch)
+        /// is unbound and its successor bound. Each event writes the element's value back to
+        /// the source unless it already equals the bound value.
+        /// </summary>
+        public static void WireTwoWayValues(GraphDescriptor desc, GraphState state)
+        {
+            int n = desc.NodeCount;
+            for (int i = 0; i < n; i++)
+            {
+                if (desc.NodeTypes[i] != GraphNodeType.DomTarget) continue;
+                DomTargetInfo info = (DomTargetInfo)desc.TargetInfos[i];
+                if (object.IsNullOrUndefined(info) || object.IsNullOrUndefined(info.SourceSetter)) continue;
+
+                Element elem = state.ElemRefs[info.ElemIdx] as Element;
+                if (object.IsNullOrUndefined(elem)) continue;
+                if (object.IsNullOrUndefined(state.TwoWayListeners))
+                {
+                    state.TwoWayListeners = new NativeArray(n);
+                    state.TwoWayElements = new NativeArray(n);
+                }
+
+                if (state.TwoWayElements[i] == elem) continue;
+                GraphEngine.UnwireTwoWayValue(state, i);
+
+                Action<Element, ElementEvent> handler = GraphEngine.CreateTwoWayHandler(state, i, info, elem);
+                elem.Bind("input", handler);
+                elem.Bind("change", handler);
+                state.TwoWayListeners[i] = handler;
+                state.TwoWayElements[i] = elem;
+            }
+        }
+
+        private static Action<Element, ElementEvent> CreateTwoWayHandler(
+            GraphState state, int nodeIdx, DomTargetInfo info, Element elem)
+        {
+            return delegate(Element sender, ElementEvent evt)
+            {
+                string value = GraphEngine.GetElementValue(elem);
+                object source = state.Sources[GraphSourceSlot.DataContext];
+                if (!object.IsNullOrUndefined(source) && !object.Equals(state.Values[nodeIdx], value))
+                    info.SourceSetter(source, value);
+            };
+        }
+
+        [System.Runtime.CompilerServices.Script(@"return e.value;")]
+        private static extern string GetElementValue(Element e);
+
+        private static void UnwireTwoWayValue(GraphState state, int nodeIdx)
+        {
+            Element bound = state.TwoWayElements[nodeIdx] as Element;
+            Action<Element, ElementEvent> handler =
+                (Action<Element, ElementEvent>)state.TwoWayListeners[nodeIdx];
+            if (!object.IsNullOrUndefined(bound) && !object.IsNullOrUndefined(handler))
+            {
+                bound.UnBind("input", handler);
+                bound.UnBind("change", handler);
+            }
+
+            state.TwoWayListeners[nodeIdx] = null;
+            state.TwoWayElements[nodeIdx] = null;
+        }
+
+        private static void UnwireTwoWayValues(GraphState state)
+        {
+            if (object.IsNullOrUndefined(state.TwoWayListeners)) return;
+            for (int i = 0; i < state.TwoWayListeners.Length; i++)
+            {
+                GraphEngine.UnwireTwoWayValue(state, i);
             }
         }
 
@@ -1727,124 +1894,132 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
-        /// Collects compiler-generated marker elements from an item clone for use as
-        /// element refs in child graph states. Markers are identified by data-ns-ph
-        /// (text placeholders), data-ns-bind (value/attribute bindings), data-ns-evt
-        /// (event bindings), or data-ns-subctl (child hosts). Returns each marker in DOM order.
-        /// If no markers found, returns a single-element array containing the clone itself.
+        /// Collects compiler-generated markers from an item clone, the clone itself first, in
+        /// DOM order (which is the compiler's element-index order). Markers are data-ns-ph
+        /// (text placeholders and gate/collection anchors), data-ns-subctl (child hosts) and
+        /// data-ns-m="k" (an element owning k attribute bindings/events, listed k times).
         /// </summary>
         public static NativeArray CollectSpanElements(Element clone)
         {
-            // Collect only compiler-generated markers — elements carrying data-ns-ph,
-            // data-ns-bind, data-ns-evt, or data-ns-subctl. User-authored spans
-            // must NOT be collected as they are not counted by the compiler's element indexing.
-            NativeArray<Element> allMarkers = clone.QuerySelectorAll("[data-ns-ph], [data-ns-bind], [data-ns-evt], [data-ns-subctl]");
-            int count = allMarkers.Length;
-            NativeArray result = new NativeArray(count > 0 ? count : 1);
-            for (int i = 0; i < count; i++)
-            {
-                result[i] = allMarkers[i];
-            }
-            if (count == 0)
-            {
-                result[0] = clone;
-            }
+            NativeArray result = new NativeArray(0);
+            GraphEngine.CollectMarkers(clone, result);
             return result;
         }
 
-        /// <summary>
-        /// Replaces every data-ns-evt marker span in elemRefs with its parent
-        /// element. Non-span elements (e.g. <button data-ns-evt/>) bind to
-        /// themselves. Works on the refs directly so a marker that is a sibling
-        /// of a gate branch's void root element resolves too.
-        /// </summary>
-        public static void ResolveEventElements(NativeArray elemRefs)
+        private const string MarkerSelector = "[data-ns-ph], [data-ns-m], [data-ns-subctl]";
+
+        /// <summary>Pushes the node (if it is a marker) and then its descendant markers.</summary>
+        private static void CollectMarkers(Element node, NativeArray result)
         {
-            GraphEngine.ResolveMarkerSpans(elemRefs, "data-ns-evt");
+            if (object.IsNullOrUndefined(node) || object.IsNullOrUndefined(node.TagName)) return;
+            GraphEngine.PushMarker(node, result);
+            NativeArray<Element> inner = node.QuerySelectorAll(GraphEngine.MarkerSelector);
+            for (int i = 0; i < inner.Length; i++) GraphEngine.PushMarker(inner[i], result);
         }
 
-        public static void ResolveBindElements(NativeArray elemRefs)
+        private static void PushMarker(Element element, NativeArray result)
         {
-            GraphEngine.ResolveMarkerSpans(elemRefs, "data-ns-bind");
-        }
-
-        private static void ResolveMarkerSpans(NativeArray elemRefs, string attribute)
-        {
-            for (int j = 0; j < elemRefs.Length; j++)
+            string ownerCount = element.GetAttribute("data-ns-m");
+            if (!object.IsNullOrUndefined(ownerCount))
             {
-                Element marker = elemRefs[j] as Element;
-                if (object.IsNullOrUndefined(marker)) continue;
-                if (marker.TagName != "SPAN" || !marker.HasAttribute(attribute)) continue;
-
-                // The compiler cannot place a marker inside a void element, so it
-                // emits the span(s) as the element's trailing siblings, one per
-                // event. Walk back over that contiguous marker group to the owner
-                // and bind to it, not the parent: two inputs in one row would
-                // otherwise share the parent's handler and cross-fire.
-                Element owner = GraphEngine.VoidOwnerOfMarker(marker);
-                if (!object.IsNullOrUndefined(owner))
-                {
-                    elemRefs[j] = owner;
-                    continue;
-                }
-
-                elemRefs[j] = (Element)marker.ParentNode;
+                int count = int.Parse(ownerCount);
+                for (int k = 0; k < count; k++) result.Push(element);
+            }
+            else if (element.HasAttribute("data-ns-ph") || element.HasAttribute("data-ns-subctl"))
+            {
+                result.Push(element);
             }
         }
 
         /// <summary>
-        /// The void element that owns a trailing marker span: the nearest
-        /// preceding sibling that is not itself a marker span. Null when the
-        /// markers are not trailing a void element.
+        /// Builds an item graph's element refs: markers fill the element slots in order,
+        /// skipping slots inside @if branches (absent from the row DOM until their gate
+        /// renders them; ResolveGateChildElems fills them then).
         /// </summary>
-        private static Element VoidOwnerOfMarker(Element marker)
+        private static NativeArray AssignMarkersToSlots(GraphDescriptor desc, NativeArray markers)
         {
-            Element previous = marker.PreviousSibling as Element;
-            while (!object.IsNullOrUndefined(previous) && GraphEngine.IsMarkerSpan(previous))
-                previous = previous.PreviousSibling as Element;
-            if (object.IsNullOrUndefined(previous) || object.IsNullOrUndefined(previous.TagName)) return null;
-            return GraphEngine.IsVoidElement(previous) ? previous : null;
+            NativeArray<bool> gated = GraphEngine.GatedElemSlots(desc, null);
+            NativeArray refs = new NativeArray(0);
+            int slot = 0;
+            for (int m = 0; m < markers.Length; m++)
+            {
+                while (slot < gated.Length && gated[slot])
+                {
+                    refs[slot] = null;
+                    slot++;
+                }
+
+                refs[slot] = markers[m];
+                slot++;
+            }
+
+            return refs;
         }
 
-        private static bool IsMarkerSpan(Element element)
+        /// <summary>
+        /// Element slots rendered by gates: every gate's branch slots, or with
+        /// <paramref name="within"/> only those of gates whose anchor is one of those slots
+        /// (the gates nested in a branch). Indexed by slot; unset entries are false.
+        /// </summary>
+        private static NativeArray<bool> GatedElemSlots(GraphDescriptor desc, NativeArray<int> within)
         {
-            return element.TagName == "SPAN"
-                && (element.HasAttribute("data-ns-evt") || element.HasAttribute("data-ns-bind"));
+            NativeArray<bool> gated = new NativeArray<bool>(0);
+            for (int i = 0; i < desc.NodeCount; i++)
+            {
+                if (desc.NodeTypes[i] != GraphNodeType.Gate) continue;
+                GateTargetInfo gate = (GateTargetInfo)desc.TargetInfos[i];
+                if (object.IsNullOrUndefined(gate)) continue;
+                if (!object.IsNullOrUndefined(within) && !GraphEngine.ContainsSlot(within, gate.MarkerIdx)) continue;
+                GraphEngine.MarkSlots(gated, gate.TrueChildElemIndices);
+                GraphEngine.MarkSlots(gated, gate.FalseChildElemIndices);
+            }
+
+            return gated;
         }
 
-        private static bool IsVoidElement(Element element)
+        private static void MarkSlots(NativeArray<bool> gated, NativeArray<int> slots)
         {
-            string tag = element.TagName;
-            return tag == "INPUT" || tag == "IMG" || tag == "BR" || tag == "HR"
-                || tag == "AREA" || tag == "BASE" || tag == "COL" || tag == "EMBED"
-                || tag == "LINK" || tag == "META" || tag == "PARAM" || tag == "SOURCE"
-                || tag == "TRACK" || tag == "WBR";
+            if (object.IsNullOrUndefined(slots)) return;
+            for (int k = 0; k < slots.Length; k++)
+            {
+                int slot = slots[k];
+                while (gated.Length <= slot) gated.Push(false);
+                gated[slot] = true;
+            }
+        }
+
+        private static bool ContainsSlot(NativeArray<int> slots, int slot)
+        {
+            for (int k = 0; k < slots.Length; k++)
+            {
+                if (slots[k] == slot) return true;
+            }
+
+            return false;
         }
 
         /// <summary>
         /// Collects compiler-generated markers across every top-level node of a
-        /// gate branch: a node that is itself a marker (a void root carrying
-        /// data-ns-bind, or a trailing data-ns-evt span) followed by its
-        /// descendant markers, in document order.
+        /// gate branch, each node first and then its descendants, in document order.
         /// </summary>
         public static NativeArray CollectGateSpanElements(NativeArray<Element> nodes)
         {
             NativeArray result = new NativeArray(0);
             for (int k = 0; k < nodes.Length; k++)
             {
-                Element node = nodes[k];
-                if (object.IsNullOrUndefined(node) || object.IsNullOrUndefined(node.TagName)) continue;
-                if (node.HasAttribute("data-ns-ph") || node.HasAttribute("data-ns-bind")
-                    || node.HasAttribute("data-ns-evt") || node.HasAttribute("data-ns-subctl"))
-                {
-                    result.Push(node);
-                }
-                NativeArray<Element> inner = node.QuerySelectorAll("[data-ns-ph], [data-ns-bind], [data-ns-evt], [data-ns-subctl]");
-                for (int i = 0; i < inner.Length; i++) result.Push(inner[i]);
+                GraphEngine.CollectMarkers(nodes[k], result);
             }
-            if (result.Length == 0 && nodes.Length > 0) result.Push(nodes[0]);
+
             return result;
         }
+
+        /// <summary>
+        /// Parses template HTML in a &lt;template&gt; element so it keeps the shape it has in
+        /// its real parent: a &lt;tr&gt;, &lt;td&gt; or &lt;option&gt; row survives, where a
+        /// &lt;div&gt; container would drop the tags. Returns the parsed top-level nodes.
+        /// </summary>
+        [System.Runtime.CompilerServices.Script(@"var t = doc.createElement('template'); t.innerHTML = html; return t.content.childNodes;")]
+        private static extern NativeArray<Node> ParseFragmentNodes(Document doc, string html);
 
         /// <summary>
         /// Parses a gate branch template and inserts every top-level node
@@ -1856,12 +2031,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             if (object.IsNullOrUndefined(html) || html == "") return null;
 
-            Document doc = marker.OwnerDocument;
-            Element container = doc.CreateElement("div");
-            container.InnerHTML = html;
-
             // Copy first: inserting a node elsewhere removes it from the live list.
-            NativeArray<Node> children = container.ChildNodes;
+            NativeArray<Node> children = GraphEngine.ParseFragmentNodes(marker.OwnerDocument, html);
             NativeArray<Element> nodes = new NativeArray<Element>(0);
             for (int k = 0; k < children.Length; k++) nodes.Push((Element)children[k]);
             if (nodes.Length == 0) return null;
@@ -1931,12 +2102,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             if (object.IsNullOrUndefined(html) || html == "")
                 return null;
 
-            Document doc = referenceElement.OwnerDocument;
-            Element container = doc.CreateElement("div");
-            container.InnerHTML = html;
-
-            if (container.ChildNodes.Length > 0)
-                return (Element)container.ChildNodes[0];
+            NativeArray<Node> children = GraphEngine.ParseFragmentNodes(referenceElement.OwnerDocument, html);
+            if (children.Length > 0)
+                return (Element)children[0];
 
             return null;
         }
@@ -1966,7 +2134,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// Uses CollectSpanElements to find marker spans in the rendered template.
         /// </summary>
         public static void ResolveGateChildElems(
-            GraphState state, GateTargetInfo gateInfo, int gateNodeIdx, bool gateIsOpen)
+            GraphDescriptor desc, GraphState state, GateTargetInfo gateInfo, int gateNodeIdx, bool gateIsOpen)
         {
             NativeArray<int> childIndices = gateIsOpen
                 ? gateInfo.TrueChildElemIndices
@@ -1981,18 +2149,27 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 nodes = new NativeArray<Element>(0);
                 nodes.Push((Element)state.GateElements[gateNodeIdx]);
             }
-            NativeArray spans = GraphEngine.CollectGateSpanElements(nodes);
-            GraphEngine.ResolveEventElements(spans);
-            GraphEngine.ResolveBindElements(spans);
-            int spanCount = spans.Length;
+            NativeArray markers = GraphEngine.CollectGateSpanElements(nodes);
 
+            // Slots of gates nested in this branch are not in the branch DOM yet.
+            NativeArray<bool> nested = GraphEngine.GatedElemSlots(desc, childIndices);
+            int m = 0;
             for (int k = 0; k < childIndices.Length; k++)
             {
-                if (k < spanCount)
-                {
-                    state.ElemRefs[childIndices[k]] = spans[k];
-                }
+                int slot = childIndices[k];
+                if (slot < nested.Length && nested[slot]) continue;
+                if (m >= markers.Length)
+                    throw new Exception("Gate branch has fewer element markers (" + markers.Length
+                        + ") than element slots; the template HTML and its graph are out of step.");
+                state.ElemRefs[slot] = markers[m];
+                m++;
             }
+
+            if (m != markers.Length)
+                throw new Exception("Gate branch has " + markers.Length + " element markers but "
+                    + m + " element slots; the template HTML and its graph are out of step.");
+
+            GraphEngine.WireTwoWayValues(desc, state);
         }
 
         /// <summary>

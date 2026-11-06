@@ -38,7 +38,7 @@
             {
                 if (object.IsNullOrUndefined(String.trimEndHelperRegex))
                 {
-                    String.trimEndHelperRegex = new RegularExpression(@"^[\s\xA0]+");
+                    String.trimEndHelperRegex = new RegularExpression(@"[\s\xA0]+$");
                 }
 
                 return String.trimEndHelperRegex;
@@ -211,12 +211,41 @@
         [IntrinsicOperator]
         public extern static bool operator !=(string s1, string s2);
 
+        /// <summary>
+        /// Replaces every occurrence, like .NET; the replacement is literal text. A null or
+        /// empty <paramref name="oldText"/> throws, as in .NET. Use
+        /// <see cref="ReplaceFirst(string, string)"/> for one.
+        /// </summary>
+        [Script(@"
+            if (oldText == null || oldText.length == 0) {
+                throw new @:Error('String.Replace: oldText must be a non-empty string');
+            }
+            return this.split(oldText).join(replaceText == null ? '' : replaceText);
+            ")]
         public extern string Replace(string oldText, string replaceText);
 
         public extern string Replace(RegularExpression oldText, string replaceText);
 
+        /// <summary>
+        /// Replaces the first occurrence; the replacement is literal text ('$&amp;' is not expanded).
+        /// </summary>
+        [Script(@"
+            var i = this.indexOf(oldText);
+            if (i < 0) {
+                return this;
+            }
+            return this.substring(0, i) + (replaceText == null ? '' : replaceText) + this.substring(i + oldText.length);
+            ")]
         public extern string ReplaceFirst(string oldText, string replaceText);
 
+        /// <summary>
+        /// Replaces the first match only, even when <paramref name="oldText"/> has the g flag
+        /// (a non-global copy is used; the caller's regex is not changed).
+        /// </summary>
+        [Script(@"
+            var re = oldText.global ? new @:RegExp(oldText.source, oldText.flags.replace('g', '')) : oldText;
+            return this.replace(re, replaceText);
+            ")]
         public extern string ReplaceFirst(RegularExpression oldText, string replaceText);
 
         public string[] Split(char ch)
@@ -283,13 +312,13 @@
 
         [MakeStaticUsage]
         [Script(@"
-            return this.trimLeft ? this.trimLeft() : this.replace(@{[mscorlib]System.String::get_TrimEndHelperRegex()}(), '');
+            return this.trimEnd ? this.trimEnd() : this.replace(@{[mscorlib]System.String::get_TrimEndHelperRegex()}(), '');
             ")]
         public extern string TrimEnd();
 
         [MakeStaticUsage]
         [Script(@"
-            return this.trimRight ? this.trimRight() : this.replace(@{[mscorlib]System.String::get_TrimStartHelperRegex()}(), '');
+            return this.trimStart ? this.trimStart() : this.replace(@{[mscorlib]System.String::get_TrimStartHelperRegex()}(), '');
             ")]
         public extern string TrimStart();
 

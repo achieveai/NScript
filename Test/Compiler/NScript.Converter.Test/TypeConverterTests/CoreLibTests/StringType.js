@@ -9,7 +9,7 @@ function String__get_FormatHelperRegex() {
 }
 function String__get_TrimEndHelperRegex() {
   if (Object__IsNullOrUndefined(String__trimEndHelperRegex))
-    String__trimEndHelperRegex = new RegExp("^[\\s\\xA0]+");
+    String__trimEndHelperRegex = new RegExp("[\\s\\xA0]+$");
   return String__trimEndHelperRegex;
 }
 function String__get_TrimStartHelperRegex() {
@@ -119,6 +119,23 @@ function String__LastIndexOf(this_, ch) {
 function String__LastIndexOfa(this_, ch, startIndex) {
   return this_.lastIndexOf(String.fromCharCode(ch), startIndex);
 }
+function String__Replace(this_, oldText, replaceText) {
+  if (oldText == null || oldText.length == 0)
+    throw new Error("String.Replace: oldText must be a non-empty string");
+  return this_.split(oldText).join(replaceText == null ? "" : replaceText);
+}
+function String__ReplaceFirst(this_, oldText, replaceText) {
+  var i;
+  i = this_.indexOf(oldText);
+  if (i < 0)
+    return this_;
+  return this_.substring(0, i) + (replaceText == null ? "" : replaceText) + this_.substring(i + oldText.length);
+}
+function String__ReplaceFirsta(this_, oldText, replaceText) {
+  var re;
+  re = oldText.global ? new RegExp(oldText.source, oldText.flags.replace("g", "")) : oldText;
+  return this_.replace(re, replaceText);
+}
 function String__Split(this_, ch) {
   return NativeArray__GetArray(String, this_.split(String.fromCharCode(ch)));
 }
@@ -148,10 +165,10 @@ function String__Trim(this_) {
   return String__TrimEnd(String__TrimStart(this_));
 }
 function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex(), "");
+  return this_.trimEnd ? this_.trimEnd() : this_.replace(String__get_TrimEndHelperRegex(), "");
 }
 function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex(), "");
+  return this_.trimStart ? this_.trimStart() : this_.replace(String__get_TrimStartHelperRegex(), "");
 }
 function String__get_Item(this_, index) {
   return this_.charCodeAt(index);
@@ -184,9 +201,9 @@ String__LastIndexOfa = function String__LastIndexOfa(this_, ch, startIndex) {
   return this_.lastIndexOf(String.fromCharCode(ch), startIndex);
 };
 String__TrimEnd = function String__TrimEnd(this_) {
-  return this_.trimLeft ? this_.trimLeft() : this_.replace(String__get_TrimEndHelperRegex(), "");
+  return this_.trimEnd ? this_.trimEnd() : this_.replace(String__get_TrimEndHelperRegex(), "");
 };
 String__TrimStart = function String__TrimStart(this_) {
-  return this_.trimRight ? this_.trimRight() : this_.replace(String__get_TrimStartHelperRegex(), "");
+  return this_.trimStart ? this_.trimStart() : this_.replace(String__get_TrimStartHelperRegex(), "");
 };
 Type__RegisterReferenceType(String, "System.String", Object, []);

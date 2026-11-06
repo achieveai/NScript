@@ -14,7 +14,7 @@ namespace System.Web.Html
     [IgnoreNamespace]
     public sealed class DataTransfer
     {
-        private extern DataTransfer();
+        public extern DataTransfer();
 
         public extern DropEffect DropEffect
         { get; set; }
@@ -49,10 +49,26 @@ namespace System.Web.Html
                 data);
         }
 
-        internal extern void ClearData(string format);
+        /// <summary>
+        /// Gets the items being dragged (files and strings).
+        /// </summary>
+        public extern NativeArray<DataTransferItem> Items
+        { get; }
 
-        internal extern string GetData(string format);
+        /// <summary>
+        /// Removes the data for a MIME type, such as "text/plain".
+        /// </summary>
+        public extern void ClearData(string format);
 
-        internal extern bool SetData(string format, string data);
+        /// <summary>
+        /// Gets the data for a MIME type, such as "text/plain". Empty when there is none.
+        /// </summary>
+        public extern string GetData(string format);
+
+        /// <summary>
+        /// Sets the data for a MIME type, such as "text/plain".
+        /// The browser returns nothing; the bool result is always falsy.
+        /// </summary>
+        public extern bool SetData(string format, string data);
     }
 }

@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<div><span data-test="na-plain" data-x="@Model.Maybe">a</span><span data-test="na-tern" aria-sort="@(Model.Flag ? "ascending" : null)">b</span><span data-test="na-title" title="@Model.Maybe">c</span><span data-test="na-empty" data-y="@Model.Text">e</span><div>@foreach (var i in Model.Items) { <span data-test="na-row" data-x="@i.Hint">r</span> }</div></div>

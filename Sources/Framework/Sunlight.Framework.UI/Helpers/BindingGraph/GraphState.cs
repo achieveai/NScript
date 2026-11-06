@@ -66,6 +66,13 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// <summary>Active event listener handles per EventBinding node (for cleanup).</summary>
         public NativeArray EventListeners;
 
+        /// <summary>
+        /// Two-way <c>value=</c> DomTarget nodes: the input/change handler per node index and
+        /// the element it is bound to. Allocated on first use.
+        /// </summary>
+        public NativeArray TwoWayListeners;
+        public NativeArray TwoWayElements;
+
         /// <summary>Per-CollectionManager: child graph states per item.</summary>
         public NativeArray<NativeArray<GraphState>> ChildGraphStates;
 

@@ -43,9 +43,6 @@ namespace NScript.RazorSkin.CodeGen
         // Topology reference for marker path computation
         private GraphTopology _topology;
 
-        // Event element paths computed from data-evt-idx markers
-        private List<List<int>> _eventPaths;
-
         // Scope for the factory function body (has "skinFactory" and "doc" parameters)
         private IdentifierScope _factoryScope;
 
@@ -291,7 +288,6 @@ namespace NScript.RazorSkin.CodeGen
             List<List<int>> eventPaths,
             GraphTopology topology)
         {
-            _eventPaths = eventPaths;
             var stmts = new List<Statement>();
             var templateLocation = GetTemplateLocation();
 
@@ -446,14 +442,23 @@ namespace NScript.RazorSkin.CodeGen
             // at runtime when the gate renders its template. Skip their objStorage entries.
             var gatedElemIndices = topology.GetGatedElemIndices();
 
-            // Assign element references for DomTargets using computed element paths
-            for (int i = 0; i < bindings.Count; i++)
+            // Assign element references for DomTargets using computed element paths.
+            // elementPaths holds one path per static (non-gated) binding, in document order;
+            // DomTargets also lists gated targets, so pair the two with separate cursors.
+            var staticDomTargets = topology.DomTargets
+                .Where(d => !gatedElemIndices.Contains(d.ElemIdx))
+                .ToList();
+            if (staticDomTargets.Count != elementPaths.Count)
             {
-                var dt = topology.DomTargets.FirstOrDefault(d => d.NodeIdx == FindDomTargetNodeIdx(topology, i));
-                int elemIdx = dt?.ElemIdx ?? i;
-                if (gatedElemIndices.Contains(elemIdx)) continue; // resolved at runtime by gate
+                throw new InvalidOperationException(
+                    $"Template {_ir.TemplateName}: {staticDomTargets.Count} static DOM targets but "
+                    + $"{elementPaths.Count} element paths; binding placeholders are out of step.");
+            }
 
-                var path = i < elementPaths.Count ? elementPaths[i] : new List<int> { 0 };
+            for (int i = 0; i < staticDomTargets.Count; i++)
+            {
+                int elemIdx = staticDomTargets[i].ElemIdx;
+                var path = elementPaths[i];
                 var pathElements = new List<Expression>();
                 foreach (var p in path)
                     pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
@@ -518,20 +523,31 @@ namespace NScript.RazorSkin.CodeGen
                             BuildCollectionMarkerPath(htmlContent, coll))));
             }
 
-            // Assign element references for events.
-            foreach (var evt in topology.Events)
+            // Assign element references for events. eventPaths holds one path per static
+            // event (not in a gate branch, not on a sub-control host), in document order;
+            // topology.Events also lists the others, so pair the static ones by their own cursor.
+            var staticEvents = topology.Events
+                .Where(e => !gatedElemIndices.Contains(e.ElemIdx)
+                    && !topology.SubControls.Any(sc => sc.ElemIdx == e.ElemIdx))
+                .ToList();
+            int eventPathCount = eventPaths?.Count ?? 0;
+            if (staticEvents.Count != eventPathCount)
             {
-                if (gatedElemIndices.Contains(evt.ElemIdx)) continue;
-                if (topology.SubControls.Any(sc => sc.ElemIdx == evt.ElemIdx)) continue;
+                throw new InvalidOperationException(
+                    $"Template {_ir.TemplateName}: {staticEvents.Count} static events but "
+                    + $"{eventPathCount} event element paths; event markers are out of step.");
+            }
 
+            for (int i = 0; i < staticEvents.Count; i++)
+            {
                 stmts.Add(
                     ExpressionStatement.CreateAssignmentExpression(
                         new IndexExpression(
                             null,
                             _factoryScope,
                             new IdentifierExpression(_objStorageIdentifier, _factoryScope),
-                            new NumberLiteralExpression(_factoryScope, evt.ElemIdx)),
-                        BuildEventElementRef(htmlContent, evt)));
+                            new NumberLiteralExpression(_factoryScope, staticEvents[i].ElemIdx)),
+                        BuildElementFromPath(eventPaths[i])));
             }
 
             var partIds = new InlineObjectInitializer(null, _factoryScope);
@@ -814,17 +830,6 @@ namespace NScript.RazorSkin.CodeGen
             => _typeHelper.FindProperty(type, propertyName);
 
         /// <summary>
-        /// Finds the DomTarget node index for the i-th binding (in document order).
-        /// DomTargets are added in the same order as bindings are walked.
-        /// </summary>
-        private static int FindDomTargetNodeIdx(GraphTopology topology, int bindingIndex)
-        {
-            if (bindingIndex < topology.DomTargets.Count)
-                return topology.DomTargets[bindingIndex].NodeIdx;
-            return -1;
-        }
-
-        /// <summary>
         /// Computes the DOM path for a gate marker span in the cleaned HTML.
         /// Parses the HTML string to find the N-th empty span (gate marker).
         /// </summary>
@@ -868,6 +873,7 @@ namespace NScript.RazorSkin.CodeGen
             foreach (var dt in _topology.DomTargets)
             {
                 if (dt.Target == TemplateIR.ExpressionTarget.TextContent
+                    && !dt.TargetsOwnerElement
                     && !gatedIndices.Contains(dt.ElemIdx))
                 {
                     allEmptySpanIndices.Add(dt.ElemIdx);
@@ -892,19 +898,25 @@ namespace NScript.RazorSkin.CodeGen
 
             // Find which ordinal position among all empty spans this target is at
             int ordinal = allEmptySpanIndices.IndexOf(targetIdx);
-            if (ordinal < 0) ordinal = 0;
+            if (ordinal < 0)
+                throw new InvalidOperationException(
+                    $"Template {_ir.TemplateName}: {kind} marker {targetIdx} is not a static placeholder.");
 
-            return FindNthEmptySpanPath(html, ordinal);
+            return FindNthEmptySpanPath(html, ordinal)
+                ?? throw new InvalidOperationException(
+                    $"Template {_ir.TemplateName}: {kind} marker {targetIdx} (placeholder #{ordinal}) is missing from the static HTML.");
         }
 
         /// <summary>
-        /// Parses HTML to find the N-th empty span element and returns its DOM path.
+        /// Returns the DOM path of the N-th compiler placeholder (a tag carrying data-ns-ph:
+        /// a text-binding &lt;span&gt; or a gate/collection &lt;template&gt; anchor), or null
+        /// when the HTML has fewer. User-authored empty spans are not placeholders.
         /// </summary>
-        private static List<int> FindNthEmptySpanPath(string html, int n)
+        internal static List<int> FindNthEmptySpanPath(string html, int n)
         {
             var indexStack = new List<int>();
             var childCountStack = new List<int> { 0 };
-            int emptySpanCount = 0;
+            int placeholderCount = 0;
             bool hasText = false;
 
             int i = 0;
@@ -925,41 +937,21 @@ namespace NScript.RazorSkin.CodeGen
                             childCountStack.RemoveAt(childCountStack.Count - 1);
                         }
                         i = closeEnd + 1;
-                        hasText = false;
                         continue;
                     }
 
                     var tagEnd = html.IndexOf('>', i);
                     if (tagEnd < 0) break;
                     var tagContent = html.Substring(i + 1, tagEnd - i - 1);
-                    bool selfClosing = tagContent.EndsWith("/");
+                    bool selfClosing = tagContent.EndsWith("/") || RazorSkinCodeGenerator.IsVoidTag(tagContent);
                     int myIndex = childCountStack[childCountStack.Count - 1];
                     childCountStack[childCountStack.Count - 1]++;
 
-                    // Check if this is <span></span> (empty span = gate/collection marker)
-                    var tagName = tagContent.Split(new[] { ' ', '/' }, System.StringSplitOptions.RemoveEmptyEntries)
-                        .FirstOrDefault()?.ToLower() ?? "";
-                    if (tagName == "span" && !selfClosing)
+                    if (System.Text.RegularExpressions.Regex.IsMatch(tagContent, @"\sdata-ns-ph(?=[\s=/]|$)"))
                     {
-                        // Check if immediately followed by </span>
-                        var closeSpanIdx = html.IndexOf("</span>", tagEnd + 1);
-                        if (closeSpanIdx == tagEnd + 1)
-                        {
-                            // Empty span found
-                            if (emptySpanCount == n)
-                            {
-                                return new List<int>(indexStack) { myIndex };
-                            }
-                            emptySpanCount++;
-
-                            // Skip past the closing tag
-                            indexStack.Add(myIndex);
-                            childCountStack.Add(0);
-                            indexStack.RemoveAt(indexStack.Count - 1);
-                            childCountStack.RemoveAt(childCountStack.Count - 1);
-                            i = closeSpanIdx + 7; // past </span>
-                            continue;
-                        }
+                        if (placeholderCount == n)
+                            return new List<int>(indexStack) { myIndex };
+                        placeholderCount++;
                     }
 
                     if (!selfClosing)
@@ -968,7 +960,6 @@ namespace NScript.RazorSkin.CodeGen
                         childCountStack.Add(0);
                     }
                     i = tagEnd + 1;
-                    hasText = false;
                 }
                 else
                 {
@@ -977,41 +968,14 @@ namespace NScript.RazorSkin.CodeGen
                 }
             }
 
-            // Fallback
-            return new List<int> { 0 };
+            return null;
         }
 
         /// <summary>
-        /// Builds an element reference expression for an event target.
-        /// Finds the event target element in the HTML by looking for the element
-        /// that originally had the onclick/onX attribute.
+        /// <c>GetElementFromPath(htmlRoot, [path])</c> for an element of the static HTML.
         /// </summary>
-        private Expression BuildEventElementRef(string htmlContent, EventTopology evt)
+        private Expression BuildElementFromPath(List<int> path)
         {
-            // Events target specific elements in the template HTML.
-            // The event target element was identified during IR building and marked
-            // with data-evt-idx attributes. The paths were computed from those markers
-            // by ComputePathsFromHtml and passed via _eventPaths.
-            // The topology assigns event element indices in document order.
-            // Find the ordinal position of this event among all events.
-            int ordinal = 0;
-            foreach (var e in _topology.Events)
-            {
-                if (e.ElemIdx == evt.ElemIdx) break;
-                ordinal++;
-            }
-
-            // Use the marker-computed path if available, otherwise fall back to heuristic
-            List<int> path;
-            if (_eventPaths != null && ordinal < _eventPaths.Count)
-            {
-                path = _eventPaths[ordinal];
-            }
-            else
-            {
-                path = FindNthInteractiveElementPath(htmlContent, ordinal);
-            }
-
             var pathElements = new List<Expression>();
             foreach (var p in path)
                 pathElements.Add(new NumberLiteralExpression(_factoryScope, p));
@@ -1025,75 +989,6 @@ namespace NScript.RazorSkin.CodeGen
                 new IdentifierExpression(getElementFromPathId, _factoryScope),
                 new IdentifierExpression(_htmlRootIdentifier, _factoryScope),
                 new InlineNewArrayInitialization(null, _factoryScope, pathElements));
-        }
-
-        /// <summary>
-        /// Finds the DOM path for the N-th interactive element (button, a, input) in the HTML.
-        /// </summary>
-        private static List<int> FindNthInteractiveElementPath(string html, int n)
-        {
-            var indexStack = new List<int>();
-            var childCountStack = new List<int> { 0 };
-            int interactiveCount = 0;
-            bool hasText = false;
-
-            int i = 0;
-            while (i < html.Length)
-            {
-                if (html[i] == '<')
-                {
-                    if (hasText) { childCountStack[childCountStack.Count - 1]++; hasText = false; }
-
-                    if (i + 1 < html.Length && html[i + 1] == '/')
-                    {
-                        var closeEnd = html.IndexOf('>', i);
-                        if (closeEnd < 0) break;
-                        if (indexStack.Count > 0)
-                        {
-                            indexStack.RemoveAt(indexStack.Count - 1);
-                            childCountStack.RemoveAt(childCountStack.Count - 1);
-                        }
-                        i = closeEnd + 1;
-                        hasText = false;
-                        continue;
-                    }
-
-                    var tagEnd = html.IndexOf('>', i);
-                    if (tagEnd < 0) break;
-                    var tagContent = html.Substring(i + 1, tagEnd - i - 1);
-                    bool selfClosing = tagContent.EndsWith("/");
-                    int myIndex = childCountStack[childCountStack.Count - 1];
-                    childCountStack[childCountStack.Count - 1]++;
-
-                    var tagName = tagContent.Split(new[] { ' ', '/' }, System.StringSplitOptions.RemoveEmptyEntries)
-                        .FirstOrDefault()?.ToLower() ?? "";
-
-                    if (tagName == "button" || tagName == "a" || tagName == "input")
-                    {
-                        if (interactiveCount == n)
-                        {
-                            return new List<int>(indexStack) { myIndex };
-                        }
-                        interactiveCount++;
-                    }
-
-                    if (!selfClosing)
-                    {
-                        indexStack.Add(myIndex);
-                        childCountStack.Add(0);
-                    }
-                    i = tagEnd + 1;
-                    hasText = false;
-                }
-                else
-                {
-                    hasText = true;
-                    i++;
-                }
-            }
-
-            // Fallback
-            return new List<int> { 0 };
         }
 
         /// <summary>
@@ -1258,10 +1153,7 @@ namespace NScript.RazorSkin.CodeGen
                         property, modelType, itemType, itemVariablePrefix,
                         findProperty, sub.Location);
 
-                if (!binding.IsLiteral && property.CustomAttributes.Any(attr =>
-                    attr.AttributeType.Name == "DefaultDataBindingAttribute"
-                    && attr.Properties.Any(named => named.Name == "Mode"
-                        && Convert.ToInt32(named.Argument.Value) == 2)))
+                if (!binding.IsLiteral && IsTwoWayTargetProperty(property))
                 {
                     var source = binding.Classification.CSharpExpression;
                     var prefix = !string.IsNullOrEmpty(itemVariablePrefix)
@@ -1281,6 +1173,18 @@ namespace NScript.RazorSkin.CodeGen
             if (FindElementConstructor(typeDef) == null)
                 throw new RazorSubControlDiagnosticException(sub.Location,
                     $"Sub-control {typeDef.FullName} requires a public (System.Web.Html.Element) constructor.");
+        }
+
+        /// <summary>
+        /// Whether a sub-control property is declared two-way
+        /// (<c>[DefaultDataBinding(Mode = DataBindingMode.TwoWay)]</c>).
+        /// </summary>
+        internal static bool IsTwoWayTargetProperty(PropertyDefinition property)
+        {
+            return property.CustomAttributes.Any(attr =>
+                attr.AttributeType.Name == "DefaultDataBindingAttribute"
+                && attr.Properties.Any(named => named.Name == "Mode"
+                    && Convert.ToInt32(named.Argument.Value) == 2));
         }
 
         internal static MethodDefinition FindElementConstructor(TypeDefinition typeDef)

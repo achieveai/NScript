@@ -189,7 +189,7 @@ forStatement
 
 forStatementInitialiserPart
     : expressionNoIn
-    | VAR SkipSpace!* variableDeclarationListNoIn
+    | VAR^ SkipSpace!* variableDeclarationListNoIn
     ;
 
 forInStatement
@@ -247,15 +247,18 @@ throwStatement
     ;
 
 tryStatement
-    : TRY SkipSpace!* statementBlock SkipSpace!* (finallyClause | catchClause (SkipSpace!* finallyClause)?)
+    : TRY SkipSpace* blk=statementBlock SkipSpace* (fin=finallyClause | ctch=catchClause (SkipSpace* fin=finallyClause)?)
+        -> ^(TRY $blk $ctch? $fin?)
     ;
 
 catchClause
-    : CATCH SkipSpace!* '(' SkipSpace!* Identifier SkipSpace!* ')' SkipSpace!* statementBlock
+    : CATCH SkipSpace* '(' SkipSpace* id=Identifier SkipSpace* ')' SkipSpace* blk=statementBlock
+        -> ^(CATCH $id $blk)
     ;
 
 finallyClause
-    : FINALLY SkipSpace!* statementBlock
+    : FINALLY SkipSpace* blk=statementBlock
+        -> ^(FINALLY $blk)
     ;
 
 // expressions
@@ -516,8 +519,8 @@ arrayLiteral
 
 // objectLiteral definition.
 objectLiteral
-    : '{' SkipSpace* propertyNameAndValue (SkipSpace* ',' SkipSpace* pn2=propertyNameAndValue)* SkipSpace* '}'
-        -> ^(INLINE_OBJ_INIT propertyNameAndValue $pn2*)
+    : '{' SkipSpace* propertyNameAndValue (SkipSpace* ',' SkipSpace* propertyNameAndValue)* SkipSpace* '}'
+        -> ^(INLINE_OBJ_INIT propertyNameAndValue+)
     | '{' SkipSpace* '}' -> ^(INLINE_OBJ_INIT)
     ;
 
@@ -542,6 +545,7 @@ literal
     | FALSE
     | StringLiteral
     | NumericLiteral
+    | RegularExpressionLiteral
     ;
 
 importedNotation
@@ -612,6 +616,37 @@ USHR: '>>>';
 PLUS: '+';
 MINUS: '-';
 MUL : '*';
+
+// A '/' starts a regex only where a value may begin (see JavaScriptLexer.RegexAllowed);
+// after a value it is division.
+RegularExpressionLiteral
+    : { RegexAllowed }?=> '/' RegexFirstChar RegexChar* '/' RegexFlag*
+    ;
+
+fragment RegexFirstChar
+    : ~('\r' | '\n' | '*' | '\\' | '/' | '[')
+    | RegexBackslash
+    | RegexClass
+    ;
+
+fragment RegexChar
+    : ~('\r' | '\n' | '\\' | '/' | '[')
+    | RegexBackslash
+    | RegexClass
+    ;
+
+fragment RegexBackslash
+    : '\\' ~('\r' | '\n')
+    ;
+
+fragment RegexClass
+    : '[' (~('\r' | '\n' | ']' | '\\') | RegexBackslash)* ']'
+    ;
+
+fragment RegexFlag
+    : 'a'..'z'
+    ;
+
 DIV : '/';
 MOD : '%';
 

@@ -113,4 +113,84 @@ namespace Sunlight.Framework.UI.Test
         public string AppVersion { get; set; }
         public bool IsStatic { get; set; }
     }
+
+    /// <summary>
+    /// AgentWorkBench binder-probe item (issues #131-#135, #140).
+    /// </summary>
+    public class ProbeItem : ObservableObject
+    {
+        [AutoFire] public string Name { get; set; }
+        [AutoFire] public string Hint { get; set; }
+        [AutoFire] public string Cls { get; set; }
+        [AutoFire] public bool Flag { get; set; }
+        public int Clicks;
+
+        /// <summary>Throws for an item named "boom": an item whose row build fails.</summary>
+        public string Boom
+        {
+            get
+            {
+                if (this.Name == "boom") throw new System.Exception("boom item");
+                return this.Name;
+            }
+        }
+
+        public ProbeItem(string name)
+        {
+            this.Name = name;
+            this.Hint = "hint-" + name;
+            this.Cls = "cls-" + name;
+        }
+
+        public void Select(Element elem, ElementEvent evt)
+        {
+            this.Clicks++;
+        }
+    }
+
+    /// <summary>
+    /// AgentWorkBench binder-probe view model (issues #131-#135, #140).
+    /// </summary>
+    public class ProbeVm : ObservableObject
+    {
+        [AutoFire] public string Cls { get; set; }
+        [AutoFire] public string Text { get; set; }
+        [AutoFire] public string Other { get; set; }
+        [AutoFire] public bool Flag { get; set; }
+        [AutoFire] public bool Busy { get; set; }
+        [AutoFire] public string Choice { get; set; }
+        [AutoFire] public int Count { get; set; }
+        [AutoFire] public string Maybe { get; set; }
+        [AutoFire] public string[] Names { get; set; }
+        [AutoFire] public ProbeItem[] Arr { get; set; }
+        [AutoFire] public System.Collections.Generic.List<ProbeItem> List { get; set; }
+        [AutoFire] public object Src { get; set; }
+        public ObservableCollection<ProbeItem> Items { get; private set; }
+        public int OwnChanges;
+        public int GateClicks;
+        public int AfterClicks;
+
+        public void OnOwnChange(Element elem, ElementEvent evt)
+        {
+            this.OwnChanges++;
+        }
+
+        public void OnGateClick(Element elem, ElementEvent evt)
+        {
+            this.GateClicks++;
+        }
+
+        public void OnAfterClick(Element elem, ElementEvent evt)
+        {
+            this.AfterClicks++;
+        }
+
+        public ProbeVm()
+        {
+            this.Cls = "dyn-a";
+            this.Text = "t1";
+            this.Other = "o1";
+            this.Items = new ObservableCollection<ProbeItem>();
+        }
+    }
 }

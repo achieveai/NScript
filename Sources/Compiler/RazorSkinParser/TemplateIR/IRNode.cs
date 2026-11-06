@@ -55,6 +55,13 @@ namespace NScript.RazorSkin.TemplateIR
         public string ElementId { get; set; } // Part ID if element has id= attribute
         public string AttributeName { get; set; } // For Attribute/Style targets: "title", "data-count", etc.
         public string AttributePrefix { get; set; } // Static text before the expression: "display: " in style="display: @expr"
+
+        /// <summary>
+        /// A TextContent binding that is the only content of a raw-text element
+        /// (&lt;textarea&gt;, &lt;option&gt;, &lt;title&gt;). Such content cannot hold a placeholder
+        /// span, so the binding sets the owner element's textContent instead.
+        /// </summary>
+        public bool TargetsOwnerElement { get; set; }
     }
 
     public enum ExpressionTarget

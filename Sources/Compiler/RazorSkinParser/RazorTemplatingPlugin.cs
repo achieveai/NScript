@@ -1401,7 +1401,7 @@ namespace Sunlight.Framework.Observables
                     CollectEventMethodReferences(kvp.Value, kvp.Value.ModelTypeName,
                         kvp.Value.ControlTypeName, methods, seen);
                     CollectSubControlMethodReferences(kvp.Value, kvp.Value.ModelTypeName,
-                        kvp.Value.UsingNamespaces, methods, seen);
+                        kvp.Value.ControlTypeName, kvp.Value.UsingNamespaces, methods, seen);
                     CollectBindingExpressionReferences(kvp.Value, kvp.Value.ModelTypeName,
                         kvp.Value.ControlTypeName, methods, seen);
                 }
@@ -1498,8 +1498,24 @@ namespace Sunlight.Framework.Observables
             string itemTypeName = null, string itemVariableName = null)
         {
             if (node is TemplateIR.ExpressionBindingNode binding)
+            {
                 AddBindingExpressionReferences(binding.Classification?.CSharpExpression,
                     modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+                if (binding.Target == ExpressionTarget.Attribute
+                    && string.Equals(binding.AttributeName, "value", StringComparison.OrdinalIgnoreCase))
+                    AddTwoWaySourceSetterReference(binding.Classification?.CSharpExpression,
+                        requireStringSetter: true, modelTypeName, itemTypeName, itemVariableName,
+                        methods, seen);
+            }
+
+            // A sub-control property value (e.g. DataContext="@i.Kid", issue #141) reads its path
+            // through the same hand-built getter JST, so its computed getters need retaining too.
+            // Delegate values are method groups, which CollectEventMethodReferences retains.
+            if (node is TemplateIR.SubControlNode subControl)
+                foreach (var property in subControl.PropertyBindings)
+                    if (!property.IsLiteral && !property.IsDelegate)
+                        AddBindingExpressionReferences(property.Classification?.CSharpExpression,
+                            modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
 
             if (node is TemplateIR.ConditionalNode conditional)
             {
@@ -1553,6 +1569,40 @@ namespace Sunlight.Framework.Observables
             foreach (var path in BindingExpressionConverter.CollectMemberPaths(expression))
                 AddBindingPropertyGetterReferences(
                     path, modelTypeName, controlTypeName, itemTypeName, itemVariableName, methods, seen);
+        }
+
+        /// <summary>
+        /// Retains the setter that a two-way binding writes back through: a DOM
+        /// <c>value="@Model.X"</c> / <c>value="@item.X"</c>, or a two-way sub-control property
+        /// (<c>Value="@item.X"</c>). The emitter calls it from hand-built setter JST only, so a
+        /// setter no C# code calls would be dead-code-eliminated (ADR-0022) and the first edit
+        /// would throw. Mirrors the emitter's rule: one hop on Model or the loop item, the property
+        /// found on the source type or a base class; the DOM case also needs a public string setter.
+        /// </summary>
+        private void AddTwoWaySourceSetterReference(
+            string expression, bool requireStringSetter, string modelTypeName,
+            string itemTypeName, string itemVariableName,
+            List<MethodReference> methods, HashSet<string> seen)
+        {
+            expression = expression?.Trim();
+            if (string.IsNullOrEmpty(expression) || _clrContext == null)
+                return;
+
+            var path = BindingExpressionConverter.CollectMemberPaths(expression).FirstOrDefault();
+            if (path == null || path.Count != 2 || string.Join(".", path) != expression || path[0] == "Control")
+                return;
+
+            var rootTypeName = ResolveBindingRootTypeName(
+                path[0], modelTypeName, null, itemTypeName, itemVariableName);
+            var rootType = rootTypeName != null ? FindSubControlTypeInAssemblies(rootTypeName) : null;
+            var setter = rootType != null ? FindPropertyOnHierarchy(rootType, path[1])?.SetMethod : null;
+            if (setter == null)
+                return;
+            if (requireStringSetter
+                && (!setter.IsPublic || setter.Parameters[0].ParameterType.FullName != "System.String"))
+                return;
+            if (seen.Add(setter.FullName))
+                methods.Add(setter);
         }
 
         /// <summary>
@@ -1691,11 +1741,14 @@ namespace Sunlight.Framework.Observables
 
         /// <summary>
         /// Walks an IR tree and collects constructor + DefaultSkin getter references
-        /// for SubControlNodes so the demand-driven converter emits their factory functions.
+        /// for SubControlNodes so the demand-driven converter emits their factory functions,
+        /// plus the source setter a two-way property (<c>Value="@item.X"</c>) writes back through.
         /// </summary>
         private void CollectSubControlMethodReferences(
-            IRNode node, string modelTypeName, IEnumerable<string> usingNamespaces,
-            List<MethodReference> methods, HashSet<string> seen)
+            IRNode node, string modelTypeName, string controlTypeName,
+            IEnumerable<string> usingNamespaces,
+            List<MethodReference> methods, HashSet<string> seen,
+            string itemTypeName = null, string itemVariableName = null)
         {
             if (node is TemplateIR.SubControlNode sub)
             {
@@ -1726,16 +1779,6 @@ namespace Sunlight.Framework.Observables
                     foreach (var binding in sub.PropertyBindings)
                     {
                         var expression = binding.Classification.CSharpExpression;
-                        if (!string.IsNullOrEmpty(expression) && expression.StartsWith("Model."))
-                        {
-                            var modelPropertyName = expression.Substring(6);
-                            var modelType = FindSubControlTypeInAssemblies(modelTypeName);
-                            var modelProperty = modelType?.Properties.FirstOrDefault(p =>
-                                p.Name == modelPropertyName);
-                            if (modelProperty?.SetMethod != null
-                                && seen.Add(modelProperty.SetMethod.FullName))
-                                methods.Add(modelProperty.SetMethod);
-                        }
                         var dot = expression?.LastIndexOf('.') ?? -1;
                         if (dot > 0 && dot < expression.Length - 1)
                         {
@@ -1762,6 +1805,10 @@ namespace Sunlight.Framework.Observables
                                 if (property.GetMethod != null
                                     && seen.Add(property.GetMethod.FullName))
                                     methods.Add(property.GetMethod);
+                                if (!binding.IsLiteral && !binding.IsDelegate
+                                    && RazorSkinJSTGenerator.IsTwoWayTargetProperty(property))
+                                    AddTwoWaySourceSetterReference(expression, requireStringSetter: false,
+                                        modelTypeName, itemTypeName, itemVariableName, methods, seen);
                                 break;
                             }
                             currentType = currentType.BaseType?.Resolve();
@@ -1773,25 +1820,27 @@ namespace Sunlight.Framework.Observables
             if (node is TemplateIR.ConditionalNode conditional)
             {
                 foreach (var child in conditional.TrueBranch)
-                    CollectSubControlMethodReferences(child, modelTypeName,
-                        usingNamespaces, methods, seen);
+                    CollectSubControlMethodReferences(child, modelTypeName, controlTypeName,
+                        usingNamespaces, methods, seen, itemTypeName, itemVariableName);
                 foreach (var child in conditional.FalseBranch)
-                    CollectSubControlMethodReferences(child, modelTypeName,
-                        usingNamespaces, methods, seen);
+                    CollectSubControlMethodReferences(child, modelTypeName, controlTypeName,
+                        usingNamespaces, methods, seen, itemTypeName, itemVariableName);
             }
 
             if (node is TemplateIR.LoopNode loop && loop.ItemTemplate != null)
             {
+                var loopItemTypeName = TryResolveItemTypeName(
+                    modelTypeName, controlTypeName, itemTypeName, itemVariableName, loop);
                 foreach (var child in loop.ItemTemplate)
-                    CollectSubControlMethodReferences(child, modelTypeName,
-                        usingNamespaces, methods, seen);
+                    CollectSubControlMethodReferences(child, modelTypeName, controlTypeName,
+                        usingNamespaces, methods, seen, loopItemTypeName, loop.ItemVariableName);
             }
 
             if (node.Children != null)
             {
                 foreach (var child in node.Children)
-                    CollectSubControlMethodReferences(child, modelTypeName,
-                        usingNamespaces, methods, seen);
+                    CollectSubControlMethodReferences(child, modelTypeName, controlTypeName,
+                        usingNamespaces, methods, seen, itemTypeName, itemVariableName);
             }
         }
 
@@ -2023,7 +2072,8 @@ namespace Sunlight.Framework.Observables
                 var methods = new List<MethodReference>();
                 var seen = new HashSet<string>();
                 CollectEventMethodReferences(ir, ir.ModelTypeName, ir.ControlTypeName, methods, seen);
-                CollectSubControlMethodReferences(ir, ir.ModelTypeName, ir.UsingNamespaces, methods, seen);
+                CollectSubControlMethodReferences(ir, ir.ModelTypeName, ir.ControlTypeName,
+                    ir.UsingNamespaces, methods, seen);
                 CollectBindingExpressionReferences(ir, ir.ModelTypeName, ir.ControlTypeName, methods, seen);
                 var added = methods.FirstOrDefault(method => !known.Contains(method.FullName));
                 if (added != null)
