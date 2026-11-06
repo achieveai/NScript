@@ -748,6 +748,132 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        // PR 148 review iteration 4: a row that disposes the host and then throws ends the
+        // build, in a bulk render and in a multi-row Add, so no later row wires listeners
+        // after the host's cleanup.
+        [Test]
+        public static void TestForeachRowThatDisposesHostStopsLaterRows(Assert assert)
+        {
+            CheckRowThatDisposesHostStopsLaterRows(assert, false);
+            CheckRowThatDisposesHostStopsLaterRows(assert, true);
+        }
+
+        private static void CheckRowThatDisposesHostStopsLaterRows(Assert assert, bool viaAddRange)
+        {
+            string path = viaAddRange ? "AddRange: " : "bulk render: ";
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var bad = new RazorItemVM { Name = "bad", Status = "b0" };
+            var tail = new RazorItemVM { Name = "tail", Status = "t0" };
+            var vm = new RazorTestVM();
+            if (viaAddRange) vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "bad")
+                {
+                    control.Dispose();
+                    throw new Exception("bad disposed the host");
+                }
+            };
+            int created = RazorProbeControl.CreatedCount;
+            string error = null;
+            try
+            {
+                if (viaAddRange)
+                {
+                    items.AddRange(new RazorItemVM[] { bad, tail });
+                }
+                else
+                {
+                    items.Add(bad);
+                    items.Add(tail);
+                    vm.Items = items;
+                }
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            assert.Equal(error, "bad disposed the host", path + "the row's error reaches the caller");
+            assert.Equal(RazorProbeControl.CreatedCount, created + 1,
+                path + "the row after the one that disposed the host is never built");
+        }
+
+        // PR 148 review iteration 4: Items=[bad, tail]; bad throws and tail removes itself while
+        // the rows build. The queued Remove still applies before the error goes on, so a later
+        // Add lands after it and the DOM matches the model.
+        [Test]
+        public static void TestForeachFailedRenderReplaysQueuedRemoveBeforeLaterAdd(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var bad = new RazorItemVM { Name = "bad", Status = "b0" };
+            var tail = new RazorItemVM { Name = "tail", Status = "t0" };
+            items.Add(bad);
+            items.Add(tail);
+            var vm = new RazorTestVM();
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            bool badThrown = false;
+            bool tailRemoved = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "bad" && !badThrown)
+                {
+                    badThrown = true;
+                    throw new Exception("bad row");
+                }
+                if (child.Text == "tail" && !tailRemoved)
+                {
+                    tailRemoved = true;
+                    items.Remove(tail);
+                }
+            };
+            string error = null;
+            try
+            {
+                vm.Items = items;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.Equal(error, "bad row", "the render error reaches the caller");
+                assert.IsTrue(tailRemoved, "tail removed itself while the rows built");
+
+                items.Add(new RazorItemVM { Name = "late", Status = "l0" });
+                var hosts = element.QuerySelectorAll("[data-ns-subctl]");
+                assert.Equal(hosts.Length, 2, "one row per model item");
+                assert.Equal(hosts[0].GetAttribute("data-bound-text"), "bad", "row 0 is bad");
+                assert.Equal(hosts[1].GetAttribute("data-bound-text"), "late",
+                    "row 1 is late: the queued Remove ran before the Add");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
         [Test]
         public static void TestForeachResetAndAddWhileInactiveRendersFinalCollectionOnce(Assert assert)
         {
