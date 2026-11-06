@@ -1129,6 +1129,9 @@ namespace NScript.Converter.TypeSystemConverter
             // Index of the last character that is not whitespace or inside a comment, as the
             // lexer's last significant token; -1 at the start of the body.
             var lastSignificant = -1;
+
+            // Index of the closing '/' or last flag of the last regex literal: a value.
+            var lastRegexEnd = -1;
             for (; nowIndex < script.Length; nowIndex++)
             {
                 var ch = script[nowIndex];
@@ -1150,6 +1153,14 @@ namespace NScript.Converter.TypeSystemConverter
 
                 if (IsScriptIdentifierChar(ch))
                 {
+                    lastSignificant = nowIndex;
+                    continue;
+                }
+
+                // '@:' is part of an Identifier (a browser global such as @:JSON, or a@:if).
+                if (ch == '@' && nowIndex + 1 < script.Length && script[nowIndex + 1] == ':')
+                {
+                    nowIndex++;
                     lastSignificant = nowIndex;
                     continue;
                 }
@@ -1200,10 +1211,11 @@ namespace NScript.Converter.TypeSystemConverter
                     else
                     {
                         verbatimEnd = RegexLiteralEnd(
-                            script, nowIndex, lastSignificant, closedHeaderIndex, closedImportIndex);
+                            script, nowIndex, lastSignificant, lastRegexEnd, closedHeaderIndex, closedImportIndex);
                         if (verbatimEnd > 0)
                         {
                             lastSignificant = verbatimEnd - 1;
+                            lastRegexEnd = lastSignificant;
                         }
                     }
 
@@ -1243,16 +1255,17 @@ namespace NScript.Converter.TypeSystemConverter
         /// When the '/' at <paramref name="slashIndex"/> opens a regex literal, returns the index
         /// just past its closing '/' and flags; otherwise (a division) returns -1. Same rule as
         /// <c>JavaScriptLexer.RegexAllowed</c>: after a value (a name other than a keyword such as
-        /// <c>return</c>, a number, a string, '++', '--', ')', ']', or the '}' at
+        /// <c>return</c>, a number (<c>1.</c> included), a string, a regex literal ending at
+        /// <paramref name="lastRegexEnd"/>, '++', '--', ')', ']', or the '}' at
         /// <paramref name="closedImportIndex"/> closing an @{...} import) '/' divides; elsewhere,
         /// including at the start (<paramref name="prev"/> is -1) and after the ')' at
         /// <paramref name="closedHeaderIndex"/> closing an if/while/for/with header, it starts a regex.
         /// <paramref name="prev"/> is the last significant character before the '/'.
         /// </summary>
         private static int RegexLiteralEnd(
-            string script, int slashIndex, int prev, int closedHeaderIndex, int closedImportIndex)
+            string script, int slashIndex, int prev, int lastRegexEnd, int closedHeaderIndex, int closedImportIndex)
         {
-            if (prev >= 0 && prev == closedImportIndex)
+            if (prev >= 0 && (prev == closedImportIndex || prev == lastRegexEnd))
             {
                 return -1;
             }
@@ -1268,7 +1281,8 @@ namespace NScript.Converter.TypeSystemConverter
                     }
                 }
                 else if (prevCh == ')' || prevCh == ']' || prevCh == '\'' || prevCh == '"'
-                    || ((prevCh == '+' || prevCh == '-') && prev > 0 && script[prev - 1] == prevCh))
+                    || ((prevCh == '+' || prevCh == '-') && prev > 0 && script[prev - 1] == prevCh)
+                    || (prevCh == '.' && prev > 0 && script[prev - 1] >= '0' && script[prev - 1] <= '9'))
                 {
                     return -1;
                 }
@@ -1325,49 +1339,39 @@ namespace NScript.Converter.TypeSystemConverter
         }
 
         /// <summary>
-        /// The identifier or keyword whose last character is at <paramref name="end"/>.
+        /// The whole identifier or keyword whose last character is at <paramref name="end"/>,
+        /// '@:' parts included, so <c>a@:if</c> is a name and not the keyword <c>if</c>.
         /// </summary>
         private static string WordEndingAt(string script, int end)
         {
             var start = end;
-            while (start > 0 && IsScriptIdentifierChar(script[start - 1]))
+            while (start > 0)
             {
-                start--;
+                if (IsScriptIdentifierChar(script[start - 1]))
+                {
+                    start--;
+                }
+                else if (start > 1 && script[start - 1] == ':' && script[start - 2] == '@')
+                {
+                    start -= 2;
+                }
+                else
+                {
+                    break;
+                }
             }
 
             return script.Substring(start, end - start + 1);
         }
 
         /// <summary>
-        /// The lexer's IdentifierPart rule: a Unicode letter (Lu, Ll, Lt, Lm, Lo, Nl), digit (Nd)
-        /// or connector punctuation (Pc), '$' or '_'.
+        /// Whether one character can be part of an Identifier: the grammar's own letter, digit and
+        /// connector ranges plus '$' and '_' (ScriptIdentifierChars). The grammar's two-character
+        /// parts are handled where tokens are read: '@:' in FixThisVariable and WordEndingAt; a
+        /// '\u' escape is not recognized.
         /// </summary>
         private static bool IsScriptIdentifierChar(char ch)
-        {
-            if (ch < 128)
-            {
-                return (ch >= '0' && ch <= '9')
-                    || (ch >= 'a' && ch <= 'z')
-                    || (ch >= 'A' && ch <= 'Z')
-                    || ch == '_'
-                    || ch == '$';
-            }
-
-            switch (char.GetUnicodeCategory(ch))
-            {
-                case System.Globalization.UnicodeCategory.UppercaseLetter:
-                case System.Globalization.UnicodeCategory.LowercaseLetter:
-                case System.Globalization.UnicodeCategory.TitlecaseLetter:
-                case System.Globalization.UnicodeCategory.ModifierLetter:
-                case System.Globalization.UnicodeCategory.OtherLetter:
-                case System.Globalization.UnicodeCategory.LetterNumber:
-                case System.Globalization.UnicodeCategory.DecimalDigitNumber:
-                case System.Globalization.UnicodeCategory.ConnectorPunctuation:
-                    return true;
-                default:
-                    return false;
-            }
-        }
+            => ScriptIdentifierChars.Contains(ch);
 
         /// <summary>
         /// Copies the string part.
