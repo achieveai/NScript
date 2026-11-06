@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.FuVm
+<div>@if (Model.Flag) { <div data-test="fg-a">@foreach (var i in Model.Items) { <div data-test="fg-row"><b>@i.Name</b><FuDisposeThrowControl Text="@i.Name" /></div> }</div><div data-test="fg-b">@foreach (var j in Model.Items) { <div data-test="fg-row"><b>@j.Name</b><FuDisposeThrowControl Text="@j.Name" /></div> }</div> }</div>

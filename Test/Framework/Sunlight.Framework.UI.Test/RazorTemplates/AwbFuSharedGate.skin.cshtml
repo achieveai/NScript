@@ -1,0 +1,8 @@
+@model Sunlight.Framework.UI.Test.GateVm
+<div>
+<p data-test="g-top">@if (Model.Flag) { <u data-test="g-top-in">@Model.Name</u> }<b data-test="g-top-out">@Model.Name</b></p>
+@foreach (var i in Model.Items)
+{
+    <span data-test="g-row">@if (i.Flag) { <u data-test="g-in">@i.Name</u> }<b data-test="g-out">@i.Name</b></span>
+}
+</div>

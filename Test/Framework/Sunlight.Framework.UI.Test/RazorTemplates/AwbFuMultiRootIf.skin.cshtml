@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.ProbeVm
+<div data-test="mr-box">@if (Model.Flag) { <span data-test="mr-a">a</span> <RazorProbeControl DataContext="@Model.Other" Text="@Model.Text" /> }@if (Model.Busy) { <div data-test="mr-p"><RazorProbeControl Text="@Model.Text" /></div> <section data-test="mr-s"><RazorProbeControl Text="@Model.Other" /></section> }</div>

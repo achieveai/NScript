@@ -1,0 +1,12 @@
+@model Sunlight.Framework.UI.Test.NestVm
+<div>
+@foreach (var item in Model.Groups)
+{
+    <div data-test="sv-group">
+        @foreach (var tab in item.Tabs)
+        {
+            <span data-test="sv-row"><RazorValueProbeControl data-test="sv-probe" Value="@Model.Title" /></span>
+        }
+    </div>
+}
+</div>

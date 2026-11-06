@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.FuVm
+<div>@foreach (var i in Model.Items) { <div data-test="fc-row" onclick="@i.Select"><b>@i.Name</b><i>@i.Child.Name</i></div> }</div>

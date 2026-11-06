@@ -99,7 +99,7 @@ namespace NScript.RazorSkin
             {
                 if (node is ExpressionBindingNode binding)
                 {
-                    RefineExpressionBinding(binding, modelType, controlType, modelPrefix);
+                    RefineExpressionBinding(binding, modelType, controlType, modelPrefix, parentModelType);
                 }
                 else if (node is ConditionalNode cond)
                 {
@@ -204,7 +204,8 @@ namespace NScript.RazorSkin
             ExpressionBindingNode binding,
             INamedTypeSymbol modelType,
             INamedTypeSymbol controlType,
-            string modelPrefix = "Model.")
+            string modelPrefix,
+            INamedTypeSymbol parentModelType)
         {
             var expr = binding.Classification.CSharpExpression;
             var dependencies = new List<ObservableDependency>();
@@ -220,6 +221,20 @@ namespace NScript.RazorSkin
                     {
                         dependencies.Add(new ObservableDependency(
                             BindingSourceKind.DataContext, rootProperty, fullChain));
+                    }
+                }
+            }
+
+            // Inside a @foreach, Model.* still names the template's model, not the loop item.
+            if (parentModelType != null && modelPrefix != "Model.")
+            {
+                foreach (var (rootProperty, fullChain) in ExtractPropertyReferencesWithChains(expr, "Model."))
+                {
+                    var prop = FindProperty(parentModelType, rootProperty);
+                    if (prop != null && ObservableAnalyzer.IsObservableProperty(prop))
+                    {
+                        dependencies.Add(new ObservableDependency(
+                            BindingSourceKind.DataContext, rootProperty, fullChain, "Model."));
                     }
                 }
             }
@@ -423,7 +438,11 @@ namespace NScript.RazorSkin
             var idx = 0;
             while ((idx = expression.IndexOf(prefix, idx, StringComparison.Ordinal)) >= 0)
             {
+                // "viewModel.Name" or "x.Model.Name" is not a "Model." reference.
+                bool midIdentifier = idx > 0 && (char.IsLetterOrDigit(expression[idx - 1])
+                    || expression[idx - 1] == '_' || expression[idx - 1] == '.');
                 idx += prefix.Length;
+                if (midIdentifier) continue;
                 var end = idx;
                 // Scan the first segment (root property name)
                 while (end < expression.Length && (char.IsLetterOrDigit(expression[end]) || expression[end] == '_'))
