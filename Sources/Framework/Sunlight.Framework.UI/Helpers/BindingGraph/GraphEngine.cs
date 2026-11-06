@@ -777,15 +777,33 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             state.CollectionChangesInProgress[nodeIdx] = true;
             GraphEngine.AttachCollectionListener(desc, state, nodeIdx, colInfo, collection);
+            Exception first = null;
             try
             {
                 GraphEngine.RenderCollectionItems(desc, state, nodeIdx, colInfo, collection);
+            }
+            catch (Exception ex)
+            {
+                first = ex;
             }
             finally
             {
                 state.CollectionChangesInProgress[nodeIdx] = false;
             }
-            GraphEngine.ReplayPendingCollectionChanges(desc, state, nodeIdx, colInfo);
+
+            // A failed row must not drop the changes queued while the rows built (a row's
+            // setter removing its item): replay them before the error goes on, so the next
+            // change applies in order. The render error wins over a replay error.
+            try
+            {
+                GraphEngine.ReplayPendingCollectionChanges(desc, state, nodeIdx, colInfo);
+            }
+            catch (Exception ex)
+            {
+                if (first == null) first = ex;
+            }
+
+            if (first != null) throw first;
         }
 
         /// <summary>
@@ -847,6 +865,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             {
                 for (int idx = 0; idx < count; idx++)
                 {
+                    // A row that disposed the owner (a setter tearing the view down) ends the
+                    // render: a later row would wire listeners that no cleanup reaches.
+                    if (state.Disposed) break;
                     try
                     {
                         GraphEngine.CreateCollectionItemGraph(
@@ -859,7 +880,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 }
             }
 
-            GraphEngine.ReapplySelectTargets(desc, state, parent);
+            if (!state.Disposed)
+                GraphEngine.ReapplySelectTargets(desc, state, parent);
             if (first != null) throw first;
         }
 
@@ -983,7 +1005,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
             state.PendingCollectionChanges[nodeIdx] = null;
-            if (object.IsNullOrUndefined(pending)) return;
+            if (object.IsNullOrUndefined(pending) || state.Disposed) return;
 
             int resetIdx = GraphEngine.FindLastCollectionReset(pending);
             if (resetIdx >= 0)
@@ -991,8 +1013,23 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 GraphEngine.OnCollectionChanged(desc, state, nodeIdx, colInfo, pending[resetIdx]);
                 return;
             }
-            for (int i = 0; i < pending.Length; i++)
-                GraphEngine.OnCollectionChanged(desc, state, nodeIdx, colInfo, pending[i]);
+
+            // Every queued change applies, in order, even after one throws; the first error
+            // then reaches the caller.
+            Exception first = null;
+            for (int i = 0; i < pending.Length && !state.Disposed; i++)
+            {
+                try
+                {
+                    GraphEngine.OnCollectionChanged(desc, state, nodeIdx, colInfo, pending[i]);
+                }
+                catch (Exception ex)
+                {
+                    if (first == null) first = ex;
+                }
+            }
+
+            if (first != null) throw first;
         }
 
         private static int FindLastCollectionReset(NativeArray<CollectionChangedEventArgs> pending)
@@ -1448,19 +1485,26 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             state.CollectionChangesInProgress[nodeIdx] = true;
+            Exception first = null;
             try
             {
-                GraphEngine.ApplyCollectionChange(desc, state, nodeIdx, colInfo, args);
+                first = GraphEngine.TryApplyCollectionChange(desc, state, nodeIdx, colInfo, args, null);
+
+                // Changes queued while this one applied still apply, in order, even after one
+                // throws, so a failed row never lets a later change run ahead of them. They
+                // stop once the owner is disposed. The first error wins.
                 NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
                 state.PendingCollectionChanges[nodeIdx] = null;
-                while (!object.IsNullOrUndefined(pending))
+                while (!object.IsNullOrUndefined(pending) && !state.Disposed)
                 {
                     int resetIdx = GraphEngine.FindLastCollectionReset(pending);
                     if (resetIdx >= 0)
-                        GraphEngine.ApplyCollectionChange(desc, state, nodeIdx, colInfo, pending[resetIdx]);
+                        first = GraphEngine.TryApplyCollectionChange(
+                            desc, state, nodeIdx, colInfo, pending[resetIdx], first);
                     else
-                        for (int i = 0; i < pending.Length; i++)
-                            GraphEngine.ApplyCollectionChange(desc, state, nodeIdx, colInfo, pending[i]);
+                        for (int i = 0; i < pending.Length && !state.Disposed; i++)
+                            first = GraphEngine.TryApplyCollectionChange(
+                                desc, state, nodeIdx, colInfo, pending[i], first);
                     pending = state.PendingCollectionChanges[nodeIdx];
                     state.PendingCollectionChanges[nodeIdx] = null;
                 }
@@ -1469,6 +1513,28 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             {
                 state.CollectionChangesInProgress[nodeIdx] = false;
             }
+
+            if (first != null) throw first;
+        }
+
+        /// <summary>
+        /// Applies one change and returns the first error so far: <paramref name="first"/>,
+        /// or this change's error when there was none before.
+        /// </summary>
+        private static Exception TryApplyCollectionChange(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, CollectionChangedEventArgs args, Exception first)
+        {
+            try
+            {
+                GraphEngine.ApplyCollectionChange(desc, state, nodeIdx, colInfo, args);
+            }
+            catch (Exception ex)
+            {
+                if (first == null) first = ex;
+            }
+
+            return first;
         }
 
         private static void ApplyCollectionChange(
@@ -1580,6 +1646,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             Exception first = null;
             for (int j = 0; j < addCount; j++)
             {
+                if (state.Disposed) break;
                 try
                 {
                     GraphEngine.CreateCollectionItemGraph(
