@@ -691,6 +691,12 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuNestedTeardown.skin.cshtml")]
+        public static Skin AwbFuNestedTeardown
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuNestChurn.skin.cshtml")]
         public static Skin AwbFuNestChurn
         {

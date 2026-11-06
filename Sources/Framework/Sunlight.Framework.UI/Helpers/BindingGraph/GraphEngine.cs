@@ -375,29 +375,38 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                         CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
                         if (!object.IsNullOrUndefined(colInfo))
                         {
-                            // Clear old collection items. A row whose Dispose throws still
-                            // lets the swap finish, so the old collection stops driving rows;
-                            // the first error then propagates.
+                            // Detach the old collection's listener first. The node already
+                            // holds the new collection, so a teardown that disposes the host
+                            // would otherwise detach from the wrong collection and leave the
+                            // old listener live.
                             Exception first = null;
                             try
                             {
-                                GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
+                                if (!object.IsNullOrUndefined(oldVal))
+                                    GraphEngine.DetachCollectionListener(state, i, oldVal);
                             }
                             catch (Exception ex)
                             {
                                 first = ex;
                             }
 
+                            // Clear old collection items. A row whose Dispose throws still
+                            // lets the swap finish, so the old collection stops driving rows;
+                            // the first error then propagates.
                             try
                             {
-                                // Detach old collection listener.
-                                if (!object.IsNullOrUndefined(oldVal))
-                                {
-                                    GraphEngine.DetachCollectionListener(state, i, oldVal);
-                                }
+                                GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
+                            }
+                            catch (Exception ex)
+                            {
+                                if (first == null) first = ex;
+                            }
 
-                                // Render new collection.
-                                if (!object.IsNullOrUndefined(newVal))
+                            // A teardown that disposed the host ends the swap: a listener on
+                            // the new collection would outlive the host's cleanup.
+                            try
+                            {
+                                if (!state.Disposed && !object.IsNullOrUndefined(newVal))
                                     GraphEngine.RenderCollectionSource(desc, state, i, colInfo, newVal);
                             }
                             catch (Exception ex)
@@ -1095,30 +1104,25 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         private static void ReplayPendingCollectionChanges(
             GraphDescriptor desc, GraphState state, int nodeIdx, CollectionTargetInfo colInfo)
         {
-            NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
-            state.PendingCollectionChanges[nodeIdx] = null;
-            if (object.IsNullOrUndefined(pending) || state.Disposed) return;
-
-            int resetIdx = GraphEngine.FindLastCollectionReset(pending);
-            if (resetIdx >= 0)
+            if (object.IsNullOrUndefined(state.PendingCollectionChanges[nodeIdx])) return;
+            if (state.Disposed)
             {
-                GraphEngine.OnCollectionChanged(desc, state, nodeIdx, colInfo, pending[resetIdx]);
+                state.PendingCollectionChanges[nodeIdx] = null;
                 return;
             }
 
-            // Every queued change applies, in order, even after one throws; the first error
-            // then reaches the caller.
+            // Replay under the in-progress guard, so a change made while one replays (a row's
+            // setter removing an item) queues behind the saved changes instead of running
+            // ahead of them.
+            state.CollectionChangesInProgress[nodeIdx] = true;
             Exception first = null;
-            for (int i = 0; i < pending.Length && !state.Disposed; i++)
+            try
             {
-                try
-                {
-                    GraphEngine.OnCollectionChanged(desc, state, nodeIdx, colInfo, pending[i]);
-                }
-                catch (Exception ex)
-                {
-                    if (first == null) first = ex;
-                }
+                first = GraphEngine.DrainPendingCollectionChanges(desc, state, nodeIdx, colInfo, null);
+            }
+            finally
+            {
+                state.CollectionChangesInProgress[nodeIdx] = false;
             }
 
             if (first != null) throw first;
@@ -1296,19 +1300,22 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             {
                 UIElement control = controls[i];
                 if (object.IsNullOrUndefined(control)) continue;
+                // Each step runs even when an earlier one throws: a control whose
+                // Deactivate throws is still disposed.
                 try
                 {
-                    GraphEngine.UnwireSubControlPropertyListeners(desc, state, i);
-                    control.Deactivate();
-                    control.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    if (first == null) first = ex;
+                    try { GraphEngine.UnwireSubControlPropertyListeners(desc, state, i); }
+                    catch (Exception ex) { if (first == null) first = ex; }
+                    try { control.Deactivate(); }
+                    catch (Exception ex) { if (first == null) first = ex; }
+                    try { control.Dispose(); }
+                    catch (Exception ex) { if (first == null) first = ex; }
                 }
                 finally
                 {
-                    state.ElemRefs[infos[i].ElemIdx] = null;
+                    // A control's Dispose may have disposed the host, which drops ElemRefs.
+                    if (!object.IsNullOrUndefined(state.ElemRefs))
+                        state.ElemRefs[infos[i].ElemIdx] = null;
                     controls[i] = null;
                     state.SubControlAppliedValues[i] = null;
                     state.SubControlBindingsInitialized[i] = false;
@@ -1584,23 +1591,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 first = GraphEngine.TryApplyCollectionChange(desc, state, nodeIdx, colInfo, args, null);
 
                 // Changes queued while this one applied still apply, in order, even after one
-                // throws, so a failed row never lets a later change run ahead of them. They
-                // stop once the owner is disposed. The first error wins.
-                NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
-                state.PendingCollectionChanges[nodeIdx] = null;
-                while (!object.IsNullOrUndefined(pending) && !state.Disposed)
-                {
-                    int resetIdx = GraphEngine.FindLastCollectionReset(pending);
-                    if (resetIdx >= 0)
-                        first = GraphEngine.TryApplyCollectionChange(
-                            desc, state, nodeIdx, colInfo, pending[resetIdx], first);
-                    else
-                        for (int i = 0; i < pending.Length && !state.Disposed; i++)
-                            first = GraphEngine.TryApplyCollectionChange(
-                                desc, state, nodeIdx, colInfo, pending[i], first);
-                    pending = state.PendingCollectionChanges[nodeIdx];
-                    state.PendingCollectionChanges[nodeIdx] = null;
-                }
+                // throws, so a failed row never lets a later change run ahead of them.
+                first = GraphEngine.DrainPendingCollectionChanges(desc, state, nodeIdx, colInfo, first);
             }
             finally
             {
@@ -1608,6 +1600,34 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             }
 
             if (first != null) throw first;
+        }
+
+        /// <summary>
+        /// Applies the queued changes in the order they arrived; a change queued while they
+        /// apply goes after them. Keeps going after one throws and stops once the owner is
+        /// disposed. Returns the first error so far.
+        /// </summary>
+        private static Exception DrainPendingCollectionChanges(
+            GraphDescriptor desc, GraphState state, int nodeIdx,
+            CollectionTargetInfo colInfo, Exception first)
+        {
+            NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
+            state.PendingCollectionChanges[nodeIdx] = null;
+            while (!object.IsNullOrUndefined(pending) && !state.Disposed)
+            {
+                int resetIdx = GraphEngine.FindLastCollectionReset(pending);
+                if (resetIdx >= 0)
+                    first = GraphEngine.TryApplyCollectionChange(
+                        desc, state, nodeIdx, colInfo, pending[resetIdx], first);
+                else
+                    for (int i = 0; i < pending.Length && !state.Disposed; i++)
+                        first = GraphEngine.TryApplyCollectionChange(
+                            desc, state, nodeIdx, colInfo, pending[i], first);
+                pending = state.PendingCollectionChanges[nodeIdx];
+                state.PendingCollectionChanges[nodeIdx] = null;
+            }
+
+            return first;
         }
 
         /// <summary>
@@ -2018,6 +2038,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         /// </summary>
         public static void CleanupCollectionListeners(GraphDescriptor desc, GraphState state)
         {
+            // A list whose teardown throws (a row's control Dispose) must not keep the later
+            // lists alive: clean every one, then rethrow the first error.
+            Exception first = null;
             int n = desc.NodeCount;
             for (int i = 0; i < n; i++)
             {
@@ -2026,16 +2049,20 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                     object collection = state.Values[i];
                     if (!object.IsNullOrUndefined(collection))
                     {
-                        GraphEngine.DetachCollectionListener(state, i, collection);
+                        try { GraphEngine.DetachCollectionListener(state, i, collection); }
+                        catch (Exception ex) { if (first == null) first = ex; }
                     }
 
                     CollectionTargetInfo colInfo = (CollectionTargetInfo)desc.TargetInfos[i];
                     if (!object.IsNullOrUndefined(colInfo))
                     {
-                        GraphEngine.ClearCollectionItems(desc, state, i, colInfo);
+                        try { GraphEngine.ClearCollectionItems(desc, state, i, colInfo); }
+                        catch (Exception ex) { if (first == null) first = ex; }
                     }
                 }
             }
+
+            if (first != null) throw first;
         }
 
         /// <summary>
