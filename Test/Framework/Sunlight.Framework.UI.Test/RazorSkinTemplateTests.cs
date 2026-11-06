@@ -639,6 +639,115 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        // PR 148 review iteration 3: a row whose build threw is retired and stays retired.
+        // Reactivating with a new context that shares the collection must not rewire it, so
+        // a later Remove or Dispose leaves its detached DOM dead.
+        [Test]
+        public static void TestForeachFailedRowStaysRetiredAcrossReactivation(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var good = new RazorItemVM { Name = "good", Status = "g0" };
+            var bad = new RazorItemVM { Name = "bad", Status = "b0" };
+            var bad2 = new RazorItemVM { Name = "bad2", Status = "c0" };
+            items.Add(good);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            int failures = 2;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if ((child.Text == "bad" || child.Text == "bad2") && failures > 0)
+                {
+                    failures--;
+                    throw new Exception("transient " + child.Text);
+                }
+            };
+            try
+            {
+                string addError = null;
+                try { items.Add(bad); }
+                catch (Exception ex) { addError = ex.Message; }
+                assert.NotEqual(addError, null, "the failing row build is not swallowed");
+                addError = null;
+                try { items.Add(bad2); }
+                catch (Exception ex) { addError = ex.Message; }
+                assert.NotEqual(addError, null, "the second failing row build is not swallowed");
+
+                var statuses = element.QuerySelectorAll(".item-status");
+                var badStatus = statuses[1];
+                var bad2Status = statuses[2];
+                string badBefore = badStatus.TextContent;
+                string bad2Before = bad2Status.TextContent;
+
+                control.Deactivate();
+                var vm2 = new RazorTestVM();
+                vm2.Items = items;
+                control.DataContext = vm2;
+                control.Activate();
+
+                bad.Status = "b1";
+                assert.Equal(badStatus.TextContent, badBefore, "reactivation does not rewire the failed row");
+                good.Status = "g1";
+                assert.Equal(element.QuerySelectorAll(".item-status")[0].TextContent, "g1",
+                    "the good row is live after reactivation");
+
+                items.Remove(bad);
+                bad.Status = "b2";
+                assert.Equal(badStatus.TextContent, badBefore, "a removed failed row stays dead");
+
+                control.Dispose();
+                bad2.Status = "c2";
+                assert.Equal(bad2Status.TextContent, bad2Before, "a failed row stays dead after Dispose");
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+        }
+
+        // PR 148 review iteration 3: a control whose Dispose throws does not stop the row's
+        // later controls from being disposed; the error still reaches the caller.
+        [Test]
+        public static void TestForeachRowRetireDisposesEveryControlWhenOneThrows(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var row = new RazorItemVM { Name = "first", Status = "second" };
+            items.Add(row);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.AwbR3TwoProbes;
+            control.Activate();
+            assert.Equal(element.QuerySelectorAll("[data-ns-subctl]").Length, 2, "the row has two controls");
+
+            int disposed = RazorProbeControl.DisposedCount;
+            RazorProbeControl.DisposingForTest = delegate(RazorProbeControl probe)
+            {
+                if (probe.Text == "first") throw new Exception("dispose boom");
+            };
+            try
+            {
+                string removeError = null;
+                try { items.Remove(row); }
+                catch (Exception ex) { removeError = ex.Message; }
+                assert.IsTrue(removeError != null && removeError.IndexOf("dispose boom") >= 0,
+                    "the Dispose error reaches the caller: " + removeError);
+                assert.Equal(RazorProbeControl.DisposedCount, disposed + 1,
+                    "the row's second control is disposed although the first one threw");
+            }
+            finally
+            {
+                RazorProbeControl.DisposingForTest = null;
+            }
+        }
+
         [Test]
         public static void TestForeachResetAndAddWhileInactiveRendersFinalCollectionOnce(Assert assert)
         {

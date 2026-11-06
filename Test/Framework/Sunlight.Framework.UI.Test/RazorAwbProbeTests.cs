@@ -108,11 +108,48 @@ namespace Sunlight.Framework.UI.Test
             var rowA = root.QuerySelector("[data-test=bt-row] > b");
             a.Name = "a2";
             assert.Equal(rowA.TextContent, "a2", "the row built before the failure is live");
+            var rowNames = root.QuerySelectorAll("[data-test=bt-row] > b");
+            assert.Equal(rowNames[2].TextContent, "c", "the row after the failure is built and bound");
 
             vm.Flag = false;
             assert.Equal(Rows(root, "bt-row"), 0, "closing the @if removes every row");
             a.Name = "a3";
             assert.Equal(rowA.TextContent, "a2", "closing the @if retired the row built before the failure");
+        }
+
+        // PR 148 review iteration 3: a row whose getter keeps throwing was retired when its
+        // build failed; reactivating the host skips it instead of throwing again.
+        [Test]
+        public static void TestR3FailedRowIsSkippedOnReactivation(Assert assert)
+        {
+            var vm = new ProbeVm();
+            var root = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(root);
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.AwbR3AddThrows;
+            control.Activate();
+            var ok = new ProbeItem("ok");
+            vm.Items.Add(ok);
+
+            string addError = null;
+            try { vm.Items.Add(new ProbeItem("boom")); }
+            catch (Exception ex) { addError = ex.Message; }
+            assert.NotEqual(addError, null, "the failing row build is not swallowed");
+
+            string reactivateError = null;
+            try
+            {
+                control.Deactivate();
+                vm.Text = "t2";
+                control.Activate();
+            }
+            catch (Exception ex) { reactivateError = ex.Message; }
+            assert.Equal(reactivateError, null, "reactivating skips the retired row");
+
+            vm.Items.Add(new ProbeItem("late"));
+            var rows = root.QuerySelectorAll("[data-test=at-row]");
+            assert.Equal(rows.Length, 3, "an Add after reactivation renders one row");
+            assert.Equal(rows[2].TextContent, "late", "the row added after reactivation is bound");
         }
 
         // PR 148 review round 2: a row whose @if branch opened before the row threw keeps
