@@ -172,7 +172,7 @@ namespace Sunlight.Framework.UI.Test
     /// <summary>
     /// Binding-graph runtime follow-ups to the AWB rounds: sub-controls in every root of a
     /// multi-root @if branch, rows kept in step with the collection when a row build throws,
-    /// a failed row's subscriptions retired with its row, and a &lt;Slot&gt; error that moves nothing.
+    /// and a failed row's subscriptions retired with its row.
     /// </summary>
     [TestFixture]
     public class RazorRuntimeFollowupTests

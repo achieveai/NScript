@@ -156,7 +156,8 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
                             try
                             {
-                                if (!object.IsNullOrUndefined(nodeVal))
+                                // A teardown that disposed the host renders nothing new.
+                                if (!state.Disposed && !object.IsNullOrUndefined(nodeVal))
                                     GraphEngine.RenderCollectionSource(desc, state, i, colInfo, nodeVal);
                             }
                             catch (Exception ex)
@@ -1604,8 +1605,10 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
 
         /// <summary>
         /// Applies the queued changes in the order they arrived; a change queued while they
-        /// apply goes after them. Keeps going after one throws and stops once the owner is
-        /// disposed. Returns the first error so far.
+        /// apply goes after them. Keeps going after one throws. Stops once the owner is
+        /// disposed, or once it is suspended (a row deactivated the host): the unapplied
+        /// changes then stay queued, in order, for the next Activate. Returns the first error
+        /// so far.
         /// </summary>
         private static Exception DrainPendingCollectionChanges(
             GraphDescriptor desc, GraphState state, int nodeIdx,
@@ -1613,21 +1616,47 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         {
             NativeArray<CollectionChangedEventArgs> pending = state.PendingCollectionChanges[nodeIdx];
             state.PendingCollectionChanges[nodeIdx] = null;
-            while (!object.IsNullOrUndefined(pending) && !state.Disposed)
+            while (!object.IsNullOrUndefined(pending))
             {
+                // Only the last Reset applies: it re-renders the whole current collection.
                 int resetIdx = GraphEngine.FindLastCollectionReset(pending);
-                if (resetIdx >= 0)
+                int start = resetIdx >= 0 ? resetIdx : 0;
+                int end = resetIdx >= 0 ? resetIdx + 1 : pending.Length;
+                for (int i = start; i < end; i++)
+                {
+                    if (state.Disposed) return first;
+                    if (state.Suspended)
+                    {
+                        GraphEngine.RequeuePendingCollectionChanges(state, nodeIdx, pending, i);
+                        return first;
+                    }
+
                     first = GraphEngine.TryApplyCollectionChange(
-                        desc, state, nodeIdx, colInfo, pending[resetIdx], first);
-                else
-                    for (int i = 0; i < pending.Length && !state.Disposed; i++)
-                        first = GraphEngine.TryApplyCollectionChange(
-                            desc, state, nodeIdx, colInfo, pending[i], first);
+                        desc, state, nodeIdx, colInfo, pending[i], first);
+                }
+
                 pending = state.PendingCollectionChanges[nodeIdx];
                 state.PendingCollectionChanges[nodeIdx] = null;
             }
 
             return first;
+        }
+
+        /// <summary>
+        /// Puts the changes from <paramref name="from"/> on back at the head of the queue,
+        /// ahead of any change queued while they waited.
+        /// </summary>
+        private static void RequeuePendingCollectionChanges(
+            GraphState state, int nodeIdx, NativeArray<CollectionChangedEventArgs> pending, int from)
+        {
+            NativeArray<CollectionChangedEventArgs> rest = new NativeArray<CollectionChangedEventArgs>(0);
+            for (int i = from; i < pending.Length; i++)
+                rest.Push(pending[i]);
+            NativeArray<CollectionChangedEventArgs> later = state.PendingCollectionChanges[nodeIdx];
+            if (!object.IsNullOrUndefined(later))
+                for (int i = 0; i < later.Length; i++)
+                    rest.Push(later[i]);
+            state.PendingCollectionChanges[nodeIdx] = rest;
         }
 
         /// <summary>
