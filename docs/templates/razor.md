@@ -190,7 +190,8 @@ The current iteration variable `todo` becomes the `Model` of the child `TodoItem
 
 On a control tag:
 
-- **`id`, `data-*` and `aria-*` are attributes of the control's host element**, never C# properties. Static values are written as is; bound ones (`aria-label="@Model.Label"`) update like any bound attribute, and `null` removes the attribute. A static `id` also names the control as a skin part.
+- **`id`, `data-*` (except `data-ns-*`, below) and `aria-*` are attributes of the control's host element**, never C# properties. Static values are written as is; bound ones (`aria-label="@Model.Label"`) update like any bound attribute, and `null` removes the attribute. A static `id` also names the control as a skin part.
+- **`data-ns-*` is reserved on a control tag.** The compiler uses that prefix for its own markers, so a quoted `data-ns-*` attribute on a control tag (`data-ns-x="..."` or `data-ns-x='...'`, static or bound, any letter case) is a compile error at the tag: `<X> cannot set data-ns-foo: data-ns-* attributes are reserved for the compiler's markers. Rename the attribute.` A bare (`data-ns-x`) or unquoted (`data-ns-x=1`) attribute is not checked: a control tag ignores every attribute written that way.
 - **`Skin="@Model.FrameSkin"` may be bound (one-way).** A new value re-skins the control; caller content inside its tag moves to the new skin's outlet and stays live. `null` removes the skin.
 
 ### Content projection (slots)

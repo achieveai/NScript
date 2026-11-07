@@ -874,6 +874,433 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        private static string HostTexts(Element root)
+        {
+            var hosts = root.QuerySelectorAll("[data-ns-subctl]");
+            string texts = "";
+            for (int k = 0; k < hosts.Length; k++)
+                texts = texts + (k == 0 ? "" : "|") + hosts[k].GetAttribute("data-bound-text");
+            return texts;
+        }
+
+        // PR 149 review: an Items swap whose old-row teardown disposes the host renders nothing
+        // new, so no listener is left on the new collection to fault on a later change.
+        [Test]
+        public static void TestForeachSwapThatDisposesHostRendersNoNewCollection(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            items.Add(new RazorItemVM { Name = "old", Status = "o0" });
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            var next = new ObservableCollection<RazorItemVM>();
+            next.Add(new RazorItemVM { Name = "new", Status = "n0" });
+            bool thrown = false;
+            RazorProbeControl.DisposingForTest = delegate(RazorProbeControl probe)
+            {
+                if (thrown) return;
+                thrown = true;
+                control.Dispose();
+                throw new Exception("teardown disposed the host");
+            };
+            int created = RazorProbeControl.CreatedCount;
+            string error = null;
+            try
+            {
+                vm.Items = next;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.DisposingForTest = null;
+            }
+
+            assert.Equal(error, "teardown disposed the host", "the teardown error reaches the caller");
+            assert.Equal(RazorProbeControl.CreatedCount, created, "the new collection renders no row");
+
+            string addError = null;
+            try
+            {
+                next.Add(new RazorItemVM { Name = "late", Status = "l0" });
+            }
+            catch (Exception ex)
+            {
+                addError = ex.Message;
+            }
+            assert.Equal(addError, null, "a later change to the new collection does not fault");
+            assert.Equal(RazorProbeControl.CreatedCount, created, "nothing listens on the new collection");
+
+            addError = null;
+            try
+            {
+                items.Add(new RazorItemVM { Name = "late-old", Status = "lo0" });
+            }
+            catch (Exception ex)
+            {
+                addError = ex.Message;
+            }
+            assert.Equal(addError, null, "a later change to the old collection does not fault");
+            assert.Equal(RazorProbeControl.CreatedCount, created, "nothing listens on the old collection");
+        }
+
+        // PR 149 review follow-up: replay keeps the queued order. A change made while one queued
+        // change applies (a new row's setter removing an item) applies after the rest of the queue.
+        [Test]
+        public static void TestForeachReplayAppliesChangesMadeDuringReplayLast(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var p = new RazorItemVM { Name = "p", Status = "p0" };
+            items.Add(p);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var c = new RazorItemVM { Name = "c", Status = "c0" };
+            items.Add(new RazorItemVM { Name = "a", Status = "a0" });
+            items.Add(c);
+
+            bool removed = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "a" && !removed)
+                {
+                    removed = true;
+                    items.Remove(p);
+                }
+            };
+            try
+            {
+                control.Activate();
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.IsTrue(removed, "a's row removed p while the queue replayed");
+                assert.Equal(HostTexts(element), "a|c", "the rows match the model after replay");
+                items.Remove(c);
+                assert.Equal(HostTexts(element), "a", "a later Remove finds its row");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
+        // PR 149 review test gap: a queued Add that fails mid-replay does not stop the queue;
+        // the change behind it still applies and its row is live.
+        [Test]
+        public static void TestForeachReplayKeepsDrainingAfterAFailedAdd(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            items.Add(new RazorItemVM { Name = "p", Status = "p0" });
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var good = new RazorItemVM { Name = "good", Status = "g0" };
+            items.Add(new RazorItemVM { Name = "bad", Status = "b0" });
+            items.Add(good);
+
+            bool thrown = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "bad" && !thrown)
+                {
+                    thrown = true;
+                    throw new Exception("bad row");
+                }
+            };
+            string error = null;
+            try
+            {
+                control.Activate();
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.Equal(error, "bad row", "the failed Add's error reaches the caller");
+                assert.Equal(HostTexts(element), "p|bad|good", "the Add queued behind the failed one applied");
+                good.Name = "good2";
+                assert.Equal(HostTexts(element), "p|bad|good2", "the row behind the failed one is live");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
+        // PR 151 review: a queued row whose setter deactivates the host and throws stops the
+        // replay. The change behind it stays queued: no row is built or wired while the host is
+        // inactive, and the next Activate applies it.
+        [Test]
+        public static void TestForeachReplayStopsWhenARowDeactivatesTheHost(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            items.Add(new RazorItemVM { Name = "p", Status = "p0" });
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var good = new RazorItemVM { Name = "good", Status = "g0" };
+            items.Add(new RazorItemVM { Name = "bad", Status = "b0" });
+            items.Add(good);
+
+            bool thrown = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "bad" && !thrown)
+                {
+                    thrown = true;
+                    control.Deactivate();
+                    throw new Exception("bad row deactivated the host");
+                }
+            };
+            string error = null;
+            try
+            {
+                control.Activate();
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.Equal(error, "bad row deactivated the host", "the row's error reaches the caller");
+                assert.Equal(HostTexts(element), "p|bad", "the Add behind it is not built while inactive");
+                good.Name = "good2";
+                assert.Equal(HostTexts(element), "p|bad", "an inactive host's DOM does not change");
+
+                control.Activate();
+                assert.Equal(HostTexts(element), "p|bad|good2", "the next Activate applies the queued Add");
+                good.Name = "good3";
+                assert.Equal(HostTexts(element), "p|bad|good3", "its row is live once active");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
+        // PR 151 review, round 3: a replayed row that deactivates the host without throwing and
+        // then changes the list ends the activation. Nothing replays while inactive, the next
+        // Activate applies the queued Removes in order, and a later Remove finds its row.
+        [Test]
+        public static void TestForeachReplayRowThatDeactivatesHostAndRemovesWaitsForActivate(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var p = new RazorItemVM { Name = "p", Status = "p0" };
+            var q = new RazorItemVM { Name = "q", Status = "q0" };
+            items.Add(p);
+            items.Add(q);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var a = new RazorItemVM { Name = "a", Status = "a0" };
+            items.Add(a);
+
+            bool done = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "a" && !done)
+                {
+                    done = true;
+                    control.Deactivate();
+                    items.Remove(q);
+                }
+            };
+            try
+            {
+                control.Activate();
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.IsTrue(done, "a's row deactivated the host and removed q");
+                assert.Equal(HostTexts(element), "p|q|a", "the Remove waits while the host is inactive");
+                items.Remove(p);
+                assert.Equal(HostTexts(element), "p|q|a", "a later Remove also waits");
+
+                control.Activate();
+                assert.Equal(HostTexts(element), "a", "the next Activate applies both Removes");
+                items.Add(new RazorItemVM { Name = "b", Status = "b0" });
+                items.Remove(a);
+                assert.Equal(HostTexts(element), "b", "a later Remove finds its row");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
+        // PR 151 review, round 3: a change queued while a replayed row deactivates the host goes
+        // behind the saved tail. Here the saved Add(b) must apply before the new Remove(b).
+        [Test]
+        public static void TestForeachReplayRequeuesSavedTailAheadOfNewChange(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var q = new RazorItemVM { Name = "q", Status = "q0" };
+            items.Add(new RazorItemVM { Name = "p", Status = "p0" });
+            items.Add(q);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var b = new RazorItemVM { Name = "b", Status = "b0" };
+            items.Add(new RazorItemVM { Name = "a", Status = "a0" });
+            items.Add(b);
+
+            bool done = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "a" && !done)
+                {
+                    done = true;
+                    control.Deactivate();
+                    items.Remove(b);
+                }
+            };
+            try
+            {
+                control.Activate();
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.IsTrue(done, "a's row deactivated the host and removed b");
+                assert.Equal(HostTexts(element), "p|q|a", "the saved Add(b) waits while the host is inactive");
+
+                control.Activate();
+                assert.Equal(HostTexts(element), "p|q|a", "Add(b) then Remove(b): the rows match the model");
+                items.Remove(q);
+                assert.Equal(HostTexts(element), "p|a", "a later Remove finds its row");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
+        // PR 151 review: the inactive-swap path (Activate after Items changed) whose old-row
+        // teardown disposes the host renders nothing new, and later changes to either list
+        // neither fault nor build a row.
+        [Test]
+        public static void TestForeachInactiveSwapThatDisposesHostRendersNoNewCollection(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            items.Add(new RazorItemVM { Name = "old", Status = "o0" });
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var next = new ObservableCollection<RazorItemVM>();
+            next.Add(new RazorItemVM { Name = "new", Status = "n0" });
+            vm.Items = next;
+
+            bool thrown = false;
+            RazorProbeControl.DisposingForTest = delegate(RazorProbeControl probe)
+            {
+                if (thrown) return;
+                thrown = true;
+                control.Dispose();
+                throw new Exception("teardown disposed the host");
+            };
+            int created = RazorProbeControl.CreatedCount;
+            string error = null;
+            try
+            {
+                control.Activate();
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+            finally
+            {
+                RazorProbeControl.DisposingForTest = null;
+            }
+
+            assert.Equal(error, "teardown disposed the host", "the teardown error reaches the caller");
+            assert.Equal(RazorProbeControl.CreatedCount, created, "the new collection renders no row");
+
+            string addError = null;
+            try
+            {
+                next.Add(new RazorItemVM { Name = "late", Status = "l0" });
+                items.Add(new RazorItemVM { Name = "late-old", Status = "lo0" });
+            }
+            catch (Exception ex)
+            {
+                addError = ex.Message;
+            }
+            assert.Equal(addError, null, "later changes to either collection do not fault");
+            assert.Equal(RazorProbeControl.CreatedCount, created, "later changes to either collection build no row");
+        }
+
         [Test]
         public static void TestForeachResetAndAddWhileInactiveRendersFinalCollectionOnce(Assert assert)
         {

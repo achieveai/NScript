@@ -132,10 +132,14 @@ namespace Sunlight.Framework.UI.Test
 
     /// <summary>
     /// A row control whose Dispose throws when its Text starts with "dispose-boom" (the message
-    /// names the Text), and whose activation throws when its Text is "activate-boom".
+    /// names the Text), whose Deactivate throws when its Text starts with "deactivate-boom",
+    /// and whose activation throws when its Text is "activate-boom".
     /// </summary>
     public class FuDisposeThrowControl : RazorProbeControl
     {
+        /// <summary>How many more Dispose calls may throw; a test lowers it to throw once.</summary>
+        public static int DisposeThrowsLeft = 1000000;
+
         public FuDisposeThrowControl(Element element)
             : base(element)
         {
@@ -147,18 +151,28 @@ namespace Sunlight.Framework.UI.Test
             if (this.Text == "activate-boom") throw new Exception("activate boom");
         }
 
+        protected override void OnDeactivate()
+        {
+            base.OnDeactivate();
+            if (this.Text != null && this.Text.IndexOf("deactivate-boom") == 0)
+                throw new Exception("deactivate boom: " + this.Text);
+        }
+
         protected override void InternalDispose()
         {
             base.InternalDispose();
-            if (this.Text != null && this.Text.IndexOf("dispose-boom") == 0)
+            if (this.Text != null && this.Text.IndexOf("dispose-boom") == 0 && DisposeThrowsLeft > 0)
+            {
+                DisposeThrowsLeft--;
                 throw new Exception("dispose boom: " + this.Text);
+            }
         }
     }
 
     /// <summary>
     /// Binding-graph runtime follow-ups to the AWB rounds: sub-controls in every root of a
     /// multi-root @if branch, rows kept in step with the collection when a row build throws,
-    /// a failed row's subscriptions retired with its row, and a &lt;Slot&gt; error that moves nothing.
+    /// and a failed row's subscriptions retired with its row.
     /// </summary>
     [TestFixture]
     public class RazorRuntimeFollowupTests
@@ -841,15 +855,82 @@ namespace Sunlight.Framework.UI.Test
             var root = Mount(vm, RazorSkinTemplatesClass.AwbFuDispose2);
             assert.Equal(Names(root, "fd2-row"), "a|dispose-boom|c", "mounted: 3 rows");
             int disposed = RazorProbeControl.DisposedCount;
+            int deactivated = RazorProbeControl.DeactivatedCount;
 
-            assert.Equal(Catch(delegate { vm.Items.Remove(bad); }), "dispose boom: dispose-boom",
-                "Remove rethrows the first control's Dispose error");
-            assert.Equal(RazorProbeControl.DisposedCount, disposed + 2, "both controls of the row are disposed");
-            assert.Equal(Names(root, "fd2-row"), "a|c", "the row left");
+            // Throw once, so a second Dispose of the same control could not hide behind it.
+            FuDisposeThrowControl.DisposeThrowsLeft = 1;
+            try
+            {
+                assert.Equal(Catch(delegate { vm.Items.Remove(bad); }), "dispose boom: dispose-boom",
+                    "Remove rethrows the first control's Dispose error");
+                assert.Equal(RazorProbeControl.DisposedCount, disposed + 2, "both controls of the row are disposed");
+                assert.Equal(RazorProbeControl.DeactivatedCount, deactivated + 2,
+                    "both controls of the row are deactivated");
+                assert.Equal(Names(root, "fd2-row"), "a|c", "the row left");
+            }
+            finally
+            {
+                FuDisposeThrowControl.DisposeThrowsLeft = 1000000;
+            }
 
             vm.Items.Add(new FuItem("d"));
             vm.Items.RemoveAt(0);
             assert.Equal(Names(root, "fd2-row"), "c|d", "a later Add and Remove keep the rows in step");
+        }
+
+        // PR 149 review follow-up: a control whose Deactivate throws is still disposed, and the
+        // row's other control is too.
+        [Test]
+        public static void TestFuThrowingDeactivateStillDisposesTheControl(Assert assert)
+        {
+            var vm = new FuVm();
+            var bad = new FuItem("deactivate-boom");
+            vm.Items.Add(new FuItem("a"));
+            vm.Items.Add(bad);
+            var root = Mount(vm, RazorSkinTemplatesClass.AwbFuDispose2);
+            assert.Equal(Names(root, "fd2-row"), "a|deactivate-boom", "mounted: 2 rows");
+            int disposed = RazorProbeControl.DisposedCount;
+
+            assert.Equal(Catch(delegate { vm.Items.Remove(bad); }), "deactivate boom: deactivate-boom",
+                "Remove rethrows the Deactivate error");
+            assert.Equal(RazorProbeControl.DisposedCount, disposed + 2,
+                "both controls of the row are disposed, the one whose Deactivate threw too");
+            assert.Equal(Names(root, "fd2-row"), "a", "the row left");
+        }
+
+        // PR 149 review follow-up: a nested list whose row throws while it is torn down does
+        // not stop the row's later nested list, the row's own control, or (on host Dispose)
+        // the host's own control from being disposed.
+        [Test]
+        public static void TestFuNestedTeardownErrorStillDisposesEveryOtherControl(Assert assert)
+        {
+            var vm = new FuNestVm();
+            var g1 = new FuVm();
+            g1.Items.Add(new FuItem("dispose-boom-1"));
+            vm.Groups.Add(g1);
+            var g2 = new FuVm();
+            g2.Items.Add(new FuItem("dispose-boom-2"));
+            vm.Groups.Add(g2);
+
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.AwbFuNestedTeardown;
+            control.Activate();
+            assert.Equal(Count(element, "[data-test=nt-group]"), 2, "mounted: 2 groups");
+
+            int disposed = RazorProbeControl.DisposedCount;
+            assert.Equal(Catch(delegate { vm.Groups.Remove(g1); }), "dispose boom: dispose-boom-1",
+                "Remove rethrows the nested row's Dispose error");
+            assert.Equal(RazorProbeControl.DisposedCount, disposed + 3,
+                "row removal: the row's own control and both nested lists' controls are disposed");
+            assert.Equal(Count(element, "[data-test=nt-group]"), 1, "the group left");
+
+            disposed = RazorProbeControl.DisposedCount;
+            assert.Equal(Catch(delegate { control.Dispose(); }), "dispose boom: dispose-boom-2",
+                "host Dispose rethrows the nested row's Dispose error");
+            assert.Equal(RazorProbeControl.DisposedCount, disposed + 4,
+                "host Dispose: the host's control, the row's control and both nested lists' controls");
         }
 
         // PR 149 review P2: an inner-loop row binding a root property listens once; a change

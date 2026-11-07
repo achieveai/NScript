@@ -1,0 +1,2 @@
+@model Sunlight.Framework.UI.Test.FuNestVm
+<div><RazorProbeControl Text="host" />@foreach (var g in Model.Groups) { <div data-test="nt-group"><RazorProbeControl Text="row" />@foreach (var a in g.Items) { <span><FuDisposeThrowControl Text="@a.Name" /></span> }@foreach (var b in g.Items) { <span><RazorProbeControl Text="@b.Name" /></span> }</div> }</div>

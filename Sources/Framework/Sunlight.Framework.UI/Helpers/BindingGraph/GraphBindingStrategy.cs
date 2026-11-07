@@ -36,6 +36,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 WireSubscriptions(dataContext, templateParent);
                 GraphEngine.SetDefaultSubControlDataContext(this.descriptor, this.state, dataContext);
                 GraphEngine.PushInitialValues(this.descriptor, this.state);
+                // A replayed row that deactivated or disposed the host ends this activation;
+                // activating the sub-controls here would undo that deactivation.
+                if (this.state.Suspended || this.state.Disposed) return;
                 GraphEngine.ApplySubControlBindings(this.descriptor, this.state);
                 GraphEngine.ActivateSubControls(this.descriptor, this.state);
             }
@@ -172,10 +175,16 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             UnsubscribeAll();
             this.state.SubscriptionsActive = false;
 
-            // Clean up event listeners and collection listeners.
-            GraphEngine.CleanupEventListeners(this.descriptor, this.state);
-            GraphEngine.CleanupCollectionListeners(this.descriptor, this.state);
-            GraphEngine.DisposeSubControls(this.descriptor, this.state);
+            // Every step runs even when one throws (a row's or a sub-control's Dispose): a
+            // list whose teardown throws must not keep the host's own controls alive. The
+            // first error goes on once the graph is cleared.
+            Exception first = null;
+            try { GraphEngine.CleanupEventListeners(this.descriptor, this.state); }
+            catch (Exception ex) { first = ex; }
+            try { GraphEngine.CleanupCollectionListeners(this.descriptor, this.state); }
+            catch (Exception ex) { if (first == null) first = ex; }
+            try { GraphEngine.DisposeSubControls(this.descriptor, this.state); }
+            catch (Exception ex) { if (first == null) first = ex; }
 
             int n = this.descriptor.NodeCount;
             for (int i = 0; i < n; i++)
@@ -194,6 +203,7 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             this.state.ElemRefs = null;
             this.state.Sources[0] = null;
             this.state.Sources[1] = null;
+            if (first != null) throw first;
         }
 
         /// <summary>
