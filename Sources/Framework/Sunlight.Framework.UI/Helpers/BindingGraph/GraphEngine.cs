@@ -134,6 +134,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             && !object.IsNullOrUndefined(state.ItemElements[i]))
                         {
                             GraphEngine.ReplayPendingCollectionChanges(desc, state, i, colInfo);
+                            // A replayed row that deactivated or disposed the host ends this
+                            // activation: rows stay suspended, and the next Activate pushes again.
+                            if (state.Suspended || state.Disposed) return;
                             GraphEngine.RefreshCollectionItems(state, i);
                         }
                         else
@@ -142,8 +145,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                             if (!object.IsNullOrUndefined(previousValue))
                                 GraphEngine.DetachCollectionListener(state, i, previousValue);
 
-                            // A row whose Dispose throws still lets the new collection render;
-                            // the first error then propagates.
+                            // A row whose Dispose throws still lets the new collection render,
+                            // unless that teardown disposed the host; the first error then
+                            // propagates.
                             Exception first = null;
                             try
                             {
@@ -1591,8 +1595,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
             {
                 first = GraphEngine.TryApplyCollectionChange(desc, state, nodeIdx, colInfo, args, null);
 
-                // Changes queued while this one applied still apply, in order, even after one
-                // throws, so a failed row never lets a later change run ahead of them.
+                // Changes queued while this one applied still apply after it, even after one
+                // throws, so a failed row never lets a later change run ahead of them. The drain
+                // stops early when the owner is suspended or disposed (see below).
                 first = GraphEngine.DrainPendingCollectionChanges(desc, state, nodeIdx, colInfo, first);
             }
             finally
@@ -1604,11 +1609,14 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
         }
 
         /// <summary>
-        /// Applies the queued changes in the order they arrived; a change queued while they
-        /// apply goes after them. Keeps going after one throws. Stops once the owner is
-        /// disposed, or once it is suspended (a row deactivated the host): the unapplied
-        /// changes then stay queued, in order, for the next Activate. Returns the first error
-        /// so far.
+        /// Applies the queued changes in the order they arrived, except that a batch holding a
+        /// Reset applies only its last Reset (it re-renders the whole current collection). A
+        /// change queued while they apply goes after them. Keeps going after a change throws,
+        /// but stops early on a lifecycle change:
+        /// - suspended (a row deactivated the host): the unapplied changes go back to the head
+        ///   of the queue, in order, for the next Activate;
+        /// - disposed: the unapplied changes are dropped.
+        /// Returns the first error so far.
         /// </summary>
         private static Exception DrainPendingCollectionChanges(
             GraphDescriptor desc, GraphState state, int nodeIdx,

@@ -36,6 +36,9 @@ namespace Sunlight.Framework.UI.Helpers.BindingGraph
                 WireSubscriptions(dataContext, templateParent);
                 GraphEngine.SetDefaultSubControlDataContext(this.descriptor, this.state, dataContext);
                 GraphEngine.PushInitialValues(this.descriptor, this.state);
+                // A replayed row that deactivated or disposed the host ends this activation;
+                // activating the sub-controls here would undo that deactivation.
+                if (this.state.Suspended || this.state.Disposed) return;
                 GraphEngine.ApplySubControlBindings(this.descriptor, this.state);
                 GraphEngine.ActivateSubControls(this.descriptor, this.state);
             }

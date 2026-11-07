@@ -1122,8 +1122,127 @@ namespace Sunlight.Framework.UI.Test
             }
         }
 
+        // PR 151 review, round 3: a replayed row that deactivates the host without throwing and
+        // then changes the list ends the activation. Nothing replays while inactive, the next
+        // Activate applies the queued Removes in order, and a later Remove finds its row.
+        [Test]
+        public static void TestForeachReplayRowThatDeactivatesHostAndRemovesWaitsForActivate(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var p = new RazorItemVM { Name = "p", Status = "p0" };
+            var q = new RazorItemVM { Name = "q", Status = "q0" };
+            items.Add(p);
+            items.Add(q);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var a = new RazorItemVM { Name = "a", Status = "a0" };
+            items.Add(a);
+
+            bool done = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "a" && !done)
+                {
+                    done = true;
+                    control.Deactivate();
+                    items.Remove(q);
+                }
+            };
+            try
+            {
+                control.Activate();
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.IsTrue(done, "a's row deactivated the host and removed q");
+                assert.Equal(HostTexts(element), "p|q|a", "the Remove waits while the host is inactive");
+                items.Remove(p);
+                assert.Equal(HostTexts(element), "p|q|a", "a later Remove also waits");
+
+                control.Activate();
+                assert.Equal(HostTexts(element), "a", "the next Activate applies both Removes");
+                items.Add(new RazorItemVM { Name = "b", Status = "b0" });
+                items.Remove(a);
+                assert.Equal(HostTexts(element), "b", "a later Remove finds its row");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
+        // PR 151 review, round 3: a change queued while a replayed row deactivates the host goes
+        // behind the saved tail. Here the saved Add(b) must apply before the new Remove(b).
+        [Test]
+        public static void TestForeachReplayRequeuesSavedTailAheadOfNewChange(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            var control = new UISkinableElement(element);
+            var items = new ObservableCollection<RazorItemVM>();
+            var q = new RazorItemVM { Name = "q", Status = "q0" };
+            items.Add(new RazorItemVM { Name = "p", Status = "p0" });
+            items.Add(q);
+            var vm = new RazorTestVM();
+            vm.Items = items;
+            control.DataContext = vm;
+            control.Skin = RazorSkinTemplatesClass.RazorSubControlForeach;
+            control.Activate();
+
+            control.Deactivate();
+            var b = new RazorItemVM { Name = "b", Status = "b0" };
+            items.Add(new RazorItemVM { Name = "a", Status = "a0" });
+            items.Add(b);
+
+            bool done = false;
+            RazorProbeControl.TextChangedForTest = delegate(RazorProbeControl child)
+            {
+                if (child.Text == "a" && !done)
+                {
+                    done = true;
+                    control.Deactivate();
+                    items.Remove(b);
+                }
+            };
+            try
+            {
+                control.Activate();
+            }
+            finally
+            {
+                RazorProbeControl.TextChangedForTest = null;
+            }
+
+            try
+            {
+                assert.IsTrue(done, "a's row deactivated the host and removed b");
+                assert.Equal(HostTexts(element), "p|q|a", "the saved Add(b) waits while the host is inactive");
+
+                control.Activate();
+                assert.Equal(HostTexts(element), "p|q|a", "Add(b) then Remove(b): the rows match the model");
+                items.Remove(q);
+                assert.Equal(HostTexts(element), "p|a", "a later Remove finds its row");
+            }
+            finally
+            {
+                control.Dispose();
+            }
+        }
+
         // PR 151 review: the inactive-swap path (Activate after Items changed) whose old-row
-        // teardown disposes the host renders nothing new and leaves no listener on either list.
+        // teardown disposes the host renders nothing new, and later changes to either list
+        // neither fault nor build a row.
         [Test]
         public static void TestForeachInactiveSwapThatDisposesHostRendersNoNewCollection(Assert assert)
         {
@@ -1179,7 +1298,7 @@ namespace Sunlight.Framework.UI.Test
                 addError = ex.Message;
             }
             assert.Equal(addError, null, "later changes to either collection do not fault");
-            assert.Equal(RazorProbeControl.CreatedCount, created, "nothing listens on either collection");
+            assert.Equal(RazorProbeControl.CreatedCount, created, "later changes to either collection build no row");
         }
 
         [Test]
