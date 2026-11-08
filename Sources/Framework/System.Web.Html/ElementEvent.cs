@@ -163,5 +163,11 @@ namespace System.Web.Html
 
         public extern Number ClientY
         { get; }
+
+        /// <summary>
+        /// The pointer's id on a pointer event; undefined on other events.
+        /// </summary>
+        public extern int PointerId
+        { get; }
     }
 }

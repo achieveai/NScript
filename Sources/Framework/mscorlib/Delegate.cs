@@ -159,6 +159,10 @@
 
         [Script(@"
             var rv, i, j, idx, fullMatch, valArr;
+            if (source == null)
+                return null;
+            if (value == null)
+                return source;
             if (source == value)
                 return null;
             if (typeof source.funcs == ""undefined"")

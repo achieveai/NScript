@@ -53,6 +53,51 @@ namespace Sunlight.Framework.Test
             assert.StrictEqual(empty.ToString(), "", "empty ctor");
         }
 
+        // #158
+        [Test]
+        public static void UrlParsesAndResolvesAgainstBase(Assert assert)
+        {
+            var url = new URL("/a/b?x=1#h", "https://example.com:8443/root");
+            assert.StrictEqual(url.Href, "https://example.com:8443/a/b?x=1#h", "Href");
+            assert.StrictEqual(url.Origin, "https://example.com:8443", "Origin");
+            assert.StrictEqual(url.Protocol, "https:", "Protocol");
+            assert.StrictEqual(url.Host, "example.com:8443", "Host");
+            assert.StrictEqual(url.Hostname, "example.com", "Hostname");
+            assert.StrictEqual(url.Port, "8443", "Port");
+            assert.StrictEqual(url.Pathname, "/a/b", "Pathname");
+            assert.StrictEqual(url.Search, "?x=1", "Search");
+            assert.StrictEqual(url.Hash, "#h", "Hash");
+            assert.StrictEqual(url.SearchParams.Get("x"), "1", "SearchParams");
+
+            assert.StrictEqual(new URL("https://a.test/p").Pathname, "/p", "one-argument form");
+            assert.Equal(DomBindingsTests.IsBrowserRefusal(delegate { new URL("not a url"); }), true, "an invalid URL throws");
+            assert.IsTrue(URL.HasCreateObjectURL, "the static members still work");
+        }
+
+        // #158: no pointer is active here, so capture must reach the browser and be refused.
+        [Test]
+        public static void PointerCaptureReachesTheBrowser(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            Window.Instance.Document.Body.AppendChild(element);
+            assert.StrictEqual(element.HasPointerCapture(999), false, "no capture yet");
+            assert.Equal(DomBindingsTests.IsBrowserRefusal(delegate { element.SetPointerCapture(999); }), true, "SetPointerCapture");
+            assert.Equal(DomBindingsTests.IsBrowserRefusal(delegate { element.ReleasePointerCapture(999); }), true, "ReleasePointerCapture");
+            element.Remove();
+        }
+
+        // #158: the id that SetPointerCapture needs.
+        [Test]
+        public static void PointerEventHandsPointerId(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            int pointerId = 0;
+            Action<Element, ElementEvent> handler = (e, evt) => { pointerId = evt.PointerId; };
+            element.Bind("pointerdown", handler);
+            element.DispatchEvent(DomBindingsTests.MakePointerEvent("pointerdown", 7));
+            assert.StrictEqual(pointerId, 7, "PointerId");
+        }
+
         [Test]
         public static void MatchMediaReportsAndRaisesChange(Assert assert)
         {
@@ -272,6 +317,24 @@ namespace Sunlight.Framework.Test
 
         [Script("return new @:Event(name);")]
         private static extern Event MakeEvent(string name);
+
+        [Script("return new @:PointerEvent(name, { pointerId: id });")]
+        private static extern MutableEvent MakePointerEvent(string name, int id);
+
+        // True when the call threw and the method existed.
+        private static bool IsBrowserRefusal(Action call)
+        {
+            try
+            {
+                call();
+                return false;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message.IndexOf("is not a function") < 0
+                    && ex.Message.IndexOf("is not a constructor") < 0;
+            }
+        }
 
         // Init objects are typed C# objects, so the tests read like caller code.
         [Script("return new @:KeyboardEvent(name, init);")]
