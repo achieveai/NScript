@@ -367,6 +367,30 @@ namespace NScript.RazorSkin.TemplateIR
                 || name.StartsWith("data-", StringComparison.OrdinalIgnoreCase)
                 || name.StartsWith("aria-", StringComparison.OrdinalIgnoreCase);
 
+        private static bool IsInlineBinding(IntermediateNode node)
+            => node is CSharpExpressionIntermediateNode expression
+                && GetTokenContent(expression) != "model";
+
+        /// <summary>
+        /// Trims static HTML, but keeps one space where it sits next to an inline binding, as
+        /// HTML would. A line break beside a tag is template layout and goes.
+        /// </summary>
+        internal static string TrimAroundBindings(string content, bool bindingBefore, bool bindingAfter)
+        {
+            var trimmed = content.Trim();
+            var leading = content.Substring(0, content.Length - content.TrimStart().Length);
+            var trailing = content.Substring(content.TrimEnd().Length);
+
+            static bool KeepsSpace(string space, bool besideTag)
+                => space.Length > 0 && !(besideTag && space.Contains('\n'));
+
+            if (bindingBefore && KeepsSpace(leading, trimmed[0] == '<'))
+                trimmed = " " + trimmed;
+            if (bindingAfter && KeepsSpace(trailing, trimmed[trimmed.Length - 1] == '>'))
+                trimmed += " ";
+            return trimmed;
+        }
+
         /// <summary>
         /// Classify the binding source kind from a C# expression string (M6).
         /// Extracts whether the expression references Model.* or Control.* to determine
@@ -620,10 +644,27 @@ namespace NScript.RazorSkin.TemplateIR
                     var content = GetTokenContent(htmlNode);
                     // Strip the @model directive type name if Razor echoed it into the HTML
                     content = StripModelDirectiveEcho(content, modelTypeName);
-                    if (!string.IsNullOrWhiteSpace(content))
+                    var bindingBefore = i > 0 && IsInlineBinding(childList[i - 1]);
+                    var bindingAfter = i + 1 < childList.Count && IsInlineBinding(childList[i + 1])
+                        && DetectEventAttributeContext(content) == null
+                        && DetectAttributeBindingContext(content) == null;
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                        // @a @b: the space between two bindings on one line is text.
+                        if (bindingBefore && bindingAfter && content.Length > 0 && !content.Contains('\n'))
+                        {
+                            currentParent.Children.Add(new HtmlNode
+                            {
+                                HtmlContent = " ",
+                                Location = TryGetLocation(htmlNode, templateName)
+                            });
+                        }
+                    }
+                    else
                     {
                         // Check for event attributes and sub-controls before adding HTML
-                        var processed = ExtractEventAttributesFromHtml(content.Trim(), currentParent);
+                        var processed = ExtractEventAttributesFromHtml(
+                            TrimAroundBindings(content, bindingBefore, bindingAfter), currentParent);
                         // Also detect sub-controls in the HTML
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
                         processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, htmlLocation,

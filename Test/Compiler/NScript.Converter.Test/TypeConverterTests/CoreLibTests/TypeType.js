@@ -47,10 +47,17 @@ function Type__RegisterStructType(this_, typeName, interfaces) {
   this_.isStruct = true;
   this_.fullName = typeName;
   this_.baseType = ValueType;
+  if (this_.prototype)
+    this_.prototype.toJSON = Type__BoxToJson;
   this_.interfaces = interfaces;
   if (!Type__typeMapping)
     Type__typeMapping = { };
   Type__typeMapping[this_.fullName] = this_;
+}
+function Type__BoxToJson() {
+  var v;
+  v = this.boxedValue;
+  return typeof v === "undefined" ? this : v;
 }
 function Type__RegisterInterface(this_, typeName) {
   this_.isInterface = true;

@@ -186,16 +186,24 @@ namespace NScript.JST
                 {
                     ScopeBlock scopeBlock = (ScopeBlock) block;
 
-                    for (int statementIndex = 0; statementIndex < scopeBlock.Statements.Count; statementIndex++)
+                    bool isFirst = true;
+                    foreach (var statement in scopeBlock.Statements)
                     {
-                        if (statementIndex > 0)
+                        // An omitted call ([Conditional], unimplemented partial) leaves no statement.
+                        if (statement == null)
+                        {
+                            continue;
+                        }
+
+                        if (!isFirst)
                         {
                             writer.Write(Symbols.Comma);
                         }
 
+                        isFirst = false;
                         ForLoop.WriteStatement(
                             writer,
-                            (ExpressionStatement) scopeBlock.Statements[statementIndex]);
+                            (ExpressionStatement) statement);
                     }
                 }
                 else

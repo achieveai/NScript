@@ -176,6 +176,7 @@
             this.@{[mscorlib]System.Type::IsStruct} = true;
             this.@{[mscorlib]System.Type::FullName} = typeName;
             this.@{[mscorlib]System.Type::BaseType} = @{[mscorlib]System.ValueType};
+            if (this.prototype) this.prototype.toJSON = @{[mscorlib]System.Type::BoxToJson()};
             this.@{[mscorlib]System.Type::interfaces} = interfaces;
             if (!@{[mscorlib]System.Type::typeMapping}) { @{[mscorlib]System.Type::typeMapping} = {}; }
             @{[mscorlib]System.Type::typeMapping}[this.@{[mscorlib]System.Type::FullName}] = this;
@@ -183,6 +184,15 @@
         internal extern void RegisterStructType(
             string typeName,
             Type[] interfaces);
+
+        // JSON.stringify calls this on a box, so a boxed value serializes as the value. It is
+        // static so that "this" stays the box: an instance [Script] body has "this" rewritten.
+        // A plain struct shares the prototype but has no boxed value, so it serializes itself.
+        [Script(@"
+            var v = this.@{[mscorlib]System.ValueType::boxedValue};
+            return typeof v === ""undefined"" ? this : v;
+        ")]
+        private static extern object BoxToJson();
 
         [Script(@"
             this.@{[mscorlib]System.Type::IsInterface} = true;

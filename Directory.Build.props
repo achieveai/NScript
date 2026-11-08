@@ -27,6 +27,6 @@
     <!--Set this to true to generate packages-->
     <GenerateNScriptPackages>true</GenerateNScriptPackages>
     <!--Update package version here-->
-    <NScriptPackageVersion>1.1.20</NScriptPackageVersion>
+    <NScriptPackageVersion>1.1.21</NScriptPackageVersion>
 	</PropertyGroup>
 </Project>
