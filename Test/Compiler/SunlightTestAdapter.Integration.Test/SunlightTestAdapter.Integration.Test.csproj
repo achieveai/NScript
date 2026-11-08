@@ -18,5 +18,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.5" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.5" />
+    <!-- Test.Sdk 16.10 brings 9.0.1. This output is shared in Test/Compiler/bin, so it must stay on 13.0.4. -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 </Project>
