@@ -50,6 +50,16 @@ namespace Sunlight.Framework.Test
             assert.Equal(JsonBoxedValueTests.Json("s"), "{\"afterSeq\":\"s\"}", "string");
         }
 
+        // JSON has no NaN or Infinity. A box must not change that into something else.
+        [Test]
+        public static void BoxedNonFiniteDoublesSerializeAsNull(Assert assert)
+        {
+            double zero = 0;
+            assert.Equal(JsonBoxedValueTests.Json(0 / zero), "{\"afterSeq\":null}", "NaN");
+            assert.Equal(JsonBoxedValueTests.Json(1 / zero), "{\"afterSeq\":null}", "Infinity");
+            assert.Equal(JsonBoxedValueTests.Json(-1 / zero), "{\"afterSeq\":null}", "-Infinity");
+        }
+
         [Test]
         public static void NestedBoxedValueSerializesAsItsValue(Assert assert)
         {

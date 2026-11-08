@@ -76,7 +76,14 @@ namespace NScript.JST
             writer.WriteNewLine()
                 .Write(Keyword.Do);
 
-            if (!(this.Loop is ScopeBlock))
+            if (this.Loop == null)
+            {
+                // An empty body, such as a sole dropped call. JavaScript requires a statement.
+                writer.Write(Symbols.SemiColon)
+                    .WriteNewLine()
+                    .Write(Keyword.While);
+            }
+            else if (!(this.Loop is ScopeBlock))
             {
                 writer.EnterScope()
                     .Write(this.Loop)

@@ -205,6 +205,18 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(SpanText(element, "before"), "Agent \u00b7 Ok", "the space survives an update");
         }
 
+        // The template has a real tab character at each of these places.
+        [Test]
+        public static void TestFuInlineBindingTabsCollapseToOneSpace(Assert assert)
+        {
+            var vm = new RazorTestVM();
+            vm.Name = "Error";
+            var element = Mount(vm, RazorSkinTemplatesClass.AwbInlineSpace);
+
+            assert.Equal(SpanText(element, "tab-after"), "Error units", "a tab after a binding");
+            assert.Equal(SpanText(element, "tab-both"), "Error Error", "a tab between two bindings");
+        }
+
         private static string SpanText(Element root, string name)
         {
             return root.QuerySelector("[data-test='" + name + "']").TextContent;
