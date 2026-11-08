@@ -72,6 +72,10 @@ namespace Sunlight.Framework.Test
             assert.StrictEqual(new URL("https://a.test/p").Pathname, "/p", "one-argument form");
             assert.Equal(DomBindingsTests.IsBrowserRefusal(delegate { new URL("not a url"); }), true, "an invalid URL throws");
             assert.IsTrue(URL.HasCreateObjectURL, "the static members still work");
+            assert.IsTrue(URL.CreateObjectURL(DomBindingsTests.MakeFile("url.txt")).StartsWith("blob:"), "the static call works");
+
+            assert.StrictEqual(new URL("child", "https://a.test/dir/").Href, "https://a.test/dir/child", "path-relative input");
+            assert.StrictEqual(new URL("", "https://a.test/dir/").Href, "https://a.test/dir/", "empty input");
         }
 
         // #158: no pointer is active here, so capture must reach the browser and be refused.
@@ -86,6 +90,57 @@ namespace Sunlight.Framework.Test
             element.Remove();
         }
 
+        // #158: a pointer is only active during a real press, so the test runners click
+        // this fixture (run-qunit.mjs and run-tests.js). By hand, click the gray box.
+        [Test]
+        public static void PointerCaptureHoldsAndReleasesDuringRealPress(Assert assert)
+        {
+            var done = assert.Async(1);
+            var doc = Window.Instance.Document;
+            var element = doc.CreateElement("div");
+            element.SetAttribute("id", "pointer-capture-fixture");
+            element.SetAttribute("style", "position:fixed;top:0;left:0;width:100px;height:100px;z-index:9999;background:#ccc;");
+            var uncaptured = doc.CreateElement("div");
+            doc.Body.AppendChild(element);
+            doc.Body.AppendChild(uncaptured);
+
+            bool finished = false;
+            Action finish = () =>
+            {
+                finished = true;
+                element.Remove();
+                uncaptured.Remove();
+                done();
+            };
+
+            Action<Element, ElementEvent> onPress = (e, evt) =>
+            {
+                int id = evt.PointerId;
+                element.SetPointerCapture(id);
+                assert.StrictEqual(element.HasPointerCapture(id), true, "captured after set");
+
+                uncaptured.ReleasePointerCapture(id);
+                assert.StrictEqual(uncaptured.HasPointerCapture(id), false, "the other element never had it");
+                assert.StrictEqual(element.HasPointerCapture(id), true, "releasing elsewhere leaves the capture");
+
+                element.ReleasePointerCapture(id);
+                assert.StrictEqual(element.HasPointerCapture(id), false, "released");
+                finish();
+            };
+
+            element.Bind("pointerdown", onPress);
+
+            // Without a click the test fails instead of hanging the suite.
+            Globals.SetTimeout(() =>
+            {
+                if (!finished)
+                {
+                    assert.IsTrue(false, "no real pointerdown arrived; click the gray box");
+                    finish();
+                }
+            }, 15000);
+        }
+
         // #158: the id that SetPointerCapture needs.
         [Test]
         public static void PointerEventHandsPointerId(Assert assert)
@@ -96,6 +151,25 @@ namespace Sunlight.Framework.Test
             element.Bind("pointerdown", handler);
             element.DispatchEvent(DomBindingsTests.MakePointerEvent("pointerdown", 7));
             assert.StrictEqual(pointerId, 7, "PointerId");
+        }
+
+        // #158: only pointer events carry an id, so a change event reads undefined, not 0.
+        [Test]
+        public static void NonPointerEventHasNoPointerId(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("input");
+            bool handled = false;
+            bool noId = false;
+            Action<Element, ElementEvent> handler = (e, evt) =>
+            {
+                handled = true;
+                noId = object.IsNullOrUndefined(evt.PointerId);
+            };
+
+            element.Bind("change", handler);
+            element.DispatchEvent(DomBindingsTests.MakeMutableEvent("change"));
+            assert.StrictEqual(handled, true, "the handler ran");
+            assert.StrictEqual(noId, true, "PointerId is undefined");
         }
 
         [Test]
@@ -317,6 +391,9 @@ namespace Sunlight.Framework.Test
 
         [Script("return new @:Event(name);")]
         private static extern Event MakeEvent(string name);
+
+        [Script("return new @:Event(name);")]
+        private static extern MutableEvent MakeMutableEvent(string name);
 
         [Script("return new @:PointerEvent(name, { pointerId: id });")]
         private static extern MutableEvent MakePointerEvent(string name, int id);

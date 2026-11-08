@@ -130,7 +130,7 @@ MyApp/
 
 - Classes, Interfaces, Properties
 - Methods, Constructors
-- Generics, Collections (List<T>, Dictionary<K,V>)
+- Generics, Collections (List<T>, StringDictionary<V>, NumberDictionary<V>; constructing Dictionary<K,V> is a compile error)
 - LINQ
 - Lambda expressions
 - async/await

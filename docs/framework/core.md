@@ -15,7 +15,7 @@ The full file list lives under `Sources/Framework/mscorlib/`. Highlights:
 | Primitives & boxing | `Object`, `String`, `Boolean`, `Char`, `Byte`, `SByte`, `Int16`, `UInt16`, `Int32`, `UInt32`, `Int64`, `UInt64`, `Single`, `Double`, `Decimal`, `Number`, `Nullable<T>`, `ValueTuple` |
 | Time | `DateTime`, `DateFormatInfo`, `NumberFormatInfo`, `CultureInfo` |
 | Delegates / events | `Delegate`, `MulticastDelegate`, `Action`, `Action<...>` (up to 8 args), `Func<...>`, `EventHandler`, `EventArgs`, `EventBinder`, `EventTarget` |
-| Collections | `Array`, `NativeArray`, `Collections.Generic.List<T>`, `Dictionary<TKey,TValue>`, `StringDictionary<T>`, `IEnumerable<T>`, `IEnumerator<T>`, `HashSet<T>`, LINQ enumerable extensions in `System.Linq` |
+| Collections | `Array`, `NativeArray`, `Collections.Generic.List<T>`, `StringDictionary<T>`, `NumberDictionary<T>` (constructing `Dictionary<TKey,TValue>` is a compile error), `IEnumerable<T>`, `IEnumerator<T>`, `HashSet<T>`, LINQ enumerable extensions in `System.Linq` |
 | Exceptions | `Exception`, `ArgumentException`, `InvalidOperationException`, `NotSupportedException`, `NotImplementedException`, `Error`, `ErrorEvent` |
 | Async | `Threading.Tasks.Task`, `Task<T>`, `IAsyncStateMachine`, `Promise`, async/await machinery in `Runtime.CompilerServices` |
 | Strings | `StringBuilder`, `String.Format`, `RegularExpression`, `String.Replace` (`StringReplaceCallback`) |

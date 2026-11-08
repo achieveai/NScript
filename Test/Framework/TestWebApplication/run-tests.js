@@ -34,6 +34,11 @@ const SUITE_PAGES = [
 
       await page.goto(`http://localhost:3000/${suitePage}`, { waitUntil: 'domcontentloaded' });
 
+      // Pointer capture needs a real press; DomBindingsTests waits for this click.
+      if (suitePage === 'Sunlight.Framework.TestPage.htm') {
+        await page.locator('#pointer-capture-fixture').click({ timeout: 60000 });
+      }
+
       // Wait for QUnit to finish (banner gets class qunit-pass or qunit-fail)
       await page.waitForFunction(() => {
         const banner = document.getElementById('qunit-banner');
