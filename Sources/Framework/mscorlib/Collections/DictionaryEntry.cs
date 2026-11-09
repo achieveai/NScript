@@ -3,7 +3,7 @@
     using System;
     using System.Runtime.CompilerServices;
 
-    [IgnoreNamespace, Extended]
+    [IgnoreNamespace, ImportedType]
     public sealed class DictionaryEntry
     {
         internal extern DictionaryEntry();

@@ -183,6 +183,7 @@ namespace NScript.Converter.StatementsConverter
         /// Gets the current expression.
         /// </summary>
         /// <param name="converter">The converter.</param>
+        /// <param name="expectedType">The type to unbox to, or null when nothing reads the value.</param>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns></returns>
         private static JST.Expression GetCurrentExpression(
@@ -217,6 +218,7 @@ namespace NScript.Converter.StatementsConverter
             // Here we can check if genericParameter is restricted to referenceTypes
             // but for now not needed.
             if (!forEachLoop.IsAsync
+                && expectedType != null
                 && (expectedType.IsValueOrEnum()
                 || expectedType.IsGenericParameter))
             {
@@ -390,15 +392,15 @@ namespace NScript.Converter.StatementsConverter
             }
 
             // The variable exists only if the body reads it, and a dropped call may have been
-            // the only reader.
-            if (loopVariable != null)
-            {
-                statements.Insert(
-                    0,
-                    new JST.ExpressionStatement(
-                        enumerator.Location,
-                        converter.Scope,
-                        new JST.BinaryExpression(
+            // the only reader. Current still runs: it can have side effects.
+            statements.Insert(
+                0,
+                new JST.ExpressionStatement(
+                    enumerator.Location,
+                    converter.Scope,
+                    loopVariable == null
+                        ? GetCurrentExpression(converter, null, enumerator, forEachLoop)
+                        : new JST.BinaryExpression(
                             enumerator.Location,
                             converter.Scope,
                             JST.BinaryOperator.Assignment,
@@ -411,7 +413,6 @@ namespace NScript.Converter.StatementsConverter
                                 loopVariable.Type,
                                 enumerator,
                                 forEachLoop))));
-            }
 
             return new JST.ScopeBlock(
                 scopeBlock.Location,

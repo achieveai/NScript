@@ -3,6 +3,7 @@
 namespace Sunlight.Framework.Test
 {
     using System;
+    using System.Collections;
     using System.Diagnostics;
     using SunlightUnit;
 
@@ -19,6 +20,43 @@ namespace Sunlight.Framework.Test
             public void Mark()
             {
                 OmittedCallTests.marks++;
+            }
+        }
+
+        private sealed class CountingSequence : IEnumerable, IEnumerator
+        {
+            private readonly int count;
+            private int position;
+
+            public CountingSequence(int count)
+            {
+                this.count = count;
+            }
+
+            public int CurrentReads { get; private set; }
+
+            public object Current
+            {
+                get
+                {
+                    this.CurrentReads++;
+                    return this.position;
+                }
+            }
+
+            public bool MoveNext()
+            {
+                return this.position++ < this.count;
+            }
+
+            public void Reset()
+            {
+                this.position = 0;
+            }
+
+            public IEnumerator GetEnumerator()
+            {
+                return this;
             }
         }
 
@@ -263,6 +301,55 @@ namespace Sunlight.Framework.Test
             assert.Equal(after, 1, "the next statements stayed outside");
             assert.Equal(kept, 2, "a nested empty while ran");
             assert.Equal(OmittedCallTests.argEvals, 0, "no argument was evaluated");
+        }
+
+        [Test]
+        public static void OmittedForeachReaderStillEvaluatesCurrent(Assert assert)
+        {
+            OmittedCallTests.Reset();
+            var sequence = new CountingSequence(3);
+            int after = 0;
+
+            foreach (int item in sequence)
+                OmittedCallTests.Undefined(item);
+            after++;
+
+            assert.Equal(sequence.CurrentReads, 3, "Current ran once per iteration");
+            assert.Equal(after, 1, "the next statement stayed outside");
+        }
+
+        [Test]
+        public static void OmittedDictionaryEntryReaderKeepsEnumeration(Assert assert)
+        {
+            OmittedCallTests.Reset();
+            var dictionary = new Dictionary();
+            dictionary.Set<int>("a", 1);
+            dictionary.Set<int>("b", 2);
+            int loops = 0;
+
+            foreach (DictionaryEntry entry in dictionary)
+            {
+                loops++;
+                OmittedCallTests.Undefined(entry.Key.Length);
+            }
+
+            assert.Equal(loops, 2, "both entries were visited");
+        }
+
+        // A plain foreach over the dictionary, to show the entry itself works.
+        [Test]
+        public static void DictionaryEntryReadsKeyAndValue(Assert assert)
+        {
+            var dictionary = new Dictionary();
+            dictionary.Set<string>("a", "1");
+            string seen = string.Empty;
+
+            foreach (DictionaryEntry entry in dictionary)
+            {
+                seen = entry.Key + "=" + (string)entry.Value;
+            }
+
+            assert.Equal(seen, "a=1", "key and value");
         }
 
         [Test]
