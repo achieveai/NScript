@@ -107,6 +107,11 @@ namespace Sunlight.Framework.Test
             bool finished = false;
             Action finish = () =>
             {
+                if (finished)
+                {
+                    return;
+                }
+
                 finished = true;
                 element.Remove();
                 uncaptured.Remove();
@@ -115,17 +120,23 @@ namespace Sunlight.Framework.Test
 
             Action<Element, ElementEvent> onPress = (e, evt) =>
             {
-                int id = evt.PointerId;
-                element.SetPointerCapture(id);
-                assert.StrictEqual(element.HasPointerCapture(id), true, "captured after set");
+                try
+                {
+                    int id = evt.PointerId;
+                    element.SetPointerCapture(id);
+                    assert.StrictEqual(element.HasPointerCapture(id), true, "captured after set");
 
-                uncaptured.ReleasePointerCapture(id);
-                assert.StrictEqual(uncaptured.HasPointerCapture(id), false, "the other element never had it");
-                assert.StrictEqual(element.HasPointerCapture(id), true, "releasing elsewhere leaves the capture");
+                    uncaptured.ReleasePointerCapture(id);
+                    assert.StrictEqual(uncaptured.HasPointerCapture(id), false, "the other element never had it");
+                    assert.StrictEqual(element.HasPointerCapture(id), true, "releasing elsewhere leaves the capture");
 
-                element.ReleasePointerCapture(id);
-                assert.StrictEqual(element.HasPointerCapture(id), false, "released");
-                finish();
+                    element.ReleasePointerCapture(id);
+                    assert.StrictEqual(element.HasPointerCapture(id), false, "released");
+                }
+                finally
+                {
+                    finish();
+                }
             };
 
             element.Bind("pointerdown", onPress);
