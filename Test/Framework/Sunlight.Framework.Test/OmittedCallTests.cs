@@ -23,14 +23,21 @@ namespace Sunlight.Framework.Test
             }
         }
 
+        private struct Marker
+        {
+            public int Value;
+        }
+
         private sealed class CountingSequence : IEnumerable, IEnumerator
         {
             private readonly int count;
+            private readonly Func<int, object> make;
             private int position;
 
-            public CountingSequence(int count)
+            public CountingSequence(int count, Func<int, object> make = null)
             {
                 this.count = count;
+                this.make = make;
             }
 
             public int CurrentReads { get; private set; }
@@ -40,6 +47,11 @@ namespace Sunlight.Framework.Test
                 get
                 {
                     this.CurrentReads++;
+                    if (this.make != null)
+                    {
+                        return this.make(this.position);
+                    }
+
                     return this.position;
                 }
             }
@@ -316,6 +328,81 @@ namespace Sunlight.Framework.Test
 
             assert.Equal(sequence.CurrentReads, 3, "Current ran once per iteration");
             assert.Equal(after, 1, "the next statement stayed outside");
+        }
+
+        [Test]
+        public static void OmittedForeachReaderPropagatesCurrentException(Assert assert)
+        {
+            OmittedCallTests.Reset();
+            var sequence = new CountingSequence(3, i => { throw new Exception("from Current"); });
+            bool caught = false;
+            bool afterLoop = false;
+
+            try
+            {
+                foreach (int item in sequence)
+                    OmittedCallTests.Undefined(item);
+                afterLoop = true;
+            }
+            catch (Exception)
+            {
+                caught = true;
+            }
+
+            assert.StrictEqual(caught, true, "the exception reached the catch");
+            assert.Equal(sequence.CurrentReads, 1, "Current ran once");
+            assert.StrictEqual(afterLoop, false, "no later statement in the try ran");
+        }
+
+        [Test]
+        public static void OmittedForeachReaderEvaluatesCurrentBeforeBreak(Assert assert)
+        {
+            OmittedCallTests.Reset();
+            var sequence = new CountingSequence(3);
+            int after = 0;
+
+            foreach (int item in sequence)
+            {
+                OmittedCallTests.Undefined(item);
+                break;
+            }
+
+            after++;
+
+            assert.Equal(sequence.CurrentReads, 1, "Current ran once, before the break");
+            assert.Equal(after, 1, "the statement after the loop ran once");
+        }
+
+        [Test]
+        public static void OmittedForeachReaderHandlesStructCurrent(Assert assert)
+        {
+            OmittedCallTests.Reset();
+            var sequence = new CountingSequence(2, i => new Marker { Value = i });
+
+            foreach (Marker item in sequence)
+                OmittedCallTests.Undefined(item.Value);
+
+            assert.Equal(sequence.CurrentReads, 2, "Current ran once per iteration");
+        }
+
+        [Test]
+        public static void OmittedForeachReaderWorksWhenNested(Assert assert)
+        {
+            OmittedCallTests.Reset();
+            var outer = new CountingSequence(2);
+            int innerReads = 0;
+
+            foreach (int a in outer)
+            {
+                var inner = new CountingSequence(3);
+                foreach (int b in inner)
+                    OmittedCallTests.Undefined(b);
+                innerReads += inner.CurrentReads;
+                OmittedCallTests.Undefined(a);
+            }
+
+            assert.Equal(outer.CurrentReads, 2, "outer Current ran once per iteration");
+            assert.Equal(innerReads, 6, "inner Current ran once per iteration");
         }
 
         [Test]
