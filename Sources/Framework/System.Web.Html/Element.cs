@@ -706,6 +706,25 @@ namespace System.Web.Html
         public extern Element Closest(string selector);
 
         /// <summary>
+        /// Sends later events for this pointer to this element, even when it moves outside.
+        /// Throws when the pointer is not active.
+        /// </summary>
+        /// <param name="pointerId">The event's <see cref="ElementEvent.PointerId"/>.</param>
+        public extern void SetPointerCapture(int pointerId);
+
+        /// <summary>
+        /// Ends a capture started by <see cref="SetPointerCapture"/>. Throws when the pointer is not active.
+        /// </summary>
+        /// <param name="pointerId">The event's <see cref="ElementEvent.PointerId"/>.</param>
+        public extern void ReleasePointerCapture(int pointerId);
+
+        /// <summary>
+        /// Returns true when this element has captured the pointer.
+        /// </summary>
+        /// <param name="pointerId">The event's <see cref="ElementEvent.PointerId"/>.</param>
+        public extern bool HasPointerCapture(int pointerId);
+
+        /// <summary>
         /// Scroll into view.
         /// </summary>
         public extern void ScrollIntoView();

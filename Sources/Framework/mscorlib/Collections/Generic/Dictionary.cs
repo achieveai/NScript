@@ -14,6 +14,7 @@ namespace System.Collections.Generic
     [System.ComponentModel.EditorBrowsable(ComponentModel.EditorBrowsableState.Never)]
     public class Dictionary<K, V> : IDictionary<K, V>
     {
+        [Obsolete("Dictionary<K,V> is not supported in NScript. Use StringDictionary<V> or NumberDictionary<V>.", true)]
         public Dictionary(int count) { }
 
         #region IDictionary<K,V> Members

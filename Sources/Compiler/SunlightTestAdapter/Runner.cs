@@ -15,6 +15,9 @@ public class TestRunner
     private const string QunitCssPath = "/qunit.css";
     private const string IndexPath = "/index.html";
 
+    // A test that needs a real pointer press shows this element and waits for a click.
+    private const string PressFixtureSelector = "#pointer-capture-fixture";
+
     private readonly string _jsFilePath;
     private readonly string? _kestrelBaseUrl;
     private readonly ILogger _logger;
@@ -53,6 +56,7 @@ public class TestRunner
     {
         IPlaywright? playwright = null;
         IBrowser? browser = null;
+        Task? press = null;
 
         try
         {
@@ -100,6 +104,9 @@ public class TestRunner
                 return Array.Empty<RootObject>();
             }
 
+            // Not awaited here: a bundle without the fixture must not wait for it.
+            press = ClickPressFixture(page);
+
             var jsonString = await page.EvaluateAsync<string>(
                 @"async () => {
                     const timeout = new Promise((_, reject) =>
@@ -137,7 +144,26 @@ public class TestRunner
                 _logger.LogDebug("Closing browser");
                 await browser.CloseAsync();
             }
+
+            if (press != null)
+            {
+                await press;
+            }
+
             playwright?.Dispose();
+        }
+    }
+
+    private static async Task ClickPressFixture(IPage page)
+    {
+        try
+        {
+            await page.Locator(PressFixtureSelector).ClickAsync(new LocatorClickOptions { Timeout = 120000 });
+        }
+        catch (PlaywrightException)
+        {
+            // Closing the browser ends the wait when no test showed the fixture. A test that
+            // needed the press fails on its own timer.
         }
     }
 

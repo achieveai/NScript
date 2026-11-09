@@ -11,6 +11,8 @@ const QUNIT_SUITES = process.env.QUNIT_SUITES ? suitesFromEnv(process.env.QUNIT_
   {
     name: 'Sunlight.Framework.Test',
     scripts: ['/GeneratedScripts/Sunlight.Framework.Test.js'],
+    // Pointer capture needs a real press; DomBindingsTests waits for this click.
+    clickFixture: '#pointer-capture-fixture',
   },
   {
     name: 'Sunlight.Framework.UI.Test',
@@ -81,6 +83,10 @@ ${scriptTags}
 
 async function runSuite(page, port, suite) {
   await page.goto(`http://localhost:${port}/__qunit?name=${encodeURIComponent(suite.name)}`, { waitUntil: 'domcontentloaded' });
+
+  if (suite.clickFixture) {
+    await page.locator(suite.clickFixture).click({ timeout: 120000 });
+  }
 
   await page.waitForFunction(() => {
     const b = document.getElementById('qunit-banner');
