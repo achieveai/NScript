@@ -389,6 +389,51 @@ namespace NScript.Csc.Lib.Test
         private const string HelperSource =
             "namespace RealScript { public static class Helper { public static int Say(string text) { return text.Length; } } }";
 
+        /// <summary>
+        /// #152: without the DEBUG symbol, a DEBUG-conditional call is gone with its argument
+        /// call, so neither method is reachable. A plain call beside them shows the names
+        /// would appear if they were emitted.
+        /// </summary>
+        [TestMethod]
+        [TestCategory("Integration")] // ~17 s fixture setup plus 1 build of a small library.
+        public void ReleaseConditionalCallDropsArguments()
+        {
+            TestAssemblyLoader.LoadAssemblies();
+            var temp = TestResources.FixtureDirectory;
+            var dir = Path.Combine(temp, "nscript-conditional-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            string Copy(string name)
+            {
+                var target = Path.Combine(dir, name);
+                File.Copy(Path.Combine(temp, name), target);
+                return target;
+            }
+
+            var refs = new[] { Copy("mscorlib.dll"), Copy("system.core.dll"), Copy("microsoft.csharp.dll") };
+            var outJs = Path.Combine(dir, "bundle.js");
+            var lib = CompileLib(
+                dir,
+                refs,
+                ("Program.cs", ProgramSource("Trace.Write(Trace.Describe()); return Trace.Kept();")),
+                ("Trace.cs", "namespace RealScript { public static class Trace { [System.Diagnostics.Conditional(\"DEBUG\")] public static void Write(string message) { } public static string Describe() { return \"x\"; } public static int Kept() { return 1; } } }"));
+
+            using var builder = new Builder(
+                outJs,
+                1,
+                lib,
+                refs,
+                Array.Empty<IConverterPlugin>(),
+                (minify: false, uglify: false, optimize: false),
+                devMode: false);
+            Builder.ResetProcessState();
+            Assert.IsTrue(builder.Execute(new IConverterPlugin[] { new RootsPlugin() }), "The build failed.");
+
+            var js = File.ReadAllText(outJs);
+            StringAssert.Contains(js, "Trace__Kept", "The plain call must be emitted.");
+            Assert.IsFalse(js.Contains("Trace__Write"), "The conditional call must be gone.");
+            Assert.IsFalse(js.Contains("Trace__Describe"), "Its argument call must be gone.");
+        }
+
         private static string ProgramSource(string body) =>
             "namespace RealScript { using System; using System.Collections.Generic; public static class Program { public static int Main() { " + body + " } } }";
 

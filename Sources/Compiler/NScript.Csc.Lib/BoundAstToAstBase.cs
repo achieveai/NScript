@@ -1399,8 +1399,24 @@
                 }
             };
 
+        // C# drops a call to a [Conditional] method whose symbol is undefined, and to a partial
+        // method with no implementation, along with its argument evaluation. Roslyn does this
+        // while lowering, which runs after these bound trees are captured.
+        private static bool IsOmittedCall(BoundExpression expression)
+            => expression switch
+            {
+                BoundCall call => call.Method.CallsAreOmitted(call.SyntaxTree),
+                BoundConditionalAccess access => IsOmittedCall(access.AccessExpression),
+                _ => false,
+            };
+
         public override AstBase VisitExpressionStatement(BoundExpressionStatement node, SerializationContext arg)
         {
+            if (IsOmittedCall(node.Expression))
+            {
+                return new EmptyStatementSer { Location = node.Syntax.GetSerLoc() };
+            }
+
             statementExpression = node.Expression;
             return new StatementExpressionSer { Expression = (ExpressionSer)Visit(node.Expression, arg) };
         }

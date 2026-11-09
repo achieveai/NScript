@@ -43,41 +43,20 @@ namespace NScript.Converter.StatementsConverter
                     statement.Handlers[0]);
             }
 
-            JST.Statement jstStatement = null;
             if (!statement.Handlers[statement.Handlers.Count - 1].IsCatchBlock)
             {
-                jstStatement = 
+                finallyBlock = TryCatchFinallyConverter.ToScopeBlock(
+                    converter,
                     ScopeBlockConverter.Convert(
                         converter,
-                        statement.Handlers[statement.Handlers.Count - 1].Block);
-
-                finallyBlock = jstStatement as JST.ScopeBlock;
-
-                if (finallyBlock == null)
-                {
-                    var temp = new List<JST.Statement>();
-                    temp.Add(jstStatement);
-                    finallyBlock = new JST.ScopeBlock(
-                        jstStatement.Location,
-                        jstStatement.Scope,
-                        temp);
-                }
+                        statement.Handlers[statement.Handlers.Count - 1].Block));
             }
 
-            jstStatement = StatementConverterBase.Convert(
+            JST.ScopeBlock tryBlock = TryCatchFinallyConverter.ToScopeBlock(
+                converter,
+                StatementConverterBase.Convert(
                     converter,
-                    statement.TryBlock);
-
-            JST.ScopeBlock tryBlock = jstStatement as JST.ScopeBlock;
-            if (tryBlock == null)
-            {
-                var temp = new List<JST.Statement>();
-                temp.Add(jstStatement);
-                tryBlock = new JST.ScopeBlock(
-                    jstStatement.Location,
-                    jstStatement.Scope,
-                    temp);
-            }
+                    statement.TryBlock));
 
             return new JST.TryCatchFinalyBlock(
                 converter.Scope,
@@ -85,6 +64,32 @@ namespace NScript.Converter.StatementsConverter
                 catchHandler,
                 finallyBlock,
                 statement.Location);
+        }
+
+        /// <summary>
+        /// Wraps a converted body in the block JavaScript requires. A body with nothing in it,
+        /// such as a sole dropped call, converts to null and becomes an empty block.
+        /// </summary>
+        /// <param name="converter">The converter.</param>
+        /// <param name="statement">The converted body, or null when it is empty.</param>
+        /// <returns>The body as a scope block.</returns>
+        private static JST.ScopeBlock ToScopeBlock(
+            IMethodScopeConverter converter,
+            JST.Statement statement)
+        {
+            if (statement is JST.ScopeBlock block)
+            {
+                return block;
+            }
+
+            var statements = new List<JST.Statement>();
+            if (statement == null)
+            {
+                return new JST.ScopeBlock(null, converter.Scope, statements);
+            }
+
+            statements.Add(statement);
+            return new JST.ScopeBlock(statement.Location, statement.Scope, statements);
         }
 
         /// <summary>
@@ -116,29 +121,11 @@ namespace NScript.Converter.StatementsConverter
                             converter.Scope);
                 }
 
-                JST.Statement jstStatement =
+                JST.ScopeBlock catchBlock = TryCatchFinallyConverter.ToScopeBlock(
+                    converter,
                     StatementConverterBase.Convert(
                         converter,
-                        handler.Block);
-
-                JST.ScopeBlock catchBlock = jstStatement as JST.ScopeBlock;
-
-                if (catchBlock == null)
-                {
-                    var temp = new List<JST.Statement>();
-                    if (jstStatement != null)
-                    {
-                        temp.Add(jstStatement);
-                        catchBlock = new JST.ScopeBlock(
-                            jstStatement.Location,
-                            jstStatement.Scope,
-                            temp);
-                    }
-                    else
-                    {
-                        catchBlock = new JST.ScopeBlock(null, converter.Scope, temp);
-                    }
-                }
+                        handler.Block));
 
                 return new JST.CatchHandler(
                     converter.Scope,

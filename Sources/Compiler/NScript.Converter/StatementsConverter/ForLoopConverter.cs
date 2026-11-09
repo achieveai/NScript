@@ -148,16 +148,21 @@ namespace NScript.Converter.StatementsConverter
                     new JST.IdentifierExpression(keyIdentifier, converter.Scope),
                     true));
 
-            JST.Expression initDictEntry = new JST.BinaryExpression(
-                forEachLoop.Collection.Location,
-                converter.Scope,
-                JST.BinaryOperator.Assignment,
-                new JST.IdentifierExpression(
-                    converter.ResolveLocal(forEachLoop.Variable.Name),
-                    converter.Scope),
-                dictEntry);
+            // The variable exists only if the body reads it, and a dropped call may have been
+            // the only reader.
+            if (forEachLoop.Variable != null)
+            {
+                JST.Expression initDictEntry = new JST.BinaryExpression(
+                    forEachLoop.Collection.Location,
+                    converter.Scope,
+                    JST.BinaryOperator.Assignment,
+                    new JST.IdentifierExpression(
+                        converter.ResolveLocal(forEachLoop.Variable.Name),
+                        converter.Scope),
+                    dictEntry);
 
-            statements.Add(new JST.ExpressionStatement(null, converter.Scope, initDictEntry));
+                statements.Add(new JST.ExpressionStatement(null, converter.Scope, initDictEntry));
+            }
 
             for (int statementIndex = 0; statementIndex < forEachLoop.Scope.Statements.Count; statementIndex++)
             {
@@ -178,6 +183,7 @@ namespace NScript.Converter.StatementsConverter
         /// Gets the current expression.
         /// </summary>
         /// <param name="converter">The converter.</param>
+        /// <param name="expectedType">The type to unbox to, or null when nothing reads the value.</param>
         /// <param name="enumerator">The enumerator.</param>
         /// <returns></returns>
         private static JST.Expression GetCurrentExpression(
@@ -212,6 +218,7 @@ namespace NScript.Converter.StatementsConverter
             // Here we can check if genericParameter is restricted to referenceTypes
             // but for now not needed.
             if (!forEachLoop.IsAsync
+                && expectedType != null
                 && (expectedType.IsValueOrEnum()
                 || expectedType.IsGenericParameter))
             {
@@ -375,33 +382,37 @@ namespace NScript.Converter.StatementsConverter
             List<JST.Statement> statements = new List<JST.Statement>();
             JST.ScopeBlock returnValue = block as JST.ScopeBlock;
 
-            if (returnValue == null)
-            {
-                statements.Add(block);
-            }
-            else
+            if (returnValue != null)
             {
                 statements.AddRange(returnValue.Statements);
             }
+            else if (block != null)
+            {
+                statements.Add(block);
+            }
 
+            // The variable exists only if the body reads it, and a dropped call may have been
+            // the only reader. Current still runs: it can have side effects.
             statements.Insert(
                 0,
                 new JST.ExpressionStatement(
                     enumerator.Location,
                     converter.Scope,
-                    new JST.BinaryExpression(
-                        enumerator.Location,
-                        converter.Scope,
-                        JST.BinaryOperator.Assignment,
-                        new JST.IdentifierExpression(
-                            converter.ResolveLocal(
-                                loopVariable.Name),
-                            converter.Scope),
-                        GetCurrentExpression(
-                            converter,
-                            loopVariable.Type,
-                            enumerator,
-                            forEachLoop))));
+                    loopVariable == null
+                        ? GetCurrentExpression(converter, null, enumerator, forEachLoop)
+                        : new JST.BinaryExpression(
+                            enumerator.Location,
+                            converter.Scope,
+                            JST.BinaryOperator.Assignment,
+                            new JST.IdentifierExpression(
+                                converter.ResolveLocal(
+                                    loopVariable.Name),
+                                converter.Scope),
+                            GetCurrentExpression(
+                                converter,
+                                loopVariable.Type,
+                                enumerator,
+                                forEachLoop))));
 
             return new JST.ScopeBlock(
                 scopeBlock.Location,

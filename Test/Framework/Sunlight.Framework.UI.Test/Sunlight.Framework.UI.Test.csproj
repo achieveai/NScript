@@ -170,6 +170,7 @@
     <EmbeddedResource Include="RazorTemplates\SlotHostRowsMissing.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuDispose2.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuNestedTeardown.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbInlineSpace.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\AwbFuNestChurn.skin.cshtml" />
   </ItemGroup>
 

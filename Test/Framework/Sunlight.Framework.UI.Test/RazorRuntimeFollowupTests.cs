@@ -187,6 +187,41 @@ namespace Sunlight.Framework.UI.Test
             return element;
         }
 
+        // #157: whitespace next to an inline binding is kept; layout whitespace is not.
+        [Test]
+        public static void TestFuStaticTextKeepsSpaceNextToInlineBinding(Assert assert)
+        {
+            var vm = new RazorTestVM();
+            vm.Name = "Error";
+            var element = Mount(vm, RazorSkinTemplatesClass.AwbInlineSpace);
+
+            assert.Equal(SpanText(element, "before"), "Agent \u00b7 Error", "space before a binding");
+            assert.Equal(SpanText(element, "after"), "Error units", "space after a binding");
+            assert.Equal(SpanText(element, "both"), "Error Error", "space between two bindings");
+            assert.Equal(SpanText(element, "tag"), "x Error", "space between a tag and a binding");
+            assert.Equal(SpanText(element, "layout"), "Error", "a line break beside a tag is layout");
+
+            vm.Name = "Ok";
+            assert.Equal(SpanText(element, "before"), "Agent \u00b7 Ok", "the space survives an update");
+        }
+
+        // The template has a real tab character at each of these places.
+        [Test]
+        public static void TestFuInlineBindingTabsCollapseToOneSpace(Assert assert)
+        {
+            var vm = new RazorTestVM();
+            vm.Name = "Error";
+            var element = Mount(vm, RazorSkinTemplatesClass.AwbInlineSpace);
+
+            assert.Equal(SpanText(element, "tab-after"), "Error units", "a tab after a binding");
+            assert.Equal(SpanText(element, "tab-both"), "Error Error", "a tab between two bindings");
+        }
+
+        private static string SpanText(Element root, string name)
+        {
+            return root.QuerySelector("[data-test='" + name + "']").TextContent;
+        }
+
         private static int Count(Element root, string selector)
         {
             return root.QuerySelectorAll(selector).Length;

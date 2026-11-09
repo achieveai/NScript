@@ -74,7 +74,13 @@ namespace NScript.JST
                 .Write(Keyword.While)
                 .Write(this.condition, true);
 
-            if (!(this.Loop is ScopeBlock))
+            if (this.Loop == null)
+            {
+                // An empty body, such as a sole dropped call. Without this, the next
+                // statement would become the loop body.
+                writer.Write(Symbols.SemiColon);
+            }
+            else if (!(this.Loop is ScopeBlock))
             {
                 writer.EnterScope()
                     .Write(this.Loop)
