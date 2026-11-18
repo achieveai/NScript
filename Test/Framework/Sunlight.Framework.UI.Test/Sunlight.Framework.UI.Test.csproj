@@ -64,6 +64,7 @@
     <EmbeddedResource Include="RazorTemplates\RazorStaticIf.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorForeach.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorForeachBindings.skin.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\AwbLoopInlineSpace.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorIfInForeach.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorForeachInIf.skin.cshtml" />
     <EmbeddedResource Include="RazorTemplates\RazorEventClick.skin.cshtml" />

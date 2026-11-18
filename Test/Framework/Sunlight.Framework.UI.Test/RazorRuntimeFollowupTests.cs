@@ -205,6 +205,34 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(SpanText(element, "before"), "Agent \u00b7 Ok", "the space survives an update");
         }
 
+        // #161: the same holds inside a @foreach row and an @if branch.
+        [Test]
+        public static void TestFuLoopAndIfKeepSpaceNextToInlineBinding(Assert assert)
+        {
+            var vm = new RazorTestVM();
+            vm.Name = "Error";
+            vm.Items = new ObservableCollection<RazorItemVM>();
+            var item = new RazorItemVM();
+            item.Name = "Row";
+            vm.Items.Add(item);
+            vm.IsActive = true;
+            var element = Mount(vm, RazorSkinTemplatesClass.AwbLoopInlineSpace);
+
+            assert.Equal(SpanText(element, "row-before"), "Agent · Row", "space before a binding in a row");
+            assert.Equal(SpanText(element, "row-after"), "Row units", "space after a binding in a row");
+            assert.Equal(SpanText(element, "row-both"), "Row Row", "space between two bindings in a row");
+            assert.Equal(SpanText(element, "row-layout"), "Row", "a line break beside a tag is layout in a row");
+            assert.Equal(Count(element, "[data-test=rows] > [data-test=row]"), 1, "the loop body's own layout spaces add no text nodes that matter");
+            assert.Equal(SpanText(element, "if-before"), "Agent · Error", "space before a binding in an @if branch");
+            assert.Equal(SpanText(element, "if-both"), "Error Error", "space between two bindings in an @if branch");
+
+            var added = new RazorItemVM();
+            added.Name = "Next";
+            vm.Items.Add(added);
+            var rows = element.QuerySelectorAll("[data-test=row-before]");
+            assert.Equal(rows[1].TextContent, "Agent · Next", "a row added later keeps the space");
+        }
+
         // The template has a real tab character at each of these places.
         [Test]
         public static void TestFuInlineBindingTabsCollapseToOneSpace(Assert assert)

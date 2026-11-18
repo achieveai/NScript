@@ -1,0 +1,4 @@
+@model Sunlight.Framework.UI.Test.RazorTestVM
+<div><div data-test="rows">@foreach (var i in Model.Items) { <div data-test="row"><span data-test="row-before">Agent · @i.Name</span><span data-test="row-after">@i.Name units</span><span data-test="row-both">@i.Name @i.Name</span><span data-test="row-layout">
+    @i.Name
+</span></div> }</div>@if (Model.IsActive) { <span data-test="if-before">Agent · @Model.Name</span><span data-test="if-both">@Model.Name @Model.Name</span> }</div>

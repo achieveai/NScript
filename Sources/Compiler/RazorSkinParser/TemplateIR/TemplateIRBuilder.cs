@@ -392,6 +392,23 @@ namespace NScript.RazorSkin.TemplateIR
         }
 
         /// <summary>
+        /// The static HTML at <paramref name="index"/> as it renders: trimmed, but keeping the
+        /// space next to an inline binding (<see cref="TrimAroundBindings"/>). Whitespace alone
+        /// between two bindings on one line (<c>@a @b</c>) is a single space; other whitespace
+        /// alone is layout and gives null.
+        /// </summary>
+        private static string RenderedHtml(List<IntermediateNode> nodes, int index, string content)
+        {
+            var bindingBefore = index > 0 && IsInlineBinding(nodes[index - 1]);
+            var bindingAfter = index + 1 < nodes.Count && IsInlineBinding(nodes[index + 1])
+                && DetectEventAttributeContext(content) == null
+                && DetectAttributeBindingContext(content) == null;
+            if (!string.IsNullOrWhiteSpace(content))
+                return TrimAroundBindings(content, bindingBefore, bindingAfter);
+            return bindingBefore && bindingAfter && content.Length > 0 && !content.Contains('\n') ? " " : null;
+        }
+
+        /// <summary>
         /// Classify the binding source kind from a C# expression string (M6).
         /// Extracts whether the expression references Model.* or Control.* to determine
         /// if the source is DataContext or TemplateParent.
@@ -956,11 +973,16 @@ namespace NScript.RazorSkin.TemplateIR
                 if (node is HtmlContentIntermediateNode htmlNode)
                 {
                     var content = GetTokenContent(htmlNode);
-                    if (!string.IsNullOrWhiteSpace(content))
+                    var rendered = RenderedHtml(nodes, i, content);
+                    if (rendered == " ")
+                    {
+                        targetBranch.Add(new HtmlNode { HtmlContent = " ", Location = TryGetLocation(htmlNode, templateName) });
+                    }
+                    else if (rendered != null)
                     {
                         var branchParent = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), branchParent,
+                        var processed = ExtractSubControlsFromHtml(rendered, branchParent,
                             templateName, htmlLocation, ContentStartLocation(htmlLocation, content, content));
                         if (!string.IsNullOrWhiteSpace(processed))
                             targetBranch.Add(new HtmlNode
@@ -1147,7 +1169,12 @@ namespace NScript.RazorSkin.TemplateIR
                 if (node is HtmlContentIntermediateNode htmlNode)
                 {
                     var content = GetTokenContent(htmlNode);
-                    if (!string.IsNullOrWhiteSpace(content))
+                    var rendered = RenderedHtml(nodes, i, content);
+                    if (rendered == " ")
+                    {
+                        loop.ItemTemplate.Add(new HtmlNode { HtmlContent = " ", Location = TryGetLocation(htmlNode, templateName) });
+                    }
+                    else if (rendered != null)
                     {
                         // Use a dummy container to collect SubControlNodes,
                         // then move them to the loop's ItemTemplate. Pass the host
@@ -1155,7 +1182,7 @@ namespace NScript.RazorSkin.TemplateIR
                         // rather than collapsing to the dummy container's null Location.
                         var dummy = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, htmlLocation,
+                        var processed = ExtractSubControlsFromHtml(rendered, dummy, templateName, htmlLocation,
                             ContentStartLocation(htmlLocation, content, content));
                         if (!string.IsNullOrWhiteSpace(processed))
                             loop.ItemTemplate.Add(new HtmlNode
