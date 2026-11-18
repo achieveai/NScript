@@ -1173,6 +1173,26 @@ namespace System.Web.Html
         public extern string this[int idx]
         { get; set; }
 
+        /// <summary>
+        /// Sets a property by its CSS name, custom properties (--name) included, which the indexer cannot set.
+        /// </summary>
+        public extern void SetProperty(string name, string value);
+
+        /// <summary>
+        /// Sets a property by its CSS name with a priority ("important" or "").
+        /// </summary>
+        public extern void SetProperty(string name, string value, string priority);
+
+        /// <summary>
+        /// Removes a property by its CSS name and returns its old value.
+        /// </summary>
+        public extern string RemoveProperty(string name);
+
+        /// <summary>
+        /// The inline value of a property by its CSS name, or "" when it is not set.
+        /// </summary>
+        public extern string GetPropertyValue(string name);
+
         public string X_Animation
         {
             get { return this.Animation; }

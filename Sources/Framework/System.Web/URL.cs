@@ -29,6 +29,10 @@ namespace System.Web
 
         public extern string Origin { get; }
 
+        public extern string Username { get; }
+
+        public extern string Password { get; }
+
         public extern string Protocol { get; }
 
         public extern string Host { get; }

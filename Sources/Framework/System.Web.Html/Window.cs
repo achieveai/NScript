@@ -171,6 +171,12 @@ namespace System.Web.Html
         public extern event Action<Window, ElementEvent> OnKeyDown;
 
         /// <summary>
+        /// Raised when another window or a frame posts a message to this one.
+        /// Check <see cref="MessageEvent.Origin"/> and <see cref="MessageEvent.Source"/> before trusting it.
+        /// </summary>
+        public extern event Action<Window, MessageEvent> OnMessage;
+
+        /// <summary>
         /// Raised on key up anywhere in the window.
         /// </summary>
         public extern event Action<Window, ElementEvent> OnKeyUp;
