@@ -178,6 +178,22 @@ namespace RazorSkinParser.Test
             location.StartColumn.Should().Be(0, "columns are 0-based");
         }
 
+        // NScript PR 163 review: the space kept after a binding on the Slot's line is not a column.
+        [DataTestMethod]
+        [DataRow("@model TestVM\n<Frame>\n<Slot Name=\"head\"><i>a</i></Slot>\n@Model.Name <Slot Name=\"head\"><i>b</i></Slot>\n</Frame>", 4)]
+        [DataRow("@model TestVM\n@if (Model.Flag) {\n<Frame>\n<Slot Name=\"head\"><i>a</i></Slot>\n@Model.Name <Slot Name=\"head\"><i>b</i></Slot>\n</Frame>\n}", 5)]
+        [DataRow("@model TestVM\n@foreach (var i in Model.Items) {\n<Frame>\n<Slot Name=\"head\"><i>a</i></Slot>\n@i.Name <Slot Name=\"head\"><i>b</i></Slot>\n</Frame>\n}", 5)]
+        public void NamedSlot_AfterABindingAndASpace_PointsAtTheSlotTag(string template, int line)
+        {
+            Action build = () => BuildIR(template);
+
+            var location = build.Should().Throw<ConverterLocationException>()
+                .WithMessage("*<Frame> has two <Slot Name=\"head\">*").Which.Location;
+            var slotLine = template.Split('\n')[line - 1];
+            location.StartLine.Should().Be(line);
+            location.StartColumn.Should().Be(slotLine.IndexOf("<Slot", StringComparison.Ordinal));
+        }
+
         [TestMethod]
         public void NamedSlot_InsideAnotherSlot_IsACompileErrorAtTheInnerSlot()
         {

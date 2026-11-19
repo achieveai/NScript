@@ -697,6 +697,12 @@ namespace Sunlight.Framework.UI.Test
             get { return null; }
         }
 
+        [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbLoopInlineSpace.skin.cshtml")]
+        public static Skin AwbLoopInlineSpace
+        {
+            get { return null; }
+        }
+
         [Skin("Sunlight.Framework.UI.Test.RazorTemplates.AwbFuNestedTeardown.skin.cshtml")]
         public static Skin AwbFuNestedTeardown
         {

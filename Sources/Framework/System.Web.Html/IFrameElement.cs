@@ -6,6 +6,7 @@
 
 namespace System.Web.Html
 {
+    using System;
     using System.Runtime.CompilerServices;
 
     /// <summary>
@@ -27,5 +28,16 @@ namespace System.Web.Html
 
         public extern string Src
         { get; set; }
+
+        /// <summary>
+        /// The frame's name, the target a link or form can name.
+        /// </summary>
+        public extern string Name
+        { get; set; }
+
+        /// <summary>
+        /// Raised when the frame's document has loaded.
+        /// </summary>
+        public extern event Action<IFrameElement, ElementEvent> OnLoad;
     }
 }

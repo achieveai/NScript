@@ -75,6 +75,18 @@ using System.Runtime.CompilerServices;
         { get; }
 
         /// <summary>
+        /// True while the page is not visible (a background tab, a minimized window).
+        /// </summary>
+        public extern bool Hidden
+        { get; }
+
+        /// <summary>
+        /// "visible" or "hidden".
+        /// </summary>
+        public extern string VisibilityState
+        { get; }
+
+        /// <summary>
         /// Gets or sets the domain.
         /// </summary>
         /// <value>

@@ -205,6 +205,71 @@ namespace Sunlight.Framework.UI.Test
             assert.Equal(SpanText(element, "before"), "Agent \u00b7 Ok", "the space survives an update");
         }
 
+        // #161: the same holds inside a @foreach row and an @if branch.
+        [Test]
+        public static void TestFuLoopAndIfKeepSpaceNextToInlineBinding(Assert assert)
+        {
+            var vm = new RazorTestVM();
+            vm.Name = "Error";
+            vm.Items = new ObservableCollection<RazorItemVM>();
+            var item = new RazorItemVM();
+            item.Name = "Row";
+            vm.Items.Add(item);
+            vm.IsActive = true;
+            var element = Mount(vm, RazorSkinTemplatesClass.AwbLoopInlineSpace);
+
+            assert.Equal(SpanText(element, "row-before"), "Agent · Row", "space before a binding in a row");
+            assert.Equal(SpanText(element, "row-after"), "Row units", "space after a binding in a row");
+            assert.Equal(SpanText(element, "row-both"), "Row Row", "space between two bindings in a row");
+            assert.Equal(SpanText(element, "row-tab"), "Row Row", "a tab between two bindings in a row is one space");
+            assert.Equal(SpanText(element, "row-layout"), "Row", "a line break beside a tag is layout in a row");
+            assert.Equal(Count(element, "[data-test=rows] > [data-test=row]"), 1, "one row element");
+            assert.Equal(WhitespaceTextChildren(element.QuerySelector("[data-test=rows]")), 0,
+                "the loop body's layout spaces add no text nodes to the rows container");
+            assert.Equal(SpanText(element, "nested"), "Agent · Row", "space before a binding in a nested loop row");
+            assert.Equal(SpanText(element, "if-before"), "Agent · Error", "space before a binding in an @if branch");
+            assert.Equal(SpanText(element, "if-after"), "Error units", "space after a binding in an @if branch");
+            assert.Equal(SpanText(element, "if-both"), "Error Error", "space between two bindings in an @if branch");
+            assert.Equal(SpanText(element, "if-spaces"), "Error Error", "several spaces between two bindings render as one");
+            assert.Equal(SpanText(element, "if-layout"), "Error", "a line break beside a tag is layout in an @if branch");
+
+            var added = new RazorItemVM();
+            added.Name = "Next";
+            vm.Items.Add(added);
+            var rows = element.QuerySelectorAll("[data-test=row-before]");
+            assert.Equal(rows[1].TextContent, "Agent · Next", "a row added later keeps the space");
+            var nested = element.QuerySelectorAll("[data-test=nested]");
+            assert.Equal(nested[1].TextContent, "Agent · Next", "an inner row added later keeps the space");
+
+            vm.Name = "Ok";
+            assert.Equal(SpanText(element, "if-after"), "Ok units", "the @if suffix survives an update");
+
+            vm.IsActive = false;
+            assert.Equal(SpanText(element, "else-before"), "Agent · Ok", "space before a binding in an else branch");
+            assert.Equal(SpanText(element, "else-after"), "Ok units", "space after a binding in an else branch");
+            assert.Equal(SpanText(element, "else-both"), "Ok Ok", "space between two bindings in an else branch");
+
+            vm.IsActive = true;
+            vm.IsActive = false;
+            vm.Name = "Error";
+            assert.Equal(SpanText(element, "else-before"), "Agent · Error", "the else prefix survives a toggle and an update");
+            assert.Equal(SpanText(element, "else-after"), "Error units", "the else suffix survives a toggle and an update");
+            assert.Equal(SpanText(element, "else-both"), "Error Error", "the else separator survives a toggle and an update");
+        }
+
+        /// <summary>Direct text children that are whitespace only; comments and elements are skipped.</summary>
+        private static int WhitespaceTextChildren(Element parent)
+        {
+            var count = 0;
+            for (var node = parent.FirstChild; node != null; node = node.NextSibling)
+            {
+                if (node.NodeType == ElementType.Text && node.TextContent.Length > 0 && node.TextContent.Trim().Length == 0)
+                    count++;
+            }
+
+            return count;
+        }
+
         // The template has a real tab character at each of these places.
         [Test]
         public static void TestFuInlineBindingTabsCollapseToOneSpace(Assert assert)

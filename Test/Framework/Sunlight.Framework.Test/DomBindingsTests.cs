@@ -246,6 +246,80 @@ namespace Sunlight.Framework.Test
             assert.StrictEqual(reason, (object)"boom", "Reason");
         }
 
+        // #162
+        [Test]
+        public static void WindowMessageHandsTypedMessageEvent(Assert assert)
+        {
+            object data = null;
+            string origin = null;
+            int calls = 0;
+            Action<Window, System.Web.Html.MessageEvent> onMessage = (w, evt) =>
+            {
+                calls++;
+                data = evt.Data;
+                origin = evt.Origin;
+            };
+
+            Window.Instance.OnMessage += onMessage;
+            Window.Instance.DispatchEvent(DomBindingsTests.MakeMessageEvent("hi", "https://a.test"));
+            Window.Instance.OnMessage -= onMessage;
+            Window.Instance.DispatchEvent(DomBindingsTests.MakeMessageEvent("again", "https://a.test"));
+
+            assert.StrictEqual(calls, 1, "OnMessage listens to 'message' and unsubscribes");
+            assert.StrictEqual(data, (object)"hi", "Data");
+            assert.StrictEqual(origin, "https://a.test", "Origin");
+        }
+
+        // #162
+        [Test]
+        public static void IFrameNameAndLoad(Assert assert)
+        {
+            var frame = (IFrameElement)Window.Instance.Document.CreateElement("iframe");
+            frame.Name = "app-frame";
+            assert.StrictEqual(frame.GetAttribute("name"), "app-frame", "Name writes the attribute");
+            assert.StrictEqual(frame.Name, "app-frame", "Name reads back");
+
+            int loads = 0;
+            Action<IFrameElement, ElementEvent> onLoad = (f, evt) => { loads++; };
+            frame.OnLoad += onLoad;
+            frame.DispatchEvent(DomBindingsTests.MakeMutableEvent("load"));
+            frame.OnLoad -= onLoad;
+            frame.DispatchEvent(DomBindingsTests.MakeMutableEvent("load"));
+            assert.StrictEqual(loads, 1, "OnLoad listens to 'load' and unsubscribes");
+        }
+
+        // #162
+        [Test]
+        public static void StyleSetsCustomProperties(Assert assert)
+        {
+            var element = Window.Instance.Document.CreateElement("div");
+            element.Style.SetProperty("--awb-width", "240px");
+            assert.StrictEqual(element.Style.GetPropertyValue("--awb-width"), "240px", "a custom property is set");
+            element.Style.SetProperty("color", "red", "important");
+            assert.StrictEqual(element.Style.GetPropertyValue("color"), "red", "a priority is accepted");
+            assert.StrictEqual(PropertyPriority(element.Style, "color"), "important", "the priority is set");
+            element.Style.SetProperty("color", "red", "");
+            assert.StrictEqual(PropertyPriority(element.Style, "color"), "", "an empty priority clears it");
+            assert.StrictEqual(element.Style.RemoveProperty("--awb-width"), "240px", "RemoveProperty returns the old value");
+            assert.StrictEqual(element.Style.GetPropertyValue("--awb-width"), "", "the property is gone");
+        }
+
+        // #162
+        [Test]
+        public static void DocumentVisibilityAndUrlCredentials(Assert assert)
+        {
+            var document = Window.Instance.Document;
+            assert.StrictEqual(document.Hidden, document.VisibilityState == "hidden", "Hidden matches VisibilityState");
+            assert.IsTrue(document.VisibilityState == "visible" || document.VisibilityState == "hidden", "VisibilityState");
+
+            var url = new URL("https://user:pw@a.test/");
+            assert.StrictEqual(url.Username, "user", "Username");
+            assert.StrictEqual(url.Password, "pw", "Password");
+            assert.StrictEqual(new URL("https://a.test/").Username, "", "no user info");
+            assert.StrictEqual(new URL("https://a.test/").Password, "", "no password without user info");
+            assert.StrictEqual(new URL("https://user@a.test/").Password, "", "no password with a user only");
+        }
+
         [Test]
         public static void ScrollIntoViewOptionsIsPlainObject(Assert assert)
         {
@@ -403,8 +477,14 @@ namespace Sunlight.Framework.Test
         [Script("return new @:Event(name);")]
         private static extern Event MakeEvent(string name);
 
+        [Script("return new @:MessageEvent('message', { data: data, origin: origin });")]
+        private static extern Event MakeMessageEvent(object data, string origin);
+
         [Script("return new @:Event(name);")]
         private static extern MutableEvent MakeMutableEvent(string name);
+
+        [Script("return style.getPropertyPriority(name);")]
+        private static extern string PropertyPriority(Style style, string name);
 
         [Script("return new @:PointerEvent(name, { pointerId: id });")]
         private static extern MutableEvent MakePointerEvent(string name, int id);

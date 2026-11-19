@@ -392,6 +392,23 @@ namespace NScript.RazorSkin.TemplateIR
         }
 
         /// <summary>
+        /// The static HTML at <paramref name="index"/> as it renders: trimmed, but keeping the
+        /// space next to an inline binding (<see cref="TrimAroundBindings"/>). Whitespace alone
+        /// between two bindings on one line (<c>@a @b</c>) is a single space; other whitespace
+        /// alone is layout and gives null.
+        /// </summary>
+        private static string RenderedHtml(List<IntermediateNode> nodes, int index, string content)
+        {
+            var bindingBefore = index > 0 && IsInlineBinding(nodes[index - 1]);
+            var bindingAfter = index + 1 < nodes.Count && IsInlineBinding(nodes[index + 1])
+                && DetectEventAttributeContext(content) == null
+                && DetectAttributeBindingContext(content) == null;
+            if (!string.IsNullOrWhiteSpace(content))
+                return TrimAroundBindings(content, bindingBefore, bindingAfter);
+            return bindingBefore && bindingAfter && content.Length > 0 && !content.Contains('\n') ? " " : null;
+        }
+
+        /// <summary>
         /// Classify the binding source kind from a C# expression string (M6).
         /// Extracts whether the expression references Model.* or Control.* to determine
         /// if the source is DataContext or TemplateParent.
@@ -644,31 +661,24 @@ namespace NScript.RazorSkin.TemplateIR
                     var content = GetTokenContent(htmlNode);
                     // Strip the @model directive type name if Razor echoed it into the HTML
                     content = StripModelDirectiveEcho(content, modelTypeName);
-                    var bindingBefore = i > 0 && IsInlineBinding(childList[i - 1]);
-                    var bindingAfter = i + 1 < childList.Count && IsInlineBinding(childList[i + 1])
-                        && DetectEventAttributeContext(content) == null
-                        && DetectAttributeBindingContext(content) == null;
-                    if (string.IsNullOrWhiteSpace(content))
+                    var rendered = RenderedHtml(childList, i, content);
+                    if (rendered == " ")
                     {
                         // @a @b: the space between two bindings on one line is text.
-                        if (bindingBefore && bindingAfter && content.Length > 0 && !content.Contains('\n'))
+                        currentParent.Children.Add(new HtmlNode
                         {
-                            currentParent.Children.Add(new HtmlNode
-                            {
-                                HtmlContent = " ",
-                                Location = TryGetLocation(htmlNode, templateName)
-                            });
-                        }
+                            HtmlContent = " ",
+                            Location = TryGetLocation(htmlNode, templateName)
+                        });
                     }
-                    else
+                    else if (rendered != null)
                     {
                         // Check for event attributes and sub-controls before adding HTML
-                        var processed = ExtractEventAttributesFromHtml(
-                            TrimAroundBindings(content, bindingBefore, bindingAfter), currentParent);
+                        var processed = ExtractEventAttributesFromHtml(rendered, currentParent);
                         // Also detect sub-controls in the HTML
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
                         processed = ExtractSubControlsFromHtml(processed, currentParent, templateName, htmlLocation,
-                            ContentStartLocation(htmlLocation, GetTokenContent(htmlNode), content));
+                            ContentStartLocation(htmlLocation, GetTokenContent(htmlNode), content, rendered));
                         if (!string.IsNullOrWhiteSpace(processed))
                         {
                             currentParent.Children.Add(new HtmlNode
@@ -956,12 +966,17 @@ namespace NScript.RazorSkin.TemplateIR
                 if (node is HtmlContentIntermediateNode htmlNode)
                 {
                     var content = GetTokenContent(htmlNode);
-                    if (!string.IsNullOrWhiteSpace(content))
+                    var rendered = RenderedHtml(nodes, i, content);
+                    if (rendered == " ")
+                    {
+                        targetBranch.Add(new HtmlNode { HtmlContent = " ", Location = TryGetLocation(htmlNode, templateName) });
+                    }
+                    else if (rendered != null)
                     {
                         var branchParent = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), branchParent,
-                            templateName, htmlLocation, ContentStartLocation(htmlLocation, content, content));
+                        var processed = ExtractSubControlsFromHtml(rendered, branchParent,
+                            templateName, htmlLocation, ContentStartLocation(htmlLocation, content, content, rendered));
                         if (!string.IsNullOrWhiteSpace(processed))
                             targetBranch.Add(new HtmlNode
                             {
@@ -1147,7 +1162,12 @@ namespace NScript.RazorSkin.TemplateIR
                 if (node is HtmlContentIntermediateNode htmlNode)
                 {
                     var content = GetTokenContent(htmlNode);
-                    if (!string.IsNullOrWhiteSpace(content))
+                    var rendered = RenderedHtml(nodes, i, content);
+                    if (rendered == " ")
+                    {
+                        loop.ItemTemplate.Add(new HtmlNode { HtmlContent = " ", Location = TryGetLocation(htmlNode, templateName) });
+                    }
+                    else if (rendered != null)
                     {
                         // Use a dummy container to collect SubControlNodes,
                         // then move them to the loop's ItemTemplate. Pass the host
@@ -1155,8 +1175,8 @@ namespace NScript.RazorSkin.TemplateIR
                         // rather than collapsing to the dummy container's null Location.
                         var dummy = new SkinTemplateNode();
                         var htmlLocation = TryGetLocation(htmlNode, templateName);
-                        var processed = ExtractSubControlsFromHtml(content.Trim(), dummy, templateName, htmlLocation,
-                            ContentStartLocation(htmlLocation, content, content));
+                        var processed = ExtractSubControlsFromHtml(rendered, dummy, templateName, htmlLocation,
+                            ContentStartLocation(htmlLocation, content, content, rendered));
                         if (!string.IsNullOrWhiteSpace(processed))
                             loop.ItemTemplate.Add(new HtmlNode
                             {
@@ -1685,13 +1705,21 @@ namespace NScript.RazorSkin.TemplateIR
         }
 
         /// <summary>
-        /// Where <paramref name="kept"/> starts: <paramref name="raw"/> starts at
-        /// <paramref name="rawLocation"/>, and <paramref name="kept"/> is a suffix of it whose
-        /// leading model echo and whitespace were stripped.
+        /// Where <paramref name="rendered"/> starts: <paramref name="raw"/> starts at
+        /// <paramref name="rawLocation"/>, <paramref name="kept"/> is a suffix of it whose
+        /// leading model echo was stripped, and <paramref name="rendered"/> is
+        /// <paramref name="kept"/> trimmed but for a space kept beside a binding
+        /// (<see cref="RenderedHtml"/>). A space kept from same-line whitespace starts at that
+        /// whitespace's last character. After a line break the start stays on the text.
         /// </summary>
-        private static Location ContentStartLocation(Location rawLocation, string raw, string kept)
+        private static Location ContentStartLocation(Location rawLocation, string raw, string kept, string rendered)
         {
-            return LocationAt(rawLocation, raw, raw.Length - kept.TrimStart().Length);
+            var text = raw.Length - kept.TrimStart().Length;
+            var leading = kept.Substring(0, kept.Length - kept.TrimStart().Length);
+            var keptSpace = rendered.Length - rendered.TrimStart().Length;
+            if (keptSpace > 0 && !leading.Contains('\n'))
+                text -= keptSpace;
+            return LocationAt(rawLocation, raw, text);
         }
 
         /// <summary>
