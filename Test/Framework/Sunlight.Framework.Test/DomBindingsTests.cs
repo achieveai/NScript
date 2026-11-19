@@ -297,6 +297,9 @@ namespace Sunlight.Framework.Test
             assert.StrictEqual(element.Style.GetPropertyValue("--awb-width"), "240px", "a custom property is set");
             element.Style.SetProperty("color", "red", "important");
             assert.StrictEqual(element.Style.GetPropertyValue("color"), "red", "a priority is accepted");
+            assert.StrictEqual(PropertyPriority(element.Style, "color"), "important", "the priority is set");
+            element.Style.SetProperty("color", "red", "");
+            assert.StrictEqual(PropertyPriority(element.Style, "color"), "", "an empty priority clears it");
             assert.StrictEqual(element.Style.RemoveProperty("--awb-width"), "240px", "RemoveProperty returns the old value");
             assert.StrictEqual(element.Style.GetPropertyValue("--awb-width"), "", "the property is gone");
         }
@@ -313,6 +316,8 @@ namespace Sunlight.Framework.Test
             assert.StrictEqual(url.Username, "user", "Username");
             assert.StrictEqual(url.Password, "pw", "Password");
             assert.StrictEqual(new URL("https://a.test/").Username, "", "no user info");
+            assert.StrictEqual(new URL("https://a.test/").Password, "", "no password without user info");
+            assert.StrictEqual(new URL("https://user@a.test/").Password, "", "no password with a user only");
         }
 
         [Test]
@@ -477,6 +482,9 @@ namespace Sunlight.Framework.Test
 
         [Script("return new @:Event(name);")]
         private static extern MutableEvent MakeMutableEvent(string name);
+
+        [Script("return style.getPropertyPriority(name);")]
+        private static extern string PropertyPriority(Style style, string name);
 
         [Script("return new @:PointerEvent(name, { pointerId: id });")]
         private static extern MutableEvent MakePointerEvent(string name, int id);

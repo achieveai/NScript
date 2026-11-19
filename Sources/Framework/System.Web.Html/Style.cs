@@ -1189,7 +1189,9 @@ namespace System.Web.Html
         public extern string RemoveProperty(string name);
 
         /// <summary>
-        /// The inline value of a property by its CSS name, or "" when it is not set.
+        /// The value of a property by its CSS name, or "" when it is not set. On a computed style
+        /// (CurrentStyle / GetComputedStyle) this reads the computed value synchronously, and a
+        /// layout-dependent property may force a layout.
         /// </summary>
         public extern string GetPropertyValue(string name);
 
